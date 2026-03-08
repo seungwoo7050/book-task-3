@@ -1,0 +1,64 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="90" y1="40" x2="1190" y2="780" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7FBFF"/>
+      <stop offset="1" stop-color="#F1F8F1"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#17324B" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5B7592"/>
+    </marker>
+  </defs>
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #46637D; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14263A; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #566A80; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4C6881; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .nodeText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #60778E; }
+  </style>
+
+  <rect width="1280" height="820" rx="36" fill="url(#bg)"/>
+  <circle cx="1128" cy="108" r="104" fill="#DDEFE8" fill-opacity="0.68"/>
+  <circle cx="136" cy="734" r="146" fill="#DDEAFF" fill-opacity="0.58"/>
+
+  <text x="72" y="68" class="eyebrow">JAVASCRIPT EVENT LOOP</text>
+  <text x="72" y="112" class="title">Promise와 timer는 같은 큐에서 기다리지 않는다</text>
+  <text x="72" y="144" class="subtitle">현재 실행이 끝나면 microtask가 먼저 비워지고, 그 다음에 task가 처리된다. 그래서 Promise가 setTimeout보다 먼저 이어진다.</text>
+
+  <text x="84" y="214" class="section">QUEUE ORDER</text>
+
+  <rect x="86" y="252" width="214" height="168" rx="26" fill="#FFFFFF" stroke="#CDDCE9" filter="url(#shadow)"/>
+  <text x="122" y="314" class="nodeTitle">Call Stack</text>
+  <text x="122" y="342" class="nodeText">현재 실행 중인 함수</text>
+
+  <rect x="362" y="252" width="214" height="168" rx="26" fill="#EAF4FF" stroke="#BCD5EE" filter="url(#shadow)"/>
+  <text x="398" y="314" class="nodeTitle">Web API</text>
+  <text x="398" y="342" class="nodeText">timer, fetch, DOM 이벤트 대기</text>
+
+  <rect x="644" y="212" width="250" height="140" rx="26" fill="#EEF8EF" stroke="#B9DEC9" filter="url(#shadow)"/>
+  <text x="680" y="268" class="nodeTitle">Microtask Queue</text>
+  <text x="680" y="296" class="nodeText">Promise.then, await 이후</text>
+
+  <rect x="644" y="404" width="250" height="140" rx="26" fill="#FFF6E8" stroke="#E8CE96" filter="url(#shadow)"/>
+  <text x="680" y="460" class="nodeTitle">Task Queue</text>
+  <text x="680" y="488" class="nodeText">setTimeout, message, IO 콜백</text>
+
+  <rect x="972" y="252" width="214" height="292" rx="26" fill="#FFFFFF" stroke="#CDDCE9" filter="url(#shadow)"/>
+  <text x="1008" y="314" class="nodeTitle">Event Loop</text>
+  <text x="1008" y="342" class="nodeText">stack이 비면</text>
+  <text x="1008" y="370" class="nodeText">1. microtask 전부 처리</text>
+  <text x="1008" y="398" class="nodeText">2. task 하나 처리</text>
+
+  <line x1="300" y1="336" x2="362" y2="336" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="576" y1="314" x2="644" y2="282" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="576" y1="360" x2="644" y2="474" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="894" y1="282" x2="972" y2="340" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="894" y1="474" x2="972" y2="430" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="262" y="640" width="756" height="104" rx="24" fill="#FFF3ED" stroke="#F0B7AF" filter="url(#shadow)"/>
+  <text x="298" y="684" class="nodeTitle">실전 규칙</text>
+  <text x="298" y="712" class="nodeText">await 뒤 코드는 microtask에 이어지고, setTimeout 0도 task라서 그보다 늦게 실행될 수 있다.</text>
+</svg>

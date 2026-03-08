@@ -1,0 +1,44 @@
+{
+  "items": [
+    {
+      "id": 1,
+      "incidentId": "fd4e7b73-ff17-41aa-8c1c-1e389eb711df",
+      "actorId": "reporter.demo",
+      "actorRole": "REPORTER",
+      "action": "incident.create",
+      "result": "SUCCESS",
+      "detail": "created incident fd4e7b73-ff17-41aa-8c1c-1e389eb711df",
+      "createdAt": "2026-03-08T04:27:43.358Z"
+    },
+    {
+      "id": 2,
+      "incidentId": "fd4e7b73-ff17-41aa-8c1c-1e389eb711df",
+      "actorId": "operator.demo",
+      "actorRole": "OPERATOR",
+      "action": "incident.ack",
+      "result": "SUCCESS",
+      "detail": "acked incident fd4e7b73-ff17-41aa-8c1c-1e389eb711df",
+      "createdAt": "2026-03-08T04:27:43.360Z"
+    },
+    {
+      "id": 3,
+      "incidentId": "fd4e7b73-ff17-41aa-8c1c-1e389eb711df",
+      "actorId": "operator.demo",
+      "actorRole": "OPERATOR",
+      "action": "incident.request_resolution",
+      "result": "SUCCESS",
+      "detail": "approval df2e0283-8609-47a4-aed4-9ca48a43b4e5 requested",
+      "createdAt": "2026-03-08T04:27:43.362Z"
+    },
+    {
+      "id": 4,
+      "incidentId": "fd4e7b73-ff17-41aa-8c1c-1e389eb711df",
+      "actorId": "approver.demo",
+      "actorRole": "APPROVER",
+      "action": "approval.decide",
+      "result": "SUCCESS",
+      "detail": "approval df2e0283-8609-47a4-aed4-9ca48a43b4e5 -> APPROVE",
+      "createdAt": "2026-03-08T04:27:43.363Z"
+    }
+  ]
+}

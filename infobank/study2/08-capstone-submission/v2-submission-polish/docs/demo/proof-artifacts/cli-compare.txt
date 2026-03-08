@@ -1,0 +1,5 @@
+Version Compare
+avg_score: 84.06 -> 87.76 (delta 3.7)
+critical_count: 2 -> 0 (delta -2)
+pass_count: 16 -> 19 (delta 3)
+fail_count: 14 -> 11 (delta -3)

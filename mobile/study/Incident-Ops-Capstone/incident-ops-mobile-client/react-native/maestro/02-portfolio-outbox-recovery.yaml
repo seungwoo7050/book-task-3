@@ -1,0 +1,54 @@
+appId: org.reactjs.native.example.IncidentOpsMobileClient
+---
+- clearState
+- launchApp
+- assertVisible: "Incident Ops Client"
+
+- tapOn:
+    id: "login-user-id-input"
+- inputText: "reporter.demo"
+- tapOn: "Auth Stack"
+- tapOn:
+    id: "login-submit-button"
+- assertVisible: "No incidents yet"
+
+- tapOn: "Settings, tab, 4 of 4"
+- tapOn:
+    id: "settings-base-url-input"
+- eraseText: 30
+- inputText: "http://127.0.0.1:4199"
+- tapOn: "Backend Target"
+- tapOn:
+    id: "settings-save-base-url-button"
+- takeScreenshot: "11-settings-outage-target"
+
+- tapOn: "Incidents, tab, 1 of 4"
+- tapOn:
+    id: "new-incident-button"
+- tapOn:
+    id: "create-title-input"
+- inputText: "Outage queue incident"
+- tapOn: "Create Form"
+- tapOn:
+    id: "queue-incident-button"
+
+- tapOn: "Outbox, tab, 3 of 4"
+- assertVisible: "Persistent Outbox"
+- takeScreenshot: "12-outbox-pending"
+
+- tapOn: "Settings, tab, 4 of 4"
+- tapOn:
+    id: "settings-base-url-input"
+- eraseText: 30
+- inputText: "http://127.0.0.1:4100"
+- tapOn: "Backend Target"
+- tapOn:
+    id: "settings-save-base-url-button"
+- tapOn:
+    id: "settings-flush-button"
+
+- tapOn: "Outbox, tab, 3 of 4"
+- extendedWaitUntil:
+    visible: "synced"
+    timeout: 10000
+- takeScreenshot: "13-outbox-recovered"

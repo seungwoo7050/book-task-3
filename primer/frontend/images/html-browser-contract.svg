@@ -1,0 +1,83 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5E7895"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .cardNum { font: 700 16px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4B6781; }
+    .cardTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .cardText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5C7289; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 20px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+    .footnote { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F7FAFD"/>
+
+  <text x="72" y="68" class="eyebrow">HTML MENTAL MODEL</text>
+  <text x="72" y="112" class="title">HTML 문서를 읽을 때 먼저 볼 3가지</text>
+  <text x="72" y="142" class="subtitle">구조, 의미, 기본 동작을 먼저 잡으면 HTML은 단순 태그 모음이 아니라 브라우저와의 계약으로 읽힌다.</text>
+
+  <rect x="72" y="184" width="360" height="124" rx="24" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="102" y="218" class="cardNum">1. STRUCTURE</text>
+  <text x="102" y="252" class="cardTitle">`head`와 outline은 분리됐는가?</text>
+  <text x="102" y="280" class="cardText">title, meta, canonical은 화면 밖 정보를 만들고,</text>
+  <text x="102" y="302" class="cardText">heading은 문서 개요를 만든다.</text>
+
+  <rect x="460" y="184" width="360" height="124" rx="24" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="490" y="218" class="cardNum">2. MEANING</text>
+  <text x="490" y="252" class="cardTitle">landmark와 label이 충분한가?</text>
+  <text x="490" y="280" class="cardText">`main`, `article`, `section`, `label`, `alt`가</text>
+  <text x="490" y="302" class="cardText">보조기술과 SEO가 읽는 의미 신호가 된다.</text>
+
+  <rect x="848" y="184" width="360" height="124" rx="24" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="878" y="218" class="cardNum">3. DEFAULTS</text>
+  <text x="878" y="252" class="cardTitle">JS 없이도 무엇이 동작하는가?</text>
+  <text x="878" y="280" class="cardText">링크 이동, 폼 제출, 기본 검증, details 토글은</text>
+  <text x="878" y="302" class="cardText">브라우저가 이미 제공하는 동작이다.</text>
+
+  <rect x="56" y="352" width="1168" height="396" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="392" class="section">ONE DOCUMENT, THREE READERS</text>
+
+  <rect x="88" y="450" width="250" height="206" rx="24" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="132" y="494" class="nodeTitle">HTML 문서</text>
+  <rect x="120" y="526" width="186" height="44" rx="14" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="144" y="554" class="chip">head: title, meta, link</text>
+  <rect x="120" y="586" width="186" height="44" rx="14" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="142" y="614" class="chip">body: heading, nav, form</text>
+
+  <rect x="408" y="434" width="232" height="126" rx="22" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="448" y="478" class="nodeTitle">브라우저 렌더링</text>
+  <text x="446" y="506" class="nodeText">DOM, 레이아웃, 기본 링크/폼</text>
+  <text x="466" y="530" class="nodeText">동작이 여기서 결정된다</text>
+
+  <rect x="684" y="434" width="232" height="126" rx="22" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="718" y="478" class="nodeTitle">접근성 트리</text>
+  <text x="716" y="506" class="nodeText">landmark, label, role, alt를</text>
+  <text x="726" y="530" class="nodeText">스크린 리더가 읽는다</text>
+
+  <rect x="960" y="434" width="232" height="126" rx="22" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="1000" y="478" class="nodeTitle">검색·공유 미리보기</text>
+  <text x="1006" y="506" class="nodeText">title, description, OG 태그가</text>
+  <text x="1016" y="530" class="nodeText">외부 표면을 결정한다</text>
+
+  <line x1="338" y1="508" x2="408" y2="494" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="338" y1="540" x2="684" y2="494" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="338" y1="572" x2="960" y2="494" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="408" y="612" width="784" height="88" rx="20" fill="#FFF0EE" stroke="#F0B7AF"/>
+  <text x="444" y="648" class="chip">같은 마크업이 렌더링, 접근성, 검색을 동시에 바꾸므로 CSS보다 먼저 구조와 의미를 고정해야 한다.</text>
+  <text x="444" y="674" class="chip">상호작용이 필요할 때도 링크, 폼, 버튼, details의 기본 동작을 먼저 활용한다.</text>
+
+  <text x="84" y="724" class="footnote">읽는 법: 이 태그가 어떤 구조를 만들고, 누구에게 어떤 의미를 보내며, 브라우저가 기본으로 무엇을 해 주는지 먼저 본다.</text>
+</svg>

@@ -1,0 +1,17 @@
+FROM node:22-alpine
+
+RUN corepack enable
+
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
+COPY node/package.json node/package.json
+COPY react/package.json react/package.json
+COPY shared/package.json shared/package.json
+
+RUN pnpm install --frozen-lockfile
+
+COPY node ./node
+COPY shared ./shared
+
+CMD ["pnpm", "--filter", "@study1-v3/node", "exec", "tsx", "src/worker.ts"]

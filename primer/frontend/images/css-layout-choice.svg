@@ -1,0 +1,71 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5E7895"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 20px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+    .footnote { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F7FAFD"/>
+
+  <text x="72" y="68" class="eyebrow">LAYOUT CHOICE</text>
+  <text x="72" y="112" class="title">Flexbox와 Grid를 고르는 빠른 기준</text>
+  <text x="72" y="142" class="subtitle">둘 다 부모가 레이아웃을 결정하지만, Flexbox는 한 축 정렬, Grid는 행과 열의 트랙 설계에 강하다.</text>
+
+  <rect x="430" y="194" width="420" height="88" rx="24" fill="#FFFFFF" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="470" y="246" class="nodeTitle">무엇을 먼저 제어해야 하는가?</text>
+
+  <line x1="560" y1="282" x2="326" y2="344" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="720" y1="282" x2="954" y2="344" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="72" y="344" width="508" height="360" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="100" y="384" class="section">FLEXBOX</text>
+  <text x="100" y="426" class="nodeTitle">한 줄 또는 한 컬럼의 정렬과 분배</text>
+  <text x="100" y="454" class="nodeText">nav, button row, card footer처럼 한 축의 간격과 정렬이 중요할 때</text>
+
+  <rect x="124" y="500" width="332" height="112" rx="24" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <rect x="156" y="540" width="64" height="34" rx="10" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <rect x="240" y="540" width="100" height="34" rx="10" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <rect x="360" y="540" width="64" height="34" rx="10" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <line x1="156" y1="592" x2="424" y2="592" stroke="#5E7895" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="150" y="632" class="chip">주축(main axis)을 따라 배치</text>
+  <text x="150" y="656" class="chip">`justify-content`, `align-items`, `gap`</text>
+
+  <rect x="474" y="500" width="78" height="112" rx="18" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <line x1="512" y1="594" x2="512" y2="520" stroke="#5E7895" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="488" y="638" class="chip">교차축</text>
+
+  <rect x="700" y="344" width="508" height="360" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="728" y="384" class="section">GRID</text>
+  <text x="728" y="426" class="nodeTitle">행과 열의 트랙을 먼저 설계</text>
+  <text x="728" y="454" class="nodeText">페이지 shell, 카드 목록, 대시보드처럼 2차원 배치가 필요할 때</text>
+
+  <rect x="752" y="500" width="280" height="144" rx="24" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <rect x="776" y="524" width="104" height="28" rx="8" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <rect x="892" y="524" width="116" height="28" rx="8" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <rect x="776" y="564" width="76" height="56" rx="8" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <rect x="864" y="564" width="144" height="56" rx="8" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="778" y="674" class="chip">`grid-template-columns`, `areas`, `span`</text>
+
+  <rect x="1052" y="500" width="128" height="144" rx="24" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="1074" y="544" class="nodeText">header</text>
+  <text x="1070" y="568" class="nodeText">sidebar</text>
+  <text x="1080" y="592" class="nodeText">main</text>
+  <text x="1078" y="616" class="nodeText">footer</text>
+
+  <rect x="292" y="730" width="696" height="52" rx="18" fill="#FFF0EE" stroke="#F0B7AF"/>
+  <text x="322" y="764" class="chip">실무 조합: 페이지 뼈대와 카드 목록은 Grid, 그 안의 헤더·툴바·버튼 줄은 Flexbox가 가장 흔하다.</text>
+</svg>

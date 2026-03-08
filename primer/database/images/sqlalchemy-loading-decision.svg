@@ -1,0 +1,62 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5E7895"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 21px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F7FAFD"/>
+
+  <text x="72" y="68" class="eyebrow">LOADING DECISION</text>
+  <text x="72" y="112" class="title">관계 데이터는 쿼리 수와 row 폭을 같이 보고 고른다</text>
+  <text x="72" y="142" class="subtitle">eager loading 전략은 "빨라 보이는 옵션"이 아니라, 어떤 쿼리 수와 어떤 결과 shape를 허용할지 정하는 선택이다.</text>
+
+  <rect x="56" y="192" width="1168" height="550" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="232" class="section">STRATEGY TREE</text>
+
+  <rect x="446" y="268" width="388" height="126" rx="24" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="520" y="314" class="nodeTitle">관계 데이터를 같이 읽을까?</text>
+  <text x="500" y="342" class="nodeText">필요한 관계 크기와 row 폭발 가능성을 먼저 본다.</text>
+
+  <line x1="640" y1="394" x2="640" y2="454" stroke="#5E7895" stroke-width="4"/>
+  <line x1="244" y1="454" x2="1036" y2="454" stroke="#5E7895" stroke-width="4"/>
+  <line x1="276" y1="454" x2="276" y2="504" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="640" y1="454" x2="640" y2="504" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="1004" y1="454" x2="1004" y2="504" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="102" y="504" width="348" height="178" rx="24" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="196" y="550" class="nodeTitle">joinedload</text>
+  <text x="138" y="578" class="nodeText">1:1, 작은 N, 결과 행 수 증가를 감당할 수 있을 때</text>
+  <text x="138" y="602" class="nodeText">JOIN 한 번으로 가져오되 `.unique()` 필요 여부를 본다.</text>
+  <rect x="172" y="628" width="208" height="30" rx="15" fill="#F3FBF7" stroke="#C2E0D0"/>
+  <text x="214" y="648" class="chip">적은 행, 넓은 row 허용</text>
+
+  <rect x="466" y="504" width="348" height="178" rx="24" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="552" y="550" class="nodeTitle">selectinload</text>
+  <text x="500" y="578" class="nodeText">1:N에서 부모 row는 유지하고 추가 SELECT로</text>
+  <text x="500" y="602" class="nodeText">관련 row를 모아서 읽고 싶을 때 안전한 기본값이다.</text>
+  <rect x="536" y="628" width="208" height="30" rx="15" fill="#FFF9EC" stroke="#E9D29D"/>
+  <text x="576" y="648" class="chip">많은 자식 row에 유리</text>
+
+  <rect x="830" y="504" width="348" height="178" rx="24" fill="#FFF0EE" stroke="#F0B7AF" filter="url(#shadow)"/>
+  <text x="920" y="550" class="nodeTitle">lazy / subqueryload</text>
+  <text x="864" y="578" class="nodeText">명시하지 않으면 lazy가 발동해 N+1이 생길 수 있다.</text>
+  <text x="864" y="602" class="nodeText">특수한 N:M이나 레거시 패턴만 subqueryload를 고려한다.</text>
+  <rect x="900" y="628" width="208" height="30" rx="15" fill="#FFF5F3" stroke="#F0B7AF"/>
+  <text x="942" y="648" class="chip">기본 lazy는 먼저 의심</text>
+
+  <text x="84" y="716" class="chip">핵심: eager loading은 "쿼리 수를 줄일까?"보다 "row 폭발 없이 어떤 관계를 한 번에 가져올까?"를 묻는 선택이다.</text>
+</svg>

@@ -1,0 +1,61 @@
+<svg width="1280" height="760" viewBox="0 0 1280 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="90" y1="40" x2="1190" y2="720" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7FBFF"/>
+      <stop offset="1" stop-color="#FFF7EF"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#17324B" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5B7592"/>
+    </marker>
+  </defs>
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #46637D; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14263A; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #566A80; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4C6881; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .nodeText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #60778E; }
+  </style>
+
+  <rect width="1280" height="760" rx="36" fill="url(#bg)"/>
+  <circle cx="1118" cy="106" r="102" fill="#DDEFE8" fill-opacity="0.68"/>
+  <circle cx="150" cy="680" r="136" fill="#DDEBFF" fill-opacity="0.58"/>
+
+  <text x="72" y="68" class="eyebrow">GO ERROR FLOW</text>
+  <text x="72" y="112" class="title">에러는 값을 올리면서 문맥을 더한다</text>
+  <text x="72" y="144" class="subtitle">Go에서는 예외를 던지지 않는다. 대신 각 계층이 에러를 반환하고, 필요한 문맥을 붙여서 위로 올린다.</text>
+
+  <text x="84" y="214" class="section">WRAP CHAIN</text>
+
+  <rect x="86" y="258" width="234" height="150" rx="26" fill="#FFFFFF" stroke="#CDDCE9" filter="url(#shadow)"/>
+  <text x="122" y="314" class="nodeTitle">repository</text>
+  <text x="122" y="342" class="nodeText">sql.ErrNoRows</text>
+  <text x="122" y="370" class="nodeText">가장 아래 원인 생성</text>
+
+  <rect x="386" y="258" width="234" height="150" rx="26" fill="#EAF4FF" stroke="#BCD5EE" filter="url(#shadow)"/>
+  <text x="422" y="314" class="nodeTitle">service</text>
+  <text x="422" y="342" class="nodeText">GetUser(id): percent-w</text>
+  <text x="422" y="370" class="nodeText">업무 문맥 추가</text>
+
+  <rect x="686" y="258" width="234" height="150" rx="26" fill="#EEF8EF" stroke="#B9DEC9" filter="url(#shadow)"/>
+  <text x="722" y="314" class="nodeTitle">handler</text>
+  <text x="722" y="342" class="nodeText">status code로 매핑</text>
+  <text x="722" y="370" class="nodeText">사용자 응답 결정</text>
+
+  <rect x="986" y="258" width="208" height="150" rx="26" fill="#FFF6E8" stroke="#E8CE96" filter="url(#shadow)"/>
+  <text x="1022" y="314" class="nodeTitle">client</text>
+  <text x="1022" y="342" class="nodeText">404 또는 500</text>
+  <text x="1022" y="370" class="nodeText">최종 결과 수신</text>
+
+  <line x1="320" y1="334" x2="386" y2="334" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="620" y1="334" x2="686" y2="334" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="920" y1="334" x2="986" y2="334" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="248" y="496" width="784" height="146" rx="28" fill="#FFFFFF" stroke="#CDDCE9" filter="url(#shadow)"/>
+  <text x="284" y="552" class="nodeTitle">검사 지점</text>
+  <text x="284" y="580" class="nodeText">errors.Is(err, sql.ErrNoRows) 로 원인 비교</text>
+  <text x="284" y="608" class="nodeText">errors.As(err, NotFoundError 타입) 로 커스텀 타입 추출</text>
+</svg>

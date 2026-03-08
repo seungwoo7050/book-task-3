@@ -1,0 +1,57 @@
+# Default values for go-backend.
+
+replicaCount: 2
+
+image:
+  repository: ghcr.io/woopinbell/go-backend-api
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 4000
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 64Mi
+  limits:
+    cpu: 500m
+    memory: 128Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+probes:
+  liveness:
+    path: /v1/healthcheck
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+  readiness:
+    path: /v1/healthcheck
+    initialDelaySeconds: 3
+    periodSeconds: 5
+    timeoutSeconds: 2
+    failureThreshold: 3
+
+env:
+  PORT: "4000"
+  ENV: "production"
+  LOG_LEVEL: "info"
+
+# Database connection (set via secret).
+database:
+  host: "cockroachdb.default.svc.cluster.local"
+  port: "26257"
+  name: "defaultdb"
+  sslmode: "disable"

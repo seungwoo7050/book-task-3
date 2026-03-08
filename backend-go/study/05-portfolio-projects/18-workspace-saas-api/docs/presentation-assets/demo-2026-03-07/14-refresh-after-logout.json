@@ -1,0 +1,6 @@
+{
+  "error": {
+    "code": "invalid_refresh_token",
+    "message": "refresh token is invalid"
+  }
+}

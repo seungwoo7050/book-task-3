@@ -1,0 +1,53 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5B7792"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#183149" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #47647F; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #566C83; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .nodeText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #596F86; }
+    .code { font: 700 16px "SF Mono", "SFMono-Regular", "Menlo", monospace; fill: #17304A; }
+    .badge { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F7FAFD"/>
+
+  <text x="72" y="70" class="eyebrow">PATTERN RULE</text>
+  <text x="72" y="114" class="title">패턴 규칙은 템플릿을 실제 파일 규칙으로 펼친다</text>
+  <text x="72" y="146" class="subtitle">`%`는 stem을 뜻하고, 자동 변수는 stem이 실제 파일 이름으로 바뀐 뒤 채워진다.</text>
+
+  <rect x="80" y="212" width="1120" height="168" rx="30" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="120" y="262" class="nodeTitle">템플릿 규칙</text>
+  <rect x="120" y="290" width="1040" height="58" rx="18" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="154" y="326" class="code">$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c    ;    $(CC) $(CFLAGS) -c $&lt; -o $@</text>
+
+  <rect x="96" y="430" width="336" height="238" rx="28" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="138" y="486" class="nodeTitle">1. stem 선택</text>
+  <text x="138" y="520" class="nodeText">예: `main`이 `%` 자리에 들어간다.</text>
+  <text x="138" y="556" class="code">main</text>
+
+  <rect x="472" y="430" width="336" height="238" rx="28" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="514" y="486" class="nodeTitle">2. 실제 규칙 생성</text>
+  <text x="514" y="520" class="code">build/main.o: src/main.c</text>
+  <text x="514" y="554" class="nodeText">패턴이 구체적인 파일 이름으로 확정된다.</text>
+
+  <rect x="848" y="430" width="336" height="238" rx="28" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="890" y="486" class="nodeTitle">3. 자동 변수 채우기</text>
+  <text x="890" y="520" class="code">$@ = build/main.o</text>
+  <text x="890" y="556" class="code">$&lt; = src/main.c</text>
+  <text x="890" y="592" class="nodeText">링크 규칙에서는 `$^`가 모든 object 목록이 된다.</text>
+
+  <line x1="432" y1="548" x2="472" y2="548" stroke="#5B7792" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="808" y1="548" x2="848" y2="548" stroke="#5B7792" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="266" y="712" width="748" height="52" rx="26" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="314" y="746" class="badge">핵심: 규칙을 파일마다 복붙하지 않고 템플릿 한 개로 여러 `.c -&gt; .o` 변환을 처리한다.</text>
+</svg>

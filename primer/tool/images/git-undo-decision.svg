@@ -1,0 +1,64 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#597592"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#173149" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #47637E; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #102237; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #566B82; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .nodeText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #596F86; }
+    .small { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #45627B; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F8FBFF"/>
+
+  <text x="72" y="70" class="eyebrow">UNDO DECISION</text>
+  <text x="72" y="114" class="title">되돌리기 전에 대상부터 구분한다</text>
+  <text x="72" y="146" class="subtitle">파일 수정인지, 로컬 커밋인지, 이미 공유된 이력인지에 따라 `restore`, `reset`, `revert`가 갈린다.</text>
+
+  <rect x="390" y="206" width="500" height="120" rx="28" fill="#FFFFFF" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="496" y="256" class="nodeTitle">무엇을 되돌리고 싶은가?</text>
+  <text x="478" y="286" class="nodeText">작업 파일, 로컬 커밋, 이미 원격에 공유된 커밋 중 하나를 먼저 고른다.</text>
+
+  <line x1="640" y1="326" x2="640" y2="390" stroke="#597592" stroke-width="4"/>
+  <line x1="640" y1="390" x2="210" y2="390" stroke="#597592" stroke-width="4"/>
+  <line x1="640" y1="390" x2="1070" y2="390" stroke="#597592" stroke-width="4"/>
+  <line x1="210" y1="390" x2="210" y2="454" stroke="#597592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="640" y1="390" x2="640" y2="454" stroke="#597592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="1070" y1="390" x2="1070" y2="454" stroke="#597592" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="88" y="454" width="244" height="234" rx="28" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="166" y="514" class="nodeTitle">restore</text>
+  <text x="126" y="548" class="nodeText">파일 단위 변경을 취소한다.</text>
+  <text x="126" y="572" class="nodeText">Working Directory, Staging Area가 대상</text>
+  <rect x="126" y="604" width="142" height="34" rx="17" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="148" y="626" class="small">`git restore file.txt`</text>
+  <text x="126" y="672" class="nodeText">staged만 내리려면</text>
+  <text x="126" y="696" class="nodeText">`git restore --staged file.txt`</text>
+
+  <rect x="518" y="454" width="244" height="234" rx="28" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="610" y="514" class="nodeTitle">reset</text>
+  <text x="556" y="548" class="nodeText">로컬 커밋 위치를 다시 잡는다.</text>
+  <text x="556" y="572" class="nodeText">공유 전 정리용으로만 쓰는 편이 안전</text>
+  <rect x="556" y="604" width="142" height="34" rx="17" fill="#FFF8EC" stroke="#E9D29D"/>
+  <text x="584" y="626" class="small">`--soft`, `--mixed`, `--hard`</text>
+  <text x="556" y="672" class="nodeText">주의: `--hard`는 Working Directory도 지움</text>
+
+  <rect x="948" y="454" width="244" height="234" rx="28" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="1036" y="514" class="nodeTitle">revert</text>
+  <text x="986" y="548" class="nodeText">기존 기록은 남기고 취소 커밋을 추가한다.</text>
+  <text x="986" y="572" class="nodeText">이미 push한 커밋을 되돌릴 때 표준 선택</text>
+  <rect x="986" y="604" width="124" height="34" rx="17" fill="#F3FBF7" stroke="#C2E0D0"/>
+  <text x="1014" y="626" class="small">`git revert HEAD`</text>
+  <text x="986" y="672" class="nodeText">공유 이력을 보존하므로 협업에 안전</text>
+
+  <rect x="150" y="724" width="980" height="52" rx="26" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="198" y="758" class="nodeText">원칙: 파일 수정이면 `restore`, 로컬 히스토리 재정리면 `reset`, 이미 공유된 커밋 취소면 `revert`를 고른다.</text>
+</svg>

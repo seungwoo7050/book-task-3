@@ -1,0 +1,5 @@
+{"timestamp":"2026-03-07T09:00:00.000Z","userId":"u1","route":"/books","status":200}
+{"timestamp":"2026-03-07T09:00:10.000Z","userId":"u2","route":"/books","status":200}
+{"timestamp":"2026-03-07T09:01:00.000Z","userId":"u1","route":"/books/1","status":404}
+{"timestamp":"2026-03-07T09:01:15.000Z","userId":"u3","route":"/health","status":200}
+{"timestamp":"2026-03-07T09:01:30.000Z","userId":"u2","route":"/books","status":500}

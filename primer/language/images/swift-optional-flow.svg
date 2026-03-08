@@ -1,0 +1,57 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="90" y1="40" x2="1190" y2="780" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7FBFF"/>
+      <stop offset="1" stop-color="#FFF7EF"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#17324B" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5B7592"/>
+    </marker>
+  </defs>
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #46637D; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14263A; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #566A80; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4C6881; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .nodeText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #60778E; }
+  </style>
+
+  <rect width="1280" height="820" rx="36" fill="url(#bg)"/>
+  <circle cx="1128" cy="108" r="104" fill="#DDEFE8" fill-opacity="0.68"/>
+  <circle cx="136" cy="734" r="146" fill="#DDEAFF" fill-opacity="0.58"/>
+
+  <text x="72" y="68" class="eyebrow">SWIFT OPTIONALS</text>
+  <text x="72" y="112" class="title">Optional 값을 안전하게 다루는 기본 흐름</text>
+  <text x="72" y="144" class="subtitle">Swift는 nil 가능성을 타입으로 드러낸다. 그래서 언래핑 전략만 정해도 많은 런타임 오류를 미리 막을 수 있다.</text>
+
+  <text x="84" y="214" class="section">UNWRAP FLOW</text>
+
+  <rect x="468" y="228" width="344" height="98" rx="24" fill="#FFFFFF" stroke="#CDDCE9" filter="url(#shadow)"/>
+  <text x="506" y="274" class="nodeTitle">Optional 값이 필요한가?</text>
+  <text x="506" y="302" class="nodeText">값을 풀어야 하는지, 기본값만 있으면 되는지 먼저 본다</text>
+
+  <rect x="88" y="430" width="232" height="126" rx="24" fill="#EAF4FF" stroke="#BCD5EE" filter="url(#shadow)"/>
+  <text x="124" y="480" class="nodeTitle">if let</text>
+  <text x="124" y="508" class="nodeText">성공 시에만 안쪽 블록 실행</text>
+
+  <rect x="372" y="430" width="232" height="126" rx="24" fill="#EEF8EF" stroke="#B9DEC9" filter="url(#shadow)"/>
+  <text x="408" y="480" class="nodeTitle">guard let</text>
+  <text x="408" y="508" class="nodeText">실패 시 조기 종료, 이후엔 non-optional</text>
+
+  <rect x="656" y="430" width="232" height="126" rx="24" fill="#FFF6E8" stroke="#E8CE96" filter="url(#shadow)"/>
+  <text x="692" y="480" class="nodeTitle">coalescing</text>
+  <text x="692" y="508" class="nodeText">value ?? fallback</text>
+
+  <rect x="940" y="430" width="232" height="126" rx="24" fill="#FFF3ED" stroke="#F0B7AF" filter="url(#shadow)"/>
+  <text x="976" y="480" class="nodeTitle">force unwrap</text>
+  <text x="976" y="508" class="nodeText">value! 는 마지막 수단</text>
+
+  <line x1="640" y1="326" x2="204" y2="430" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="640" y1="326" x2="488" y2="430" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="640" y1="326" x2="772" y2="430" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="640" y1="326" x2="1056" y2="430" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+</svg>

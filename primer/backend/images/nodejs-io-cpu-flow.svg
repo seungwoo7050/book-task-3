@@ -1,0 +1,51 @@
+<svg width="1280" height="880" viewBox="0 0 1280 880" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#17324B" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+  <style>
+    .eyebrow { font: 700 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #43627D; letter-spacing: 0.14em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #536980; }
+    .miniTitle { font: 700 20px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .miniText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #61788F; }
+    .badge { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #42607A; }
+  </style>
+
+  <rect width="1280" height="880" rx="36" fill="#F7FBFF"/>
+  <circle cx="1138" cy="106" r="116" fill="#DDF4EA" fill-opacity="0.72"/>
+  <circle cx="126" cy="786" r="150" fill="#DAEDFF" fill-opacity="0.64"/>
+
+  <text x="72" y="70" class="eyebrow">IO VS CPU</text>
+  <text x="72" y="116" class="title">I/O 문제와 CPU 문제는 대응 방법이 다르다</text>
+  <text x="72" y="148" class="subtitle">Node.js 성능 문제를 볼 때는 "이게 느린 I/O인가, 이벤트 루프를 막는 CPU 작업인가"부터 구분해야 한다.</text>
+
+  <rect x="120" y="248" width="300" height="246" rx="30" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="160" y="304" class="miniTitle">대용량 I/O</text>
+  <text x="160" y="334" class="miniText">파일 복사, 압축, 네트워크 전송, DB 응답 대기</text>
+  <text x="160" y="358" class="miniText">대응: async API, stream, pipeline 사용</text>
+  <text x="160" y="382" class="miniText">메모리 사용량을 줄이고 이벤트 루프를 덜 막는다</text>
+  <rect x="160" y="410" width="116" height="32" rx="16" fill="#F3FBF7" stroke="#C2E0D0"/>
+  <text x="196" y="431" class="badge">stream</text>
+
+  <rect x="490" y="248" width="300" height="246" rx="30" fill="#FFF0EE" stroke="#F0B7AF" filter="url(#shadow)"/>
+  <text x="530" y="304" class="miniTitle">CPU 집약 작업</text>
+  <text x="530" y="334" class="miniText">대용량 JSON.parse, 이미지 처리, 암호화, 압축 계산</text>
+  <text x="530" y="358" class="miniText">대응: Worker Threads 또는 별도 프로세스로 분리</text>
+  <text x="530" y="382" class="miniText">메인 이벤트 루프에서 오래 돌리면 전체 응답성이 떨어진다</text>
+  <rect x="530" y="410" width="146" height="32" rx="16" fill="#FFF7F6" stroke="#F0B7AF"/>
+  <text x="562" y="431" class="badge">worker thread</text>
+
+  <rect x="860" y="248" width="300" height="246" rx="30" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="900" y="304" class="miniTitle">운영 판단 기준</text>
+  <text x="900" y="334" class="miniText">느린 이유가 대기인지 계산인지 먼저 본다</text>
+  <text x="900" y="358" class="miniText">I/O 대기는 비동기화, CPU 계산은 분리</text>
+  <text x="900" y="382" class="miniText">문제 유형을 잘못 분류하면 최적화가 틀어진다</text>
+  <rect x="900" y="410" width="132" height="32" rx="16" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="928" y="431" class="badge">diagnose first</text>
+
+  <rect x="308" y="598" width="664" height="126" rx="28" fill="#FFFFFF" stroke="#C8D9E8" filter="url(#shadow)"/>
+  <text x="348" y="650" class="miniTitle">핵심 규칙</text>
+  <text x="348" y="678" class="miniText">I/O는 async와 stream으로 처리하고, CPU 계산은 Worker Threads나 별도 프로세스로 밀어낸다. "Node는 느리다"가 아니라, 이벤트 루프에 무엇을 올렸는지가 문제다.</text>
+</svg>

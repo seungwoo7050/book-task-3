@@ -1,0 +1,20 @@
+FROM debian:bookworm-slim
+
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    bash \
+    binutils \
+    bison \
+    ca-certificates \
+    flex \
+    gcc \
+    gcc-multilib \
+    g++ \
+    gdb \
+    libc6-dev-i386 \
+    libfl-dev \
+    make \
+    perl \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /work

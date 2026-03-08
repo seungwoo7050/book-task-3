@@ -1,0 +1,8 @@
+#
+# trace_bg_jobs.txt - background job and jobs builtin
+#
+/bin/sleep 1 &
+jobs
+WAIT
+quit
+CLOSE

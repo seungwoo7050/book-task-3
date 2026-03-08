@@ -1,0 +1,24 @@
+TCP control protocol:
+- LOGIN name=<player_name>
+- LIST_ROOMS
+- CREATE_ROOM name=<room_name> max=<2|3|4>
+- JOIN_ROOM room=<room_id>
+- LEAVE_ROOM
+- READY value=<0|1>
+- RESUME token=<resume_token>
+- UDP_BIND match=<match_id> nonce=<u32>
+- PING
+
+Server events:
+- LOGIN_OK player=<player_id> token=<resume_token> wins=<n> losses=<n> kills=<n> deaths=<n>
+- ROOM_LIST rooms=<room_id:name:cur:max,...>
+- ROOM_UPDATE room=<room_id> owner=<player_id> roster=<player_id:ready,...>
+- MATCH_START match=<match_id> udp_port=<port> tick_hz=20 snapshot_hz=10 spawn=<x:y>
+- MATCH_RESULT winner=<player_id> scoreboard=<player_id:kills:deaths,...>
+- PONG ts=<server_ms>
+- ERROR code=<slug> message=<slug>
+
+UDP binary packets:
+- INPUT: version,u8 kind,u16 reserved,u32 match,u32 player,u32 sequence,i8 move_x,i8 move_y,i16 aim_x,i16 aim_y,u8 fire,u8 dash
+- SNAPSHOT: version,u8 kind,u16 reserved,u32 match,u32 player,u32 sequence,u32 server_tick,u8 entity_count,u8 projectile_count,u16 pad,entities[]
+- HEARTBEAT: header only

@@ -1,0 +1,56 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="90" y1="40" x2="1190" y2="780" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7FBFF"/>
+      <stop offset="1" stop-color="#F1F8F1"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#17324B" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5B7592"/>
+    </marker>
+  </defs>
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #46637D; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14263A; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #566A80; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4C6881; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .nodeText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #60778E; }
+  </style>
+
+  <rect width="1280" height="820" rx="36" fill="url(#bg)"/>
+  <circle cx="1128" cy="108" r="104" fill="#DDEFE8" fill-opacity="0.68"/>
+  <circle cx="136" cy="734" r="146" fill="#DDEAFF" fill-opacity="0.58"/>
+
+  <text x="72" y="68" class="eyebrow">PYTHON GENERATORS</text>
+  <text x="72" y="112" class="title">제너레이터는 필요한 순간에만 다음 값을 만든다</text>
+  <text x="72" y="144" class="subtitle">yield 는 함수를 끝내지 않고 멈춘다. 그래서 대용량 데이터도 중간 상태를 보존한 채 한 항목씩 처리할 수 있다.</text>
+
+  <text x="84" y="214" class="section">LAZY PIPELINE</text>
+
+  <rect x="84" y="268" width="236" height="150" rx="24" fill="#FFFFFF" stroke="#CDDCE9" filter="url(#shadow)"/>
+  <text x="120" y="324" class="nodeTitle">read_large_file</text>
+  <text x="120" y="352" class="nodeText">한 줄 읽고 yield</text>
+
+  <rect x="384" y="268" width="236" height="150" rx="24" fill="#EAF4FF" stroke="#BCD5EE" filter="url(#shadow)"/>
+  <text x="420" y="324" class="nodeTitle">grep</text>
+  <text x="420" y="352" class="nodeText">조건이 맞는 줄만 다시 yield</text>
+
+  <rect x="684" y="268" width="236" height="150" rx="24" fill="#EEF8EF" stroke="#B9DEC9" filter="url(#shadow)"/>
+  <text x="720" y="324" class="nodeTitle">for loop</text>
+  <text x="720" y="352" class="nodeText">소비자가 next 를 요청</text>
+
+  <rect x="984" y="268" width="196" height="150" rx="24" fill="#FFF6E8" stroke="#E8CE96" filter="url(#shadow)"/>
+  <text x="1020" y="324" class="nodeTitle">output</text>
+  <text x="1020" y="352" class="nodeText">필요한 줄만 출력</text>
+
+  <line x1="320" y1="344" x2="384" y2="344" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="620" y1="344" x2="684" y2="344" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="920" y1="344" x2="984" y2="344" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="278" y="528" width="724" height="154" rx="28" fill="#FFFFFF" stroke="#CDDCE9" filter="url(#shadow)"/>
+  <text x="314" y="584" class="nodeTitle">핵심 규칙</text>
+  <text x="314" y="612" class="nodeText">yield 마다 함수 지역 변수와 실행 위치가 저장된다. 그래서 거대한 리스트를 미리 만들지 않고도 파이프라인을 이어 붙일 수 있다.</text>
+</svg>

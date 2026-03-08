@@ -1,0 +1,9 @@
+#
+# trace_sigint.txt - forward SIGINT to foreground job
+#
+/bin/sleep 5
+WAIT
+SIGINT
+WAIT
+quit
+CLOSE

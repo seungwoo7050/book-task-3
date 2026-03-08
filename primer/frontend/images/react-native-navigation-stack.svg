@@ -1,0 +1,66 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5E7895"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 20px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+    .footnote { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F7FAFD"/>
+
+  <text x="72" y="68" class="eyebrow">NAVIGATION STACK</text>
+  <text x="72" y="112" class="title">Expo Router 기준 내비게이션 계층</text>
+  <text x="72" y="142" class="subtitle">파일은 폴더로 보이지만 런타임에서는 stack과 tabs가 겹쳐진 navigator 트리로 실행된다.</text>
+
+  <rect x="56" y="208" width="1168" height="500" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="248" class="section">ROUTER TREE</text>
+
+  <rect x="108" y="310" width="320" height="318" rx="24" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="136" y="354" class="nodeTitle">파일 구조</text>
+  <text x="136" y="392" class="chip">app/_layout.tsx</text>
+  <text x="136" y="422" class="chip">app/index.tsx</text>
+  <text x="136" y="452" class="chip">app/(tabs)/_layout.tsx</text>
+  <text x="136" y="482" class="chip">app/(tabs)/home.tsx</text>
+  <text x="136" y="512" class="chip">app/(tabs)/settings.tsx</text>
+  <text x="136" y="542" class="chip">app/detail/[id].tsx</text>
+
+  <rect x="492" y="286" width="640" height="366" rx="24" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="524" y="330" class="nodeTitle">런타임 navigator</text>
+
+  <rect x="544" y="362" width="536" height="84" rx="20" fill="#FFFFFF" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="576" y="408" class="nodeTitle">Root Stack</text>
+  <text x="730" y="408" class="nodeText">`app/_layout.tsx`</text>
+
+  <rect x="590" y="476" width="302" height="120" rx="20" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="622" y="522" class="nodeTitle">Tabs navigator</text>
+  <text x="622" y="550" class="nodeText">home / settings를 탭으로 유지</text>
+  <text x="622" y="574" class="nodeText">`(tabs)/_layout.tsx`</text>
+
+  <rect x="928" y="476" width="118" height="120" rx="20" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="950" y="522" class="nodeTitle">Detail</text>
+  <text x="950" y="550" class="nodeText">push로</text>
+  <text x="948" y="574" class="nodeText">쌓이는 화면</text>
+
+  <line x1="428" y1="470" x2="492" y2="470" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="812" y1="446" x2="812" y2="476" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="892" y1="536" x2="912" y2="536" stroke="#5E7895" stroke-width="4"/>
+  <path d="M920 536L900 524V548Z" fill="#5E7895"/>
+
+  <rect x="314" y="654" width="652" height="52" rx="18" fill="#FFF0EE" stroke="#F0B7AF"/>
+  <text x="344" y="688" class="chip">`push`는 현재 stack 위에 새 화면을 올리고, tabs는 내부 상태를 유지한 채 하위 화면을 바꾼다.</text>
+
+  <text x="84" y="744" class="footnote">읽는 법: 파일은 선언 방식일 뿐이고, 실제 실행 시에는 Root Stack 안에 Tabs와 Detail 화면이 어떤 순서로 쌓이는지로 이해하면 된다.</text>
+</svg>

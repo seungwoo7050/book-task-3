@@ -1,0 +1,29 @@
+{
+  "name": "front-react-study",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend-foundations/01-semantic-layouts-and-a11y",
+    "frontend-foundations/02-dom-state-and-events",
+    "frontend-foundations/03-networked-ui-patterns",
+    "react-internals/01-vdom-foundations",
+    "react-internals/02-render-pipeline",
+    "react-internals/03-hooks-and-events",
+    "react-internals/04-runtime-demo-app",
+    "frontend-portfolio/01-ops-triage-console",
+    "frontend-portfolio/02-client-onboarding-portal"
+  ],
+  "scripts": {
+    "test:vdom": "npm run test --workspace @front-react/vdom-foundations",
+    "typecheck:vdom": "npm run typecheck --workspace @front-react/vdom-foundations",
+    "verify:vdom": "npm run verify --workspace @front-react/vdom-foundations",
+    "verify:foundations": "npm run verify --workspace @front-react/semantic-layouts-a11y && npm run verify --workspace @front-react/dom-state-and-events && npm run verify --workspace @front-react/networked-ui-patterns",
+    "verify:internals": "npm run verify:vdom && npm run verify --workspace @front-react/render-pipeline && npm run verify --workspace @front-react/hooks-and-events && npm run verify --workspace @front-react/runtime-demo-app",
+    "dev:portfolio": "npm run dev --workspace @front-react/ops-triage-console",
+    "test:portfolio": "npm run test --workspace @front-react/ops-triage-console && npm run test --workspace @front-react/client-onboarding-portal",
+    "typecheck:portfolio": "npm run typecheck --workspace @front-react/ops-triage-console && npm run typecheck --workspace @front-react/client-onboarding-portal",
+    "e2e:portfolio": "npm run e2e --workspace @front-react/ops-triage-console && npm run e2e --workspace @front-react/client-onboarding-portal",
+    "verify:portfolio": "npm run verify --workspace @front-react/ops-triage-console && npm run verify --workspace @front-react/client-onboarding-portal",
+    "verify:core": "npm run verify:foundations && npm run verify:internals && npm run verify:portfolio"
+  }
+}

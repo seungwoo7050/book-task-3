@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package catalog;
+
+option go_package = "github.com/woopinbell/go-backend/02-distributed-system/04-grpc-microservices/proto";
+
+import "google/protobuf/timestamp.proto";
+
+// Product represents a product in the catalog.
+message Product {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  repeated string categories = 5;
+  int32 stock = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+// GetProductRequest is the request message for GetProduct RPC.
+message GetProductRequest {
+  string id = 1;
+}
+
+// CreateProductRequest is the request message for CreateProduct RPC.
+message CreateProductRequest {
+  string name = 1;
+  string description = 2;
+  double price = 3;
+  repeated string categories = 4;
+  int32 stock = 5;
+}
+
+// UpdateProductRequest is the request message for UpdateProduct RPC.
+message UpdateProductRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  repeated string categories = 5;
+  int32 stock = 6;
+}
+
+// DeleteProductRequest is the request message for DeleteProduct RPC.
+message DeleteProductRequest {
+  string id = 1;
+}
+
+// DeleteProductResponse is the response message for DeleteProduct RPC.
+message DeleteProductResponse {
+  bool success = 1;
+}
+
+// ListProductsRequest is the request message for ListProducts (server stream).
+message ListProductsRequest {
+  string category_filter = 1;  // optional: filter by category
+  int32 page_size = 2;
+}
+
+// PriceWatchRequest is the client message for the PriceWatch bidirectional stream.
+message PriceWatchRequest {
+  string product_id = 1;
+}
+
+// PriceUpdate is the server message for the PriceWatch bidirectional stream.
+message PriceUpdate {
+  string product_id = 1;
+  string product_name = 2;
+  double old_price = 3;
+  double new_price = 4;
+  google.protobuf.Timestamp timestamp = 5;
+}
+
+// ProductCatalog is the main service for managing products.
+service ProductCatalog {
+  // GetProduct returns a single product by ID.
+  rpc GetProduct(GetProductRequest) returns (Product);
+
+  // CreateProduct adds a new product to the catalog.
+  rpc CreateProduct(CreateProductRequest) returns (Product);
+
+  // UpdateProduct modifies an existing product.
+  rpc UpdateProduct(UpdateProductRequest) returns (Product);
+
+  // DeleteProduct removes a product from the catalog.
+  rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse);
+
+  // ListProducts streams all products matching the filter.
+  rpc ListProducts(ListProductsRequest) returns (stream Product);
+
+  // PriceWatch is a bidirectional stream: client sends product IDs to watch,
+  // server sends price updates when prices change.
+  rpc PriceWatch(stream PriceWatchRequest) returns (stream PriceUpdate);
+}

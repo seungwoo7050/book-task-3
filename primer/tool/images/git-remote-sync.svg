@@ -1,0 +1,62 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5B7792"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#183149" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #47647F; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #566C83; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .nodeText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #596F86; }
+    .badge { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F7FAFD"/>
+
+  <text x="72" y="70" class="eyebrow">REMOTE SYNC</text>
+  <text x="72" y="114" class="title">원격 작업은 세 저장 위치를 나눠서 보면 쉽다</text>
+  <text x="72" y="146" class="subtitle">Working Directory, Local Repository, Remote Repository를 구분하면 fetch, pull, push의 차이가 보인다.</text>
+
+  <rect x="56" y="214" width="1168" height="530" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="254" class="section">LOCAL AND REMOTE</text>
+
+  <rect x="104" y="374" width="278" height="170" rx="28" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="148" y="432" class="nodeTitle">Working Directory</text>
+  <text x="148" y="464" class="nodeText">파일 편집, 테스트, 충돌 해결이 일어나는 곳</text>
+  <text x="148" y="488" class="nodeText">`pull` 결과도 결국 여기까지 반영된다</text>
+
+  <rect x="502" y="334" width="278" height="210" rx="28" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="548" y="392" class="nodeTitle">Local Repository</text>
+  <text x="548" y="424" class="nodeText">내 커밋, 브랜치, remote-tracking branch</text>
+  <text x="548" y="448" class="nodeText">`fetch`와 `push`가 직접 닿는 대상</text>
+  <rect x="548" y="478" width="128" height="34" rx="17" fill="#F3FBF7" stroke="#C2E0D0"/>
+  <text x="582" y="500" class="badge">`.git/`</text>
+
+  <rect x="900" y="374" width="278" height="170" rx="28" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="946" y="432" class="nodeTitle">Remote Repository</text>
+  <text x="946" y="464" class="nodeText">GitHub, GitLab, 사내 Git 서버</text>
+  <text x="946" y="488" class="nodeText">팀이 공유하는 커밋 기준점</text>
+
+  <line x1="382" y1="434" x2="502" y2="434" stroke="#5B7792" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="404" y="412" class="badge">commit</text>
+  <line x1="502" y1="492" x2="382" y2="492" stroke="#5B7792" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="404" y="522" class="badge">checkout / merge 결과 반영</text>
+
+  <line x1="780" y1="414" x2="900" y2="414" stroke="#5B7792" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="820" y="392" class="badge">push</text>
+  <line x1="900" y1="474" x2="780" y2="474" stroke="#5B7792" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="820" y="504" class="badge">fetch</text>
+
+  <path d="M1040 544 C1040 620 760 654 642 654 C524 654 244 620 244 544" stroke="#C6843C" stroke-width="4" stroke-dasharray="12 10" fill="none" marker-end="url(#arrow)"/>
+  <text x="534" y="690" class="badge">pull = fetch + merge 또는 rebase + Working Directory 갱신</text>
+
+  <rect x="252" y="260" width="780" height="52" rx="26" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="304" y="294" class="nodeText">안전한 습관: 먼저 `fetch`로 원격 변경을 받고 `diff`로 확인한 다음 필요하면 `merge`나 `pull --rebase`를 선택한다.</text>
+</svg>

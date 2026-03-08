@@ -1,0 +1,97 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5E7895"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .cardNum { font: 700 16px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4B6781; }
+    .cardTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .cardText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5C7289; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 20px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+    .footnote { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F7FAFD"/>
+
+  <text x="72" y="68" class="eyebrow">DOCKER MENTAL MODEL</text>
+  <text x="72" y="112" class="title">Docker를 볼 때 먼저 잡아야 할 3가지</text>
+  <text x="72" y="142" class="subtitle">이미지는 굳어 있고, 컨테이너는 움직이고, 데이터는 밖에 남는다. 이 세 경계를 먼저 구분하면 Docker가 단순해진다.</text>
+
+  <rect x="72" y="184" width="360" height="124" rx="24" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="102" y="218" class="cardNum">1. BUILD</text>
+  <text x="102" y="252" class="cardTitle">무엇이 이미지로 굳는가?</text>
+  <text x="102" y="280" class="cardText">Dockerfile과 빌드 컨텍스트가 레이어를 만든다.</text>
+  <text x="102" y="302" class="cardText">파일 순서가 캐시 효율과 이미지 크기를 바꾼다.</text>
+
+  <rect x="460" y="184" width="360" height="124" rx="24" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="490" y="218" class="cardNum">2. RUN</text>
+  <text x="490" y="252" class="cardTitle">무엇이 컨테이너에서 실행되는가?</text>
+  <text x="490" y="280" class="cardText">`docker run`이 이미지 위에 실행 프로세스와</text>
+  <text x="490" y="302" class="cardText">쓰기 레이어를 올린다.</text>
+
+  <rect x="848" y="184" width="360" height="124" rx="24" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="878" y="218" class="cardNum">3. PERSIST</text>
+  <text x="878" y="252" class="cardTitle">무엇을 컨테이너 밖에 남길까?</text>
+  <text x="878" y="280" class="cardText">데이터는 volume에, 배포 이미지는 registry에,</text>
+  <text x="878" y="302" class="cardText">외부 접근은 port publish로 연결한다.</text>
+
+  <rect x="56" y="352" width="1168" height="396" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="392" class="section">BUILD TO RUNTIME</text>
+
+  <line x1="164" y1="540" x2="1028" y2="540" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="88" y="472" width="178" height="136" rx="22" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="126" y="518" class="nodeTitle">소스 디렉터리</text>
+  <text x="120" y="546" class="nodeText">앱 코드, lockfile, Dockerfile</text>
+  <text x="120" y="570" class="nodeText">빌드 컨텍스트로 전달된다</text>
+
+  <rect x="320" y="452" width="210" height="176" rx="22" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="378" y="498" class="nodeTitle">docker build</text>
+  <text x="354" y="526" class="nodeText">각 명령이 레이어를 만들고</text>
+  <text x="354" y="550" class="nodeText">변경 없는 단계는 캐시를 재사용한다</text>
+  <rect x="382" y="584" width="86" height="30" rx="15" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="404" y="604" class="chip">cache</text>
+
+  <rect x="584" y="452" width="186" height="176" rx="22" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="638" y="498" class="nodeTitle">이미지</text>
+  <text x="626" y="526" class="nodeText">불변 레이어 스택</text>
+  <text x="618" y="550" class="nodeText">버전 태그로 배포 단위를 만든다</text>
+  <rect x="634" y="584" width="88" height="30" rx="15" fill="#F3FBF7" stroke="#C2E0D0"/>
+  <text x="655" y="604" class="chip">immutable</text>
+
+  <rect x="824" y="452" width="186" height="176" rx="22" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="868" y="498" class="nodeTitle">컨테이너</text>
+  <text x="856" y="526" class="nodeText">프로세스 + 쓰기 레이어</text>
+  <text x="852" y="550" class="nodeText">시작·정지·삭제가 가능하다</text>
+  <rect x="878" y="584" width="80" height="30" rx="15" fill="#FFF9EE" stroke="#E9D29D"/>
+  <text x="900" y="604" class="chip">runtime</text>
+
+  <rect x="1070" y="438" width="120" height="86" rx="18" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="1100" y="476" class="chip">registry</text>
+  <text x="1096" y="500" class="nodeText">push / pull</text>
+
+  <rect x="1060" y="560" width="132" height="78" rx="18" fill="#FFF0EE" stroke="#F0B7AF"/>
+  <text x="1086" y="594" class="chip">named volume</text>
+  <text x="1090" y="616" class="nodeText">data</text>
+
+  <rect x="792" y="658" width="250" height="64" rx="18" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="826" y="686" class="chip">port publish, env, network</text>
+  <text x="822" y="708" class="chip">컨테이너를 바깥과 연결하는 경계</text>
+
+  <line x1="770" y1="496" x2="1070" y2="496" stroke="#5E7895" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="1010" y1="588" x2="1060" y2="594" stroke="#D5786F" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="918" y1="628" x2="918" y2="658" stroke="#5E7895" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <text x="84" y="704" class="footnote">읽는 법: 빌드는 이미지를 만들고, run은 컨테이너를 만들며, 오래 남겨야 하는 데이터와 배포 이미지는 컨테이너 밖에 둔다.</text>
+</svg>

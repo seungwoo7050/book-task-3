@@ -1,0 +1,128 @@
+[
+  {
+    "level": "info",
+    "method": "POST",
+    "path": "/auth/login",
+    "status": 200,
+    "latencyMs": 3,
+    "traceId": "232a182b-7507-4bd5-8d1a-d9536db312df",
+    "detail": "ok"
+  },
+  {
+    "level": "info",
+    "method": "POST",
+    "path": "/auth/login",
+    "status": 200,
+    "latencyMs": 0,
+    "traceId": "81f26ae1-de21-4e8b-89a8-5a35d776e016",
+    "detail": "ok"
+  },
+  {
+    "level": "info",
+    "method": "POST",
+    "path": "/auth/login",
+    "status": 200,
+    "latencyMs": 0,
+    "traceId": "6e220bc6-7650-4233-a2e8-31d02ead23e8",
+    "detail": "ok"
+  },
+  {
+    "level": "info",
+    "method": "POST",
+    "path": "/incidents",
+    "status": 201,
+    "latencyMs": 1,
+    "traceId": "2eacba4c-a859-4a0b-97f0-2d22c2d2afa4",
+    "detail": "ok"
+  },
+  {
+    "level": "info",
+    "method": "GET",
+    "path": "/incidents",
+    "status": 200,
+    "latencyMs": 0,
+    "traceId": "f0640a13-a83c-4504-aef1-1df0a258cfa6",
+    "detail": "ok"
+  },
+  {
+    "level": "info",
+    "method": "POST",
+    "path": "/incidents/fd4e7b73-ff17-41aa-8c1c-1e389eb711df/ack",
+    "status": 200,
+    "latencyMs": 1,
+    "traceId": "b8b0c751-2da4-4743-8260-a77082005128",
+    "detail": "ok"
+  },
+  {
+    "level": "info",
+    "method": "POST",
+    "path": "/incidents/fd4e7b73-ff17-41aa-8c1c-1e389eb711df/request-resolution",
+    "status": 200,
+    "latencyMs": 1,
+    "traceId": "6fe74ccd-dd0b-46e3-9df9-bfd4ce117c7f",
+    "detail": "ok"
+  },
+  {
+    "level": "info",
+    "method": "POST",
+    "path": "/approvals/df2e0283-8609-47a4-aed4-9ca48a43b4e5/decision",
+    "status": 200,
+    "latencyMs": 0,
+    "traceId": "d0d6f869-27a0-4a1a-8da5-bca05ce11eff",
+    "detail": "ok"
+  },
+  {
+    "level": "info",
+    "method": "POST",
+    "path": "/incidents",
+    "status": 201,
+    "latencyMs": 1,
+    "traceId": "87d512ad-34d8-4677-ac6b-91f820df2419",
+    "detail": "ok"
+  },
+  {
+    "level": "info",
+    "method": "POST",
+    "path": "/incidents/c17e0b9b-139a-41e3-9b8b-d6b82060e302/ack",
+    "status": 200,
+    "latencyMs": 0,
+    "traceId": "72b210fd-fa51-4c11-8fba-0d8dfb67cf79",
+    "detail": "ok"
+  },
+  {
+    "level": "info",
+    "method": "POST",
+    "path": "/incidents/c17e0b9b-139a-41e3-9b8b-d6b82060e302/request-resolution",
+    "status": 200,
+    "latencyMs": 0,
+    "traceId": "60ecb41d-8593-48ef-be63-95a30304bb94",
+    "detail": "ok"
+  },
+  {
+    "level": "info",
+    "method": "POST",
+    "path": "/approvals/d9754941-971c-4de3-8dbd-9e90a24e92a7/decision",
+    "status": 200,
+    "latencyMs": 0,
+    "traceId": "62483f5e-148d-4a64-b289-a5642c155019",
+    "detail": "ok"
+  },
+  {
+    "level": "info",
+    "method": "POST",
+    "path": "/incidents",
+    "status": 201,
+    "latencyMs": 1,
+    "traceId": "36776b63-fe30-4c39-b25e-98b84b38042e",
+    "detail": "ok"
+  },
+  {
+    "level": "info",
+    "method": "GET",
+    "path": "/audit",
+    "status": 200,
+    "latencyMs": 0,
+    "traceId": "00366cc5-7010-423a-a62e-79cb35e3d36f",
+    "detail": "ok"
+  }
+]

@@ -1,0 +1,70 @@
+<svg width="1280" height="760" viewBox="0 0 1280 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5E7895"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+    .note { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="760" rx="32" fill="#F7FAFD"/>
+
+  <text x="72" y="68" class="eyebrow">MODULE ARCHITECTURE</text>
+  <text x="72" y="112" class="title">루트 모듈은 조립을, child module은 재사용을 담당한다</text>
+  <text x="72" y="142" class="subtitle">Terraform 파일은 많이 쪼개는 것보다, 어디까지가 환경별 조립이고 어디부터가 재사용 가능한 인프라 단위인지 나누는 편이 중요하다.</text>
+
+  <rect x="56" y="188" width="1168" height="500" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="228" class="section">ROOT TO CHILD MODULES</text>
+
+  <rect x="96" y="276" width="320" height="268" rx="26" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="182" y="324" class="nodeTitle">root module</text>
+  <rect x="126" y="352" width="260" height="42" rx="16" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="156" y="379" class="chip">providers.tf / versions.tf / backend.tf</text>
+  <rect x="126" y="410" width="260" height="42" rx="16" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="184" y="437" class="chip">variables.tf / terraform.tfvars</text>
+  <rect x="126" y="468" width="260" height="42" rx="16" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="170" y="495" class="chip">main.tf에서 child module 조합</text>
+  <text x="152" y="532" class="nodeText">환경별 값과 provider, backend를 모은다</text>
+
+  <rect x="508" y="256" width="238" height="146" rx="24" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="590" y="304" class="nodeTitle">module.vpc</text>
+  <text x="556" y="334" class="nodeText">VPC, subnet, route 같은 네트워크</text>
+  <text x="588" y="358" class="nodeText">기반을 캡슐화</text>
+
+  <rect x="508" y="474" width="238" height="146" rx="24" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="590" y="522" class="nodeTitle">module.ecs</text>
+  <text x="560" y="552" class="nodeText">cluster, service, task 같은 실행</text>
+  <text x="590" y="576" class="nodeText">계층을 캡슐화</text>
+
+  <rect x="840" y="354" width="250" height="168" rx="24" fill="#F7FAFD" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="904" y="402" class="nodeTitle">module outputs</text>
+  <text x="872" y="432" class="nodeText">`module.vpc.vpc_id`,</text>
+  <text x="870" y="456" class="nodeText">`module.vpc.public_subnet_ids`처럼</text>
+  <text x="892" y="480" class="nodeText">다음 모듈 입력으로 전달</text>
+
+  <rect x="1108" y="286" width="92" height="304" rx="22" fill="#FFF0EE" stroke="#F0B7AF" filter="url(#shadow)"/>
+  <text x="1136" y="360" transform="rotate(90 1136 360)" class="chip">provider가 실제 클라우드 API 호출</text>
+
+  <line x1="416" y1="340" x2="508" y2="328" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="416" y1="476" x2="508" y2="544" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="746" y1="328" x2="840" y2="402" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="746" y1="544" x2="840" y2="474" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="1090" y1="438" x2="1108" y2="438" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="96" y="590" width="994" height="56" rx="18" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="126" y="624" class="chip">원칙: root는 환경별 조립과 값 주입을 맡고, child module은 다른 환경에서도 재사용 가능한 인프라 조각만 제공한다</text>
+
+  <text x="84" y="720" class="note">핵심: 파일 분할보다 중요한 것은 모듈 경계다. 재사용 가능한 단위는 child module로 내리고, 환경별 조합은 root module에 남긴다.</text>
+</svg>

@@ -1,0 +1,14 @@
+{
+  "eval_count": 30,
+  "eval_total_ms_avg": 6.7,
+  "judge_ms_avg": 0.0,
+  "retrieval_hit_at_k": 1.0,
+  "critical_short_circuit_rate": 0.0667,
+  "cache_hit_rate": 0.0,
+  "version_compare_job_ms_avg": 0.0,
+  "judge_model": "heuristic-judge",
+  "claim_model": "heuristic-claim",
+  "evidence_model": "heuristic-evidence",
+  "retrieval_backend": "keyword",
+  "dependency_fail_count": 0
+}

@@ -1,0 +1,52 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="90" y1="40" x2="1190" y2="780" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7FBFF"/>
+      <stop offset="1" stop-color="#F1F8F1"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#17324B" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5B7592"/>
+    </marker>
+  </defs>
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #46637D; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14263A; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #566A80; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4C6881; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .nodeText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #60778E; }
+  </style>
+
+  <rect width="1280" height="820" rx="36" fill="url(#bg)"/>
+  <circle cx="1128" cy="108" r="104" fill="#DDEFE8" fill-opacity="0.68"/>
+  <circle cx="136" cy="734" r="146" fill="#DDEAFF" fill-opacity="0.58"/>
+
+  <text x="72" y="68" class="eyebrow">SWIFT ARC</text>
+  <text x="72" y="112" class="title">강한 참조 고리를 끊어야 ARC가 해제할 수 있다</text>
+  <text x="72" y="144" class="subtitle">ARC는 자동이지만 무조건 마법은 아니다. 강한 참조로 닫힌 사이클이 생기면 참조 카운트가 0이 되지 않아 deinit 이 호출되지 않는다.</text>
+
+  <text x="84" y="214" class="section">REFERENCE GRAPH</text>
+
+  <rect x="96" y="278" width="240" height="150" rx="24" fill="#FFFFFF" stroke="#CDDCE9" filter="url(#shadow)"/>
+  <text x="132" y="334" class="nodeTitle">Owner</text>
+  <text x="132" y="362" class="nodeText">pet 를 strong 으로 보관</text>
+
+  <rect x="444" y="278" width="240" height="150" rx="24" fill="#FFF6E8" stroke="#E8CE96" filter="url(#shadow)"/>
+  <text x="480" y="334" class="nodeTitle">Pet</text>
+  <text x="480" y="362" class="nodeText">owner 를 strong 으로 보관하면 누수</text>
+
+  <rect x="792" y="278" width="314" height="150" rx="24" fill="#EEF8EF" stroke="#B9DEC9" filter="url(#shadow)"/>
+  <text x="828" y="334" class="nodeTitle">해결</text>
+  <text x="828" y="362" class="nodeText">한쪽을 weak 또는 unowned 로 바꿔 고리를 끊는다</text>
+
+  <line x1="336" y1="354" x2="444" y2="354" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="444" y1="386" x2="336" y2="386" stroke="#D5786F" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="684" y1="354" x2="792" y2="354" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="254" y="548" width="772" height="164" rx="28" fill="#FFFFFF" stroke="#CDDCE9" filter="url(#shadow)"/>
+  <text x="290" y="604" class="nodeTitle">클로저 캡처도 같은 문제를 만든다</text>
+  <text x="290" y="632" class="nodeText">escaping 클로저가 self 를 강하게 잡으면 ViewController 와 onTap 사이에 사이클이 생길 수 있다. 그래서 UI 코드에서는 weak self 패턴이 자주 나온다.</text>
+</svg>

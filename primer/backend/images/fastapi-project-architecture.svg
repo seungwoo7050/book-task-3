@@ -1,0 +1,103 @@
+<svg width="1280" height="880" viewBox="0 0 1280 880" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="80" y1="40" x2="1200" y2="840" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7FBFF"/>
+      <stop offset="1" stop-color="#EEF7F2"/>
+    </linearGradient>
+    <linearGradient id="blueCard" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#E3F1FF"/>
+      <stop offset="1" stop-color="#FBFDFF"/>
+    </linearGradient>
+    <linearGradient id="mintCard" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#E4F8EF"/>
+      <stop offset="1" stop-color="#FCFFFD"/>
+    </linearGradient>
+    <linearGradient id="sandCard" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FFF2D8"/>
+      <stop offset="1" stop-color="#FFFDF7"/>
+    </linearGradient>
+    <linearGradient id="violetCard" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#F1ECFF"/>
+      <stop offset="1" stop-color="#FCFBFF"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#17324B" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5B7592"/>
+    </marker>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #43627D; letter-spacing: 0.14em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #536980; }
+    .cardTitle { font: 700 24px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #16304A; }
+    .cardText { font: 500 16px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #566C83; }
+    .miniTitle { font: 700 20px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .miniText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #61788F; }
+    .badge { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #42607A; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4D6982; letter-spacing: 0.14em; }
+  </style>
+
+  <rect width="1280" height="880" rx="36" fill="url(#bg)"/>
+  <circle cx="1138" cy="106" r="116" fill="#DDF4EA" fill-opacity="0.72"/>
+  <circle cx="126" cy="770" r="150" fill="#DAEDFF" fill-opacity="0.64"/>
+
+  <text x="72" y="70" class="eyebrow">FASTAPI ARCHITECTURE</text>
+  <text x="72" y="116" class="title">프로젝트 구조를 레이어 관계로 읽기</text>
+  <text x="72" y="148" class="subtitle">파일 트리보다 중요한 것은 각 폴더가 무엇을 담당하고, 어느 방향으로 의존하는지다.</text>
+
+  <rect x="430" y="190" width="420" height="112" rx="28" fill="url(#blueCard)" stroke="#B8D7F1" filter="url(#shadow)"/>
+  <text x="470" y="238" class="cardTitle">main.py / app 진입점</text>
+  <text x="470" y="268" class="cardText">FastAPI 인스턴스 생성, 미들웨어 등록, 라우터 연결</text>
+
+  <text x="72" y="374" class="section">CORE LAYERS</text>
+
+  <rect x="76" y="420" width="224" height="156" rx="28" fill="url(#sandCard)" stroke="#EBCB8D" filter="url(#shadow)"/>
+  <text x="112" y="472" class="miniTitle">schemas/</text>
+  <text x="112" y="502" class="miniText">요청과 응답 모델</text>
+  <text x="112" y="526" class="miniText">API 계약과 검증 규칙</text>
+  <rect x="112" y="542" width="120" height="32" rx="16" fill="#FFF7E7" stroke="#EAC97E"/>
+  <text x="145" y="563" class="badge">Pydantic</text>
+
+  <rect x="340" y="394" width="260" height="208" rx="30" fill="url(#mintCard)" stroke="#BEE1CF" filter="url(#shadow)"/>
+  <text x="382" y="448" class="miniTitle">routers/</text>
+  <text x="382" y="478" class="miniText">HTTP 진입점</text>
+  <text x="382" y="502" class="miniText">경로, 쿼리, 상태 코드, response_model</text>
+  <rect x="382" y="528" width="148" height="32" rx="16" fill="#EAF8F0" stroke="#B7DEC7"/>
+  <text x="421" y="549" class="badge">얇은 라우트 유지</text>
+
+  <rect x="650" y="394" width="260" height="208" rx="30" fill="url(#blueCard)" stroke="#B8D7F1" filter="url(#shadow)"/>
+  <text x="692" y="448" class="miniTitle">services/</text>
+  <text x="692" y="478" class="miniText">비즈니스 로직</text>
+  <text x="692" y="502" class="miniText">검증 후 처리, 트랜잭션, 정책 결정</text>
+  <rect x="692" y="528" width="148" height="32" rx="16" fill="#EAF4FF" stroke="#BAD4EE"/>
+  <text x="725" y="549" class="badge">재사용 가능한 로직</text>
+
+  <rect x="960" y="420" width="244" height="156" rx="28" fill="url(#violetCard)" stroke="#D8CEF8" filter="url(#shadow)"/>
+  <text x="998" y="472" class="miniTitle">dependencies/</text>
+  <text x="998" y="502" class="miniText">DB 세션, 인증, 설정</text>
+  <text x="998" y="526" class="miniText">`Depends()`로 라우트에 주입</text>
+  <rect x="998" y="542" width="116" height="32" rx="16" fill="#F5F0FF" stroke="#D8CBF6"/>
+  <text x="1032" y="563" class="badge">주입 계층</text>
+
+  <rect x="662" y="674" width="292" height="140" rx="30" fill="#FFFFFF" stroke="#C8D9E8" filter="url(#shadow)"/>
+  <text x="702" y="722" class="miniTitle">models/ + database.py</text>
+  <text x="702" y="750" class="miniText">SQLAlchemy 모델, 엔진, 세션, Base</text>
+  <text x="702" y="774" class="miniText">서비스 계층이 접근하는 영속성 레이어</text>
+
+  <rect x="186" y="674" width="340" height="140" rx="30" fill="#FFFFFF" stroke="#C8D9E8" filter="url(#shadow)"/>
+  <text x="226" y="722" class="miniTitle">tests/</text>
+  <text x="226" y="750" class="miniText">앱을 호출하고 dependency override로</text>
+  <text x="226" y="774" class="miniText">DB, 인증 같은 외부 의존성을 교체</text>
+
+  <line x1="640" y1="302" x2="470" y2="394" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="780" y1="302" x2="1082" y2="420" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <line x1="300" y1="498" x2="340" y2="498" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="600" y1="498" x2="650" y2="498" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M960 454 C860 360 700 360 600 430" stroke="#5B7592" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+  <line x1="780" y1="602" x2="808" y2="674" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M526 728 C560 676 520 636 470 602" stroke="#5B7592" stroke-width="4" stroke-dasharray="12 10" fill="none" marker-end="url(#arrow)"/>
+</svg>

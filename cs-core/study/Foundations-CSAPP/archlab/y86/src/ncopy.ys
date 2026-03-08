@@ -1,0 +1,151 @@
+# optimized ncopy.ys
+
+ncopy:
+    xorq %rax, %rax
+    andq %rdx, %rdx
+    jle Done
+    irmovq $1, %rbp
+
+    iaddq $-8, %rdx
+    jl TailDispatch
+
+Loop8:
+    mrmovq   0(%rdi), %r8
+    mrmovq   8(%rdi), %r9
+    mrmovq  16(%rdi), %r10
+    mrmovq  24(%rdi), %r11
+    mrmovq  32(%rdi), %r12
+    mrmovq  40(%rdi), %r13
+    mrmovq  48(%rdi), %r14
+    mrmovq  56(%rdi), %rbx
+
+    rmmovq %r8,   0(%rsi)
+    rmmovq %r9,   8(%rsi)
+    rmmovq %r10, 16(%rsi)
+    rmmovq %r11, 24(%rsi)
+    rmmovq %r12, 32(%rsi)
+    rmmovq %r13, 40(%rsi)
+    rmmovq %r14, 48(%rsi)
+    rmmovq %rbx, 56(%rsi)
+
+    xorq %rcx, %rcx
+    andq %r8, %r8
+    cmovg %rbp, %rcx
+    addq %rcx, %rax
+
+    xorq %rcx, %rcx
+    andq %r9, %r9
+    cmovg %rbp, %rcx
+    addq %rcx, %rax
+
+    xorq %rcx, %rcx
+    andq %r10, %r10
+    cmovg %rbp, %rcx
+    addq %rcx, %rax
+
+    xorq %rcx, %rcx
+    andq %r11, %r11
+    cmovg %rbp, %rcx
+    addq %rcx, %rax
+
+    xorq %rcx, %rcx
+    andq %r12, %r12
+    cmovg %rbp, %rcx
+    addq %rcx, %rax
+
+    xorq %rcx, %rcx
+    andq %r13, %r13
+    cmovg %rbp, %rcx
+    addq %rcx, %rax
+
+    xorq %rcx, %rcx
+    andq %r14, %r14
+    cmovg %rbp, %rcx
+    addq %rcx, %rax
+
+    xorq %rcx, %rcx
+    andq %rbx, %rbx
+    cmovg %rbp, %rcx
+    addq %rcx, %rax
+
+    iaddq $64, %rdi
+    iaddq $64, %rsi
+    iaddq $-8, %rdx
+    jge Loop8
+
+TailDispatch:
+    iaddq $8, %rdx
+    andq %rdx, %rdx
+    jle Done
+    iaddq $-1, %rdx
+    je Tail1
+    iaddq $-1, %rdx
+    je Tail2
+    iaddq $-1, %rdx
+    je Tail3
+    iaddq $-1, %rdx
+    je Tail4
+    iaddq $-1, %rdx
+    je Tail5
+    iaddq $-1, %rdx
+    je Tail6
+    jmp Tail7
+
+Tail7:
+    mrmovq 48(%rdi), %r8
+    rmmovq %r8, 48(%rsi)
+    xorq %rcx, %rcx
+    andq %r8, %r8
+    cmovg %rbp, %rcx
+    addq %rcx, %rax
+
+Tail6:
+    mrmovq 40(%rdi), %r8
+    rmmovq %r8, 40(%rsi)
+    xorq %rcx, %rcx
+    andq %r8, %r8
+    cmovg %rbp, %rcx
+    addq %rcx, %rax
+
+Tail5:
+    mrmovq 32(%rdi), %r8
+    rmmovq %r8, 32(%rsi)
+    xorq %rcx, %rcx
+    andq %r8, %r8
+    cmovg %rbp, %rcx
+    addq %rcx, %rax
+
+Tail4:
+    mrmovq 24(%rdi), %r8
+    rmmovq %r8, 24(%rsi)
+    xorq %rcx, %rcx
+    andq %r8, %r8
+    cmovg %rbp, %rcx
+    addq %rcx, %rax
+
+Tail3:
+    mrmovq 16(%rdi), %r8
+    rmmovq %r8, 16(%rsi)
+    xorq %rcx, %rcx
+    andq %r8, %r8
+    cmovg %rbp, %rcx
+    addq %rcx, %rax
+
+Tail2:
+    mrmovq 8(%rdi), %r8
+    rmmovq %r8, 8(%rsi)
+    xorq %rcx, %rcx
+    andq %r8, %r8
+    cmovg %rbp, %rcx
+    addq %rcx, %rax
+
+Tail1:
+    mrmovq 0(%rdi), %r8
+    rmmovq %r8, 0(%rsi)
+    xorq %rcx, %rcx
+    andq %r8, %r8
+    cmovg %rbp, %rcx
+    addq %rcx, %rax
+
+Done:
+    ret

@@ -1,0 +1,16 @@
+{
+  "items": [
+    {
+      "failure_type": "MISSING_MANDATORY_STEP",
+      "count": 4,
+      "critical_count": 0,
+      "avg_score": 84.6
+    },
+    {
+      "failure_type": "CONTRADICTED_BY_SOURCE",
+      "count": 2,
+      "critical_count": 2,
+      "avg_score": 0.0
+    }
+  ]
+}

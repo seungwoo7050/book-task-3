@@ -1,0 +1,86 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5E7895"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 21px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .edge { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+    .cardTitle { font: 700 20px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .cardText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5C7289; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F7FAFD"/>
+
+  <text x="72" y="68" class="eyebrow">CARDINALITY MAP</text>
+  <text x="72" y="112" class="title">관계도를 먼저 그리면 JOIN 결과가 보인다</text>
+  <text x="72" y="142" class="subtitle">JOIN은 문법이 아니라 row 수를 바꾸는 연산이다. 1:N과 N:M을 먼저 보면 중복과 NULL이 설명된다.</text>
+
+  <rect x="56" y="184" width="1168" height="300" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="224" class="section">RELATION MAP</text>
+
+  <rect x="104" y="276" width="190" height="150" rx="24" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="162" y="322" class="nodeTitle">users</text>
+  <text x="134" y="352" class="nodeText">id</text>
+  <text x="134" y="376" class="nodeText">email</text>
+  <text x="134" y="400" class="nodeText">name</text>
+
+  <rect x="380" y="276" width="190" height="150" rx="24" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="448" y="322" class="nodeTitle">posts</text>
+  <text x="410" y="352" class="nodeText">id</text>
+  <text x="410" y="376" class="nodeText">author_id</text>
+  <text x="410" y="400" class="nodeText">title</text>
+
+  <rect x="656" y="244" width="190" height="118" rx="24" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="694" y="290" class="nodeTitle">posts_tags</text>
+  <text x="684" y="320" class="nodeText">post_id + tag_id</text>
+  <text x="688" y="344" class="nodeText">junction table</text>
+
+  <rect x="932" y="276" width="190" height="150" rx="24" fill="#F4F7FB" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="1006" y="322" class="nodeTitle">tags</text>
+  <text x="962" y="352" class="nodeText">id</text>
+  <text x="962" y="376" class="nodeText">name</text>
+
+  <line x1="294" y1="352" x2="380" y2="352" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="318" y="336" class="edge">1:N</text>
+
+  <line x1="570" y1="320" x2="656" y2="302" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="592" y="286" class="edge">1:N</text>
+
+  <line x1="846" y1="302" x2="932" y2="352" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="866" y="320" class="edge">N:1</text>
+
+  <rect x="490" y="398" width="246" height="44" rx="22" fill="#FFF0EE" stroke="#F0B7AF"/>
+  <text x="548" y="426" class="chip">posts ↔ tags 는 N:M</text>
+
+  <rect x="56" y="516" width="560" height="248" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="556" class="section">INNER JOIN RESULT</text>
+  <text x="100" y="604" class="cardTitle">`users JOIN posts`</text>
+  <text x="100" y="636" class="cardText">Lee가 게시글 2개를 쓰면 결과에도 Lee가 2행 나온다.</text>
+  <text x="100" y="660" class="cardText">부모 테이블이 아니라 자식 개수만큼 row가 늘어난다.</text>
+  <rect x="100" y="692" width="142" height="32" rx="16" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="130" y="713" class="chip">users x posts</text>
+  <rect x="270" y="692" width="150" height="32" rx="16" fill="#F3FBF7" stroke="#C2E0D0"/>
+  <text x="296" y="713" class="chip">row 수는 posts 기준</text>
+
+  <rect x="664" y="516" width="560" height="248" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="692" y="556" class="section">LEFT JOIN RESULT</text>
+  <text x="708" y="604" class="cardTitle">`users LEFT JOIN posts`</text>
+  <text x="708" y="636" class="cardText">게시글이 없는 Kim도 남고, posts 컬럼만 `NULL`이 된다.</text>
+  <text x="708" y="660" class="cardText">"왼쪽 행 보존"이 LEFT JOIN의 핵심이다.</text>
+  <rect x="708" y="692" width="148" height="32" rx="16" fill="#FFF9EC" stroke="#E9D29D"/>
+  <text x="734" y="713" class="chip">left row 유지</text>
+  <rect x="882" y="692" width="160" height="32" rx="16" fill="#FFF5F3" stroke="#F0B7AF"/>
+  <text x="912" y="713" class="chip">미매칭은 NULL</text>
+</svg>

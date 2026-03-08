@@ -1,0 +1,90 @@
+<svg width="1280" height="780" viewBox="0 0 1280 780" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="80" y1="40" x2="1200" y2="740" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7FBFF"/>
+      <stop offset="1" stop-color="#EFF7F1"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#17324B" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5B7592"/>
+    </marker>
+  </defs>
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #46637D; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14263A; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #556A80; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4D6881; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .nodeText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #60778E; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #415F79; }
+  </style>
+
+  <rect width="1280" height="780" rx="36" fill="url(#bg)"/>
+  <circle cx="1130" cy="96" r="104" fill="#DDF2E8" fill-opacity="0.7"/>
+  <circle cx="124" cy="696" r="140" fill="#DDECFF" fill-opacity="0.6"/>
+
+  <text x="72" y="68" class="eyebrow">C BUILD PIPELINE</text>
+  <text x="72" y="112" class="title">소스 파일이 실행 파일이 되기까지</text>
+  <text x="72" y="144" class="subtitle">C는 각 소스 파일을 따로 번역한 뒤, 마지막 링크 단계에서 심볼을 묶는다.</text>
+
+  <text x="72" y="210" class="section">INPUTS</text>
+  <rect x="72" y="236" width="220" height="120" rx="24" fill="#FFF6E8" stroke="#E8CE96" filter="url(#shadow)"/>
+  <text x="108" y="284" class="nodeTitle">main.c</text>
+  <text x="108" y="312" class="nodeText">`main()`과 호출 코드</text>
+
+  <rect x="72" y="384" width="220" height="120" rx="24" fill="#FFF6E8" stroke="#E8CE96" filter="url(#shadow)"/>
+  <text x="108" y="432" class="nodeTitle">utils.c</text>
+  <text x="108" y="460" class="nodeText">함수 정의와 구현</text>
+
+  <rect x="72" y="532" width="220" height="120" rx="24" fill="#F3EEFF" stroke="#D8CCF6" filter="url(#shadow)"/>
+  <text x="108" y="580" class="nodeTitle">utils.h</text>
+  <text x="108" y="608" class="nodeText">공유 선언과 include guard</text>
+
+  <text x="362" y="210" class="section">PER FILE TRANSLATION</text>
+  <rect x="344" y="254" width="238" height="380" rx="28" fill="#EAF4FF" stroke="#BCD5EE" filter="url(#shadow)"/>
+  <text x="382" y="302" class="nodeTitle">전처리</text>
+  <text x="382" y="330" class="nodeText">`#include`를 실제 코드로 펼친다</text>
+  <text x="382" y="354" class="nodeText">매크로와 조건부 컴파일을 정리한다</text>
+  <rect x="382" y="380" width="154" height="34" rx="17" fill="#F6FAFF" stroke="#BCD5EE"/>
+  <text x="414" y="403" class="chip">gcc -E main.c</text>
+
+  <text x="382" y="466" class="nodeTitle">컴파일 + 어셈블</text>
+  <text x="382" y="494" class="nodeText">C 코드를 기계어 오브젝트로 바꾼다</text>
+  <text x="382" y="518" class="nodeText">각 `.c` 파일마다 `.o`가 하나 생긴다</text>
+  <rect x="382" y="544" width="164" height="34" rx="17" fill="#F6FAFF" stroke="#BCD5EE"/>
+  <text x="410" y="567" class="chip">gcc -c main.c</text>
+
+  <text x="646" y="210" class="section">OBJECT FILES</text>
+  <rect x="636" y="270" width="210" height="128" rx="24" fill="#E7F8EF" stroke="#B8DFC9" filter="url(#shadow)"/>
+  <text x="676" y="320" class="nodeTitle">main.o</text>
+  <text x="676" y="348" class="nodeText">외부 함수 심볼 참조 포함</text>
+
+  <rect x="636" y="454" width="210" height="128" rx="24" fill="#E7F8EF" stroke="#B8DFC9" filter="url(#shadow)"/>
+  <text x="676" y="504" class="nodeTitle">utils.o</text>
+  <text x="676" y="532" class="nodeText">함수 정의 심볼 제공</text>
+
+  <text x="906" y="210" class="section">LINK</text>
+  <rect x="892" y="270" width="316" height="220" rx="28" fill="#FFFFFF" stroke="#CDDCE9" filter="url(#shadow)"/>
+  <text x="932" y="322" class="nodeTitle">링커</text>
+  <text x="932" y="350" class="nodeText">`main.o`가 찾는 심볼과</text>
+  <text x="932" y="374" class="nodeText">`utils.o`, libc가 제공하는 심볼을 연결한다</text>
+  <rect x="932" y="404" width="116" height="34" rx="17" fill="#FFF6E8" stroke="#E8CE96"/>
+  <text x="960" y="427" class="chip">symbol match</text>
+  <rect x="932" y="454" width="170" height="34" rx="17" fill="#EEF7FF" stroke="#BCD5EE"/>
+  <text x="962" y="477" class="chip">gcc main.o utils.o</text>
+
+  <rect x="940" y="560" width="220" height="116" rx="24" fill="#FFF3ED" stroke="#F0B7AF" filter="url(#shadow)"/>
+  <text x="976" y="608" class="nodeTitle">app 실행 파일</text>
+  <text x="976" y="636" class="nodeText">모든 오브젝트와 라이브러리 결합</text>
+
+  <line x1="292" y1="296" x2="344" y2="296" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="292" y1="444" x2="344" y2="444" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M292 592 C324 592 324 334 344 334" stroke="#5B7592" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+  <line x1="582" y1="334" x2="636" y2="334" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="582" y1="518" x2="636" y2="518" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="846" y1="334" x2="892" y2="334" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="846" y1="518" x2="892" y2="430" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="1050" y1="490" x2="1050" y2="560" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+</svg>

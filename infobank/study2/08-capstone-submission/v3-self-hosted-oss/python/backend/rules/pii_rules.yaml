@@ -1,0 +1,12 @@
+rules:
+  - id: pii-rrn
+    type: pii_detection
+    pattern: "\\d{6}[-−]?[1-4]\\d{6}"
+    severity: critical
+    failure_type: PII_EXPOSURE
+
+  - id: pii-card-number
+    type: pii_detection
+    pattern: "\\b(?:\\d[ -]*?){13,16}\\b"
+    severity: critical
+    failure_type: PII_EXPOSURE

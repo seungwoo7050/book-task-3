@@ -1,0 +1,5 @@
+workspace_requests_total 19
+workspace_auth_logins_total 3
+workspace_dashboard_cache_hits_total 0
+workspace_dashboard_cache_misses_total 1
+workspace_worker_processed_events_total 0

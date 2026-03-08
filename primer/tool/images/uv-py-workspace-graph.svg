@@ -1,0 +1,58 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5A7692"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#183149" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #47647F; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #102237; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #566C83; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .nodeText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #596F86; }
+    .badge { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F7FAFD"/>
+
+  <text x="72" y="70" class="eyebrow">WORKSPACE GRAPH</text>
+  <text x="72" y="114" class="title">workspace는 여러 패키지를 하나의 lock으로 묶는다</text>
+  <text x="72" y="146" class="subtitle">각 패키지는 독립적이지만, 해석과 설치 기준은 루트 workspace가 관리한다.</text>
+
+  <rect x="384" y="208" width="512" height="150" rx="30" fill="#FFFFFF" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="484" y="260" class="nodeTitle">루트 pyproject.toml</text>
+  <text x="448" y="292" class="nodeText">`[tool.uv.workspace] members = ["packages/*"]`</text>
+  <rect x="560" y="314" width="156" height="32" rx="16" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="596" y="335" class="badge">통합 `uv.lock`</text>
+
+  <line x1="640" y1="358" x2="640" y2="406" stroke="#5A7692" stroke-width="4"/>
+  <line x1="640" y1="406" x2="238" y2="406" stroke="#5A7692" stroke-width="4"/>
+  <line x1="640" y1="406" x2="1042" y2="406" stroke="#5A7692" stroke-width="4"/>
+  <line x1="238" y1="406" x2="238" y2="466" stroke="#5A7692" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="640" y1="406" x2="640" y2="466" stroke="#5A7692" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="1042" y1="406" x2="1042" y2="466" stroke="#5A7692" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="100" y="466" width="276" height="180" rx="28" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="192" y="522" class="nodeTitle">core</text>
+  <text x="140" y="556" class="nodeText">공통 로직 패키지</text>
+  <text x="140" y="580" class="nodeText">`packages/core/pyproject.toml`</text>
+
+  <rect x="502" y="466" width="276" height="180" rx="28" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="606" y="522" class="nodeTitle">api</text>
+  <text x="542" y="556" class="nodeText">`dependencies = ["core"]`</text>
+  <text x="542" y="580" class="nodeText">`core = { workspace = true }`</text>
+
+  <rect x="904" y="466" width="276" height="180" rx="28" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="988" y="522" class="nodeTitle">worker</text>
+  <text x="946" y="556" class="nodeText">백그라운드 작업 패키지</text>
+  <text x="946" y="580" class="nodeText">필요하면 core를 같은 방식으로 참조</text>
+
+  <line x1="376" y1="556" x2="502" y2="556" stroke="#5A7692" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="412" y="538" class="badge">workspace source</text>
+  <line x1="376" y1="606" x2="904" y2="606" stroke="#5A7692" stroke-width="3" stroke-dasharray="12 10" marker-end="url(#arrow)"/>
+  <text x="584" y="636" class="badge">공유 코드가 늘면 worker도 같은 방식으로 연결 가능</text>
+</svg>

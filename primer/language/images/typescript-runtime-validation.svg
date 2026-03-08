@@ -1,0 +1,56 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="90" y1="40" x2="1190" y2="780" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7FBFF"/>
+      <stop offset="1" stop-color="#F1F8F1"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#17324B" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5B7592"/>
+    </marker>
+  </defs>
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #46637D; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14263A; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #566A80; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4C6881; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .nodeText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #60778E; }
+  </style>
+
+  <rect width="1280" height="820" rx="36" fill="url(#bg)"/>
+  <circle cx="1128" cy="108" r="104" fill="#DDEFE8" fill-opacity="0.68"/>
+  <circle cx="136" cy="734" r="146" fill="#DDEAFF" fill-opacity="0.58"/>
+
+  <text x="72" y="68" class="eyebrow">TYPESCRIPT RUNTIME VALIDATION</text>
+  <text x="72" y="112" class="title">외부 데이터는 타입만으로 안전해지지 않는다</text>
+  <text x="72" y="144" class="subtitle">TypeScript는 런타임에 지워진다. 그래서 API 응답과 폼 입력은 별도의 스키마 검증을 통과한 뒤에야 내부 타입과 다시 맞춰진다.</text>
+
+  <text x="84" y="214" class="section">BOUNDARY</text>
+
+  <rect x="86" y="278" width="230" height="144" rx="24" fill="#FFFFFF" stroke="#CDDCE9" filter="url(#shadow)"/>
+  <text x="122" y="334" class="nodeTitle">External Data</text>
+  <text x="122" y="362" class="nodeText">API 응답, form input, env</text>
+
+  <rect x="372" y="278" width="230" height="144" rx="24" fill="#EAF4FF" stroke="#BCD5EE" filter="url(#shadow)"/>
+  <text x="408" y="334" class="nodeTitle">zod schema</text>
+  <text x="408" y="362" class="nodeText">shape, refinement, coercion</text>
+
+  <rect x="658" y="278" width="230" height="144" rx="24" fill="#EEF8EF" stroke="#B9DEC9" filter="url(#shadow)"/>
+  <text x="694" y="334" class="nodeTitle">safeParse</text>
+  <text x="694" y="362" class="nodeText">success 또는 error</text>
+
+  <rect x="944" y="278" width="248" height="144" rx="24" fill="#FFF6E8" stroke="#E8CE96" filter="url(#shadow)"/>
+  <text x="980" y="334" class="nodeTitle">Typed Data</text>
+  <text x="980" y="362" class="nodeText">z.infer 와 런타임 값이 일치</text>
+
+  <line x1="316" y1="350" x2="372" y2="350" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="602" y1="350" x2="658" y2="350" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="888" y1="350" x2="944" y2="350" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="296" y="548" width="688" height="144" rx="28" fill="#FFFFFF" stroke="#CDDCE9" filter="url(#shadow)"/>
+  <text x="332" y="604" class="nodeTitle">핵심 분리</text>
+  <text x="332" y="632" class="nodeText">내부 계산에는 TypeScript 타입을 믿고, 외부 경계에는 스키마를 세운다. 이 두 레이어를 분리해야 타입 안정성이 실제 데이터까지 이어진다.</text>
+</svg>

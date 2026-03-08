@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chat-qa-ops"
+version = "0.1.0"
+description = "Chat QA Ops Platform v2"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115.0",
+  "uvicorn[standard]>=0.30.0",
+  "sqlalchemy>=2.0.36",
+  "pydantic>=2.10.0",
+  "typer>=0.12.5",
+  "pyyaml>=6.0.2",
+  "httpx>=0.28.1",
+  "rich>=13.9.4",
+  "chromadb>=0.5.20"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3.4",
+  "pytest-cov>=6.0.0",
+  "mypy>=1.13.0",
+  "ruff>=0.8.1",
+  "types-PyYAML>=6.0.12.20250516"
+]
+
+[project.scripts]
+qualbot = "cli.main:app"
+
+[tool.setuptools]
+package-dir = {"" = "backend/src"}
+
+[tool.setuptools.packages.find]
+where = ["backend/src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["backend/src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "N"]
+ignore = ["E203", "E501", "B008"]
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "backend/src"
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+no_implicit_optional = true

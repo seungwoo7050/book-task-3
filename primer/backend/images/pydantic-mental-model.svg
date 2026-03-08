@@ -1,0 +1,80 @@
+<svg width="1280" height="860" viewBox="0 0 1280 860" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5A7794"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#173149" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #596F86; }
+    .cardNum { font: 700 16px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; }
+    .cardTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .cardText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5D738A; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 18px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #60778E; }
+    .footnote { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="860" rx="32" fill="#F7FBFF"/>
+  <circle cx="1140" cy="110" r="116" fill="#DDF4EA" fill-opacity="0.72"/>
+  <circle cx="134" cy="746" r="150" fill="#DAEDFF" fill-opacity="0.62"/>
+
+  <text x="72" y="68" class="eyebrow">PYDANTIC MENTAL MODEL</text>
+  <text x="72" y="112" class="title">Pydantic은 타입 힌트를 런타임 계약으로 바꾼다</text>
+  <text x="72" y="142" class="subtitle">선언한 타입과 Field 제약이 실제 입력 검증, 변환, 직렬화 규칙이 된다.</text>
+
+  <rect x="72" y="184" width="360" height="124" rx="24" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="102" y="218" class="cardNum">1. DECLARE</text>
+  <text x="102" y="252" class="cardTitle">타입 힌트와 Field를 선언한다</text>
+  <text x="102" y="280" class="cardText">`id: int`, `price: float = Field(gt=0)`처럼</text>
+  <text x="102" y="302" class="cardText">모델이 계약의 시작점이 된다.</text>
+
+  <rect x="460" y="184" width="360" height="124" rx="24" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="490" y="218" class="cardNum">2. VALIDATE</text>
+  <text x="490" y="252" class="cardTitle">입력을 변환하고 검증한다</text>
+  <text x="490" y="280" class="cardText">가능하면 `"1"`을 `1`로 바꾸고,</text>
+  <text x="490" y="302" class="cardText">불가능하면 ValidationError를 낸다.</text>
+
+  <rect x="848" y="184" width="360" height="124" rx="24" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="878" y="218" class="cardNum">3. REUSE</text>
+  <text x="878" y="252" class="cardTitle">만들어진 모델을 계속 활용한다</text>
+  <text x="878" y="280" class="cardText">`model_dump`, `model_validate`,</text>
+  <text x="878" y="302" class="cardText">JSON Schema, FastAPI 응답으로 이어진다.</text>
+
+  <rect x="56" y="352" width="1168" height="432" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="392" class="section">CORE FLOW</text>
+
+  <line x1="168" y1="556" x2="1110" y2="556" stroke="#5A7794" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="88" y="468" width="144" height="176" rx="22" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="126" y="518" class="nodeTitle">입력값</text>
+  <text x="116" y="544" class="nodeText">dict, JSON,</text>
+  <text x="114" y="566" class="nodeText">ORM 객체, env</text>
+
+  <rect x="272" y="448" width="170" height="216" rx="22" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="302" y="500" class="nodeTitle">BaseModel</text>
+  <text x="302" y="526" class="nodeText">생성자 또는</text>
+  <text x="302" y="548" class="nodeText">`model_validate()`</text>
+
+  <rect x="482" y="448" width="190" height="216" rx="22" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="514" y="500" class="nodeTitle">타입 + Field 규칙</text>
+  <text x="514" y="526" class="nodeText">coercion, 범위, 길이,</text>
+  <text x="514" y="548" class="nodeText">pattern, alias 적용</text>
+
+  <rect x="712" y="448" width="176" height="216" rx="22" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="746" y="500" class="nodeTitle">모델 인스턴스</text>
+  <text x="746" y="526" class="nodeText">속성 접근,</text>
+  <text x="746" y="548" class="nodeText">validator 결과 포함</text>
+
+  <rect x="928" y="448" width="180" height="216" rx="22" fill="#F1ECFF" stroke="#D8CEF8"/>
+  <text x="962" y="500" class="nodeTitle">출력과 재사용</text>
+  <text x="962" y="526" class="nodeText">`model_dump()`,</text>
+  <text x="962" y="548" class="nodeText">schema, API 응답</text>
+
+  <text x="84" y="724" class="footnote">기본 읽는 법: "가능하면 변환, 불가능하면 거부"를 먼저 이해하면 strict 모드와 validator의 역할도 자연스럽게 보인다.</text>
+</svg>

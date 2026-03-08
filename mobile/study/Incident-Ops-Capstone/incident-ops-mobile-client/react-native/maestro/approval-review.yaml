@@ -1,0 +1,12 @@
+appId: com.incidentopsmobileclient
+---
+- launchApp
+- tapOn:
+    id: login-user-id-input
+- inputText: approver.demo
+- tapOn:
+    text: APPROVER
+- tapOn:
+    id: login-submit-button
+- tapOn:
+    text: Approvals

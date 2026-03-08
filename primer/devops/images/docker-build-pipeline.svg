@@ -1,0 +1,78 @@
+<svg width="1280" height="760" viewBox="0 0 1280 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5E7895"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+    .note { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="760" rx="32" fill="#F7FAFD"/>
+
+  <text x="72" y="68" class="eyebrow">CACHE-AWARE BUILD PIPELINE</text>
+  <text x="72" y="112" class="title">Dockerfile은 순서가 성능과 크기를 결정한다</text>
+  <text x="72" y="142" class="subtitle">잘 안 바뀌는 단계는 위에, 자주 바뀌는 단계는 아래에 둬야 캐시가 오래 살아남는다.</text>
+
+  <rect x="56" y="188" width="1168" height="280" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="228" class="section">GOOD ORDER</text>
+
+  <line x1="166" y1="332" x2="1056" y2="332" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="88" y="262" width="180" height="140" rx="22" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="124" y="308" class="nodeTitle">1. lockfile 복사</text>
+  <text x="118" y="336" class="nodeText">`package.json`, `pnpm-lock.yaml`</text>
+  <text x="134" y="360" class="nodeText">변경 빈도가 낮다</text>
+
+  <rect x="320" y="242" width="196" height="180" rx="22" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="354" y="288" class="nodeTitle">2. 의존성 설치</text>
+  <text x="354" y="316" class="nodeText">`RUN npm ci` 또는</text>
+  <text x="354" y="340" class="nodeText">`pnpm install --frozen-lockfile`</text>
+  <rect x="376" y="374" width="84" height="30" rx="15" fill="#F3FBF7" stroke="#C2E0D0"/>
+  <text x="398" y="394" class="chip">cache hit</text>
+
+  <rect x="574" y="262" width="180" height="140" rx="22" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="616" y="308" class="nodeTitle">3. 소스 복사</text>
+  <text x="606" y="336" class="nodeText">애플리케이션 코드</text>
+  <text x="604" y="360" class="nodeText">가장 자주 변한다</text>
+
+  <rect x="806" y="242" width="188" height="180" rx="22" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="860" y="288" class="nodeTitle">4. 빌드</text>
+  <text x="842" y="316" class="nodeText">테스트, transpile, bundle</text>
+  <text x="846" y="340" class="nodeText">변경된 소스만 다시 반영</text>
+  <rect x="854" y="374" width="94" height="30" rx="15" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="878" y="394" class="chip">rebuild</text>
+
+  <rect x="1048" y="262" width="132" height="140" rx="22" fill="#FFF0EE" stroke="#F0B7AF" filter="url(#shadow)"/>
+  <text x="1076" y="308" class="nodeTitle">최종 이미지</text>
+  <text x="1080" y="336" class="nodeText">배포 산출물</text>
+  <text x="1088" y="360" class="nodeText">만 남긴다</text>
+
+  <rect x="56" y="512" width="1168" height="184" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="552" class="section">WHY BAD ORDER HURTS</text>
+
+  <rect x="92" y="580" width="330" height="82" rx="18" fill="#FFF0EE" stroke="#F0B7AF"/>
+  <text x="122" y="614" class="chip">나쁜 순서: `COPY . .` → install → build</text>
+  <text x="122" y="638" class="nodeText">작은 코드 수정도 의존성 설치부터 다시 실행된다</text>
+
+  <rect x="472" y="580" width="330" height="82" rx="18" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="504" y="614" class="chip">좋은 순서: deps → install → source → build</text>
+  <text x="504" y="638" class="nodeText">코드가 바뀌어도 install 레이어는 재사용된다</text>
+
+  <rect x="852" y="580" width="330" height="82" rx="18" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="888" y="614" class="chip">멀티스테이지: builder → runtime</text>
+  <text x="888" y="638" class="nodeText">최종 이미지에는 실행 산출물만 복사한다</text>
+
+  <text x="84" y="720" class="note">핵심: Dockerfile은 단순한 스크립트가 아니라 캐시 가능한 빌드 그래프다. 순서를 바꾸면 매 빌드 비용이 달라진다.</text>
+</svg>

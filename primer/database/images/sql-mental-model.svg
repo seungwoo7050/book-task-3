@@ -1,0 +1,95 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5E7895"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .cardNum { font: 700 16px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4B6781; }
+    .cardTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .cardText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5C7289; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 19px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+    .footnote { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F7FAFD"/>
+
+  <text x="72" y="68" class="eyebrow">SQL MENTAL MODEL</text>
+  <text x="72" y="112" class="title">SQL을 읽을 때 먼저 잡을 3가지</text>
+  <text x="72" y="142" class="subtitle">문법보다 먼저 저장 구조, row 수 변화, 실행 비용과 일관성을 본다.</text>
+
+  <rect x="72" y="184" width="360" height="124" rx="24" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="102" y="218" class="cardNum">1. MODELING</text>
+  <text x="102" y="252" class="cardTitle">무엇을 어떤 테이블에 저장하는가?</text>
+  <text x="102" y="280" class="cardText">PK, FK, NULL, UNIQUE, 삭제 규칙을 먼저 정하면</text>
+  <text x="102" y="302" class="cardText">이후 JOIN과 UPDATE의 의미가 흔들리지 않는다.</text>
+
+  <rect x="460" y="184" width="360" height="124" rx="24" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="490" y="218" class="cardNum">2. CARDINALITY</text>
+  <text x="490" y="252" class="cardTitle">이 JOIN 뒤 row 수는 왜 바뀌는가?</text>
+  <text x="490" y="280" class="cardText">1:1, 1:N, N:M 관계를 먼저 그려야</text>
+  <text x="490" y="302" class="cardText">중복 행과 NULL 결과를 예측할 수 있다.</text>
+
+  <rect x="848" y="184" width="360" height="124" rx="24" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="878" y="218" class="cardNum">3. COST AND CONSISTENCY</text>
+  <text x="878" y="252" class="cardTitle">어떤 경로로 읽고 어떻게 보호하는가?</text>
+  <text x="878" y="280" class="cardText">플래너는 인덱스와 통계를 보고 경로를 고르고,</text>
+  <text x="878" y="302" class="cardText">트랜잭션은 commit 전까지 변경을 묶어 둔다.</text>
+
+  <rect x="56" y="352" width="1168" height="396" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="392" class="section">QUERY TO STORAGE MAP</text>
+
+  <line x1="170" y1="560" x2="1110" y2="560" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="88" y="490" width="176" height="140" rx="22" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="124" y="534" class="nodeTitle">DDL / 제약조건</text>
+  <text x="124" y="562" class="nodeText">PK, FK, NOT NULL</text>
+  <text x="124" y="586" class="nodeText">기본값과 삭제 규칙</text>
+
+  <rect x="308" y="490" width="176" height="140" rx="22" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="342" y="534" class="nodeTitle">관계 / 개수</text>
+  <text x="342" y="562" class="nodeText">1:1, 1:N, N:M</text>
+  <text x="342" y="586" class="nodeText">JOIN 뒤 row 수 결정</text>
+
+  <rect x="528" y="490" width="176" height="140" rx="22" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="564" y="534" class="nodeTitle">SELECT / JOIN</text>
+  <text x="564" y="562" class="nodeText">필터, 그룹, 정렬</text>
+  <text x="564" y="586" class="nodeText">결과 집합 구성</text>
+
+  <rect x="748" y="490" width="176" height="140" rx="22" fill="#F4F7FB" stroke="#D1DEEA"/>
+  <text x="784" y="534" class="nodeTitle">인덱스 / 계획</text>
+  <text x="784" y="562" class="nodeText">Seq Scan vs Index Scan</text>
+  <text x="784" y="586" class="nodeText">EXPLAIN으로 검증</text>
+
+  <rect x="968" y="490" width="176" height="140" rx="22" fill="#FFF0EE" stroke="#F0B7AF"/>
+  <text x="1004" y="534" class="nodeTitle">트랜잭션</text>
+  <text x="1004" y="562" class="nodeText">commit / rollback</text>
+  <text x="1004" y="586" class="nodeText">lock과 isolation</text>
+
+  <rect x="106" y="654" width="140" height="30" rx="15" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="136" y="674" class="chip">어떻게 저장?</text>
+
+  <rect x="326" y="654" width="140" height="30" rx="15" fill="#F3FBF7" stroke="#C2E0D0"/>
+  <text x="358" y="674" class="chip">몇 행이 되나?</text>
+
+  <rect x="544" y="654" width="144" height="30" rx="15" fill="#FFF9EC" stroke="#E9D29D"/>
+  <text x="570" y="674" class="chip">어떻게 읽나?</text>
+
+  <rect x="770" y="654" width="132" height="30" rx="15" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="804" y="674" class="chip">얼마나 비싼가?</text>
+
+  <rect x="988" y="654" width="136" height="30" rx="15" fill="#FFF5F3" stroke="#F0B7AF"/>
+  <text x="1018" y="674" class="chip">어떻게 안전한가?</text>
+
+  <text x="84" y="722" class="footnote">읽는 법: 스키마와 cardinality를 먼저 고정하면 SELECT, 인덱스, 트랜잭션 섹션이 각각 어디를 설명하는지 빠르게 연결된다.</text>
+</svg>

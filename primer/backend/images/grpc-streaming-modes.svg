@@ -1,0 +1,64 @@
+<svg width="1280" height="900" viewBox="0 0 1280 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#17324B" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #43627D; letter-spacing: 0.14em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #536980; }
+    .miniTitle { font: 700 20px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .miniText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #61788F; }
+    .badge { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #42607A; }
+  </style>
+
+  <rect width="1280" height="900" rx="36" fill="#F7FBFF"/>
+  <circle cx="1138" cy="106" r="116" fill="#DDF4EA" fill-opacity="0.72"/>
+  <circle cx="126" cy="786" r="150" fill="#DAEDFF" fill-opacity="0.64"/>
+
+  <text x="72" y="70" class="eyebrow">STREAMING MODES</text>
+  <text x="72" y="116" class="title">stream 키워드는 누가 여러 번 보내는지를 결정한다</text>
+  <text x="72" y="148" class="subtitle">gRPC streaming은 "실시간 같다"보다, 요청과 응답 중 어느 쪽이 반복적으로 흐르는지로 이해하는 편이 정확하다.</text>
+
+  <rect x="92" y="236" width="250" height="236" rx="30" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="128" y="290" class="miniTitle">Unary</text>
+  <text x="128" y="320" class="miniText">요청 1개 -> 응답 1개</text>
+  <text x="128" y="346" class="miniText">일반 CRUD와 가장 비슷하다</text>
+  <text x="128" y="396" class="miniText">client -> server</text>
+  <text x="128" y="426" class="miniText">server -> client</text>
+  <rect x="128" y="440" width="116" height="32" rx="16" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="166" y="461" class="badge">default RPC</text>
+
+  <rect x="372" y="236" width="250" height="236" rx="30" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="408" y="290" class="miniTitle">Server streaming</text>
+  <text x="408" y="320" class="miniText">요청 1개 -> 응답 N개</text>
+  <text x="408" y="346" class="miniText">watch, feed, event push에 적합</text>
+  <text x="408" y="396" class="miniText">client -> server</text>
+  <text x="408" y="426" class="miniText">server => => => client</text>
+  <rect x="408" y="440" width="132" height="32" rx="16" fill="#F3FBF7" stroke="#C2E0D0"/>
+  <text x="444" y="461" class="badge">event feed</text>
+
+  <rect x="652" y="236" width="250" height="236" rx="30" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="688" y="290" class="miniTitle">Client streaming</text>
+  <text x="688" y="320" class="miniText">요청 N개 -> 응답 1개</text>
+  <text x="688" y="346" class="miniText">batch ingest, upload에 적합</text>
+  <text x="688" y="396" class="miniText">client => => => server</text>
+  <text x="688" y="426" class="miniText">server -> client</text>
+  <rect x="688" y="440" width="126" height="32" rx="16" fill="#FFF7E7" stroke="#EAC97E"/>
+  <text x="718" y="461" class="badge">batch input</text>
+
+  <rect x="932" y="236" width="250" height="236" rx="30" fill="#F1ECFF" stroke="#D8CEF8" filter="url(#shadow)"/>
+  <text x="968" y="290" class="miniTitle">Bidirectional</text>
+  <text x="968" y="320" class="miniText">요청 N개, 응답 N개</text>
+  <text x="968" y="346" class="miniText">채팅, 협업, 터널링에 적합</text>
+  <text x="968" y="396" class="miniText">client와 server가 동시 송수신</text>
+  <rect x="968" y="440" width="124" height="32" rx="16" fill="#F5F0FF" stroke="#D8CBF6"/>
+  <text x="1002" y="461" class="badge">full duplex</text>
+
+  <rect x="208" y="590" width="866" height="154" rx="30" fill="#FFFFFF" stroke="#C8D9E8" filter="url(#shadow)"/>
+  <text x="248" y="646" class="miniTitle">선택 기준</text>
+  <text x="248" y="676" class="miniText">요청과 응답이 각각 몇 번 오가는지 먼저 묻는다. 스트리밍은 "빠른 전송" 기능이 아니라 데이터 흐름의 방향성과 횟수를 프로토콜 수준에서 고정하는 선택이다.</text>
+  <text x="248" y="700" class="miniText">단방향 event push면 server streaming, 대량 업로드면 client streaming, 상호작용 채널이면 bidirectional이 맞다.</text>
+</svg>

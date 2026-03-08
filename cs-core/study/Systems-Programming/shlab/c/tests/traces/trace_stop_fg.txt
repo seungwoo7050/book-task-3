@@ -1,0 +1,13 @@
+#
+# trace_stop_fg.txt - stop a foreground job, bring it back, then interrupt it
+#
+/bin/sleep 5
+WAIT
+SIGTSTP
+WAIT
+fg %1
+WAIT
+SIGINT
+WAIT
+quit
+CLOSE

@@ -1,0 +1,70 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#587491"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#183149" flood-opacity="0.09"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #47647F; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #566C83; }
+    .cardTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .cardText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A7087; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 24px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .nodeText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5D738A; }
+    .badge { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F8FBFF"/>
+
+  <text x="72" y="70" class="eyebrow">TARGET PROPERTIES</text>
+  <text x="72" y="114" class="title">PUBLIC, PRIVATE, INTERFACE는 전파 범위를 정한다</text>
+  <text x="72" y="146" class="subtitle">include path, link library, compile definition을 어디까지 전달할지 결정하는 규칙이다.</text>
+
+  <rect x="88" y="214" width="332" height="132" rx="26" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="126" y="266" class="cardTitle">PRIVATE</text>
+  <text x="126" y="296" class="cardText">현재 target만 쓴다.</text>
+  <text x="126" y="320" class="cardText">내부 include, warning flag, 내부 구현 링크</text>
+
+  <rect x="474" y="214" width="332" height="132" rx="26" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="512" y="266" class="cardTitle">PUBLIC</text>
+  <text x="512" y="296" class="cardText">현재 target도 쓰고 소비자도 이어받는다.</text>
+  <text x="512" y="320" class="cardText">공개 헤더 경로, 라이브러리 계약, API 매크로</text>
+
+  <rect x="860" y="214" width="332" height="132" rx="26" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="898" y="266" class="cardTitle">INTERFACE</text>
+  <text x="898" y="296" class="cardText">현재 target은 안 쓰고 소비자만 쓴다.</text>
+  <text x="898" y="320" class="cardText">헤더 전용 라이브러리, 소비자 전용 옵션</text>
+
+  <rect x="56" y="390" width="1168" height="360" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="430" class="section">TARGET GRAPH</text>
+
+  <rect x="366" y="516" width="246" height="146" rx="28" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="446" y="568" class="nodeTitle">core</text>
+  <text x="408" y="598" class="nodeText">실제 컴파일되는 라이브러리</text>
+  <text x="408" y="622" class="nodeText">public include, private src flag 보유</text>
+
+  <rect x="760" y="516" width="246" height="146" rx="28" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="854" y="568" class="nodeTitle">app</text>
+  <text x="808" y="598" class="nodeText">`target_link_libraries(app PRIVATE core)`</text>
+  <text x="810" y="622" class="nodeText">core의 public 계약만 이어받음</text>
+
+  <line x1="254" y1="346" x2="430" y2="516" stroke="#5B7792" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="640" y1="346" x2="506" y2="516" stroke="#4B8B63" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="640" y1="346" x2="882" y2="516" stroke="#4B8B63" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="1026" y1="346" x2="882" y2="516" stroke="#C68A3B" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="282" y="690" width="170" height="34" rx="17" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="314" y="713" class="badge">PRIVATE는 core에서 종료</text>
+
+  <rect x="542" y="690" width="188" height="34" rx="17" fill="#F3FBF7" stroke="#C2E0D0"/>
+  <text x="578" y="713" class="badge">PUBLIC은 core와 app 둘 다</text>
+
+  <rect x="820" y="690" width="186" height="34" rx="17" fill="#FFF8EC" stroke="#E9D29D"/>
+  <text x="852" y="713" class="badge">INTERFACE는 app만 사용</text>
+</svg>

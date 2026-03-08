@@ -1,0 +1,72 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5E7895"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 20px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+    .footnote { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F7FAFD"/>
+
+  <text x="72" y="68" class="eyebrow">CACHE &amp; REVALIDATION</text>
+  <text x="72" y="112" class="title">fetch 캐시 정책과 재검증 흐름</text>
+  <text x="72" y="142" class="subtitle">Next.js는 `fetch` 옵션과 revalidation 호출로 데이터를 얼마나 오래 유지할지 결정한다.</text>
+
+  <rect x="72" y="184" width="220" height="48" rx="18" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="106" y="214" class="chip">기본 fetch: 정적 캐시 가능</text>
+  <rect x="310" y="184" width="248" height="48" rx="18" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="340" y="214" class="chip">`revalidate: 60` 주기 재검증</text>
+  <rect x="576" y="184" width="250" height="48" rx="18" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="608" y="214" class="chip">`cache: "no-store"` 매 요청</text>
+
+  <rect x="56" y="272" width="1168" height="470" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="312" class="section">DATA LIFECYCLE</text>
+
+  <line x1="178" y1="544" x2="1030" y2="544" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="92" y="470" width="170" height="148" rx="22" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="126" y="516" class="nodeTitle">요청</text>
+  <text x="126" y="544" class="nodeText">서버 컴포넌트 또는</text>
+  <text x="126" y="566" class="nodeText">Route Handler 진입</text>
+
+  <rect x="304" y="446" width="212" height="172" rx="22" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="338" y="492" class="nodeTitle">fetch + 정책</text>
+  <text x="338" y="520" class="nodeText">static / revalidate / no-store</text>
+  <text x="338" y="544" class="nodeText">옵션이 렌더링 모드를 결정</text>
+  <rect x="338" y="572" width="132" height="30" rx="12" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="362" y="592" class="chip">`next: { revalidate }`</text>
+
+  <rect x="560" y="446" width="222" height="172" rx="22" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="596" y="492" class="nodeTitle">데이터 캐시</text>
+  <text x="596" y="520" class="nodeText">정책에 맞게 결과 유지</text>
+  <text x="596" y="544" class="nodeText">stale 시 다시 fetch</text>
+
+  <rect x="826" y="470" width="172" height="148" rx="22" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="858" y="516" class="nodeTitle">응답 렌더</text>
+  <text x="858" y="544" class="nodeText">HTML / RSC payload</text>
+  <text x="860" y="566" class="nodeText">사용자에게 전달</text>
+
+  <rect x="890" y="338" width="266" height="96" rx="22" fill="#FFF0EE" stroke="#F0B7AF" filter="url(#shadow)"/>
+  <text x="922" y="382" class="nodeTitle">변경 발생</text>
+  <text x="922" y="410" class="nodeText">Server Action, CMS 수정, 관리자 화면 저장</text>
+
+  <path d="M1022 434 V452 H672" stroke="#D5786F" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+
+  <rect x="344" y="650" width="592" height="58" rx="18" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="374" y="686" class="chip">`revalidatePath` / `revalidateTag`는 관련 캐시를 stale 처리해서 다음 요청에서 최신 데이터를 다시 가져오게 만든다.</text>
+
+  <text x="84" y="774" class="footnote">읽는 법: 요청이 fetch 정책을 만나 캐시에 저장되고, 이후 변경이 생기면 재검증 호출로 stale 처리되어 다음 요청에서 다시 채워진다고 보면 된다.</text>
+</svg>

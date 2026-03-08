@@ -1,0 +1,4 @@
+# This directory holds input data for the Data Lab.
+# The btest harness generates test vectors internally, so no external
+# data files are required. This directory is kept for structural
+# consistency with the standard task layout.

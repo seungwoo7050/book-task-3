@@ -1,0 +1,2 @@
+actual_cost=6
+size=0

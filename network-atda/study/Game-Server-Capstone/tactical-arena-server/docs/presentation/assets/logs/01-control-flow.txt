@@ -1,0 +1,25 @@
+server listening on tcp=60023
+alpha -> LOGIN name=demo-alpha
+alpha <- LOGIN_OK token=1-59a922160aadd6f3 wins=0 losses=0 kills=0 deaths=0 player=1
+beta -> LOGIN name=demo-beta
+beta <- LOGIN_OK token=2-530ced2ca7871004 wins=0 losses=0 kills=0 deaths=0 player=2
+alpha -> CREATE_ROOM name=demo-room max=2
+alpha <- ROOM_UPDATE roster=1:0 owner=1 room=room-1
+beta -> JOIN_ROOM room=room-1
+beta <- ROOM_UPDATE roster=1:0,2:0 owner=1 room=room-1
+alpha <- ROOM_UPDATE roster=1:0,2:0 owner=1 room=room-1
+alpha -> READY value=1
+beta -> READY value=1
+alpha <- ROOM_UPDATE roster=1:1,2:0 owner=1 room=room-1
+alpha <- ROOM_UPDATE roster=1:1,2:1 owner=1 room=room-1
+alpha <- MATCH_START tick_hz=20 spawn=120.000000:120.000000 snapshot_hz=10 udp_port=60024 match=1
+beta <- ROOM_UPDATE roster=1:1,2:0 owner=1 room=room-1
+beta <- ROOM_UPDATE roster=1:1,2:1 owner=1 room=room-1
+beta <- MATCH_START tick_hz=20 spawn=880.000000:120.000000 snapshot_hz=10 udp_port=60024 match=1
+alpha <- MATCH_RESULT scoreboard=1:0:0,2:0:0 winner=1
+beta <- MATCH_RESULT scoreboard=1:0:0,2:0:0 winner=1
+
+sqlite summary
+players=2
+matches=1
+last_result=winner=1;forfeits=;scoreboard=1:0:0,2:0:0

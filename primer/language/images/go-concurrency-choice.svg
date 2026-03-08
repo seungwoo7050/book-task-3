@@ -1,0 +1,62 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="90" y1="40" x2="1190" y2="780" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7FBFF"/>
+      <stop offset="1" stop-color="#F1F8F1"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#17324B" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5B7592"/>
+    </marker>
+  </defs>
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #46637D; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14263A; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #566A80; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4C6881; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .nodeText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #60778E; }
+  </style>
+
+  <rect width="1280" height="820" rx="36" fill="url(#bg)"/>
+  <circle cx="1128" cy="108" r="104" fill="#DDEFE8" fill-opacity="0.68"/>
+  <circle cx="136" cy="734" r="146" fill="#DDEAFF" fill-opacity="0.58"/>
+
+  <text x="72" y="68" class="eyebrow">GO CONCURRENCY CHOICE</text>
+  <text x="72" y="112" class="title">Go 동시성은 도구를 고르는 문제다</text>
+  <text x="72" y="144" class="subtitle">goroutine은 시작점일 뿐이다. 결과 전달, 완료 대기, 공유 상태 보호 중 무엇이 필요한지에 따라 도구가 달라진다.</text>
+
+  <text x="84" y="214" class="section">CHOICE MAP</text>
+
+  <rect x="442" y="226" width="396" height="108" rx="24" fill="#FFFFFF" stroke="#CDDCE9" filter="url(#shadow)"/>
+  <text x="480" y="274" class="nodeTitle">무엇을 동기화하려는가?</text>
+  <text x="480" y="302" class="nodeText">작업 분리, 결과 전달, 완료 대기, 공유 상태 보호 중 중심 요구를 먼저 정한다</text>
+
+  <rect x="86" y="420" width="240" height="126" rx="24" fill="#EAF4FF" stroke="#BCD5EE" filter="url(#shadow)"/>
+  <text x="122" y="470" class="nodeTitle">goroutine</text>
+  <text x="122" y="498" class="nodeText">독립 작업을 동시에 시작</text>
+
+  <rect x="366" y="420" width="240" height="126" rx="24" fill="#EEF8EF" stroke="#B9DEC9" filter="url(#shadow)"/>
+  <text x="402" y="470" class="nodeTitle">channel</text>
+  <text x="402" y="498" class="nodeText">값 전달, 파이프라인, fan-in</text>
+
+  <rect x="646" y="420" width="240" height="126" rx="24" fill="#FFF6E8" stroke="#E8CE96" filter="url(#shadow)"/>
+  <text x="682" y="470" class="nodeTitle">WaitGroup</text>
+  <text x="682" y="498" class="nodeText">모든 작업 완료 시점만 기다림</text>
+
+  <rect x="926" y="420" width="240" height="126" rx="24" fill="#F3EEFF" stroke="#D8CCF6" filter="url(#shadow)"/>
+  <text x="962" y="470" class="nodeTitle">Mutex</text>
+  <text x="962" y="498" class="nodeText">공유 map, cache, counter 보호</text>
+
+  <rect x="420" y="646" width="440" height="88" rx="24" fill="#FFFFFF" stroke="#CDDCE9" filter="url(#shadow)"/>
+  <text x="458" y="686" class="nodeTitle">select</text>
+  <text x="458" y="714" class="nodeText">여러 channel, timeout, context 취소 중 먼저 온 이벤트를 고른다</text>
+
+  <line x1="640" y1="334" x2="206" y2="420" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="640" y1="334" x2="486" y2="420" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="640" y1="334" x2="766" y2="420" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="640" y1="334" x2="1046" y2="420" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="486" y1="546" x2="640" y2="646" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+</svg>

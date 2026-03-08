@@ -1,0 +1,101 @@
+appId: org.reactjs.native.example.IncidentOpsMobileClient
+---
+- clearState
+- launchApp
+- assertVisible: "Incident Ops Client"
+- takeScreenshot: "01-login-screen"
+
+- tapOn:
+    id: "login-user-id-input"
+- inputText: "reporter.demo"
+- tapOn: "Auth Stack"
+- tapOn:
+    id: "login-submit-button"
+- assertVisible: "No incidents yet"
+- takeScreenshot: "02-feed-empty"
+
+- tapOn:
+    id: "new-incident-button"
+- assertVisible: "Queue New Incident"
+- takeScreenshot: "03-create-form"
+
+- tapOn:
+    id: "create-title-input"
+- inputText: "Database latency spike"
+- tapOn: "Create Form"
+- tapOn: "P1"
+- tapOn:
+    id: "queue-incident-button"
+- assertVisible: "Open"
+- takeScreenshot: "04-feed-created"
+
+- tapOn:
+    id: "incident-open-database-latency-spike.*"
+- assertVisible: "Created By"
+- takeScreenshot: "05-reporter-detail"
+
+- tapOn: "Settings, tab, 4 of 4"
+- tapOn:
+    id: "settings-signout-button"
+- assertVisible: "Incident Ops Client"
+
+- tapOn:
+    id: "login-user-id-input"
+- inputText: "operator.demo"
+- tapOn: "Auth Stack"
+- tapOn: "OPERATOR"
+- tapOn:
+    id: "login-submit-button"
+- assertVisible: "Open"
+- tapOn:
+    id: "incident-open-database-latency-spike.*"
+- assertVisible: "Queue Ack"
+- takeScreenshot: "06-operator-ack"
+
+- tapOn:
+    id: "detail-ack-button"
+- extendedWaitUntil:
+    visible: "Queue Request Resolution"
+    timeout: 10000
+- tapOn:
+    id: "detail-action-note-input"
+- inputText: "Mitigation complete. Query latency is back under SLA."
+- tapOn: "Role Actions"
+- takeScreenshot: "07-operator-request-resolution"
+- tapOn:
+    id: "detail-request-resolution-button"
+- extendedWaitUntil:
+    visible: "RESOLUTION_PENDING"
+    timeout: 10000
+
+- tapOn: "Settings, tab, 4 of 4"
+- tapOn:
+    id: "settings-signout-button"
+- assertVisible: "Incident Ops Client"
+
+- tapOn:
+    id: "login-user-id-input"
+- inputText: "approver.demo"
+- tapOn: "Auth Stack"
+- tapOn: "APPROVER"
+- tapOn:
+    id: "login-submit-button"
+- tapOn: "Approvals, tab, 2 of 4"
+- assertVisible: "Pending Decisions"
+- takeScreenshot: "08-approvals-tab"
+
+- tapOn: "Incidents, tab, 1 of 4"
+- tapOn:
+    id: "incident-open-database-latency-spike.*"
+- assertVisible: "Approve"
+- takeScreenshot: "09-approver-detail"
+- tapOn:
+    id: "detail-approve-button"
+- extendedWaitUntil:
+    visible: "RESOLVED"
+    timeout: 10000
+- scrollUntilVisible:
+    element: "Audit Timeline"
+    direction: DOWN
+    timeout: 10000
+- takeScreenshot: "10-resolved-audit"

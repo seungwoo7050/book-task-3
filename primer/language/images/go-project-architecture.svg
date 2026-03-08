@@ -1,0 +1,64 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="90" y1="40" x2="1190" y2="780" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7FBFF"/>
+      <stop offset="1" stop-color="#FFF7EF"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#17324B" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5B7592"/>
+    </marker>
+  </defs>
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #46637D; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14263A; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #566A80; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4C6881; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .nodeText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #60778E; }
+  </style>
+
+  <rect width="1280" height="820" rx="36" fill="url(#bg)"/>
+  <circle cx="1128" cy="108" r="104" fill="#DDEFE8" fill-opacity="0.68"/>
+  <circle cx="136" cy="734" r="146" fill="#DDEAFF" fill-opacity="0.58"/>
+
+  <text x="72" y="68" class="eyebrow">GO PROJECT SHAPE</text>
+  <text x="72" y="112" class="title">공개 경계와 호출 흐름으로 프로젝트 구조 읽기</text>
+  <text x="72" y="144" class="subtitle">Go는 패키지 import 규칙이 곧 아키텍처 경계다. cmd, internal, pkg의 역할을 먼저 나누면 구조가 단단해진다.</text>
+
+  <text x="84" y="214" class="section">PACKAGE BOUNDARIES</text>
+
+  <rect x="86" y="252" width="208" height="126" rx="24" fill="#FFF6E8" stroke="#E8CE96" filter="url(#shadow)"/>
+  <text x="122" y="302" class="nodeTitle">cmd/server</text>
+  <text x="122" y="330" class="nodeText">main.go, config 로드, 서버 시작</text>
+
+  <rect x="368" y="236" width="624" height="422" rx="30" fill="#FFFFFF" stroke="#CDDCE9" filter="url(#shadow)"/>
+  <text x="404" y="282" class="nodeTitle">internal</text>
+  <text x="404" y="310" class="nodeText">이 모듈 안에서만 import 가능한 구현 패키지</text>
+
+  <rect x="404" y="360" width="156" height="140" rx="22" fill="#EAF4FF" stroke="#BCD5EE"/>
+  <text x="438" y="412" class="nodeTitle">handler</text>
+  <text x="438" y="440" class="nodeText">HTTP 입구</text>
+
+  <rect x="602" y="360" width="156" height="140" rx="22" fill="#EEF8EF" stroke="#B9DEC9"/>
+  <text x="640" y="412" class="nodeTitle">service</text>
+  <text x="640" y="440" class="nodeText">비즈니스 로직</text>
+
+  <rect x="800" y="360" width="156" height="140" rx="22" fill="#FFF6E8" stroke="#E8CE96"/>
+  <text x="826" y="412" class="nodeTitle">repository</text>
+  <text x="826" y="440" class="nodeText">DB, external IO</text>
+
+  <rect x="602" y="540" width="156" height="84" rx="22" fill="#F3EEFF" stroke="#D8CCF6"/>
+  <text x="648" y="590" class="nodeTitle">model</text>
+
+  <rect x="1042" y="252" width="152" height="126" rx="24" fill="#F6FAFF" stroke="#D2E0EC" filter="url(#shadow)"/>
+  <text x="1078" y="302" class="nodeTitle">pkg</text>
+  <text x="1078" y="330" class="nodeText">외부 공개 API가 필요할 때만</text>
+
+  <line x1="294" y1="315" x2="368" y2="315" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="560" y1="430" x2="602" y2="430" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="758" y1="430" x2="800" y2="430" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="680" y1="500" x2="680" y2="540" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+</svg>

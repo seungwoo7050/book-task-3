@@ -1,0 +1,14 @@
+legacy/node_modules/
+.DS_Store
+*.log
+*.db
+*.wal
+*.sst
+data-dir/
+tmp/
+dist/
+bin/
+coverage.out
+.coverprofile
+study/**/notion/
+.demo-data/

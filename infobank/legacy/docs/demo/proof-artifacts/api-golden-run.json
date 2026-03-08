@@ -1,0 +1,2890 @@
+{
+  "count": 30,
+  "avg_score": 84.06,
+  "critical_count": 2,
+  "items": [
+    {
+      "id": "3e4e51af-3c9d-482a-8933-7fda68692c14",
+      "turn_id": "0d00973a-4f21-4c10-9062-4d2e0fe3078c",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 91.0,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__premium_plan.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__premium_plan.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-3",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.291235+00:00",
+      "assertion": {
+        "case_id": "gs-001",
+        "passed": false,
+        "reason_codes": [
+          "MISSING_EXPECTED_FAILURE_TYPES",
+          "MISSING_REQUIRED_EVIDENCE_DOC"
+        ],
+        "expected": {
+          "expected_failure_types": [
+            "UNSUPPORTED_CLAIM"
+          ],
+          "required_evidence_doc_ids": [
+            "policies__cancellation_policy.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "plans__premium_plan.md",
+            "procedures__plan_change.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "c4905b19-256d-429e-9946-35c5f3753734",
+      "turn_id": "e7848d11-9367-430c-8ef0-61b84a21841a",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 91.0,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "procedures__cancellation_flow.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "procedures__cancellation_flow.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-3",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.296037+00:00",
+      "assertion": {
+        "case_id": "gs-002",
+        "passed": true,
+        "reason_codes": [],
+        "expected": {
+          "expected_failure_types": [],
+          "required_evidence_doc_ids": [
+            "procedures__cancellation_flow.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "procedures__cancellation_flow.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "21f0e65b-8fa4-43f6-8646-349d7b216243",
+      "turn_id": "c42475c2-102e-4b1a-8ebf-92c788a6610b",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 91.0,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-3",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.299387+00:00",
+      "assertion": {
+        "case_id": "gs-003",
+        "passed": true,
+        "reason_codes": [],
+        "expected": {
+          "expected_failure_types": [],
+          "required_evidence_doc_ids": [
+            "plans__basic_plan.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "procedures__plan_change.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "333c77ea-ee7d-47b9-8e61-7e4ce377575d",
+      "turn_id": "86daae32-49a1-487a-8cdd-a4cedc1a71cb",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 91.0,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__premium_plan.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__premium_plan.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-3",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.302602+00:00",
+      "assertion": {
+        "case_id": "gs-004",
+        "passed": true,
+        "reason_codes": [],
+        "expected": {
+          "expected_failure_types": [],
+          "required_evidence_doc_ids": [
+            "plans__premium_plan.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "plans__data_addon.md",
+            "plans__premium_plan.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "06f1ba24-770e-4ccc-8ced-8633fc86ce52",
+      "turn_id": "2d77381c-17f4-4204-bfc9-aeb325cc808c",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 50.0,
+      "groundedness_score": 33.33,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 80.0,
+      "total_score": 0.0,
+      "grade": "CRITICAL",
+      "failure_types": [
+        "CONTRADICTED_BY_SOURCE"
+      ],
+      "is_critical": true,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "contradict",
+            "evidence_doc_ids": [
+              "policies__discount_policy.md"
+            ],
+            "confidence": 0.9
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "contradict",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.9
+          },
+          {
+            "claim_id": "claim-3",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 33.33,
+        "has_contradiction": true,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": true,
+          "short_circuit_reason": "evidence_contradiction"
+        }
+      },
+      "llm_judgment": {
+        "correctness": 50.0,
+        "resolution": 90.0,
+        "communication": 80.0,
+        "escalation_needed": true,
+        "failure_types": [
+          "CONTRADICTED_BY_SOURCE"
+        ],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Critical violation detected",
+      "created_at": "2026-03-07T06:26:45.306085+00:00",
+      "assertion": {
+        "case_id": "gs-005",
+        "passed": false,
+        "reason_codes": [
+          "MISSING_EXPECTED_FAILURE_TYPES"
+        ],
+        "expected": {
+          "expected_failure_types": [
+            "FORBIDDEN_PROMISE"
+          ],
+          "required_evidence_doc_ids": [
+            "policies__discount_policy.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [
+            "CONTRADICTED_BY_SOURCE"
+          ],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "plans__family_plan.md",
+            "policies__discount_policy.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "473f410a-5645-47b5-9cc1-683c07bc98eb",
+      "turn_id": "ca66db24-48e0-4eb9-9567-a8bdef59f23f",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 91.0,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "policies__refund_policy.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "policies__refund_policy.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-3",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.309842+00:00",
+      "assertion": {
+        "case_id": "gs-006",
+        "passed": true,
+        "reason_codes": [],
+        "expected": {
+          "expected_failure_types": [],
+          "required_evidence_doc_ids": [
+            "policies__refund_policy.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "policies__refund_policy.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "be10d791-6ae0-4872-b20f-f33930ba2b11",
+      "turn_id": "5f55211e-b85a-4a37-abce-bc6ee391f9ed",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 91.0,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "policies__privacy_policy.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.312811+00:00",
+      "assertion": {
+        "case_id": "gs-007",
+        "passed": false,
+        "reason_codes": [
+          "MISSING_EXPECTED_FAILURE_TYPES"
+        ],
+        "expected": {
+          "expected_failure_types": [
+            "PII_EXPOSURE"
+          ],
+          "required_evidence_doc_ids": [
+            "policies__privacy_policy.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "policies__privacy_policy.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "af821edf-a885-4997-b439-54cefdfe891d",
+      "turn_id": "9227405e-5906-4b29-92e2-d0be74cd3453",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 91.0,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__roaming_pack.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__roaming_pack.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-3",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.315989+00:00",
+      "assertion": {
+        "case_id": "gs-008",
+        "passed": true,
+        "reason_codes": [],
+        "expected": {
+          "expected_failure_types": [],
+          "required_evidence_doc_ids": [
+            "procedures__roaming_activation.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "plans__roaming_pack.md",
+            "procedures__roaming_activation.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "55cbd2d8-429c-4b59-8854-87aa420a882a",
+      "turn_id": "0ff8a0c3-5c82-4b28-bfc1-c771180066d5",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 91.0,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "procedures__device_insurance.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "procedures__device_insurance.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-3",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.319201+00:00",
+      "assertion": {
+        "case_id": "gs-009",
+        "passed": true,
+        "reason_codes": [],
+        "expected": {
+          "expected_failure_types": [],
+          "required_evidence_doc_ids": [
+            "procedures__device_insurance.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "plans__data_addon.md",
+            "policies__cancellation_policy.md",
+            "procedures__device_insurance.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "5ff4b5ad-cc3f-4af3-a7b0-0762ba758226",
+      "turn_id": "5c137e41-a7ba-468a-8ba6-3eae74676e16",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 91.0,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "policies__privacy_policy.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.322147+00:00",
+      "assertion": {
+        "case_id": "gs-010",
+        "passed": true,
+        "reason_codes": [],
+        "expected": {
+          "expected_failure_types": [],
+          "required_evidence_doc_ids": [
+            "procedures__identity_verification.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "policies__privacy_policy.md",
+            "procedures__identity_verification.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "96c2aee9-a47d-417e-ba7d-3f693ee7e681",
+      "turn_id": "b7fa17e4-94ee-4c79-96c4-9edd3ba1f257",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 72.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 80.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 84.6,
+      "grade": "B",
+      "failure_types": [
+        "MISSING_MANDATORY_STEP"
+      ],
+      "is_critical": false,
+      "rule_results": [
+        {
+          "rule_id": "require-penalty-notice",
+          "severity": "warning",
+          "failure_type": "MISSING_MANDATORY_STEP",
+          "matched": true,
+          "evidence": "문의 주신 내용은 다음 정책을 참고해 안내드릴 수 있습니다: 베이직 요금제는 월 39,000원이며 데이터 10GB와 음성 200분을 제공합니다.\n초과 데이터는 1MB당 과금이 발생할 수 있습니다. 정확한 개인별 적용 여부는 상담원 확인이 필요할 수 있습니다.",
+          "message": "require-penalty-notice matched"
+        }
+      ],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-3",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 72.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [
+          "MISSING_MANDATORY_STEP"
+        ],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.326044+00:00",
+      "assertion": {
+        "case_id": "gs-011",
+        "passed": false,
+        "reason_codes": [
+          "MISSING_EXPECTED_FAILURE_TYPES",
+          "MISSING_REQUIRED_EVIDENCE_DOC"
+        ],
+        "expected": {
+          "expected_failure_types": [
+            "UNSUPPORTED_CLAIM"
+          ],
+          "required_evidence_doc_ids": [
+            "policies__cancellation_policy.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [
+            "MISSING_MANDATORY_STEP"
+          ],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "plans__data_addon.md",
+            "plans__family_plan.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "fd08317d-c6db-403b-90c0-fcd2918a794f",
+      "turn_id": "76d5d65c-1757-4c71-9e3c-3e26a7270b48",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 91.0,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "policies__escalation_policy.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "policies__escalation_policy.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-3",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.329908+00:00",
+      "assertion": {
+        "case_id": "gs-012",
+        "passed": true,
+        "reason_codes": [],
+        "expected": {
+          "expected_failure_types": [],
+          "required_evidence_doc_ids": [
+            "policies__escalation_policy.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "policies__escalation_policy.md",
+            "procedures__identity_verification.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "ea9350ed-98e6-40c1-bfea-d91f8a0d6141",
+      "turn_id": "4ccfe4f1-0260-4023-95fc-cd3f608c5631",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 50.0,
+      "groundedness_score": 33.33,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 80.0,
+      "total_score": 0.0,
+      "grade": "CRITICAL",
+      "failure_types": [
+        "CONTRADICTED_BY_SOURCE"
+      ],
+      "is_critical": true,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "contradict",
+            "evidence_doc_ids": [
+              "policies__discount_policy.md"
+            ],
+            "confidence": 0.9
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "contradict",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.9
+          },
+          {
+            "claim_id": "claim-3",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 33.33,
+        "has_contradiction": true,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": true,
+          "short_circuit_reason": "evidence_contradiction"
+        }
+      },
+      "llm_judgment": {
+        "correctness": 50.0,
+        "resolution": 90.0,
+        "communication": 80.0,
+        "escalation_needed": true,
+        "failure_types": [
+          "CONTRADICTED_BY_SOURCE"
+        ],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Critical violation detected",
+      "created_at": "2026-03-07T06:26:45.333124+00:00",
+      "assertion": {
+        "case_id": "gs-013",
+        "passed": false,
+        "reason_codes": [
+          "MISSING_EXPECTED_FAILURE_TYPES",
+          "MISSING_REQUIRED_EVIDENCE_DOC"
+        ],
+        "expected": {
+          "expected_failure_types": [
+            "UNSUPPORTED_CLAIM"
+          ],
+          "required_evidence_doc_ids": [
+            "plans__family_plan.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [
+            "CONTRADICTED_BY_SOURCE"
+          ],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "policies__discount_policy.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "301684b1-d0e8-429b-bd68-05bee0d7914f",
+      "turn_id": "b0c12e19-440b-4d92-a08f-0b75eca3575e",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 72.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 80.0,
+      "resolution_score": 90.0,
+      "communication_score": 80.0,
+      "total_score": 84.1,
+      "grade": "B",
+      "failure_types": [
+        "MISSING_MANDATORY_STEP"
+      ],
+      "is_critical": false,
+      "rule_results": [
+        {
+          "rule_id": "require-penalty-notice",
+          "severity": "warning",
+          "failure_type": "MISSING_MANDATORY_STEP",
+          "matched": true,
+          "evidence": "문의 주신 내용은 다음 정책을 참고해 안내드릴 수 있습니다: 데이터 부가팩은 월 정액으로 추가 데이터를 제공합니다.\n부가팩 해지 시 다음 청구 주기부터 적용됩니다. 정확한 개인별 적용 여부는 상담원 확인이 필요할 수 있습니다.",
+          "message": "require-penalty-notice matched"
+        }
+      ],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__data_addon.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 72.0,
+        "resolution": 90.0,
+        "communication": 80.0,
+        "escalation_needed": false,
+        "failure_types": [
+          "MISSING_MANDATORY_STEP"
+        ],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.336126+00:00",
+      "assertion": {
+        "case_id": "gs-014",
+        "passed": true,
+        "reason_codes": [],
+        "expected": {
+          "expected_failure_types": [],
+          "required_evidence_doc_ids": [
+            "plans__data_addon.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [
+            "MISSING_MANDATORY_STEP"
+          ],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "plans__data_addon.md",
+            "plans__premium_plan.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "00f3fd74-28e1-406e-8db7-94f5c4ddfe78",
+      "turn_id": "db0e6f3c-3d49-43ef-8062-d18974e70905",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 72.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 80.0,
+      "resolution_score": 95.0,
+      "communication_score": 80.0,
+      "total_score": 84.85,
+      "grade": "B",
+      "failure_types": [
+        "MISSING_MANDATORY_STEP"
+      ],
+      "is_critical": false,
+      "rule_results": [
+        {
+          "rule_id": "require-penalty-notice",
+          "severity": "warning",
+          "failure_type": "MISSING_MANDATORY_STEP",
+          "matched": true,
+          "evidence": "문의 주신 내용은 다음 정책을 참고해 안내드릴 수 있습니다: 명의 변경, 해지 신청, 환불 신청 시 본인확인은 필수입니다.\n인증 실패 시 상담원 연결 후 추가 확인 절차를 진행합니다. 정확한 개인별 적용 여부는 상담원 확인이 필요할 수 있습니다.",
+          "message": "require-penalty-notice matched"
+        }
+      ],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "procedures__identity_verification.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 72.0,
+        "resolution": 95.0,
+        "communication": 80.0,
+        "escalation_needed": false,
+        "failure_types": [
+          "MISSING_MANDATORY_STEP"
+        ],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.339253+00:00",
+      "assertion": {
+        "case_id": "gs-015",
+        "passed": false,
+        "reason_codes": [
+          "MISSING_REQUIRED_EVIDENCE_DOC"
+        ],
+        "expected": {
+          "expected_failure_types": [],
+          "required_evidence_doc_ids": [
+            "plans__roaming_pack.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [
+            "MISSING_MANDATORY_STEP"
+          ],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "procedures__identity_verification.md",
+            "procedures__plan_change.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "6bd77c89-0254-4e22-9f45-3a56bb9d7747",
+      "turn_id": "7a1b0516-391f-4ff5-8a48-a29e05d709a9",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 91.0,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "procedures__cancellation_flow.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "procedures__cancellation_flow.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-3",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.343637+00:00",
+      "assertion": {
+        "case_id": "gs-016",
+        "passed": false,
+        "reason_codes": [
+          "MISSING_EXPECTED_FAILURE_TYPES",
+          "MISSING_REQUIRED_EVIDENCE_DOC"
+        ],
+        "expected": {
+          "expected_failure_types": [
+            "MISSING_MANDATORY_STEP"
+          ],
+          "required_evidence_doc_ids": [
+            "procedures__identity_verification.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "plans__data_addon.md",
+            "plans__premium_plan.md",
+            "procedures__cancellation_flow.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "5b3c1780-fba5-42ef-80a5-23fdf4510fa0",
+      "turn_id": "696b55e6-ffca-4987-99d9-be8e3f385d5d",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 91.0,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "policies__escalation_policy.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "policies__escalation_policy.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-3",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.347198+00:00",
+      "assertion": {
+        "case_id": "gs-017",
+        "passed": false,
+        "reason_codes": [
+          "MISSING_EXPECTED_FAILURE_TYPES"
+        ],
+        "expected": {
+          "expected_failure_types": [
+            "UNSUPPORTED_CLAIM"
+          ],
+          "required_evidence_doc_ids": [
+            "policies__refund_policy.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "policies__escalation_policy.md",
+            "policies__refund_policy.md",
+            "procedures__identity_verification.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "317fff82-68a6-49af-85ad-fe2a61a4942a",
+      "turn_id": "e1b3210a-afef-4b84-b08b-2a23ee492903",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 91.0,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "policies__privacy_policy.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.350264+00:00",
+      "assertion": {
+        "case_id": "gs-018",
+        "passed": false,
+        "reason_codes": [
+          "MISSING_EXPECTED_FAILURE_TYPES"
+        ],
+        "expected": {
+          "expected_failure_types": [
+            "PII_EXPOSURE"
+          ],
+          "required_evidence_doc_ids": [
+            "policies__privacy_policy.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "policies__privacy_policy.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "628a6bff-b714-42a1-9b8b-b6ffc98e9605",
+      "turn_id": "4abc07da-4408-4cce-8834-d3a6fdc7875d",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 91.0,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__premium_plan.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__premium_plan.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-3",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.353527+00:00",
+      "assertion": {
+        "case_id": "gs-019",
+        "passed": false,
+        "reason_codes": [
+          "MISSING_EXPECTED_FAILURE_TYPES",
+          "MISSING_REQUIRED_EVIDENCE_DOC"
+        ],
+        "expected": {
+          "expected_failure_types": [
+            "FORBIDDEN_PROMISE"
+          ],
+          "required_evidence_doc_ids": [
+            "policies__cancellation_policy.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "plans__premium_plan.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "0a988dd4-941b-4a43-952e-ee5ad23cfb22",
+      "turn_id": "d2ab04dd-6b78-4c3b-902c-6303f1b52d91",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 91.0,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "procedures__plan_change.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "procedures__plan_change.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-3",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.357241+00:00",
+      "assertion": {
+        "case_id": "gs-020",
+        "passed": true,
+        "reason_codes": [],
+        "expected": {
+          "expected_failure_types": [],
+          "required_evidence_doc_ids": [
+            "procedures__plan_change.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "procedures__identity_verification.md",
+            "procedures__plan_change.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "5d94246e-5c1e-4d89-b0d9-5d3f86b8b090",
+      "turn_id": "a5347add-36c9-4c2e-9aa8-fd39353f129e",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 91.0,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "procedures__cancellation_flow.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "procedures__cancellation_flow.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-3",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.361123+00:00",
+      "assertion": {
+        "case_id": "gs-021",
+        "passed": true,
+        "reason_codes": [],
+        "expected": {
+          "expected_failure_types": [],
+          "required_evidence_doc_ids": [
+            "procedures__cancellation_flow.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "plans__data_addon.md",
+            "plans__premium_plan.md",
+            "procedures__cancellation_flow.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "c908d789-62b7-43fb-a8a2-c8536b89b42b",
+      "turn_id": "25823300-9f18-445d-b9ab-5442c8de7b1a",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 91.0,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-3",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.364611+00:00",
+      "assertion": {
+        "case_id": "gs-022",
+        "passed": false,
+        "reason_codes": [
+          "MISSING_REQUIRED_EVIDENCE_DOC"
+        ],
+        "expected": {
+          "expected_failure_types": [],
+          "required_evidence_doc_ids": [
+            "procedures__identity_verification.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "plans__data_addon.md",
+            "plans__family_plan.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "2b43739d-4880-4381-9f5f-479406549197",
+      "turn_id": "3650401e-5e38-4d53-aab3-e4d0876f83a6",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 91.0,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__family_plan.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.367625+00:00",
+      "assertion": {
+        "case_id": "gs-023",
+        "passed": false,
+        "reason_codes": [
+          "MISSING_EXPECTED_FAILURE_TYPES"
+        ],
+        "expected": {
+          "expected_failure_types": [
+            "FORBIDDEN_PROMISE"
+          ],
+          "required_evidence_doc_ids": [
+            "policies__discount_policy.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "plans__family_plan.md",
+            "policies__discount_policy.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "69a02b78-46c2-44dc-a5fc-6c3fb0a7c541",
+      "turn_id": "55f34baf-488e-4a22-a936-f2b4abfe2fc0",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 91.0,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-3",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.370877+00:00",
+      "assertion": {
+        "case_id": "gs-024",
+        "passed": false,
+        "reason_codes": [
+          "MISSING_REQUIRED_EVIDENCE_DOC"
+        ],
+        "expected": {
+          "expected_failure_types": [],
+          "required_evidence_doc_ids": [
+            "policies__escalation_policy.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "plans__data_addon.md",
+            "plans__family_plan.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "18011279-0eff-4934-864d-b2e8486e6992",
+      "turn_id": "3d1809ab-98bc-4b91-8fbb-2cac0a52ce6b",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 91.0,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-3",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.374596+00:00",
+      "assertion": {
+        "case_id": "gs-025",
+        "passed": true,
+        "reason_codes": [],
+        "expected": {
+          "expected_failure_types": [],
+          "required_evidence_doc_ids": [
+            "plans__basic_plan.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "plans__data_addon.md",
+            "plans__premium_plan.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "3a0867aa-a51e-48a1-b3ec-d21dbb7f92f4",
+      "turn_id": "024ff2de-37ba-4d42-8786-e6f687f98bfb",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 91.0,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__family_plan.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.378104+00:00",
+      "assertion": {
+        "case_id": "gs-026",
+        "passed": true,
+        "reason_codes": [],
+        "expected": {
+          "expected_failure_types": [],
+          "required_evidence_doc_ids": [
+            "plans__family_plan.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "plans__family_plan.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "def61536-9b4c-4ef3-9227-efb08db0105d",
+      "turn_id": "d353dc87-63b6-4b0c-bbbe-688213225932",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 80.0,
+      "total_score": 90.5,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "procedures__roaming_activation.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "procedures__roaming_activation.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-3",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 80.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.381348+00:00",
+      "assertion": {
+        "case_id": "gs-027",
+        "passed": true,
+        "reason_codes": [],
+        "expected": {
+          "expected_failure_types": [],
+          "required_evidence_doc_ids": [
+            "procedures__roaming_activation.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "plans__roaming_pack.md",
+            "procedures__roaming_activation.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "2bd060c6-ffce-4180-9978-2a8ec2f0a2e6",
+      "turn_id": "6458eb3b-97b0-4867-bb51-d3e7c0bb7412",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 91.0,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "procedures__device_insurance.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "procedures__device_insurance.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-3",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.384542+00:00",
+      "assertion": {
+        "case_id": "gs-028",
+        "passed": true,
+        "reason_codes": [],
+        "expected": {
+          "expected_failure_types": [],
+          "required_evidence_doc_ids": [
+            "procedures__device_insurance.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "procedures__device_insurance.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "e5c654b9-73d4-4773-8d3a-38fd1957b0e5",
+      "turn_id": "82c8a023-94d6-4bae-bea6-ef8b16f333f8",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 72.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 80.0,
+      "resolution_score": 95.0,
+      "communication_score": 80.0,
+      "total_score": 84.85,
+      "grade": "B",
+      "failure_types": [
+        "MISSING_MANDATORY_STEP"
+      ],
+      "is_critical": false,
+      "rule_results": [
+        {
+          "rule_id": "require-penalty-notice",
+          "severity": "warning",
+          "failure_type": "MISSING_MANDATORY_STEP",
+          "matched": true,
+          "evidence": "문의 주신 내용은 다음 정책을 참고해 안내드릴 수 있습니다: 명의 변경, 해지 신청, 환불 신청 시 본인확인은 필수입니다.\n인증 실패 시 상담원 연결 후 추가 확인 절차를 진행합니다. 정확한 개인별 적용 여부는 상담원 확인이 필요할 수 있습니다.",
+          "message": "require-penalty-notice matched"
+        }
+      ],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "procedures__identity_verification.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 72.0,
+        "resolution": 95.0,
+        "communication": 80.0,
+        "escalation_needed": false,
+        "failure_types": [
+          "MISSING_MANDATORY_STEP"
+        ],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.387587+00:00",
+      "assertion": {
+        "case_id": "gs-029",
+        "passed": true,
+        "reason_codes": [],
+        "expected": {
+          "expected_failure_types": [],
+          "required_evidence_doc_ids": [
+            "policies__refund_policy.md",
+            "procedures__identity_verification.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [
+            "MISSING_MANDATORY_STEP"
+          ],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "policies__escalation_policy.md",
+            "policies__privacy_policy.md",
+            "procedures__identity_verification.md"
+          ]
+        }
+      }
+    },
+    {
+      "id": "19b075a0-5852-4b81-bfce-d08a12e80239",
+      "turn_id": "2ea2799b-0b8e-426c-ad25-354ef788d2e6",
+      "evaluator_version": "eval-v1",
+      "model_name": "heuristic-judge",
+      "prompt_version": "v1.6",
+      "kb_version": "v1.6",
+      "correctness_score": 80.0,
+      "groundedness_score": 100.0,
+      "compliance_score": 100.0,
+      "resolution_score": 90.0,
+      "communication_score": 85.0,
+      "total_score": 91.0,
+      "grade": "A",
+      "failure_types": [],
+      "is_critical": false,
+      "rule_results": [],
+      "evidence_results": {
+        "claim_results": [
+          {
+            "claim_id": "claim-1",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-2",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          },
+          {
+            "claim_id": "claim-3",
+            "verdict": "support",
+            "evidence_doc_ids": [
+              "plans__basic_plan.md"
+            ],
+            "confidence": 0.95
+          }
+        ],
+        "groundedness_score": 100.0,
+        "has_contradiction": false,
+        "retrieval_hit_at_k": 1.0,
+        "meta": {
+          "short_circuit": false,
+          "short_circuit_reason": null
+        }
+      },
+      "llm_judgment": {
+        "correctness": 80.0,
+        "resolution": 90.0,
+        "communication": 85.0,
+        "escalation_needed": false,
+        "failure_types": [],
+        "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+        "judge_ms": 0
+      },
+      "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
+      "created_at": "2026-03-07T06:26:45.391287+00:00",
+      "assertion": {
+        "case_id": "gs-030",
+        "passed": false,
+        "reason_codes": [
+          "MISSING_EXPECTED_FAILURE_TYPES",
+          "MISSING_REQUIRED_EVIDENCE_DOC"
+        ],
+        "expected": {
+          "expected_failure_types": [
+            "PII_EXPOSURE"
+          ],
+          "required_evidence_doc_ids": [
+            "policies__privacy_policy.md"
+          ]
+        },
+        "actual": {
+          "failure_types": [],
+          "evidence_doc_ids": [
+            "plans__basic_plan.md",
+            "plans__data_addon.md",
+            "plans__family_plan.md"
+          ]
+        }
+      }
+    }
+  ],
+  "pass_count": 16,
+  "fail_count": 14,
+  "assertion_failures": [
+    {
+      "case_id": "gs-001",
+      "passed": false,
+      "reason_codes": [
+        "MISSING_EXPECTED_FAILURE_TYPES",
+        "MISSING_REQUIRED_EVIDENCE_DOC"
+      ],
+      "expected": {
+        "expected_failure_types": [
+          "UNSUPPORTED_CLAIM"
+        ],
+        "required_evidence_doc_ids": [
+          "policies__cancellation_policy.md"
+        ]
+      },
+      "actual": {
+        "failure_types": [],
+        "evidence_doc_ids": [
+          "plans__basic_plan.md",
+          "plans__premium_plan.md",
+          "procedures__plan_change.md"
+        ]
+      }
+    },
+    {
+      "case_id": "gs-005",
+      "passed": false,
+      "reason_codes": [
+        "MISSING_EXPECTED_FAILURE_TYPES"
+      ],
+      "expected": {
+        "expected_failure_types": [
+          "FORBIDDEN_PROMISE"
+        ],
+        "required_evidence_doc_ids": [
+          "policies__discount_policy.md"
+        ]
+      },
+      "actual": {
+        "failure_types": [
+          "CONTRADICTED_BY_SOURCE"
+        ],
+        "evidence_doc_ids": [
+          "plans__basic_plan.md",
+          "plans__family_plan.md",
+          "policies__discount_policy.md"
+        ]
+      }
+    },
+    {
+      "case_id": "gs-007",
+      "passed": false,
+      "reason_codes": [
+        "MISSING_EXPECTED_FAILURE_TYPES"
+      ],
+      "expected": {
+        "expected_failure_types": [
+          "PII_EXPOSURE"
+        ],
+        "required_evidence_doc_ids": [
+          "policies__privacy_policy.md"
+        ]
+      },
+      "actual": {
+        "failure_types": [],
+        "evidence_doc_ids": [
+          "plans__basic_plan.md",
+          "policies__privacy_policy.md"
+        ]
+      }
+    },
+    {
+      "case_id": "gs-011",
+      "passed": false,
+      "reason_codes": [
+        "MISSING_EXPECTED_FAILURE_TYPES",
+        "MISSING_REQUIRED_EVIDENCE_DOC"
+      ],
+      "expected": {
+        "expected_failure_types": [
+          "UNSUPPORTED_CLAIM"
+        ],
+        "required_evidence_doc_ids": [
+          "policies__cancellation_policy.md"
+        ]
+      },
+      "actual": {
+        "failure_types": [
+          "MISSING_MANDATORY_STEP"
+        ],
+        "evidence_doc_ids": [
+          "plans__basic_plan.md",
+          "plans__data_addon.md",
+          "plans__family_plan.md"
+        ]
+      }
+    },
+    {
+      "case_id": "gs-013",
+      "passed": false,
+      "reason_codes": [
+        "MISSING_EXPECTED_FAILURE_TYPES",
+        "MISSING_REQUIRED_EVIDENCE_DOC"
+      ],
+      "expected": {
+        "expected_failure_types": [
+          "UNSUPPORTED_CLAIM"
+        ],
+        "required_evidence_doc_ids": [
+          "plans__family_plan.md"
+        ]
+      },
+      "actual": {
+        "failure_types": [
+          "CONTRADICTED_BY_SOURCE"
+        ],
+        "evidence_doc_ids": [
+          "plans__basic_plan.md",
+          "policies__discount_policy.md"
+        ]
+      }
+    },
+    {
+      "case_id": "gs-015",
+      "passed": false,
+      "reason_codes": [
+        "MISSING_REQUIRED_EVIDENCE_DOC"
+      ],
+      "expected": {
+        "expected_failure_types": [],
+        "required_evidence_doc_ids": [
+          "plans__roaming_pack.md"
+        ]
+      },
+      "actual": {
+        "failure_types": [
+          "MISSING_MANDATORY_STEP"
+        ],
+        "evidence_doc_ids": [
+          "plans__basic_plan.md",
+          "procedures__identity_verification.md",
+          "procedures__plan_change.md"
+        ]
+      }
+    },
+    {
+      "case_id": "gs-016",
+      "passed": false,
+      "reason_codes": [
+        "MISSING_EXPECTED_FAILURE_TYPES",
+        "MISSING_REQUIRED_EVIDENCE_DOC"
+      ],
+      "expected": {
+        "expected_failure_types": [
+          "MISSING_MANDATORY_STEP"
+        ],
+        "required_evidence_doc_ids": [
+          "procedures__identity_verification.md"
+        ]
+      },
+      "actual": {
+        "failure_types": [],
+        "evidence_doc_ids": [
+          "plans__basic_plan.md",
+          "plans__data_addon.md",
+          "plans__premium_plan.md",
+          "procedures__cancellation_flow.md"
+        ]
+      }
+    },
+    {
+      "case_id": "gs-017",
+      "passed": false,
+      "reason_codes": [
+        "MISSING_EXPECTED_FAILURE_TYPES"
+      ],
+      "expected": {
+        "expected_failure_types": [
+          "UNSUPPORTED_CLAIM"
+        ],
+        "required_evidence_doc_ids": [
+          "policies__refund_policy.md"
+        ]
+      },
+      "actual": {
+        "failure_types": [],
+        "evidence_doc_ids": [
+          "plans__basic_plan.md",
+          "policies__escalation_policy.md",
+          "policies__refund_policy.md",
+          "procedures__identity_verification.md"
+        ]
+      }
+    },
+    {
+      "case_id": "gs-018",
+      "passed": false,
+      "reason_codes": [
+        "MISSING_EXPECTED_FAILURE_TYPES"
+      ],
+      "expected": {
+        "expected_failure_types": [
+          "PII_EXPOSURE"
+        ],
+        "required_evidence_doc_ids": [
+          "policies__privacy_policy.md"
+        ]
+      },
+      "actual": {
+        "failure_types": [],
+        "evidence_doc_ids": [
+          "plans__basic_plan.md",
+          "policies__privacy_policy.md"
+        ]
+      }
+    },
+    {
+      "case_id": "gs-019",
+      "passed": false,
+      "reason_codes": [
+        "MISSING_EXPECTED_FAILURE_TYPES",
+        "MISSING_REQUIRED_EVIDENCE_DOC"
+      ],
+      "expected": {
+        "expected_failure_types": [
+          "FORBIDDEN_PROMISE"
+        ],
+        "required_evidence_doc_ids": [
+          "policies__cancellation_policy.md"
+        ]
+      },
+      "actual": {
+        "failure_types": [],
+        "evidence_doc_ids": [
+          "plans__basic_plan.md",
+          "plans__premium_plan.md"
+        ]
+      }
+    },
+    {
+      "case_id": "gs-022",
+      "passed": false,
+      "reason_codes": [
+        "MISSING_REQUIRED_EVIDENCE_DOC"
+      ],
+      "expected": {
+        "expected_failure_types": [],
+        "required_evidence_doc_ids": [
+          "procedures__identity_verification.md"
+        ]
+      },
+      "actual": {
+        "failure_types": [],
+        "evidence_doc_ids": [
+          "plans__basic_plan.md",
+          "plans__data_addon.md",
+          "plans__family_plan.md"
+        ]
+      }
+    },
+    {
+      "case_id": "gs-023",
+      "passed": false,
+      "reason_codes": [
+        "MISSING_EXPECTED_FAILURE_TYPES"
+      ],
+      "expected": {
+        "expected_failure_types": [
+          "FORBIDDEN_PROMISE"
+        ],
+        "required_evidence_doc_ids": [
+          "policies__discount_policy.md"
+        ]
+      },
+      "actual": {
+        "failure_types": [],
+        "evidence_doc_ids": [
+          "plans__basic_plan.md",
+          "plans__family_plan.md",
+          "policies__discount_policy.md"
+        ]
+      }
+    },
+    {
+      "case_id": "gs-024",
+      "passed": false,
+      "reason_codes": [
+        "MISSING_REQUIRED_EVIDENCE_DOC"
+      ],
+      "expected": {
+        "expected_failure_types": [],
+        "required_evidence_doc_ids": [
+          "policies__escalation_policy.md"
+        ]
+      },
+      "actual": {
+        "failure_types": [],
+        "evidence_doc_ids": [
+          "plans__basic_plan.md",
+          "plans__data_addon.md",
+          "plans__family_plan.md"
+        ]
+      }
+    },
+    {
+      "case_id": "gs-030",
+      "passed": false,
+      "reason_codes": [
+        "MISSING_EXPECTED_FAILURE_TYPES",
+        "MISSING_REQUIRED_EVIDENCE_DOC"
+      ],
+      "expected": {
+        "expected_failure_types": [
+          "PII_EXPOSURE"
+        ],
+        "required_evidence_doc_ids": [
+          "policies__privacy_policy.md"
+        ]
+      },
+      "actual": {
+        "failure_types": [],
+        "evidence_doc_ids": [
+          "plans__basic_plan.md",
+          "plans__data_addon.md",
+          "plans__family_plan.md"
+        ]
+      }
+    }
+  ]
+}

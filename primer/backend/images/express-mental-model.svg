@@ -1,0 +1,89 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5E7895"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .cardNum { font: 700 16px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4B6781; }
+    .cardTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .cardText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5C7289; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 20px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+    .footnote { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F7FAFD"/>
+
+  <text x="72" y="68" class="eyebrow">EXPRESS MENTAL MODEL</text>
+  <text x="72" y="112" class="title">Express를 볼 때 먼저 잡을 3가지</text>
+  <text x="72" y="142" class="subtitle">미들웨어 순서, 종료 지점, 책임 분리를 먼저 정하면 Express 코드는 자유로워도 흐트러지지 않는다.</text>
+
+  <rect x="72" y="184" width="360" height="124" rx="24" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="102" y="218" class="cardNum">1. ORDER</text>
+  <text x="102" y="252" class="cardTitle">무엇이 먼저 실행되는가?</text>
+  <text x="102" y="280" class="cardText">`app.use()` 등록 순서가 실제 동작 순서다.</text>
+  <text x="102" y="302" class="cardText">파서, 인증, 라우터, 에러 핸들러 위치를 고정한다.</text>
+
+  <rect x="460" y="184" width="360" height="124" rx="24" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="490" y="218" class="cardNum">2. EXIT POINT</text>
+  <text x="490" y="252" class="cardTitle">어디서 응답을 끝낼 것인가?</text>
+  <text x="490" y="280" class="cardText">auth, validation, 404, errorHandler 중</text>
+  <text x="490" y="302" class="cardText">어느 지점에서 체인을 끊을지 명확해야 한다.</text>
+
+  <rect x="848" y="184" width="360" height="124" rx="24" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="878" y="218" class="cardNum">3. BOUNDARY</text>
+  <text x="878" y="252" class="cardTitle">컨트롤러와 서비스의 경계는?</text>
+  <text x="878" y="280" class="cardText">컨트롤러는 HTTP를 알고, 서비스는 비즈니스 로직만</text>
+  <text x="878" y="302" class="cardText">담당하게 나누면 구조가 단단해진다.</text>
+
+  <rect x="56" y="352" width="1168" height="396" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="392" class="section">REQUEST WALKTHROUGH</text>
+
+  <line x1="156" y1="550" x2="1046" y2="550" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="88" y="490" width="142" height="118" rx="22" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="118" y="534" class="nodeTitle">클라이언트</text>
+  <text x="124" y="560" class="nodeTitle">요청</text>
+  <text x="116" y="586" class="nodeText">headers / body / path</text>
+
+  <rect x="270" y="470" width="192" height="156" rx="22" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="306" y="516" class="nodeTitle">전역 미들웨어</text>
+  <text x="306" y="544" class="nodeText">helmet, cors, json parser</text>
+  <text x="306" y="568" class="nodeText">등록 순서가 먼저 실행된다</text>
+  <rect x="320" y="592" width="92" height="30" rx="15" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="342" y="612" class="chip">pre-route</text>
+
+  <rect x="504" y="470" width="198" height="156" rx="22" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="540" y="516" class="nodeTitle">라우트 미들웨어</text>
+  <text x="540" y="544" class="nodeText">authenticate, validate,</text>
+  <text x="540" y="568" class="nodeText">rate limit 같은 조건 검사</text>
+  <rect x="554" y="592" width="98" height="30" rx="15" fill="#F3FBF7" stroke="#C2E0D0"/>
+  <text x="572" y="612" class="chip">stop or pass</text>
+
+  <rect x="744" y="470" width="182" height="156" rx="22" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="780" y="516" class="nodeTitle">컨트롤러</text>
+  <text x="780" y="544" class="nodeText">req/res를 받고</text>
+  <text x="780" y="568" class="nodeText">서비스 결과를 응답으로 바꾼다</text>
+
+  <rect x="968" y="470" width="168" height="156" rx="22" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="1008" y="516" class="nodeTitle">서비스</text>
+  <text x="998" y="544" class="nodeText">비즈니스 로직, DB 호출,</text>
+  <text x="1014" y="568" class="nodeText">정책과 계산</text>
+
+  <rect x="714" y="648" width="320" height="72" rx="18" fill="#FFF0EE" stroke="#F0B7AF"/>
+  <text x="750" y="680" class="chip">에러가 나면 `next(err)`로 넘기고</text>
+  <text x="750" y="702" class="chip">마지막 errorHandler가 응답을 정리한다</text>
+  <path d="M834 626 C834 640 826 644 818 648" stroke="#D5786F" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+
+  <text x="84" y="704" class="footnote">읽는 법: 이 요청이 어떤 순서로 흐르고, 어디서 응답을 끝내며, 무엇을 서비스 밖으로 밀어낼지 먼저 본다.</text>
+</svg>

@@ -1,0 +1,13 @@
+.git
+.gitignore
+.DS_Store
+**/*.md
+**/docs/
+**/notion/
+**/problem/bin/
+**/*_test.go
+**/testdata/
+.vscode/
+.idea/
+bin/
+tmp/

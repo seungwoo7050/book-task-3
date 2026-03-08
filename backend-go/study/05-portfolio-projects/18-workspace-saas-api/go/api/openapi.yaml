@@ -1,0 +1,532 @@
+openapi: 3.1.0
+info:
+  title: Workspace SaaS API
+  version: 1.0.0
+  description: B2B workspace backend portfolio project with auth, RBAC, async notifications, and cached dashboard summary.
+servers:
+  - url: http://localhost:4080
+paths:
+  /v1/auth/register-owner:
+    post:
+      summary: Register the first owner and organization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterOwnerInput'
+      responses:
+        '201':
+          description: Owner registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+  /v1/auth/login:
+    post:
+      summary: Login with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginInput'
+      responses:
+        '200':
+          description: Login succeeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+  /v1/auth/refresh:
+    post:
+      summary: Rotate refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshInput'
+      responses:
+        '200':
+          description: Refresh succeeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+  /v1/auth/logout:
+    post:
+      summary: Revoke refresh token session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshInput'
+      responses:
+        '204':
+          description: Logout succeeded
+  /v1/me:
+    get:
+      summary: Get current user and memberships
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current identity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeResponse'
+  /v1/orgs/{orgID}/invitations:
+    post:
+      summary: Invite an organization member
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrgID'
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InviteInput'
+      responses:
+        '201':
+          description: Invitation created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InviteResponse'
+        '200':
+          description: Replayed idempotent invitation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InviteResponse'
+  /v1/invitations/accept:
+    post:
+      summary: Accept an invitation token and create or attach a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcceptInvitationInput'
+      responses:
+        '200':
+          description: Invitation accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+  /v1/orgs/{orgID}/projects:
+    get:
+      summary: List projects in an organization
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrgID'
+      responses:
+        '200':
+          description: Project list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  projects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Project'
+    post:
+      summary: Create a project in an organization
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrgID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProjectInput'
+      responses:
+        '201':
+          description: Project created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  project:
+                    $ref: '#/components/schemas/Project'
+  /v1/projects/{projectID}/issues:
+    get:
+      summary: List issues for a project
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectID'
+      responses:
+        '200':
+          description: Issue list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  issues:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Issue'
+    post:
+      summary: Create an issue for a project
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectID'
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateIssueInput'
+      responses:
+        '201':
+          description: Issue created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssueResponse'
+        '200':
+          description: Replayed idempotent issue create
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssueResponse'
+  /v1/issues/{issueID}:
+    patch:
+      summary: Update issue status and assignee
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IssueID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateIssueInput'
+      responses:
+        '200':
+          description: Issue updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssueResponse'
+        '409':
+          description: Version conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /v1/issues/{issueID}/comments:
+    post:
+      summary: Add a comment to an issue
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IssueID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddCommentInput'
+      responses:
+        '201':
+          description: Comment created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  comment:
+                    $ref: '#/components/schemas/Comment'
+  /v1/orgs/{orgID}/notifications:
+    get:
+      summary: List notifications for current user in one organization
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrgID'
+      responses:
+        '200':
+          description: Notifications
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notifications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+  /v1/orgs/{orgID}/dashboard/summary:
+    get:
+      summary: Get organization dashboard summary
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrgID'
+      responses:
+        '200':
+          description: Summary
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  summary:
+                    $ref: '#/components/schemas/DashboardSummary'
+  /healthz:
+    get:
+      summary: Process health
+      responses:
+        '200':
+          description: Process is alive
+  /readyz:
+    get:
+      summary: Dependency readiness
+      responses:
+        '200':
+          description: Dependencies are reachable
+        '503':
+          description: Database or Redis is unavailable
+  /metrics:
+    get:
+      summary: Prometheus-style text metrics
+      responses:
+        '200':
+          description: Metrics payload
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    OrgID:
+      in: path
+      name: orgID
+      required: true
+      schema:
+        type: string
+    ProjectID:
+      in: path
+      name: projectID
+      required: true
+      schema:
+        type: string
+    IssueID:
+      in: path
+      name: issueID
+      required: true
+      schema:
+        type: string
+  schemas:
+    RegisterOwnerInput:
+      type: object
+      required: [email, password, display_name, org_name, org_slug]
+      properties:
+        email: {type: string}
+        password: {type: string}
+        display_name: {type: string}
+        org_name: {type: string}
+        org_slug: {type: string}
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email: {type: string}
+        password: {type: string}
+    RefreshInput:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token: {type: string}
+    InviteInput:
+      type: object
+      required: [email, role]
+      properties:
+        email: {type: string}
+        role: {type: string, enum: [admin, member]}
+    AcceptInvitationInput:
+      type: object
+      required: [token, display_name, password]
+      properties:
+        token: {type: string}
+        display_name: {type: string}
+        password: {type: string}
+    CreateProjectInput:
+      type: object
+      required: [name, project_key]
+      properties:
+        name: {type: string}
+        project_key: {type: string}
+    CreateIssueInput:
+      type: object
+      required: [title, description]
+      properties:
+        title: {type: string}
+        description: {type: string}
+        assignee_user_id: {type: string}
+    UpdateIssueInput:
+      type: object
+      required: [status, version]
+      properties:
+        status: {type: string, enum: [todo, in_progress, done]}
+        assignee_user_id: {type: string}
+        version: {type: integer}
+    AddCommentInput:
+      type: object
+      required: [body]
+      properties:
+        body: {type: string}
+    AuthResponse:
+      type: object
+      properties:
+        access_token: {type: string}
+        refresh_token: {type: string}
+        user:
+          $ref: '#/components/schemas/User'
+        memberships:
+          type: array
+          items:
+            $ref: '#/components/schemas/Membership'
+    MeResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        memberships:
+          type: array
+          items:
+            $ref: '#/components/schemas/Membership'
+    InviteResponse:
+      type: object
+      properties:
+        invitation:
+          $ref: '#/components/schemas/Invitation'
+        accept_token_preview:
+          type: string
+        replayed:
+          type: boolean
+    IssueResponse:
+      type: object
+      properties:
+        issue:
+          $ref: '#/components/schemas/Issue'
+        replayed:
+          type: boolean
+    User:
+      type: object
+      properties:
+        id: {type: string}
+        email: {type: string}
+        display_name: {type: string}
+        created_at: {type: string, format: date-time}
+    Membership:
+      type: object
+      properties:
+        organization_id: {type: string}
+        organization_name: {type: string}
+        organization_slug: {type: string}
+        user_id: {type: string}
+        role: {type: string, enum: [owner, admin, member]}
+        created_at: {type: string, format: date-time}
+    Invitation:
+      type: object
+      properties:
+        id: {type: string}
+        organization_id: {type: string}
+        email: {type: string}
+        role: {type: string}
+        status: {type: string}
+        invited_by_user_id: {type: string}
+        accepted_by_user_id: {type: string}
+        created_at: {type: string, format: date-time}
+        accepted_at: {type: string, format: date-time}
+    Project:
+      type: object
+      properties:
+        id: {type: string}
+        organization_id: {type: string}
+        name: {type: string}
+        project_key: {type: string}
+        created_by_user_id: {type: string}
+        created_at: {type: string, format: date-time}
+    Issue:
+      type: object
+      properties:
+        id: {type: string}
+        organization_id: {type: string}
+        project_id: {type: string}
+        title: {type: string}
+        description: {type: string}
+        status: {type: string}
+        assignee_user_id: {type: string}
+        created_by_user_id: {type: string}
+        version: {type: integer}
+        created_at: {type: string, format: date-time}
+        updated_at: {type: string, format: date-time}
+    Comment:
+      type: object
+      properties:
+        id: {type: string}
+        organization_id: {type: string}
+        issue_id: {type: string}
+        author_user_id: {type: string}
+        body: {type: string}
+        created_at: {type: string, format: date-time}
+    Notification:
+      type: object
+      properties:
+        id: {type: string}
+        organization_id: {type: string}
+        user_id: {type: string}
+        issue_id: {type: string}
+        event_type: {type: string}
+        title: {type: string}
+        body: {type: string}
+        source_event_id: {type: string}
+        created_at: {type: string, format: date-time}
+        read_at: {type: string, format: date-time}
+    DashboardSummary:
+      type: object
+      properties:
+        organization_id: {type: string}
+        projects_total: {type: integer}
+        issues_todo: {type: integer}
+        issues_in_progress: {type: integer}
+        issues_done: {type: integer}
+        unread_notifications: {type: integer}
+    ErrorEnvelope:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: {type: string}
+            message: {type: string}

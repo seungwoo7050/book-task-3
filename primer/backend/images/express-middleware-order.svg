@@ -1,0 +1,60 @@
+<svg width="1280" height="860" viewBox="0 0 1280 860" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5A7592"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#17324B" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #45647E; letter-spacing: 0.14em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #102238; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #546B82; }
+    .stageTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .stageText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #596F86; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #44617A; }
+  </style>
+
+  <rect width="1280" height="860" rx="36" fill="#F8FBFF"/>
+  <circle cx="1140" cy="110" r="120" fill="#DEF4EA" fill-opacity="0.72"/>
+  <circle cx="132" cy="760" r="152" fill="#DAECFF" fill-opacity="0.64"/>
+
+  <text x="72" y="70" class="eyebrow">MIDDLEWARE ORDER</text>
+  <text x="72" y="116" class="title">`app.use()` 순서가 곧 동작이다</text>
+  <text x="72" y="148" class="subtitle">Express는 요청을 등록 순서대로 흘린다. 그래서 parser, router, 404, errorHandler의 위치를 잘못 두면 바로 오동작한다.</text>
+
+  <line x1="396" y1="252" x2="396" y2="708" stroke="#5A7592" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="242" y="204" width="308" height="92" rx="24" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="278" y="244" class="stageTitle">1. 보안 + 파싱</text>
+  <text x="278" y="272" class="stageText">helmet, cors, express.json()</text>
+
+  <rect x="242" y="338" width="308" height="92" rx="24" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="278" y="378" class="stageTitle">2. 라우트 전용 미들웨어</text>
+  <text x="278" y="406" class="stageText">authenticate, validate, rate limit</text>
+
+  <rect x="242" y="472" width="308" height="92" rx="24" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="278" y="512" class="stageTitle">3. Router / Controller</text>
+  <text x="278" y="540" class="stageText">도메인 라우터와 컨트롤러 실행</text>
+
+  <rect x="242" y="606" width="308" height="92" rx="24" fill="#F7FAFD" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="278" y="646" class="stageTitle">4. 404 + errorHandler</text>
+  <text x="278" y="674" class="stageText">404 응답 후, 에러 미들웨어는 마지막에 둔다</text>
+
+  <rect x="678" y="236" width="410" height="104" rx="26" fill="#FFF0EE" stroke="#F0B7AF" filter="url(#shadow)"/>
+  <text x="714" y="278" class="stageTitle">잘못된 예: parser를 router 뒤에 두기</text>
+  <text x="714" y="306" class="stageText">`req.body`가 비어 있어서 validate나 controller가 예상대로 동작하지 않는다.</text>
+
+  <rect x="678" y="410" width="410" height="104" rx="26" fill="#FFF0EE" stroke="#F0B7AF" filter="url(#shadow)"/>
+  <text x="714" y="452" class="stageTitle">잘못된 예: errorHandler를 앞에 두기</text>
+  <text x="714" y="480" class="stageText">뒤에서 발생한 에러를 받지 못한다. 에러 미들웨어는 반드시 마지막이다.</text>
+
+  <rect x="678" y="584" width="410" height="104" rx="26" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="714" y="626" class="stageTitle">운영 규칙</text>
+  <text x="714" y="654" class="stageText">보안/파싱 -> 라우트 -> 404 -> errorHandler 순서를 고정하면 대부분의 사고를 예방할 수 있다.</text>
+
+  <rect x="360" y="718" width="72" height="32" rx="16" fill="#FFFFFF" stroke="#C8D9E8"/>
+  <text x="380" y="739" class="chip">요청 흐름</text>
+</svg>

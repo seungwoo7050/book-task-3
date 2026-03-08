@@ -1,0 +1,89 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5C7692"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#173149" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #476581; letter-spacing: 0.14em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #556C83; }
+    .cardNum { font: 700 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #486680; }
+    .cardTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #15314B; }
+    .cardText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5D748B; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #486680; letter-spacing: 0.12em; }
+    .nodeTitle { font: 700 20px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #15314B; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5D748B; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #45617A; }
+    .note { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #38536D; }
+  </style>
+
+  <rect width="1280" height="820" rx="34" fill="#F7FBFF"/>
+  <circle cx="1150" cy="110" r="120" fill="#DDF2EA" fill-opacity="0.78"/>
+  <circle cx="132" cy="770" r="148" fill="#DDEEFF" fill-opacity="0.68"/>
+
+  <text x="72" y="70" class="eyebrow">PLAYWRIGHT MENTAL MODEL</text>
+  <text x="72" y="116" class="title">Playwright를 읽을 때 먼저 볼 3가지</text>
+  <text x="72" y="148" class="subtitle">프로젝트 단위 실행, BrowserContext 격리, 자동 대기 전략을 먼저 잡으면 나머지 API는 훨씬 단순해진다.</text>
+
+  <rect x="72" y="188" width="360" height="126" rx="24" fill="#EAF4FF" stroke="#BDD7EF" filter="url(#shadow)"/>
+  <text x="102" y="222" class="cardNum">1. PROJECT</text>
+  <text x="102" y="256" class="cardTitle">무엇이 먼저 실행되는가?</text>
+  <text x="102" y="284" class="cardText">setup 프로젝트, 브라우저별 project,</text>
+  <text x="102" y="306" class="cardText">webServer 순서를 config에서 읽는다.</text>
+
+  <rect x="460" y="188" width="360" height="126" rx="24" fill="#EEF8F3" stroke="#C4E1D2" filter="url(#shadow)"/>
+  <text x="490" y="222" class="cardNum">2. CONTEXT</text>
+  <text x="490" y="256" class="cardTitle">어디서 상태를 끊을 것인가?</text>
+  <text x="490" y="284" class="cardText">쿠키, storage, 탭은 기본적으로</text>
+  <text x="490" y="306" class="cardText">테스트별 BrowserContext로 분리된다.</text>
+
+  <rect x="848" y="188" width="360" height="126" rx="24" fill="#FFF6E8" stroke="#EAD29D" filter="url(#shadow)"/>
+  <text x="878" y="222" class="cardNum">3. WAIT</text>
+  <text x="878" y="256" class="cardTitle">무엇을 기다릴 것인가?</text>
+  <text x="878" y="284" class="cardText">locator와 expect가 기본 대기를 제공하고,</text>
+  <text x="878" y="306" class="cardText">필요할 때만 URL·response 조건을 추가한다.</text>
+
+  <rect x="56" y="352" width="1168" height="392" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="392" class="section">TEST WALKTHROUGH</text>
+
+  <line x1="164" y1="548" x2="1096" y2="548" stroke="#5C7692" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="96" y="484" width="154" height="128" rx="24" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="132" y="530" class="nodeTitle">CLI 실행</text>
+  <text x="122" y="556" class="nodeText">`npx playwright test`</text>
+  <text x="138" y="578" class="nodeText">프로젝트 선택</text>
+
+  <rect x="294" y="462" width="188" height="172" rx="24" fill="#EAF4FF" stroke="#BDD7EF"/>
+  <text x="338" y="512" class="nodeTitle">Project</text>
+  <text x="326" y="540" class="nodeText">setup, chromium,</text>
+  <text x="330" y="562" class="nodeText">mobile-chrome 같은</text>
+  <text x="342" y="584" class="nodeText">실행 단위</text>
+  <rect x="338" y="598" width="98" height="30" rx="15" fill="#EEF7FF" stroke="#BDD7EF"/>
+  <text x="361" y="618" class="chip">dependency</text>
+
+  <rect x="528" y="462" width="196" height="172" rx="24" fill="#EEF8F3" stroke="#C4E1D2"/>
+  <text x="550" y="512" class="nodeTitle">BrowserContext</text>
+  <text x="556" y="540" class="nodeText">쿠키와 storage를</text>
+  <text x="548" y="562" class="nodeText">테스트 단위로 격리</text>
+  <text x="550" y="584" class="nodeText">필요하면 storageState 재사용</text>
+
+  <rect x="770" y="462" width="188" height="172" rx="24" fill="#FFF6E8" stroke="#EAD29D"/>
+  <text x="830" y="512" class="nodeTitle">Page</text>
+  <text x="800" y="540" class="nodeText">locator, click, fill,</text>
+  <text x="804" y="562" class="nodeText">navigation이 실제 UI를</text>
+  <text x="828" y="584" class="nodeText">구동한다</text>
+
+  <rect x="1004" y="462" width="166" height="172" rx="24" fill="#F6EEF9" stroke="#DCCDE9"/>
+  <text x="1044" y="512" class="nodeTitle">Expect</text>
+  <text x="1030" y="540" class="nodeText">자동 대기와</text>
+  <text x="1024" y="562" class="nodeText">실패 시 trace, screenshot,</text>
+  <text x="1040" y="584" class="nodeText">report 생성</text>
+
+  <rect x="712" y="660" width="344" height="64" rx="20" fill="#FFF0EE" stroke="#F0B9B1"/>
+  <text x="740" y="700" class="note">sleep 대신 격리 지점과 대기 조건을 코드로 적는다.</text>
+</svg>

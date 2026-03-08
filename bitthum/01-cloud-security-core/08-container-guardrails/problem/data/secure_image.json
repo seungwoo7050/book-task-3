@@ -1,0 +1,6 @@
+{
+  "image": "nginx:1.27.4",
+  "run_as_root": false,
+  "capabilities": []
+}
+

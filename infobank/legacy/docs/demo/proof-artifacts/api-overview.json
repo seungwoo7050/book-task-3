@@ -1,0 +1,22 @@
+{
+  "avg_score": 84.06,
+  "fail_rate": 6.67,
+  "critical_count": 2,
+  "evaluation_count": 30,
+  "avg_latency_ms": 0.0,
+  "grade_distribution": {
+    "A": 24,
+    "B": 4,
+    "CRITICAL": 2
+  },
+  "failure_top": [
+    {
+      "failure_type": "MISSING_MANDATORY_STEP",
+      "count": 4
+    },
+    {
+      "failure_type": "CONTRADICTED_BY_SOURCE",
+      "count": 2
+    }
+  ]
+}

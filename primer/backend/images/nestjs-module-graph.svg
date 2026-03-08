@@ -1,0 +1,68 @@
+<svg width="1280" height="860" viewBox="0 0 1280 860" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#17324B" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5B7592"/>
+    </marker>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #43627D; letter-spacing: 0.14em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #536980; }
+    .miniTitle { font: 700 20px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .miniText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #61788F; }
+    .badge { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #42607A; }
+  </style>
+
+  <rect width="1280" height="860" rx="36" fill="#F7FBFF"/>
+  <circle cx="1138" cy="106" r="116" fill="#DDF4EA" fill-opacity="0.72"/>
+  <circle cx="126" cy="746" r="150" fill="#DAEDFF" fill-opacity="0.64"/>
+
+  <text x="72" y="70" class="eyebrow">MODULE GRAPH</text>
+  <text x="72" y="116" class="title">Module은 Controller와 Provider를 DI 그래프로 묶는다</text>
+  <text x="72" y="148" class="subtitle">NestJS의 핵심은 파일 개수가 아니라, module이 어떤 controller와 provider를 등록하고 export하는지다.</text>
+
+  <rect x="440" y="202" width="400" height="132" rx="28" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="482" y="256" class="miniTitle">BookModule</text>
+  <text x="482" y="286" class="miniText">imports, controllers, providers, exports를 선언</text>
+
+  <rect x="166" y="450" width="220" height="156" rx="28" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="204" y="502" class="miniTitle">BookController</text>
+  <text x="204" y="532" class="miniText">HTTP 진입점</text>
+  <text x="204" y="556" class="miniText">DTO를 받고 Service 호출</text>
+  <rect x="204" y="572" width="108" height="32" rx="16" fill="#FFF7E7" stroke="#EAC97E"/>
+  <text x="236" y="593" class="badge">handler</text>
+
+  <rect x="452" y="450" width="220" height="156" rx="28" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="490" y="502" class="miniTitle">BookService</text>
+  <text x="490" y="532" class="miniText">provider</text>
+  <text x="490" y="556" class="miniText">비즈니스 로직과 repository 조합</text>
+  <rect x="490" y="572" width="116" height="32" rx="16" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="522" y="593" class="badge">injectable</text>
+
+  <rect x="738" y="450" width="220" height="156" rx="28" fill="#F1ECFF" stroke="#D8CEF8" filter="url(#shadow)"/>
+  <text x="776" y="502" class="miniTitle">Repository / Entity</text>
+  <text x="776" y="532" class="miniText">TypeOrmModule.forFeature()</text>
+  <text x="776" y="556" class="miniText">DB 접근과 영속성 매핑</text>
+  <rect x="776" y="572" width="110" height="32" rx="16" fill="#F5F0FF" stroke="#D8CBF6"/>
+  <text x="814" y="593" class="badge">data access</text>
+
+  <rect x="1024" y="450" width="158" height="156" rx="28" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="1054" y="502" class="miniTitle">exports</text>
+  <text x="1054" y="532" class="miniText">다른 module이</text>
+  <text x="1054" y="556" class="miniText">BookService를 주입 가능</text>
+
+  <rect x="444" y="690" width="392" height="102" rx="26" fill="#FFFFFF" stroke="#C8D9E8" filter="url(#shadow)"/>
+  <text x="484" y="734" class="miniTitle">핵심 규칙</text>
+  <text x="484" y="762" class="miniText">Controller는 Service를 주입받고, Service는 Repository를 주입받는다. module은 이 연결을 선언하는 조립 지점이다.</text>
+
+  <line x1="540" y1="334" x2="276" y2="450" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="606" y1="334" x2="562" y2="450" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="674" y1="334" x2="848" y2="450" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="840" y1="516" x2="1024" y2="516" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="386" y1="516" x2="452" y2="516" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="672" y1="516" x2="738" y2="516" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+</svg>

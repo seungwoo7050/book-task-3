@@ -1,0 +1,94 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5E7895"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .cardNum { font: 700 16px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4B6781; }
+    .cardTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .cardText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5C7289; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 20px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+    .footnote { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F7FAFD"/>
+
+  <text x="72" y="68" class="eyebrow">COMPOSE TOPOLOGY</text>
+  <text x="72" y="112" class="title">Compose는 서비스 관계를 코드로 고정한다</text>
+  <text x="72" y="142" class="subtitle">핵심은 컨테이너 수가 아니라 어떤 서비스가 어떤 이름으로 통신하고, 어디에 데이터를 남기며, 무엇을 외부에 노출하는가다.</text>
+
+  <rect x="72" y="184" width="360" height="124" rx="24" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="102" y="218" class="cardNum">1. TOPOLOGY</text>
+  <text x="102" y="252" class="cardTitle">누가 누구를 이름으로 찾는가?</text>
+  <text x="102" y="280" class="cardText">서비스 이름이 내부 DNS 이름이 된다.</text>
+  <text x="102" y="302" class="cardText">`postgres`, `redis`를 호스트명처럼 쓴다.</text>
+
+  <rect x="460" y="184" width="360" height="124" rx="24" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="490" y="218" class="cardNum">2. READINESS</text>
+  <text x="490" y="252" class="cardTitle">언제가 "시작됨"이 아니라 "준비됨"인가?</text>
+  <text x="490" y="280" class="cardText">healthcheck와 `service_healthy`가</text>
+  <text x="490" y="302" class="cardText">앱 시작 타이밍을 결정한다.</text>
+
+  <rect x="848" y="184" width="360" height="124" rx="24" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="878" y="218" class="cardNum">3. SCOPE</text>
+  <text x="878" y="252" class="cardTitle">어떤 설정을 어떤 환경에서만 켤까?</text>
+  <text x="878" y="280" class="cardText">override와 profiles로 개발 편의 기능을</text>
+  <text x="878" y="302" class="cardText">공통 토폴로지와 분리한다.</text>
+
+  <rect x="56" y="352" width="1168" height="396" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="392" class="section">EXAMPLE PROJECT</text>
+
+  <rect x="84" y="438" width="1048" height="232" rx="28" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="470" y="474" class="chip">default network</text>
+
+  <rect x="106" y="498" width="144" height="112" rx="22" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="152" y="542" class="nodeTitle">web</text>
+  <text x="132" y="570" class="nodeText">브라우저 요청을 받음</text>
+
+  <rect x="338" y="498" width="170" height="112" rx="22" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="396" y="542" class="nodeTitle">api</text>
+  <text x="370" y="570" class="nodeText">DB와 캐시를 내부 이름으로 호출</text>
+
+  <rect x="598" y="474" width="180" height="136" rx="22" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="634" y="520" class="nodeTitle">postgres</text>
+  <text x="636" y="548" class="nodeText">`pg-data` volume</text>
+  <text x="650" y="572" class="nodeText">healthcheck</text>
+
+  <rect x="840" y="498" width="160" height="112" rx="22" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="894" y="542" class="nodeTitle">redis</text>
+  <text x="872" y="570" class="nodeText">빠른 캐시와 큐 역할</text>
+
+  <rect x="1146" y="468" width="44" height="184" rx="20" fill="#FFF0EE" stroke="#F0B7AF"/>
+  <text x="1160" y="524" transform="rotate(90 1160 524)" class="chip">외부 공개 포트</text>
+
+  <rect x="618" y="638" width="140" height="62" rx="18" fill="#FFF0EE" stroke="#F0B7AF"/>
+  <text x="652" y="664" class="chip">pg-data</text>
+  <text x="652" y="686" class="nodeText">named volume</text>
+
+  <line x1="250" y1="554" x2="338" y2="554" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="508" y1="554" x2="598" y2="554" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M508 582 L520 582 L520 622 L920 622 L920 610" stroke="#5E7895" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+  <line x1="688" y1="610" x2="688" y2="638" stroke="#D5786F" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="84" y="678" width="330" height="44" rx="22" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="116" y="706" class="chip">서비스 이름은 내부 네트워크에서 바로 호스트명처럼 쓴다</text>
+
+  <rect x="436" y="678" width="300" height="44" rx="22" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="470" y="706" class="chip">DB 데이터는 volume에 두고 컨테이너와 분리한다</text>
+
+  <rect x="756" y="678" width="356" height="44" rx="22" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="792" y="706" class="chip">외부 접근이 필요한 서비스만 ports로 호스트에 노출한다</text>
+
+  <text x="84" y="780" class="footnote">읽는 법: 먼저 서비스 관계도를 그리고, 그 다음 준비 완료 조건과 환경별 차이를 덧씌우면 Compose 파일이 과하게 복잡해지지 않는다.</text>
+</svg>

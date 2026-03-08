@@ -1,0 +1,21 @@
+{
+  "name": "study1-v1-ranking-hardening",
+  "private": true,
+  "packageManager": "pnpm@10.30.2",
+  "scripts": {
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "migrate": "pnpm --filter @study1-v0/node db:push",
+    "seed": "pnpm --filter @study1-v0/node seed",
+    "dev": "concurrently -k -n api,web -c blue,green \"pnpm --filter @study1-v0/node dev\" \"pnpm --filter @study1-v0/react dev\"",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "eval": "pnpm --filter @study1-v0/node eval",
+    "capture:presentation": "playwright test tests/e2e/presentation-capture.spec.ts",
+    "e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.58.2",
+    "concurrently": "9.2.1"
+  }
+}

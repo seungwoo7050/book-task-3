@@ -1,0 +1,12 @@
+{
+  "sessions": [
+    {
+      "user_message": "환불은 몇일 걸려요?",
+      "expected_doc": "refund_policy.md"
+    },
+    {
+      "user_message": "해지 신청은 본인확인 없이 가능해요?",
+      "expected_doc": "identity_verification.md"
+    }
+  ]
+}

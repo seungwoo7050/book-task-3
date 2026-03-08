@@ -1,0 +1,12 @@
+{
+  "nodes": ["a", "b", "c", "d", "e"],
+  "edges": [
+    {"from": "a", "to": "b", "cost": 1},
+    {"from": "a", "to": "c", "cost": 5},
+    {"from": "b", "to": "c", "cost": 2},
+    {"from": "b", "to": "d", "cost": 4},
+    {"from": "c", "to": "d", "cost": 1},
+    {"from": "c", "to": "e", "cost": 3},
+    {"from": "d", "to": "e", "cost": 1}
+  ]
+}

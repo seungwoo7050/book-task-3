@@ -1,0 +1,67 @@
+<svg width="1280" height="860" viewBox="0 0 1280 860" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5B7692"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#18324A" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #476581; letter-spacing: 0.14em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #556C83; }
+    .nodeTitle { font: 700 21px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #15314B; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5D748B; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #476581; letter-spacing: 0.12em; }
+    .badge { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #44627A; }
+  </style>
+
+  <rect width="1280" height="860" rx="34" fill="#F7FBFF"/>
+  <circle cx="1148" cy="114" r="118" fill="#DDF3EA" fill-opacity="0.76"/>
+  <circle cx="132" cy="780" r="150" fill="#DDEEFF" fill-opacity="0.66"/>
+
+  <text x="72" y="70" class="eyebrow">MOCK LAYERS</text>
+  <text x="72" y="116" class="title">무엇을 바꾸는지에 따라 Vitest mocking API를 고른다</text>
+  <text x="72" y="148" class="subtitle">함수, 객체 메서드, 모듈, 전역 객체, 시간은 모두 다른 레벨이다. 필요한 층만 바꾸면 테스트가 더 빠르고 덜 깨진다.</text>
+
+  <text x="84" y="222" class="section">SMALLEST TO WIDEST</text>
+
+  <line x1="180" y1="432" x2="1090" y2="432" stroke="#5B7692" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="112" y="308" width="170" height="176" rx="24" fill="#EAF4FF" stroke="#BDD7EF" filter="url(#shadow)"/>
+  <text x="160" y="360" class="nodeTitle">`vi.fn()`</text>
+  <text x="148" y="390" class="nodeText">함수 하나만 대체</text>
+  <text x="146" y="414" class="nodeText">반환값, 호출 횟수 검증</text>
+
+  <rect x="322" y="288" width="182" height="196" rx="24" fill="#EEF8F3" stroke="#C4E1D2" filter="url(#shadow)"/>
+  <text x="362" y="340" class="nodeTitle">`vi.spyOn()`</text>
+  <text x="352" y="370" class="nodeText">객체 메서드를 감시하고</text>
+  <text x="352" y="394" class="nodeText">원래 구현을 유지하거나 덮음</text>
+  <rect x="364" y="418" width="96" height="30" rx="15" fill="#F3FBF7" stroke="#C4E1D2"/>
+  <text x="390" y="438" class="badge">partial</text>
+
+  <rect x="552" y="268" width="204" height="216" rx="24" fill="#FFF6E8" stroke="#EAD29D" filter="url(#shadow)"/>
+  <text x="604" y="320" class="nodeTitle">`vi.mock()`</text>
+  <text x="590" y="350" class="nodeText">모듈 export 전체 또는 일부를</text>
+  <text x="596" y="374" class="nodeText">호이스팅 규칙과 함께 대체</text>
+  <rect x="606" y="400" width="98" height="30" rx="15" fill="#FFF9EE" stroke="#EAD29D"/>
+  <text x="628" y="420" class="badge">hoisted</text>
+
+  <rect x="804" y="288" width="188" height="196" rx="24" fill="#EAF4FF" stroke="#BDD7EF" filter="url(#shadow)"/>
+  <text x="840" y="340" class="nodeTitle">`stubGlobal()`</text>
+  <text x="836" y="370" class="nodeText">`fetch`, `matchMedia` 같은</text>
+  <text x="848" y="394" class="nodeText">전역 객체 대체</text>
+
+  <rect x="1040" y="308" width="160" height="176" rx="24" fill="#FFF0EE" stroke="#F0B9B1" filter="url(#shadow)"/>
+  <text x="1062" y="360" class="nodeTitle">Fake Timers</text>
+  <text x="1062" y="390" class="nodeText">`useFakeTimers`,</text>
+  <text x="1066" y="414" class="nodeText">`setSystemTime`</text>
+
+  <rect x="178" y="584" width="924" height="148" rx="28" fill="#FFFFFF" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="214" y="632" class="nodeTitle">정리 규칙</text>
+  <text x="214" y="662" class="nodeText">작은 mock은 `mockClear`나 `restoreAllMocks`, 전역과 시간은 `unstubAllGlobals` 또는 `useRealTimers`까지 같이 복원해야 누출을 막을 수 있다.</text>
+  <rect x="214" y="682" width="294" height="32" rx="16" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="238" y="704" class="badge">`afterEach(() => vi.restoreAllMocks())`</text>
+</svg>

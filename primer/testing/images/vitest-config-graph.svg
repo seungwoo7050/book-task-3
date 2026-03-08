@@ -1,0 +1,73 @@
+<svg width="1280" height="860" viewBox="0 0 1280 860" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5B7692"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#18324A" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #476581; letter-spacing: 0.14em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #556C83; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #476581; letter-spacing: 0.12em; }
+    .nodeTitle { font: 700 21px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #15314B; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5D748B; }
+    .badge { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #44627A; }
+  </style>
+
+  <rect width="1280" height="860" rx="34" fill="#F7FBFF"/>
+  <circle cx="1148" cy="114" r="118" fill="#DDF3EA" fill-opacity="0.76"/>
+  <circle cx="132" cy="780" r="150" fill="#DDEEFF" fill-opacity="0.66"/>
+
+  <text x="72" y="70" class="eyebrow">CONFIG AND WORKSPACE GRAPH</text>
+  <text x="72" y="116" class="title">기본 config와 workspace 분리는 같은 축에서 읽는다</text>
+  <text x="72" y="148" class="subtitle">공통 규칙은 기본 config에, 런타임 차이는 workspace에 두면 테스트 집합이 커져도 구조가 유지된다.</text>
+
+  <rect x="118" y="220" width="372" height="200" rx="30" fill="#EAF4FF" stroke="#BDD7EF" filter="url(#shadow)"/>
+  <text x="182" y="278" class="nodeTitle">vitest.config.ts</text>
+  <text x="158" y="310" class="nodeText">`setupFiles`, `coverage`, alias,</text>
+  <text x="174" y="334" class="nodeText">globals, timeout 같은 공통 규칙</text>
+  <rect x="158" y="358" width="164" height="34" rx="17" fill="#EEF7FF" stroke="#BDD7EF"/>
+  <text x="188" y="381" class="badge">shared defaults</text>
+
+  <rect x="562" y="220" width="238" height="200" rx="30" fill="#EEF8F3" stroke="#C4E1D2" filter="url(#shadow)"/>
+  <text x="616" y="278" class="nodeTitle">Environment</text>
+  <text x="608" y="310" class="nodeText">`node` 또는 `jsdom`</text>
+  <text x="596" y="334" class="nodeText">테스트 전제를 직접 결정</text>
+
+  <rect x="874" y="220" width="282" height="200" rx="30" fill="#FFF6E8" stroke="#EAD29D" filter="url(#shadow)"/>
+  <text x="918" y="278" class="nodeTitle">setup.ts</text>
+  <text x="912" y="310" class="nodeText">jest-dom, mock 복원,</text>
+  <text x="928" y="334" class="nodeText">전역 초기화 코드</text>
+
+  <text x="84" y="496" class="section">WORKSPACE SPLIT</text>
+
+  <rect x="92" y="532" width="1096" height="230" rx="30" fill="#FFFFFF" stroke="#D1DEEA" filter="url(#shadow)"/>
+
+  <rect x="136" y="584" width="300" height="126" rx="24" fill="#EAF4FF" stroke="#BDD7EF"/>
+  <text x="220" y="632" class="nodeTitle">unit workspace</text>
+  <text x="194" y="660" class="nodeText">`src/**/*.test.ts`</text>
+  <text x="172" y="682" class="nodeText">빠른 반복, 필요 시 `jsdom`</text>
+
+  <rect x="490" y="584" width="300" height="126" rx="24" fill="#EEF8F3" stroke="#C4E1D2"/>
+  <text x="560" y="632" class="nodeTitle">integration workspace</text>
+  <text x="556" y="660" class="nodeText">`tests/integration/**`</text>
+  <text x="568" y="682" class="nodeText">대개 `node` 환경</text>
+
+  <rect x="844" y="584" width="300" height="126" rx="24" fill="#FFF6E8" stroke="#EAD29D"/>
+  <text x="932" y="632" class="nodeTitle">ui / coverage</text>
+  <text x="924" y="660" class="nodeText">reporter와 coverage는</text>
+  <text x="914" y="682" class="nodeText">공통 규칙을 그대로 재사용</text>
+
+  <rect x="392" y="784" width="494" height="42" rx="18" fill="#FFF0EE" stroke="#F0B9B1"/>
+  <text x="430" y="811" class="badge">섞여 있는 환경을 한 config에 억지로 넣기보다 workspace로 나누는 편이 추적하기 쉽다.</text>
+
+  <line x1="490" y1="320" x2="562" y2="320" stroke="#5B7692" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="800" y1="320" x2="874" y2="320" stroke="#5B7692" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="304" y1="420" x2="286" y2="532" stroke="#5B7692" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="304" y1="420" x2="640" y2="532" stroke="#5B7692" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="304" y1="420" x2="994" y2="532" stroke="#5B7692" stroke-width="4" marker-end="url(#arrow)"/>
+</svg>

@@ -1,0 +1,20 @@
+{
+  "access_token": "<redacted-demo-access-token>",
+  "refresh_token": "<redacted-demo-refresh-token>",
+  "user": {
+    "id": "bb367528-7c5b-4eb0-9661-0b8f72f718a3",
+    "email": "member-1772889700249@example.com",
+    "display_name": "Member 1772889700249",
+    "created_at": "2026-03-07T22:21:40.670284+09:00"
+  },
+  "memberships": [
+    {
+      "organization_id": "3f7b581a-dc5a-4c5c-b42c-4cce8537553c",
+      "organization_name": "Workspace 1772889700249",
+      "organization_slug": "workspace-1772889700249",
+      "user_id": "bb367528-7c5b-4eb0-9661-0b8f72f718a3",
+      "role": "member",
+      "created_at": "2026-03-07T22:21:40.670284+09:00"
+    }
+  ]
+}

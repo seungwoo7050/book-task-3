@@ -1,0 +1,46 @@
+<svg width="1280" height="860" viewBox="0 0 1280 860" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#17324B" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #43627D; letter-spacing: 0.14em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #536980; }
+    .miniTitle { font: 700 20px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .miniText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #61788F; }
+    .badge { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #42607A; }
+  </style>
+
+  <rect width="1280" height="860" rx="36" fill="#F7FBFF"/>
+  <circle cx="1138" cy="106" r="116" fill="#DDF4EA" fill-opacity="0.72"/>
+  <circle cx="126" cy="746" r="150" fill="#DAEDFF" fill-opacity="0.64"/>
+
+  <text x="72" y="70" class="eyebrow">MODULE SYSTEMS</text>
+  <text x="72" y="116" class="title">새 프로젝트라면 ESM을 기본으로 잡는 편이 낫다</text>
+  <text x="72" y="148" class="subtitle">중요한 건 어느 쪽이든 맞다/틀리다가 아니라, 패키지 전체에서 일관되게 유지하는 것이다.</text>
+
+  <rect x="120" y="234" width="420" height="274" rx="30" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="160" y="288" class="miniTitle">CommonJS</text>
+  <text x="160" y="318" class="miniText">기본 `require()` / `module.exports`</text>
+  <text x="160" y="342" class="miniText">레거시 패키지와 호환성은 좋지만</text>
+  <text x="160" y="366" class="miniText">top-level await가 없고 생태계 중심은 아니다</text>
+  <rect x="160" y="390" width="120" height="32" rx="16" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="196" y="411" class="badge">legacy friendly</text>
+
+  <rect x="740" y="234" width="420" height="274" rx="30" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="780" y="288" class="miniTitle">ES Modules</text>
+  <text x="780" y="318" class="miniText">`import` / `export`, top-level await, 표준 문법</text>
+  <text x="780" y="342" class="miniText">새 프로젝트의 기본 선택지</text>
+  <text x="780" y="366" class="miniText">`"type": "module"`과 확장자 규칙에 익숙해져야 한다</text>
+  <rect x="780" y="390" width="120" height="32" rx="16" fill="#F3FBF7" stroke="#C2E0D0"/>
+  <text x="816" y="411" class="badge">modern default</text>
+
+  <rect x="272" y="584" width="736" height="144" rx="28" fill="#FFFFFF" stroke="#C8D9E8" filter="url(#shadow)"/>
+  <text x="326" y="644" class="miniTitle">실무 규칙</text>
+  <text x="326" y="672" class="miniText">새 프로젝트면 ESM을 기본으로 잡고, 레거시 제약이 크면 CJS를 유지한다.</text>
+  <text x="326" y="696" class="miniText">더 중요한 규칙은 `package.json`, tsconfig, 실행 스크립트, import 경로가</text>
+  <text x="326" y="720" class="miniText">모두 같은 모듈 체계를 바라보게 만드는 것이다.</text>
+</svg>

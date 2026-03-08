@@ -1,0 +1,106 @@
+<svg width="1280" height="900" viewBox="0 0 1280 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="80" y1="40" x2="1200" y2="860" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7FBFF"/>
+      <stop offset="1" stop-color="#EEF7F2"/>
+    </linearGradient>
+    <linearGradient id="blueCard" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#E3F1FF"/>
+      <stop offset="1" stop-color="#FBFDFF"/>
+    </linearGradient>
+    <linearGradient id="mintCard" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#E4F8EF"/>
+      <stop offset="1" stop-color="#FCFFFD"/>
+    </linearGradient>
+    <linearGradient id="sandCard" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FFF2D8"/>
+      <stop offset="1" stop-color="#FFFDF7"/>
+    </linearGradient>
+    <linearGradient id="violetCard" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#F1ECFF"/>
+      <stop offset="1" stop-color="#FCFBFF"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#17324B" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5B7592"/>
+    </marker>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #43627D; letter-spacing: 0.14em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #536980; }
+    .cardTitle { font: 700 24px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #16304A; }
+    .cardText { font: 500 16px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #566C83; }
+    .miniTitle { font: 700 20px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .miniText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #61788F; }
+    .badge { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #42607A; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4D6982; letter-spacing: 0.14em; }
+  </style>
+
+  <rect width="1280" height="900" rx="36" fill="url(#bg)"/>
+  <circle cx="1138" cy="106" r="116" fill="#DDF4EA" fill-opacity="0.72"/>
+  <circle cx="126" cy="786" r="150" fill="#DAEDFF" fill-opacity="0.64"/>
+
+  <text x="72" y="70" class="eyebrow">EXPRESS ARCHITECTURE</text>
+  <text x="72" y="116" class="title">프로젝트 구조를 레이어 관계로 읽기</text>
+  <text x="72" y="148" class="subtitle">Express는 강제가 적기 때문에, 폴더가 어떤 책임을 갖는지 먼저 분리해야 구조가 유지된다.</text>
+
+  <rect x="142" y="198" width="244" height="110" rx="26" fill="url(#sandCard)" stroke="#EBCB8D" filter="url(#shadow)"/>
+  <text x="182" y="244" class="miniTitle">server.ts</text>
+  <text x="182" y="272" class="miniText">listen만 담당하고 app을 실행한다</text>
+
+  <rect x="456" y="186" width="380" height="124" rx="28" fill="url(#blueCard)" stroke="#B8D7F1" filter="url(#shadow)"/>
+  <text x="496" y="238" class="cardTitle">app.ts / 앱 조립 지점</text>
+  <text x="496" y="268" class="cardText">전역 미들웨어, 라우터, 404, errorHandler 등록</text>
+
+  <text x="72" y="384" class="section">HTTP FLOW LAYERS</text>
+
+  <rect x="72" y="430" width="228" height="160" rx="28" fill="url(#violetCard)" stroke="#D8CEF8" filter="url(#shadow)"/>
+  <text x="108" y="482" class="miniTitle">middleware/</text>
+  <text x="108" y="512" class="miniText">auth, validate, errorHandler</text>
+  <text x="108" y="536" class="miniText">조건 검사와 횡단 관심사 담당</text>
+  <rect x="108" y="554" width="132" height="32" rx="16" fill="#F5F0FF" stroke="#D8CBF6"/>
+  <text x="136" y="575" class="badge">cross-cutting</text>
+
+  <rect x="340" y="430" width="228" height="160" rx="28" fill="url(#mintCard)" stroke="#BEE1CF" filter="url(#shadow)"/>
+  <text x="376" y="482" class="miniTitle">routes/</text>
+  <text x="376" y="512" class="miniText">경로와 미들웨어 조합</text>
+  <text x="376" y="536" class="miniText">도메인별 Router를 만든다</text>
+  <rect x="376" y="554" width="116" height="32" rx="16" fill="#EAF8F0" stroke="#B7DEC7"/>
+  <text x="412" y="575" class="badge">compose</text>
+
+  <rect x="608" y="430" width="228" height="160" rx="28" fill="url(#sandCard)" stroke="#EBCB8D" filter="url(#shadow)"/>
+  <text x="644" y="482" class="miniTitle">controllers/</text>
+  <text x="644" y="512" class="miniText">req/res를 알고 응답을 만든다</text>
+  <text x="644" y="536" class="miniText">서비스 호출 후 HTTP로 매핑</text>
+  <rect x="644" y="554" width="122" height="32" rx="16" fill="#FFF7E7" stroke="#EAC97E"/>
+  <text x="674" y="575" class="badge">HTTP boundary</text>
+
+  <rect x="876" y="430" width="228" height="160" rx="28" fill="url(#blueCard)" stroke="#B8D7F1" filter="url(#shadow)"/>
+  <text x="912" y="482" class="miniTitle">services/</text>
+  <text x="912" y="512" class="miniText">비즈니스 로직, 정책, DB 호출</text>
+  <text x="912" y="536" class="miniText">Express 객체를 몰라야 한다</text>
+  <rect x="912" y="554" width="144" height="32" rx="16" fill="#EAF4FF" stroke="#BAD4EE"/>
+  <text x="947" y="575" class="badge">domain logic</text>
+
+  <rect x="160" y="672" width="236" height="136" rx="28" fill="#FFFFFF" stroke="#C8D9E8" filter="url(#shadow)"/>
+  <text x="198" y="718" class="miniTitle">schemas/</text>
+  <text x="198" y="746" class="miniText">zod 스키마로 body/query/params 검증</text>
+  <text x="198" y="770" class="miniText">주로 validate 미들웨어와 함께 쓴다</text>
+
+  <rect x="700" y="672" width="292" height="136" rx="28" fill="#FFFFFF" stroke="#C8D9E8" filter="url(#shadow)"/>
+  <text x="738" y="718" class="miniTitle">DB / external IO</text>
+  <text x="738" y="746" class="miniText">서비스 계층이 접근하는 영속성 레이어</text>
+  <text x="738" y="770" class="miniText">Drizzle, Prisma, 외부 API 클라이언트</text>
+
+  <line x1="386" y1="252" x2="456" y2="252" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="646" y1="310" x2="454" y2="430" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="300" y1="510" x2="340" y2="510" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="568" y1="510" x2="608" y2="510" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="836" y1="510" x2="876" y2="510" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M280 672 C280 620 260 596 220 590" stroke="#5B7592" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+  <line x1="990" y1="590" x2="860" y2="672" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+</svg>

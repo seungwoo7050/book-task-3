@@ -1,0 +1,27 @@
+{
+  "incidentFlow": {
+    "queuedCreateJobId": "e2249a20-3042-4981-b9da-ab44e05045c8",
+    "ackStatus": "ACKED",
+    "approvedStatus": "RESOLVED",
+    "rejectedStatus": "ACKED"
+  },
+  "recovery": {
+    "offlineQueue": {
+      "pending": 0,
+      "synced": 1,
+      "failed": 0
+    },
+    "dlqQueue": {
+      "pending": 0,
+      "synced": 0,
+      "failed": 1
+    }
+  },
+  "websocket": {
+    "initialEvents": 12,
+    "replayedEvents": 1,
+    "replayFromEventId": 12
+  },
+  "auditRecords": 4,
+  "structuredLogCount": 14
+}

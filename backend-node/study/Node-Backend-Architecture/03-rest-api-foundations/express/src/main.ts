@@ -1,0 +1,9 @@
+import { createApp } from "./app";
+
+const PORT = process.env.PORT || 3000;
+
+const app = createApp();
+
+app.listen(PORT, () => {
+  console.log(`[01-rest-api/express] Server running on http://localhost:${PORT}`);
+});

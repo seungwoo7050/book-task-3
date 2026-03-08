@@ -1,0 +1,68 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5E7895"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 20px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+    .footnote { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F7FAFD"/>
+
+  <text x="72" y="68" class="eyebrow">RESPONSIVE PIPELINE</text>
+  <text x="72" y="112" class="title">반응형은 조건을 덮어쓰는 순서로 설계한다</text>
+  <text x="72" y="142" class="subtitle">기본 모바일 스타일을 먼저 두고, 범위가 큰 조건부터 작은 조건 순으로 덮어쓰면 breakpoint와 예외가 줄어든다.</text>
+
+  <rect x="56" y="208" width="1168" height="500" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="248" class="section">OVERRIDE LAYERS</text>
+
+  <line x1="188" y1="512" x2="1072" y2="512" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="92" y="356" width="220" height="214" rx="24" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="126" y="400" class="nodeTitle">1. 기본 모바일</text>
+  <text x="126" y="428" class="nodeText">한 컬럼, 작은 간격, 가장 단순한 상태</text>
+  <rect x="126" y="462" width="78" height="92" rx="12" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="150" y="518" class="chip">card</text>
+  <rect x="216" y="462" width="52" height="92" rx="12" fill="#FFFFFF" stroke="#D1DEEA"/>
+
+  <rect x="356" y="356" width="220" height="214" rx="24" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="388" y="400" class="nodeTitle">2. viewport query</text>
+  <text x="388" y="428" class="nodeText">`@media (min-width: ...)`</text>
+  <text x="388" y="452" class="nodeText">페이지 전체 그리드와 간격 변경</text>
+  <rect x="388" y="488" width="48" height="66" rx="10" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <rect x="448" y="488" width="48" height="66" rx="10" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <rect x="508" y="488" width="48" height="66" rx="10" fill="#FFFFFF" stroke="#D1DEEA"/>
+
+  <rect x="620" y="356" width="220" height="214" rx="24" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="650" y="400" class="nodeTitle">3. container query</text>
+  <text x="650" y="428" class="nodeText">`@container (...)`</text>
+  <text x="650" y="452" class="nodeText">로컬 폭 기준으로 내부 배치 변경</text>
+  <rect x="650" y="488" width="70" height="66" rx="10" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <rect x="730" y="488" width="80" height="66" rx="10" fill="#FFFFFF" stroke="#D1DEEA"/>
+
+  <rect x="884" y="356" width="260" height="214" rx="24" fill="#F7FAFD" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="916" y="400" class="nodeTitle">4. 연속 값과 사용자 설정</text>
+  <text x="916" y="428" class="nodeText">`clamp()`는 글자와 폭을 부드럽게 조절하고,</text>
+  <text x="916" y="452" class="nodeText">`prefers-reduced-motion`은 움직임을 줄인다.</text>
+  <rect x="916" y="490" width="188" height="36" rx="12" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="946" y="514" class="chip">font-size: clamp(...)</text>
+  <rect x="916" y="536" width="188" height="36" rx="12" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="936" y="560" class="chip">motion: reduce 대응</text>
+
+  <rect x="290" y="616" width="696" height="58" rx="18" fill="#FFF0EE" stroke="#F0B7AF"/>
+  <text x="320" y="653" class="chip">값이 바뀌는 범위를 먼저 정하면 "페이지 전체 변경"과 "컴포넌트 내부 변경"을 섞지 않게 된다.</text>
+
+  <text x="84" y="744" class="footnote">읽는 법: 기본 스타일은 가장 좁은 환경에 두고, 넓은 범위 조건은 media query, 컴포넌트 로컬 조건은 container query, 연속 조정은 clamp와 preference로 맡긴다.</text>
+</svg>

@@ -1,0 +1,96 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5E7895"/>
+    </marker>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .chipTitle { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+    .chipText { font: 600 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+    .nodeTitle { font: 700 16px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .footnote { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F7FAFD"/>
+
+  <text x="72" y="68" class="eyebrow">SELECT PIPELINE</text>
+  <text x="72" y="112" class="title">SELECT는 작성 순서가 아니라 실행 순서로 읽는다</text>
+  <text x="72" y="142" class="subtitle">행 수가 이상하면 FROM과 JOIN부터, 그룹 결과가 이상하면 HAVING과 SELECT 이전 단계를 먼저 본다.</text>
+
+  <rect x="56" y="190" width="1168" height="114" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="230" class="section">WRITING ORDER</text>
+  <rect x="92" y="246" width="104" height="34" rx="17" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="118" y="268" class="chipText">SELECT</text>
+  <rect x="206" y="246" width="104" height="34" rx="17" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="236" y="268" class="chipText">FROM</text>
+  <rect x="320" y="246" width="104" height="34" rx="17" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="350" y="268" class="chipText">JOIN</text>
+  <rect x="434" y="246" width="104" height="34" rx="17" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="458" y="268" class="chipText">WHERE</text>
+  <rect x="548" y="246" width="114" height="34" rx="17" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="566" y="268" class="chipText">GROUP BY</text>
+  <rect x="672" y="246" width="112" height="34" rx="17" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="696" y="268" class="chipText">HAVING</text>
+  <rect x="794" y="246" width="116" height="34" rx="17" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="820" y="268" class="chipText">ORDER BY</text>
+  <rect x="920" y="246" width="104" height="34" rx="17" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="948" y="268" class="chipText">LIMIT</text>
+
+  <rect x="56" y="340" width="1168" height="390" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="380" class="section">EXECUTION ORDER</text>
+
+  <line x1="134" y1="560" x2="1140" y2="560" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="84" y="474" width="108" height="132" rx="22" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="112" y="520" class="nodeTitle">FROM</text>
+  <text x="102" y="548" class="nodeText">시작 테이블</text>
+  <text x="98" y="570" class="nodeText">row 집합 생성</text>
+
+  <rect x="206" y="474" width="108" height="132" rx="22" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="238" y="520" class="nodeTitle">JOIN</text>
+  <text x="220" y="548" class="nodeText">row 수가</text>
+  <text x="220" y="570" class="nodeText">여기서 바뀐다</text>
+
+  <rect x="328" y="474" width="108" height="132" rx="22" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="352" y="520" class="nodeTitle">WHERE</text>
+  <text x="342" y="548" class="nodeText">개별 행 필터</text>
+  <text x="344" y="570" class="nodeText">그룹 전 단계</text>
+
+  <rect x="450" y="474" width="108" height="132" rx="22" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="466" y="520" class="nodeTitle">GROUP BY</text>
+  <text x="464" y="548" class="nodeText">행을 묶고</text>
+  <text x="472" y="570" class="nodeText">그룹 생성</text>
+
+  <rect x="572" y="474" width="108" height="132" rx="22" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="594" y="520" class="nodeTitle">HAVING</text>
+  <text x="584" y="548" class="nodeText">그룹 단위</text>
+  <text x="592" y="570" class="nodeText">필터</text>
+
+  <rect x="694" y="474" width="108" height="132" rx="22" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="718" y="520" class="nodeTitle">SELECT</text>
+  <text x="710" y="548" class="nodeText">반환 컬럼</text>
+  <text x="716" y="570" class="nodeText">결정</text>
+
+  <rect x="816" y="474" width="108" height="132" rx="22" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="832" y="520" class="nodeTitle">DISTINCT</text>
+  <text x="830" y="548" class="nodeText">중복 제거</text>
+  <text x="840" y="570" class="nodeText">옵션</text>
+
+  <rect x="938" y="474" width="108" height="132" rx="22" fill="#F4F7FB" stroke="#D1DEEA"/>
+  <text x="958" y="520" class="nodeTitle">ORDER BY</text>
+  <text x="958" y="548" class="nodeText">정렬 비용</text>
+  <text x="958" y="570" class="nodeText">인덱스 영향</text>
+
+  <rect x="1060" y="474" width="108" height="132" rx="22" fill="#F4F7FB" stroke="#D1DEEA"/>
+  <text x="1092" y="520" class="nodeTitle">LIMIT</text>
+  <text x="1080" y="548" class="nodeText">최종 행 수</text>
+  <text x="1086" y="570" class="nodeText">절단</text>
+
+  <text x="84" y="690" class="footnote">핵심: SELECT가 맨 위에 있어도 실제 row 집합은 FROM과 JOIN에서 만들어지고, WHERE와 HAVING은 서로 다른 레벨의 필터다.</text>
+</svg>

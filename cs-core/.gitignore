@@ -1,0 +1,38 @@
+# Private local notes
+**/notion/
+
+# macOS and editor noise
+.DS_Store
+**/.DS_Store
+.idea/
+.vscode/
+
+# Generic build output
+**/build/
+**/dist/
+**/out/
+**/tmp/
+**/temp/
+cmake-build-*/
+compile_commands.json
+
+# Native compilation artifacts
+**/*.o
+**/*.obj
+**/*.a
+**/*.so
+**/*.dylib
+**/*.exe
+**/*.out
+**/*.dSYM/
+
+# Common generated binaries in current labs
+**/problem/btest
+**/problem/csim
+**/problem/mdriver
+**/problem/proxy
+**/problem/tsh
+**/problem/official/
+
+# Python cache
+**/__pycache__/

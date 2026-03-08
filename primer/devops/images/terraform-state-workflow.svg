@@ -1,0 +1,76 @@
+<svg width="1280" height="760" viewBox="0 0 1280 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5E7895"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+    .note { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="760" rx="32" fill="#F7FAFD"/>
+
+  <text x="72" y="68" class="eyebrow">REMOTE STATE WORKFLOW</text>
+  <text x="72" y="112" class="title">팀 작업에서는 원격 state와 잠금이 apply의 안전 장치다</text>
+  <text x="72" y="142" class="subtitle">로컬 파일에 state를 두면 plan 기준이 갈라진다. 원격 backend와 lock이 있어야 같은 인프라를 여러 사람이 안전하게 다룰 수 있다.</text>
+
+  <rect x="56" y="188" width="1168" height="500" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="228" class="section">TEAM WORKFLOW</text>
+
+  <rect x="92" y="300" width="168" height="120" rx="22" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="132" y="346" class="nodeTitle">개발자 / CI</text>
+  <text x="126" y="374" class="nodeText">같은 코드베이스로</text>
+  <text x="144" y="398" class="nodeText">plan 실행</text>
+
+  <rect x="324" y="280" width="188" height="160" rx="22" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="382" y="326" class="nodeTitle">terraform init</text>
+  <text x="356" y="354" class="nodeText">provider 다운로드, backend 연결,</text>
+  <text x="374" y="378" class="nodeText">작업 디렉터리 초기화</text>
+
+  <rect x="590" y="252" width="210" height="216" rx="24" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="640" y="300" class="nodeTitle">원격 backend</text>
+  <rect x="620" y="328" width="150" height="54" rx="16" fill="#FFF9EE" stroke="#E9D29D"/>
+  <text x="662" y="362" class="chip">S3 tfstate</text>
+  <rect x="620" y="398" width="150" height="54" rx="16" fill="#FFF9EE" stroke="#E9D29D"/>
+  <text x="646" y="432" class="chip">DynamoDB lock</text>
+
+  <rect x="866" y="280" width="188" height="160" rx="22" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="938" y="326" class="nodeTitle">plan</text>
+  <text x="904" y="354" class="nodeText">diff 계산 후 `tfplan` 파일로</text>
+  <text x="930" y="378" class="nodeText">결과를 고정 가능</text>
+
+  <rect x="1080" y="300" width="108" height="120" rx="22" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="1102" y="346" class="nodeTitle">review</text>
+  <text x="1098" y="374" class="nodeText">승인 후</text>
+  <text x="1096" y="398" class="nodeText">apply</text>
+
+  <rect x="832" y="514" width="244" height="108" rx="22" fill="#FFF0EE" stroke="#F0B7AF" filter="url(#shadow)"/>
+  <text x="884" y="558" class="nodeTitle">클라우드 갱신</text>
+  <text x="854" y="586" class="nodeText">리소스 변경 후 state도 함께 업데이트</text>
+
+  <line x1="260" y1="360" x2="324" y2="360" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="512" y1="360" x2="590" y2="360" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="800" y1="360" x2="866" y2="360" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="1054" y1="360" x2="1080" y2="360" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M1134 420 L1134 540 L1076 540" stroke="#5E7895" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+  <line x1="832" y1="568" x2="696" y2="468" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="712" y="506" class="chip">state 갱신</text>
+
+  <rect x="92" y="522" width="566" height="110" rx="22" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="124" y="566" class="nodeTitle">로컬 state가 위험한 이유</text>
+  <text x="124" y="594" class="nodeText">각자 다른 기준으로 plan을 계산해 충돌하기 쉽다.</text>
+  <text x="124" y="618" class="nodeText">동시에 apply하면 누가 마지막으로 state를 덮었는지 추적하기 어렵다.</text>
+
+  <text x="84" y="720" class="note">핵심: 팀에서는 state 공유와 잠금이 먼저다. 그래야 plan diff가 일관되고, review한 변경만 안전하게 apply할 수 있다.</text>
+</svg>

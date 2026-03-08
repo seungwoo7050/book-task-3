@@ -1,0 +1,23 @@
+services:
+  db:
+    image: cockroachdb/cockroach:v25.3.3
+    command:
+      - start-single-node
+      - --insecure
+      - --listen-addr=localhost:26257
+      - --sql-addr=0.0.0.0:26258
+      - --http-addr=0.0.0.0:8080
+    ports:
+      - "26257:26258"
+      - "8081:8080"
+    volumes:
+      - ./:/workspace
+      - cockroach-tx-db-data:/cockroach/cockroach-data
+    healthcheck:
+      test: ["CMD-SHELL", "cockroach sql --insecure --host=localhost:26258 -e 'select 1' >/dev/null 2>&1"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+volumes:
+  cockroach-tx-db-data:

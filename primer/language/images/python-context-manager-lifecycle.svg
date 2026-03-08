@@ -1,0 +1,56 @@
+<svg width="1280" height="780" viewBox="0 0 1280 780" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="90" y1="40" x2="1190" y2="740" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7FBFF"/>
+      <stop offset="1" stop-color="#FFF7EF"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#17324B" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5B7592"/>
+    </marker>
+  </defs>
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #46637D; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14263A; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #566A80; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4C6881; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .nodeText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #60778E; }
+  </style>
+
+  <rect width="1280" height="780" rx="36" fill="url(#bg)"/>
+  <circle cx="1114" cy="108" r="102" fill="#DDEFE8" fill-opacity="0.68"/>
+  <circle cx="144" cy="694" r="136" fill="#DDEBFF" fill-opacity="0.58"/>
+
+  <text x="72" y="68" class="eyebrow">PYTHON CONTEXT MANAGER</text>
+  <text x="72" y="112" class="title">with 는 enter 와 exit 사이에 작업을 묶는다</text>
+  <text x="72" y="144" class="subtitle">파일, 락, 임시 디렉터리처럼 정리 코드가 꼭 필요한 자원을 다룰 때, with 는 진입과 정리를 한 흐름으로 고정한다.</text>
+
+  <text x="84" y="214" class="section">LIFECYCLE</text>
+
+  <rect x="76" y="268" width="246" height="146" rx="24" fill="#FFFFFF" stroke="#CDDCE9" filter="url(#shadow)"/>
+  <text x="112" y="324" class="nodeTitle">1. with 진입</text>
+  <text x="112" y="352" class="nodeText">__enter__ 호출 후 자원 획득</text>
+
+  <rect x="378" y="268" width="246" height="146" rx="24" fill="#EAF4FF" stroke="#BCD5EE" filter="url(#shadow)"/>
+  <text x="414" y="324" class="nodeTitle">2. 블록 실행</text>
+  <text x="414" y="352" class="nodeText">획득한 자원을 본문에서 사용</text>
+
+  <rect x="680" y="268" width="246" height="146" rx="24" fill="#EEF8EF" stroke="#B9DEC9" filter="url(#shadow)"/>
+  <text x="716" y="324" class="nodeTitle">3. 정상 종료</text>
+  <text x="716" y="352" class="nodeText">__exit__ 호출 후 정리</text>
+
+  <rect x="982" y="268" width="220" height="146" rx="24" fill="#FFF6E8" stroke="#E8CE96" filter="url(#shadow)"/>
+  <text x="1018" y="324" class="nodeTitle">예외 발생</text>
+  <text x="1018" y="352" class="nodeText">그래도 __exit__ 실행</text>
+
+  <line x1="322" y1="342" x2="378" y2="342" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="624" y1="342" x2="680" y2="342" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="926" y1="342" x2="982" y2="342" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="248" y="524" width="788" height="152" rx="28" fill="#FFFFFF" stroke="#CDDCE9" filter="url(#shadow)"/>
+  <text x="284" y="580" class="nodeTitle">contextmanager 데코레이터는 같은 흐름을 더 짧게 쓴다</text>
+  <text x="284" y="608" class="nodeText">yield 이전 코드는 enter, yield 이후의 finally 블록은 exit 역할을 한다. 그래서 클래스 없이도 임시 자원 수명을 선언적으로 표현할 수 있다.</text>
+</svg>

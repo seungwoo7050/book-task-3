@@ -1,0 +1,87 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5E7895"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 19px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .cardTitle { font: 700 18px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .cardText { font: 500 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5C7289; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F7FAFD"/>
+
+  <text x="72" y="68" class="eyebrow">TRANSACTION LIFECYCLE</text>
+  <text x="72" y="112" class="title">트랜잭션은 작업 묶음과 격리 수준으로 이해한다</text>
+  <text x="72" y="142" class="subtitle">UPDATE 두 줄이 아니라, commit 전까지 함께 성공하거나 함께 취소되는 단위로 보는 것이 핵심이다.</text>
+
+  <rect x="56" y="184" width="1168" height="286" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="224" class="section">MONEY TRANSFER FLOW</text>
+
+  <line x1="154" y1="334" x2="1046" y2="334" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="92" y="270" width="154" height="128" rx="22" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="132" y="314" class="nodeTitle">BEGIN</text>
+  <text x="120" y="342" class="nodeText">작업 단위 시작</text>
+  <text x="122" y="366" class="nodeText">아직 확정 아님</text>
+
+  <rect x="290" y="270" width="178" height="128" rx="22" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="322" y="314" class="nodeTitle">검증 / 조회</text>
+  <text x="322" y="342" class="nodeText">잔액 확인</text>
+  <text x="322" y="366" class="nodeText">필요 시 lock 획득</text>
+
+  <rect x="512" y="270" width="178" height="128" rx="22" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="552" y="314" class="nodeTitle">출금</text>
+  <text x="542" y="342" class="nodeText">account 1 감소</text>
+  <text x="540" y="366" class="nodeText">중간 상태 노출 금지</text>
+
+  <rect x="734" y="270" width="178" height="128" rx="22" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="774" y="314" class="nodeTitle">입금</text>
+  <text x="764" y="342" class="nodeText">account 2 증가</text>
+  <text x="760" y="366" class="nodeText">둘 중 하나만 성공 불가</text>
+
+  <rect x="956" y="246" width="168" height="96" rx="22" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="996" y="284" class="nodeTitle">COMMIT</text>
+  <text x="980" y="310" class="nodeText">두 변경을 함께 확정</text>
+
+  <rect x="956" y="356" width="168" height="96" rx="22" fill="#FFF0EE" stroke="#F0B7AF" filter="url(#shadow)"/>
+  <text x="988" y="394" class="nodeTitle">ROLLBACK</text>
+  <text x="980" y="420" class="nodeText">하나라도 실패하면 취소</text>
+
+  <path d="M823 398 C860 434 900 446 956 404" stroke="#D5786F" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+  <text x="808" y="440" class="chip">예외 발생 시 전체 취소</text>
+
+  <rect x="56" y="510" width="1168" height="254" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="550" class="section">ISOLATION LEVELS</text>
+
+  <rect x="92" y="592" width="256" height="116" rx="22" fill="#F4F7FB" stroke="#D1DEEA"/>
+  <text x="116" y="628" class="cardTitle">READ UNCOMMITTED</text>
+  <text x="116" y="654" class="cardText">거의 쓰지 않는다.</text>
+  <text x="116" y="676" class="cardText">중간 상태를 볼 수 있어 dirty read가 가능하다.</text>
+
+  <rect x="372" y="592" width="256" height="116" rx="22" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="402" y="628" class="cardTitle">READ COMMITTED</text>
+  <text x="402" y="654" class="cardText">PostgreSQL 기본값.</text>
+  <text x="402" y="676" class="cardText">커밋된 데이터만 읽지만 반복 조회 결과는 바뀔 수 있다.</text>
+
+  <rect x="652" y="592" width="256" height="116" rx="22" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="680" y="628" class="cardTitle">REPEATABLE READ</text>
+  <text x="680" y="654" class="cardText">같은 트랜잭션 안의 읽기 일관성이 높다.</text>
+  <text x="680" y="676" class="cardText">non-repeatable read를 막지만 phantom은 남을 수 있다.</text>
+
+  <rect x="932" y="592" width="256" height="116" rx="22" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="970" y="628" class="cardTitle">SERIALIZABLE</text>
+  <text x="970" y="654" class="cardText">가장 안전하지만 충돌 시 재시도 비용이 크다.</text>
+  <text x="970" y="676" class="cardText">동시 작업을 직렬 실행처럼 보이게 만든다.</text>
+</svg>

@@ -1,0 +1,39 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Validate release env placeholders"
+  lane :validate_env do
+    sh("node ./scripts/validate-release.mjs")
+  end
+
+  desc "Dry-run staging archive flow"
+  lane :rehearsal_staging do
+    validate_env
+    sh("echo 'ios staging archive dry-run'")
+  end
+
+  desc "Dry-run production archive flow"
+  lane :rehearsal_production do
+    validate_env
+    sh("echo 'ios production archive dry-run'")
+  end
+end
+
+platform :android do
+  desc "Validate release env placeholders"
+  lane :validate_env do
+    sh("node ./scripts/validate-release.mjs")
+  end
+
+  desc "Dry-run staging signed build"
+  lane :rehearsal_staging do
+    validate_env
+    sh("echo 'android staging signed build dry-run'")
+  end
+
+  desc "Dry-run production signed build"
+  lane :rehearsal_production do
+    validate_env
+    sh("echo 'android production signed build dry-run'")
+  end
+end

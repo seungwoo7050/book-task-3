@@ -1,0 +1,7 @@
+CREATE TABLE products (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    stock INTEGER NOT NULL CHECK (stock >= 0),
+    version INTEGER NOT NULL DEFAULT 1
+);
+

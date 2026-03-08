@@ -1,0 +1,15 @@
+appId: com.incidentopsmobileclient
+---
+- launchApp
+- tapOn:
+    id: login-user-id-input
+- inputText: reporter.demo
+- tapOn:
+    id: login-submit-button
+- tapOn:
+    id: new-incident-button
+- tapOn:
+    id: create-title-input
+- inputText: Smoke created incident
+- tapOn:
+    id: queue-incident-button

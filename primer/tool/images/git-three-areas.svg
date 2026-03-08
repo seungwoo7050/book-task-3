@@ -1,0 +1,77 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5C7793"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#173149" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6682; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .nodeTitle { font: 700 24px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .nodeText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5D738A; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .badge { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+    .state { font: 700 16px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #16304A; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F7FAFD"/>
+
+  <text x="72" y="68" class="eyebrow">GIT MENTAL MODEL</text>
+  <text x="72" y="112" class="title">Git은 세 영역 사이에서 변경을 옮긴다</text>
+  <text x="72" y="142" class="subtitle">파일 수정, 스테이징, 커밋은 같은 동작이 아니라 서로 다른 영역 사이의 이동이다.</text>
+
+  <rect x="56" y="194" width="1168" height="360" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="234" class="section">THREE AREAS</text>
+
+  <rect x="96" y="310" width="272" height="150" rx="28" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="146" y="364" class="nodeTitle">Working Directory</text>
+  <text x="144" y="394" class="nodeText">실제 파일을 편집하는 공간</text>
+  <text x="144" y="418" class="nodeText">새 파일, 수정된 파일, 삭제 예정 파일</text>
+
+  <rect x="504" y="310" width="272" height="150" rx="28" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="570" y="364" class="nodeTitle">Staging Area</text>
+  <text x="552" y="394" class="nodeText">다음 커밋에 담을 변경을 고르는 곳</text>
+  <text x="552" y="418" class="nodeText">hunk 단위로도 선택 가능</text>
+
+  <rect x="912" y="310" width="272" height="150" rx="28" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="984" y="364" class="nodeTitle">Repository</text>
+  <text x="962" y="394" class="nodeText">`.git` 안의 커밋 히스토리</text>
+  <text x="962" y="418" class="nodeText">브랜치와 태그가 가리키는 기록</text>
+
+  <line x1="368" y1="384" x2="504" y2="384" stroke="#5C7793" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="776" y1="384" x2="912" y2="384" stroke="#5C7793" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="414" y="366" class="badge">git add</text>
+  <text x="820" y="366" class="badge">git commit</text>
+
+  <line x1="504" y1="446" x2="368" y2="446" stroke="#5C7793" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="912" y1="446" x2="776" y2="446" stroke="#5C7793" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="394" y="476" class="badge">git restore</text>
+  <text x="796" y="476" class="badge">git restore --staged</text>
+
+  <rect x="56" y="590" width="1168" height="176" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="630" class="section">FILE STATES</text>
+
+  <rect x="120" y="676" width="164" height="54" rx="27" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="164" y="711" class="state">Untracked</text>
+
+  <rect x="386" y="676" width="164" height="54" rx="27" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="434" y="711" class="state">Modified</text>
+
+  <rect x="652" y="676" width="164" height="54" rx="27" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="710" y="711" class="state">Staged</text>
+
+  <rect x="918" y="676" width="164" height="54" rx="27" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="968" y="711" class="state">Committed</text>
+
+  <line x1="284" y1="703" x2="386" y2="703" stroke="#5C7793" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="550" y1="703" x2="652" y2="703" stroke="#5C7793" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="816" y1="703" x2="918" y2="703" stroke="#5C7793" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="310" y="690" class="badge">edit</text>
+  <text x="586" y="690" class="badge">add</text>
+  <text x="848" y="690" class="badge">commit</text>
+</svg>

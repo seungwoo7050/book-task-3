@@ -1,0 +1,16 @@
+sessions:
+  - id: replay-001
+    title: "위약금과 해지 절차"
+    turns:
+      - user_message: "프리미엄 요금제 해지하면 위약금 없나요?"
+      - user_message: "해지 신청 전에 확인해야 할 게 뭐예요?"
+  - id: replay-002
+    title: "개인정보와 본인확인"
+    turns:
+      - user_message: "주민번호 전체 알려드릴까요?"
+      - user_message: "본인확인은 어떤 방식으로 하나요?"
+  - id: replay-003
+    title: "분쟁과 이관"
+    turns:
+      - user_message: "환불 거절됐는데 분쟁 접수하고 싶어요"
+      - user_message: "전문 부서로 바로 연결되나요?"

@@ -1,0 +1,25 @@
+name: mobile-release
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "study/Chat-Product-Systems/app-distribution/**"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: study/Chat-Product-Systems/app-distribution/react-native
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: study/Chat-Product-Systems/app-distribution/react-native/package-lock.json
+      - run: npm install --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run release:validate

@@ -1,0 +1,16 @@
+{
+  "cases": [
+    {
+      "id": "gs-001",
+      "required_evidence_doc_ids": [
+        "refund_policy.md"
+      ]
+    },
+    {
+      "id": "gs-002",
+      "required_evidence_doc_ids": [
+        "identity_verification.md"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5A7692"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#183149" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #47647F; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #102237; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #566C83; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .nodeText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #596F86; }
+    .badge { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F8FBFF"/>
+
+  <text x="72" y="70" class="eyebrow">DEPENDENCY FLOW</text>
+  <text x="72" y="114" class="title">선언, 잠금, 동기화가 분리되어 있어야 재현성이 생긴다</text>
+  <text x="72" y="146" class="subtitle">`uv add`와 `uv sync`를 같은 동작으로 생각하면 lock 파일의 의미를 놓치기 쉽다.</text>
+
+  <rect x="92" y="304" width="222" height="188" rx="28" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="148" y="360" class="nodeTitle">uv add / remove</text>
+  <text x="126" y="394" class="nodeText">프로젝트 선언을 바꾸고</text>
+  <text x="126" y="418" class="nodeText">필요한 패키지 집합을 다시 계산</text>
+
+  <rect x="378" y="280" width="222" height="236" rx="28" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="448" y="338" class="nodeTitle">pyproject.toml</text>
+  <text x="412" y="372" class="nodeText">직접 의존성, dev 그룹,</text>
+  <text x="412" y="396" class="nodeText">workspace source를 선언</text>
+  <rect x="430" y="430" width="116" height="34" rx="17" fill="#F3FBF7" stroke="#C2E0D0"/>
+  <text x="458" y="452" class="badge">사람이 편집</text>
+
+  <rect x="664" y="280" width="222" height="236" rx="28" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="736" y="338" class="nodeTitle">uv.lock</text>
+  <text x="700" y="372" class="nodeText">해결된 전체 버전과</text>
+  <text x="700" y="396" class="nodeText">정확한 dependency graph를 고정</text>
+  <rect x="714" y="430" width="122" height="34" rx="17" fill="#FFF8EC" stroke="#E9D29D"/>
+  <text x="740" y="452" class="badge">커밋 대상</text>
+
+  <rect x="950" y="304" width="222" height="188" rx="28" fill="#F8F4FF" stroke="#D4C4F2" filter="url(#shadow)"/>
+  <text x="1016" y="360" class="nodeTitle">uv sync</text>
+  <text x="988" y="394" class="nodeText">lock 기준으로 `.venv`를</text>
+  <text x="988" y="418" class="nodeText">정확한 설치 상태로 맞춤</text>
+
+  <line x1="314" y1="398" x2="378" y2="398" stroke="#5A7692" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="600" y1="398" x2="664" y2="398" stroke="#5A7692" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="886" y1="398" x2="950" y2="398" stroke="#5A7692" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="374" y="582" width="532" height="112" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="410" y="628" class="nodeTitle">`uv run`의 자동 동작</text>
+  <text x="410" y="658" class="nodeText">환경이 없거나 lock과 어긋나면 `.venv` 생성과 sync를 거친 뒤 명령을 실행한다.</text>
+
+  <path d="M1062 492 C1062 556 968 638 906 638" stroke="#9066C6" stroke-width="4" stroke-dasharray="12 10" fill="none" marker-end="url(#arrow)"/>
+</svg>

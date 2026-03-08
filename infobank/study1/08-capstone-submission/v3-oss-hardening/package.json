@@ -1,0 +1,29 @@
+{
+  "name": "study1-v3-oss-hardening",
+  "private": true,
+  "packageManager": "pnpm@10.30.2",
+  "scripts": {
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "migrate": "pnpm --filter @study1-v3/node db:push",
+    "seed": "pnpm --filter @study1-v3/node seed",
+    "bootstrap:owner": "pnpm --filter @study1-v3/node bootstrap:owner",
+    "dev": "concurrently -k -n api,worker,web -c blue,yellow,green \"pnpm --filter @study1-v3/node dev\" \"pnpm --filter @study1-v3/node worker\" \"pnpm --filter @study1-v3/react dev\"",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "test:integration": "pnpm --filter @study1-v3/node test:integration",
+    "eval": "pnpm --filter @study1-v3/node eval",
+    "compare": "pnpm --filter @study1-v3/node compare",
+    "changeset:status": "node ./scripts/changeset-status.mjs",
+    "capture:presentation": "playwright test tests/e2e/presentation-capture.spec.ts",
+    "compatibility": "pnpm --filter @study1-v3/node compatibility",
+    "release:gate": "pnpm --filter @study1-v3/node release:gate",
+    "artifact:export": "pnpm --filter @study1-v3/node artifact:export",
+    "e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@changesets/cli": "2.29.7",
+    "@playwright/test": "1.58.2",
+    "concurrently": "9.2.1"
+  }
+}

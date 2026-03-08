@@ -1,0 +1,74 @@
+<svg width="1280" height="880" viewBox="0 0 1280 880" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5B7692"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#18324A" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #476581; letter-spacing: 0.14em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #556C83; }
+    .nodeTitle { font: 700 21px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #15314B; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5D748B; }
+    .badge { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #44627A; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #476581; letter-spacing: 0.12em; }
+  </style>
+
+  <rect width="1280" height="880" rx="34" fill="#F7FBFF"/>
+  <circle cx="1148" cy="114" r="118" fill="#DDF3EA" fill-opacity="0.76"/>
+  <circle cx="132" cy="790" r="150" fill="#DDEEFF" fill-opacity="0.66"/>
+
+  <text x="72" y="70" class="eyebrow">PATCH TARGET AND TOOL CHOICE</text>
+  <text x="72" y="116" class="title">mocking은 무엇을 바꾸는지에 따라 도구가 갈린다</text>
+  <text x="72" y="148" class="subtitle">환경 상태, import된 collaborator, 호출 검증은 서로 다른 층위다. 섞어 쓰면 patch 경로를 틀리기 쉽다.</text>
+
+  <polygon points="640,238 854,356 640,474 426,356" fill="#FFF6E8" stroke="#EAD29D" filter="url(#shadow)"/>
+  <text x="566" y="346" class="nodeTitle">바꾸려는 대상이</text>
+  <text x="528" y="374" class="nodeTitle">어느 층위에 있는가?</text>
+
+  <rect x="104" y="276" width="242" height="170" rx="28" fill="#EAF4FF" stroke="#BDD7EF" filter="url(#shadow)"/>
+  <text x="150" y="334" class="nodeTitle">`monkeypatch`</text>
+  <text x="140" y="364" class="nodeText">환경 변수, cwd, 속성, dict 값처럼</text>
+  <text x="152" y="388" class="nodeText">프로세스 상태를 잠깐 바꾼다</text>
+  <rect x="140" y="404" width="136" height="32" rx="16" fill="#EEF7FF" stroke="#BDD7EF"/>
+  <text x="170" y="426" class="badge">자동 복원</text>
+
+  <rect x="934" y="250" width="228" height="196" rx="28" fill="#EEF8F3" stroke="#C4E1D2" filter="url(#shadow)"/>
+  <text x="980" y="308" class="nodeTitle">`patch` / `mocker.patch`</text>
+  <text x="966" y="338" class="nodeText">모듈이 가져다 쓰는 collaborator를</text>
+  <text x="972" y="362" class="nodeText">import 경로 기준으로 끊는다</text>
+  <rect x="970" y="382" width="150" height="32" rx="16" fill="#F3FBF7" stroke="#C4E1D2"/>
+  <text x="996" y="404" class="badge">where used</text>
+
+  <rect x="468" y="484" width="344" height="136" rx="28" fill="#F6EEF9" stroke="#DCCDE9" filter="url(#shadow)"/>
+  <text x="560" y="540" class="nodeTitle">Mock / Spy / AsyncMock</text>
+  <text x="528" y="570" class="nodeText">호출 횟수, 인자, 비동기 반환처럼</text>
+  <text x="550" y="594" class="nodeText">행동과 기록을 함께 검증한다</text>
+
+  <rect x="100" y="648" width="1080" height="144" rx="30" fill="#FFFFFF" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="140" y="684" class="section">PATCH WHERE USED</text>
+
+  <rect x="144" y="706" width="220" height="72" rx="20" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="198" y="750" class="nodeTitle">test code</text>
+
+  <rect x="454" y="706" width="250" height="72" rx="20" fill="#EAF4FF" stroke="#BDD7EF"/>
+  <text x="500" y="742" class="nodeTitle">myapp.services</text>
+  <text x="486" y="764" class="nodeText">모듈 under test</text>
+
+  <rect x="794" y="706" width="272" height="72" rx="20" fill="#EEF8F3" stroke="#C4E1D2"/>
+  <text x="848" y="742" class="nodeTitle">requests.get</text>
+  <text x="830" y="764" class="nodeText">실제 collaborator</text>
+
+  <line x1="426" y1="356" x2="346" y2="356" stroke="#5B7692" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="854" y1="356" x2="934" y2="348" stroke="#5B7692" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="640" y1="474" x2="640" y2="484" stroke="#5B7692" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="364" y1="742" x2="454" y2="742" stroke="#5B7692" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="704" y1="742" x2="794" y2="742" stroke="#5B7692" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="530" y="812" width="290" height="34" rx="17" fill="#FFF0EE" stroke="#F0B9B1"/>
+  <text x="566" y="835" class="badge">patch target: `myapp.services.requests.get`</text>
+</svg>

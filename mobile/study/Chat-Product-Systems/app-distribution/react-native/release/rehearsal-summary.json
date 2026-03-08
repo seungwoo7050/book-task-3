@@ -1,0 +1,58 @@
+{
+  "checkedAt": "2026-03-08",
+  "envChecks": [
+    {
+      "name": ".env.development.example",
+      "keys": [
+        "API_BASE_URL",
+        "WS_BASE_URL",
+        "RELEASE_CHANNEL",
+        "SENTRY_DSN"
+      ],
+      "values": {
+        "API_BASE_URL": "http://127.0.0.1:4100",
+        "WS_BASE_URL": "ws://127.0.0.1:4100",
+        "RELEASE_CHANNEL": "development",
+        "SENTRY_DSN": "placeholder-development"
+      }
+    },
+    {
+      "name": ".env.staging.example",
+      "keys": [
+        "API_BASE_URL",
+        "WS_BASE_URL",
+        "RELEASE_CHANNEL",
+        "SENTRY_DSN"
+      ],
+      "values": {
+        "API_BASE_URL": "https://staging.example.invalid",
+        "WS_BASE_URL": "wss://staging.example.invalid",
+        "RELEASE_CHANNEL": "staging",
+        "SENTRY_DSN": "placeholder-staging"
+      }
+    },
+    {
+      "name": ".env.production.example",
+      "keys": [
+        "API_BASE_URL",
+        "WS_BASE_URL",
+        "RELEASE_CHANNEL",
+        "SENTRY_DSN"
+      ],
+      "values": {
+        "API_BASE_URL": "https://api.example.invalid",
+        "WS_BASE_URL": "wss://api.example.invalid",
+        "RELEASE_CHANNEL": "production",
+        "SENTRY_DSN": "placeholder-production"
+      }
+    }
+  ],
+  "consistentKeys": true,
+  "workflowPresent": true,
+  "fastlanePresent": true,
+  "rehearsal": {
+    "android": "signed build rehearsal configured via Fastlane lane and placeholder keystore env keys",
+    "ios": "archive dry-run configured via Fastlane lane and placeholder export options",
+    "workflow": "mobile-release.yml runs typecheck, test, release:validate"
+  }
+}

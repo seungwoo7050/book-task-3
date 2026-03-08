@@ -1,0 +1,13 @@
+arena_size=1000x1000
+spawn_1=120:120
+spawn_2=880:120
+spawn_3=120:880
+spawn_4=880:880
+
+rules:
+- 2~4 players
+- 90 second default match
+- 20 Hz simulation
+- 10 Hz snapshots
+- fire, dash, move
+- respawn delay 3000 ms

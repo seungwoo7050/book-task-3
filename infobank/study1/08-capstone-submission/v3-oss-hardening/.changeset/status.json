@@ -1,0 +1,24 @@
+{
+  "generatedAt": "2026-03-07T08:46:55.913Z",
+  "count": 1,
+  "changesets": [
+    {
+      "file": "study1-v2-demo.md",
+      "releases": [
+        {
+          "pkg": "@study1-v0/node",
+          "bump": "patch"
+        },
+        {
+          "pkg": "@study1-v0/react",
+          "bump": "patch"
+        },
+        {
+          "pkg": "@study1-v0/shared",
+          "bump": "patch"
+        }
+      ],
+      "summary": "Add deterministic compatibility and release gates for the study1 v2 submission demo."
+    }
+  ]
+}

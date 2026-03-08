@@ -1,0 +1,26 @@
+{
+  "result": {
+    "baseline": "v1.0",
+    "candidate": "v1.1",
+    "dataset": "golden-set",
+    "baseline_avg": 84.06,
+    "candidate_avg": 87.76,
+    "baseline_critical": 2,
+    "candidate_critical": 0,
+    "baseline_pass_count": 16,
+    "candidate_pass_count": 19,
+    "baseline_fail_count": 14,
+    "candidate_fail_count": 11,
+    "baseline_failures": {
+      "CONTRADICTED_BY_SOURCE": 2,
+      "MISSING_MANDATORY_STEP": 4
+    },
+    "candidate_failures": {
+      "MISSING_MANDATORY_STEP": 11
+    },
+    "delta": 3.7,
+    "pass_delta": 3,
+    "fail_delta": -3,
+    "critical_delta": -2
+  }
+}

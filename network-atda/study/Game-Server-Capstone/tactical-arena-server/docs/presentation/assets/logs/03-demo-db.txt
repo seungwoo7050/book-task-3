@@ -1,0 +1,10 @@
+players
+(1, 'demo-alpha', '2026-03-07T14:07:57Z')
+(2, 'demo-beta', '2026-03-07T14:07:57Z')
+
+player_stats
+(1, 1, 1, 0, 0, 0)
+(2, 1, 0, 1, 0, 0)
+
+match_history
+(1, 1, 'winner=1;forfeits=;scoreboard=1:0:0,2:0:0')

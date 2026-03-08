@@ -1,0 +1,20 @@
+{
+  "name": "01-rest-api-express-starter",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Starter code for Assignment 1-A: Express REST API",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "dev": "ts-node src/main.ts"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.6.0"
+  }
+}

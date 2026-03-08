@@ -1,0 +1,8 @@
+7
+A B C
+B D .
+C E F
+D . .
+E . .
+F . G
+G . .

@@ -1,0 +1,66 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5E7895"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 20px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+    .footnote { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F7FAFD"/>
+
+  <text x="72" y="68" class="eyebrow">BUILD &amp; RELEASE</text>
+  <text x="72" y="112" class="title">Expo EAS 기준 빌드와 OTA 배포 경로</text>
+  <text x="72" y="142" class="subtitle">변경 종류에 따라 개발 서버, dev build, 스토어 빌드, OTA 업데이트 중 가는 길이 달라진다.</text>
+
+  <rect x="56" y="208" width="1168" height="500" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="248" class="section">DELIVERY PATHS</text>
+
+  <line x1="176" y1="500" x2="1062" y2="500" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="92" y="424" width="166" height="148" rx="22" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="126" y="470" class="nodeTitle">소스 변경</text>
+  <text x="126" y="498" class="nodeText">JS, 스타일, assets,</text>
+  <text x="126" y="520" class="nodeText">native 설정</text>
+
+  <rect x="296" y="400" width="196" height="172" rx="22" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="330" y="446" class="nodeTitle">개발 확인</text>
+  <text x="330" y="474" class="nodeText">`expo start` 또는 dev build</text>
+  <text x="330" y="498" class="nodeText">실기기와 에뮬레이터에서 점검</text>
+
+  <rect x="530" y="376" width="214" height="196" rx="22" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="566" y="422" class="nodeTitle">EAS Build</text>
+  <text x="566" y="450" class="nodeText">iOS / Android 네이티브 빌드</text>
+  <text x="566" y="474" class="nodeText">권한, 아이콘, bundle id, 모듈 변경 시 필수</text>
+  <rect x="566" y="510" width="142" height="30" rx="12" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="592" y="530" class="chip">스토어 제출용 산출물</text>
+
+  <rect x="782" y="424" width="170" height="148" rx="22" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="814" y="470" class="nodeTitle">스토어 제출</text>
+  <text x="814" y="498" class="nodeText">App Store / Play</text>
+  <text x="814" y="520" class="nodeText">심사와 배포</text>
+
+  <rect x="996" y="332" width="176" height="124" rx="22" fill="#FFF0EE" stroke="#F0B7AF" filter="url(#shadow)"/>
+  <text x="1028" y="378" class="nodeTitle">OTA update</text>
+  <text x="1028" y="406" class="nodeText">JS/스타일만 바뀐 경우</text>
+  <text x="1038" y="428" class="nodeText">`eas update` 가능</text>
+
+  <line x1="492" y1="430" x2="996" y2="394" stroke="#D5786F" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="282" y="620" width="698" height="52" rx="18" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="312" y="654" class="chip">규칙: 네이티브 설정이나 모듈이 바뀌면 새 빌드, JS와 스타일만 바뀌면 OTA 후보라고 먼저 분류한다.</text>
+
+  <text x="84" y="744" class="footnote">읽는 법: 먼저 변경의 성격을 분류하고, 개발 확인 뒤에 EAS Build가 필요한지, 아니면 OTA로 충분한지 판단하면 배포 경로를 덜 헤맨다.</text>
+</svg>

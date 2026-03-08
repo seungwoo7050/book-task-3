@@ -1,0 +1,93 @@
+<svg width="1280" height="860" viewBox="0 0 1280 860" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="60" y1="40" x2="1210" y2="820" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FBFF"/>
+      <stop offset="1" stop-color="#F0F8F3"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#DDEFFF"/>
+      <stop offset="1" stop-color="#F8FCFF"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#E3F7EF"/>
+      <stop offset="1" stop-color="#FBFFFD"/>
+    </linearGradient>
+    <linearGradient id="sand" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FFF0D4"/>
+      <stop offset="1" stop-color="#FFFDF8"/>
+    </linearGradient>
+    <linearGradient id="violet" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#EEE9FF"/>
+      <stop offset="1" stop-color="#FCFBFF"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#183149" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#587491"/>
+    </marker>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #46647E; letter-spacing: 0.14em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #102237; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #546A81; }
+    .nodeTitle { font: 700 23px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .nodeText { font: 500 16px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #556D84; }
+    .smallTitle { font: 700 18px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .smallText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #617990; }
+    .badge { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #436079; }
+  </style>
+
+  <rect width="1280" height="860" rx="36" fill="url(#bg)"/>
+  <circle cx="1120" cy="100" r="116" fill="#DBF3E8" fill-opacity="0.7"/>
+  <circle cx="138" cy="760" r="148" fill="#D8ECFF" fill-opacity="0.6"/>
+
+  <text x="72" y="70" class="eyebrow">DEPENDENCY INJECTION</text>
+  <text x="72" y="116" class="title">`Depends()`는 함수가 아니라 그래프를 만든다</text>
+  <text x="72" y="148" class="subtitle">라우트가 직접 모든 것을 생성하지 않고, 필요한 자원을 의존성 체인으로 받아서 조합한다.</text>
+
+  <rect x="74" y="354" width="184" height="128" rx="28" fill="url(#sand)" stroke="#EACB93" filter="url(#shadow)"/>
+  <text x="110" y="408" class="nodeTitle">HTTP 요청</text>
+  <text x="110" y="436" class="nodeText">Authorization 헤더,</text>
+  <text x="110" y="460" class="nodeText">path, query, body</text>
+
+  <rect x="348" y="214" width="222" height="126" rx="28" fill="url(#violet)" stroke="#D8CDF7" filter="url(#shadow)"/>
+  <text x="388" y="266" class="nodeTitle">HTTPBearer()</text>
+  <text x="388" y="296" class="nodeText">토큰 추출</text>
+
+  <rect x="348" y="516" width="222" height="126" rx="28" fill="url(#blue)" stroke="#B9D6F1" filter="url(#shadow)"/>
+  <text x="416" y="568" class="nodeTitle">get_db()</text>
+  <text x="388" y="598" class="nodeText">세션 생성 후 yield,</text>
+  <text x="405" y="622" class="nodeText">응답 뒤 close()</text>
+
+  <rect x="658" y="340" width="252" height="162" rx="30" fill="url(#green)" stroke="#BEE1CE" filter="url(#shadow)"/>
+  <text x="696" y="394" class="nodeTitle">get_current_user()</text>
+  <text x="696" y="424" class="nodeText">토큰 decode</text>
+  <text x="696" y="448" class="nodeText">DB에서 사용자 조회</text>
+  <rect x="696" y="468" width="138" height="34" rx="17" fill="#EAF8F0" stroke="#B6DDC5"/>
+  <text x="728" y="491" class="badge">401 처리 가능</text>
+
+  <rect x="970" y="252" width="206" height="116" rx="28" fill="url(#sand)" stroke="#EACB93" filter="url(#shadow)"/>
+  <text x="1012" y="302" class="smallTitle">get_admin_user()</text>
+  <text x="1012" y="330" class="smallText">권한 검사</text>
+  <text x="1012" y="352" class="smallText">필요 시 403</text>
+
+  <rect x="968" y="430" width="208" height="126" rx="28" fill="#FFFFFF" stroke="#C7D8E7" filter="url(#shadow)"/>
+  <text x="1010" y="482" class="nodeTitle">라우트 함수</text>
+  <text x="1010" y="512" class="nodeText">검증된 current_user,</text>
+  <text x="1010" y="536" class="nodeText">db를 받아 비즈니스 호출</text>
+
+  <rect x="922" y="648" width="254" height="106" rx="28" fill="#F7FBFF" stroke="#C7D8E7" filter="url(#shadow)"/>
+  <text x="958" y="694" class="smallTitle">테스트에서는 override</text>
+  <text x="958" y="722" class="smallText">get_db, auth를 가짜 구현으로 교체</text>
+
+  <line x1="258" y1="418" x2="348" y2="278" stroke="#587491" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="258" y1="418" x2="348" y2="578" stroke="#587491" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="570" y1="278" x2="658" y2="394" stroke="#587491" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="570" y1="578" x2="658" y2="446" stroke="#587491" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="910" y1="394" x2="970" y2="310" stroke="#587491" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="910" y1="448" x2="968" y2="492" stroke="#587491" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="1072" y1="368" x2="1072" y2="430" stroke="#587491" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="1048" y1="648" x2="1048" y2="556" stroke="#587491" stroke-width="4" stroke-dasharray="12 10" marker-end="url(#arrow)"/>
+</svg>

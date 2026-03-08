@@ -1,0 +1,12 @@
+**/node_modules/
+**/dist/
+**/.next/
+**/coverage/
+**/test-results/
+**/playwright-report/
+**/.cache/
+**/.vite/
+**/notion/
+*.tsbuildinfo
+*.log
+.DS_Store

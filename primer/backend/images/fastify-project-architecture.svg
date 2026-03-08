@@ -1,0 +1,83 @@
+<svg width="1280" height="900" viewBox="0 0 1280 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="80" y1="40" x2="1200" y2="860" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7FBFF"/>
+      <stop offset="1" stop-color="#EEF7F2"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#17324B" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5B7592"/>
+    </marker>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #43627D; letter-spacing: 0.14em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #536980; }
+    .miniTitle { font: 700 20px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .miniText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #61788F; }
+    .badge { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #42607A; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4D6982; letter-spacing: 0.14em; }
+  </style>
+
+  <rect width="1280" height="900" rx="36" fill="url(#bg)"/>
+  <circle cx="1138" cy="106" r="116" fill="#DDF4EA" fill-opacity="0.72"/>
+  <circle cx="126" cy="786" r="150" fill="#DAEDFF" fill-opacity="0.64"/>
+
+  <text x="72" y="70" class="eyebrow">FASTIFY ARCHITECTURE</text>
+  <text x="72" y="116" class="title">프로젝트 구조를 plugin 중심으로 읽기</text>
+  <text x="72" y="148" class="subtitle">Fastify에서는 폴더보다 plugin 경계와 schema 배치가 구조를 결정한다.</text>
+
+  <rect x="156" y="192" width="228" height="108" rx="26" fill="#FFF2D8" stroke="#EBCB8D" filter="url(#shadow)"/>
+  <text x="194" y="236" class="miniTitle">server.ts</text>
+  <text x="194" y="264" class="miniText">listen만 담당하고 buildApp()을 실행</text>
+
+  <rect x="454" y="180" width="404" height="124" rx="28" fill="#EAF4FF" stroke="#B8D7F1" filter="url(#shadow)"/>
+  <text x="494" y="232" class="miniTitle">app.ts / buildApp()</text>
+  <text x="494" y="260" class="miniText">Fastify 인스턴스 생성, plugin register, logger 설정</text>
+
+  <text x="72" y="382" class="section">PLUGIN AND ROUTE LAYERS</text>
+
+  <rect x="72" y="428" width="236" height="164" rx="28" fill="#F1ECFF" stroke="#D8CEF8" filter="url(#shadow)"/>
+  <text x="110" y="482" class="miniTitle">plugins/</text>
+  <text x="110" y="512" class="miniText">auth, db, cors 같은 공통 기능</text>
+  <text x="110" y="536" class="miniText">decorate / addHook / onClose 제공</text>
+  <rect x="110" y="554" width="116" height="32" rx="16" fill="#F5F0FF" stroke="#D8CBF6"/>
+  <text x="142" y="575" class="badge">encapsulation</text>
+
+  <rect x="350" y="428" width="236" height="164" rx="28" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="388" y="482" class="miniTitle">routes/</text>
+  <text x="388" y="512" class="miniText">route plugin 단위로 prefix를 묶고</text>
+  <text x="388" y="536" class="miniText">schema와 handler를 연결</text>
+  <rect x="388" y="554" width="108" height="32" rx="16" fill="#F3FBF7" stroke="#C2E0D0"/>
+  <text x="426" y="575" class="badge">register</text>
+
+  <rect x="628" y="428" width="236" height="164" rx="28" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="666" y="482" class="miniTitle">schema.ts</text>
+  <text x="666" y="512" class="miniText">body, params, query, response schema</text>
+  <text x="666" y="536" class="miniText">$ref와 addSchema로 재사용</text>
+  <rect x="666" y="554" width="110" height="32" rx="16" fill="#FFF7E7" stroke="#EAC97E"/>
+  <text x="700" y="575" class="badge">JSON Schema</text>
+
+  <rect x="906" y="428" width="236" height="164" rx="28" fill="#EAF4FF" stroke="#B8D7F1" filter="url(#shadow)"/>
+  <text x="944" y="482" class="miniTitle">services/</text>
+  <text x="944" y="512" class="miniText">비즈니스 로직과 DB 호출</text>
+  <text x="944" y="536" class="miniText">Fastify request/reply를 몰라야 한다</text>
+  <rect x="944" y="554" width="126" height="32" rx="16" fill="#EAF4FF" stroke="#BAD4EE"/>
+  <text x="976" y="575" class="badge">domain logic</text>
+
+  <rect x="562" y="680" width="316" height="136" rx="28" fill="#FFFFFF" stroke="#C8D9E8" filter="url(#shadow)"/>
+  <text x="602" y="726" class="miniTitle">types/ + decorators</text>
+  <text x="602" y="754" class="miniText">FastifyRequest / FastifyInstance 타입 확장</text>
+  <text x="602" y="778" class="miniText">request.user, app.db 같은 데코레이터 타입 안전화</text>
+
+  <line x1="384" y1="246" x2="454" y2="246" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="656" y1="304" x2="190" y2="428" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="656" y1="304" x2="468" y2="428" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="308" y1="510" x2="350" y2="510" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="586" y1="510" x2="628" y2="510" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="864" y1="510" x2="906" y2="510" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M190 592 C280 680 420 690 562 720" stroke="#5B7592" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+</svg>

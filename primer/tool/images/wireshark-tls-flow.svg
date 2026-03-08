@@ -1,0 +1,62 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#597592"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#173149" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #47637E; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #102237; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #566B82; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .nodeText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #596F86; }
+    .badge { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+    .code { font: 700 15px "SF Mono", "SFMono-Regular", "Menlo", monospace; fill: #17304A; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F8FBFF"/>
+
+  <text x="72" y="70" class="eyebrow">TLS FLOW</text>
+  <text x="72" y="114" class="title">TLS는 핸드셰이크와 복호화 경로를 따로 본다</text>
+  <text x="72" y="146" class="subtitle">패킷 안에 HTTP가 안 보인다고 바로 실패로 판단하지 말고, handshake 성립 여부와 key log 제공 여부를 먼저 확인한다.</text>
+
+  <rect x="72" y="210" width="760" height="520" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="104" y="250" class="section">HANDSHAKE</text>
+
+  <text x="220" y="294" class="nodeTitle">Client</text>
+  <text x="618" y="294" class="nodeTitle">Server</text>
+  <line x1="250" y1="320" x2="250" y2="646" stroke="#BCD6EE" stroke-width="4"/>
+  <line x1="650" y1="320" x2="650" y2="646" stroke="#C2E0D0" stroke-width="4"/>
+
+  <line x1="286" y1="360" x2="614" y2="360" stroke="#597592" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="386" y="344" class="badge">Client Hello, SNI, cipher suites</text>
+
+  <line x1="614" y1="414" x2="286" y2="414" stroke="#597592" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="402" y="398" class="badge">Server Hello</text>
+
+  <line x1="614" y1="468" x2="286" y2="468" stroke="#597592" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="412" y="452" class="badge">Certificate</text>
+
+  <line x1="286" y1="522" x2="614" y2="522" stroke="#597592" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="360" y="506" class="badge">Key Exchange / Finished</text>
+
+  <line x1="286" y1="588" x2="614" y2="588" stroke="#597592" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="388" y="572" class="badge">Encrypted Application Data</text>
+
+  <rect x="890" y="248" width="306" height="176" rx="28" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="926" y="302" class="nodeTitle">핸드셰이크에서 보는 것</text>
+  <text x="926" y="336" class="nodeText">SNI, TLS 버전, 선택된 cipher suite,</text>
+  <text x="926" y="360" class="nodeText">인증서 체인, alert 메시지</text>
+
+  <rect x="890" y="462" width="306" height="218" rx="28" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="926" y="518" class="nodeTitle">복호화 흐름</text>
+  <text x="926" y="552" class="code">export SSLKEYLOGFILE=~/ssl-keys.log</text>
+  <text x="926" y="584" class="nodeText">Wireshark Preferences → Protocols → TLS</text>
+  <text x="926" y="608" class="nodeText">key log 파일을 지정하면</text>
+  <text x="926" y="632" class="nodeText">Application Data가 HTTP 등으로 풀릴 수 있다.</text>
+</svg>

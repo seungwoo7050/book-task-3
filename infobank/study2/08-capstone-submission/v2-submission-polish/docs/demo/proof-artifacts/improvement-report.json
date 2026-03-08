@@ -1,0 +1,22 @@
+{
+  "experiment": "retrieval-v2 alias/category/risk rerank + retrieval-conditioned answer composer",
+  "baseline": {
+    "run_label": "v1.0",
+    "avg_score": 84.06,
+    "critical_count": 2,
+    "pass_count": 16,
+    "fail_count": 14
+  },
+  "candidate": {
+    "run_label": "v1.1",
+    "avg_score": 87.76,
+    "critical_count": 0,
+    "pass_count": 19,
+    "fail_count": 11
+  },
+  "notes": [
+    "same golden-set dataset",
+    "baseline executed with v1 code on retrieval-v1",
+    "candidate executed with v2 code on retrieval-v2"
+  ]
+}

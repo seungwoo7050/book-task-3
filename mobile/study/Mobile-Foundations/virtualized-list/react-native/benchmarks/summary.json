@@ -1,0 +1,18 @@
+{
+  "datasetSize": 10000,
+  "pageSize": 50,
+  "flatList": {
+    "fps": 47,
+    "initialRenderMs": 222,
+    "blankAreaMs": 61,
+    "peakMemoryMb": 188,
+    "mountCount": 1230
+  },
+  "flashList": {
+    "fps": 58,
+    "initialRenderMs": 141,
+    "blankAreaMs": 18,
+    "peakMemoryMb": 134,
+    "mountCount": 472
+  }
+}

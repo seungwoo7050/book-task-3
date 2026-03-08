@@ -1,0 +1,12 @@
+{
+  "remediation": {
+    "finding_id": "cd605b1287dbef62",
+    "mode": "manual_approval_required",
+    "status": "generated",
+    "summary": "Dry-run remediation for CSPM-002",
+    "commands_or_patch": [
+      "Replace 0.0.0.0/0 with a trusted corporate CIDR",
+      "Prepare rollback plan before revoking ingress"
+    ]
+  }
+}

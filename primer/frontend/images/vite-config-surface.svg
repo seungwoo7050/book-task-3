@@ -1,0 +1,57 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5E7895"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .nodeTitle { font: 700 20px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+    .footnote { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F7FAFD"/>
+
+  <text x="72" y="68" class="eyebrow">CONFIG SURFACE</text>
+  <text x="72" y="112" class="title">vite.config.ts 옵션이 영향을 주는 표면</text>
+  <text x="72" y="142" class="subtitle">설정 키를 phase별로 나눠 읽으면, proxy 문제와 build 청크 문제를 같은 층에서 보지 않게 된다.</text>
+
+  <rect x="456" y="300" width="368" height="164" rx="28" fill="#FFFFFF" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="512" y="374" class="nodeTitle">vite.config.ts</text>
+  <text x="512" y="402" class="nodeText">defineConfig 안의 옵션이 서로 다른 phase를 제어</text>
+
+  <rect x="92" y="260" width="256" height="146" rx="24" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="124" y="306" class="nodeTitle">server / proxy</text>
+  <text x="124" y="334" class="nodeText">dev server 포트, 프록시, HMR</text>
+  <text x="124" y="358" class="nodeText">오직 개발 서버에서만 의미</text>
+
+  <rect x="92" y="498" width="256" height="146" rx="24" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="124" y="544" class="nodeTitle">resolve.alias</text>
+  <text x="124" y="572" class="nodeText">import 경로 해석</text>
+  <text x="124" y="596" class="nodeText">dev와 build 모두에 영향</text>
+
+  <rect x="932" y="260" width="256" height="146" rx="24" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="964" y="306" class="nodeTitle">css</text>
+  <text x="964" y="334" class="nodeText">CSS Modules, preprocessor,</text>
+  <text x="964" y="358" class="nodeText">PostCSS 적용 경로</text>
+
+  <rect x="932" y="498" width="256" height="146" rx="24" fill="#FFF0EE" stroke="#F0B7AF"/>
+  <text x="964" y="544" class="nodeTitle">build / preview</text>
+  <text x="964" y="572" class="nodeText">outDir, sourcemap, Rollup 청크</text>
+  <text x="964" y="596" class="nodeText">preview 서버 확인</text>
+
+  <line x1="456" y1="362" x2="348" y2="336" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="456" y1="402" x2="348" y2="542" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="824" y1="362" x2="932" y2="336" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="824" y1="402" x2="932" y2="542" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <text x="84" y="744" class="footnote">읽는 법: 어떤 옵션이 어떤 phase를 제어하는지 먼저 분류하면 dev proxy 문제와 production chunk 문제를 섞지 않게 된다.</text>
+</svg>

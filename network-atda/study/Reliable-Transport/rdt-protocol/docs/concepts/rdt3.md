@@ -1,0 +1,150 @@
+# RDT 3.0 — Alternating-Bit Protocol
+
+## Overview
+
+RDT 3.0 is a **stop-and-wait** protocol that handles both **corruption** and **loss** using:
+- Checksums for corruption detection
+- Alternating sequence numbers (0 and 1)
+- A countdown timer for loss detection
+- Retransmission on timeout
+
+## Sender Finite State Machine (FSM)
+
+```
+                        ┌────────────────────┐
+                        │                    │
+                        │  Wait for call     │
+                ┌──────►│  from above        │
+                │       │  (seq = 0)         │
+                │       └────────┬───────────┘
+                │                │ rdt_send(data)
+                │                │ → make_pkt(0, data, checksum)
+                │                │ → udt_send(pkt)
+                │                │ → start_timer
+                │                ▼
+                │       ┌────────────────────┐
+                │       │                    │
+                │       │  Wait for ACK 0    │◄────┐
+                │       │                    │     │ timeout
+                │       └──┬─────────────┬───┘     │ → udt_send(pkt)
+                │          │             │         │ → start_timer
+                │          │ rcv ACK 0   │ corrupt │
+                │          │ & not       │ or      ├──┘
+                │          │ corrupt     │ ACK 1
+                │          │             │
+                │          ▼             ▼
+                │    stop_timer     (do nothing)
+                │          │
+                │          ▼
+                │  ┌────────────────────┐
+                │  │                    │
+                │  │  Wait for call     │
+                │  │  from above        │
+                │  │  (seq = 1)         │
+                │  └────────┬───────────┘
+                │           │  (symmetric to above with seq=1)
+                │           ▼
+                └───────────────────────
+```
+
+## Receiver FSM
+
+```
+        ┌────────────────────────┐
+        │                        │
+   ┌───►│  Wait for pkt seq = 0  │◄────────┐
+   │    │                        │         │
+   │    └──┬──────────────┬──────┘         │
+   │       │              │                │
+   │       │ pkt seq=0    │ corrupt or     │
+   │       │ & not        │ seq=1          │
+   │       │ corrupt      │                │
+   │       │              │ → send ACK 1   │
+   │       ▼              ▼  (last ACK)    │
+   │  deliver(data)                        │
+   │  send ACK 0                           │
+   │       │                               │
+   │       ▼                               │
+   │  ┌────────────────────────┐           │
+   │  │                        │           │
+   │  │  Wait for pkt seq = 1  │───────────┘
+   │  │                        │  (symmetric)
+   │  └────────────────────────┘
+   │           │
+   └───────────┘
+```
+
+## Key Scenarios
+
+### Normal Operation (No Loss)
+
+```
+Sender               Channel              Receiver
+  │  pkt(seq=0,"Hi")    │                    │
+  │──────────────────────►                   │
+  │                      │  pkt delivered    │
+  │                      │──────────────────►│
+  │                      │                   │ deliver "Hi"
+  │                      │  ACK 0           │
+  │  ◄──────────────────────────────────────│
+  │  ACK 0 received     │                   │
+  │  send pkt(seq=1,..) │                   │
+```
+
+### Packet Loss
+
+```
+Sender               Channel              Receiver
+  │  pkt(seq=0,"Hi")    │                    │
+  │──────────────────X   (LOST)              │
+  │                      │                   │
+  │  TIMEOUT!            │                   │
+  │  resend pkt(seq=0)  │                   │
+  │──────────────────────►                   │
+  │                      │──────────────────►│
+  │  ◄──────────────────────────────────────│
+```
+
+### ACK Loss
+
+```
+Sender               Channel              Receiver
+  │  pkt(seq=0,"Hi")    │                    │
+  │──────────────────────►──────────────────►│
+  │                      │                   │ deliver "Hi"
+  │                      │  ACK 0           │
+  │                   X──────────────────────│ (ACK LOST)
+  │  TIMEOUT!            │                   │
+  │  resend pkt(seq=0)  │                   │
+  │──────────────────────►──────────────────►│
+  │                      │                   │ duplicate! discard
+  │                      │  ACK 0 (re-ack)  │
+  │  ◄──────────────────────────────────────│
+```
+
+## Implementation Pattern
+
+```python
+def rdt_sender(channel_data, channel_ack, messages):
+    seq = 0
+    for msg in messages:
+        pkt = make_packet(seq, msg.encode())
+
+        while True:
+            channel_data.send(pkt)
+            start = time.time()
+
+            # Wait for ACK or timeout
+            while time.time() - start < TIMEOUT:
+                if channel_ack.has_packet():
+                    ack = channel_ack.receive()
+                    if is_ack(ack, seq):
+                        break  # ACK received — move on
+                time.sleep(0.01)
+            else:
+                continue  # Timeout — retransmit
+
+            break  # Successfully ACKed
+
+        seq = 1 - seq  # Toggle: 0 → 1, 1 → 0
+```

@@ -1,0 +1,7 @@
+{
+  "email": "owner@example.com",
+  "password": "OwnerPass123!",
+  "display_name": "Owner Example",
+  "org_name": "Example Workspace",
+  "org_slug": "example-workspace"
+}

@@ -1,0 +1,87 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: qualbot
+      POSTGRES_USER: qualbot
+      POSTGRES_PASSWORD: qualbot
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qualbot -d qualbot"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: ./python
+    environment:
+      QUALBOT_DATABASE_URL: postgresql+psycopg://qualbot:qualbot@postgres:5432/qualbot
+      QUALBOT_SESSION_SECRET: qualbot-compose-session-secret
+      QUALBOT_ADMIN_EMAIL: admin@example.com
+      QUALBOT_ADMIN_PASSWORD: password123
+      QUALBOT_STORAGE_ROOT: /app/storage
+      QUALBOT_EVAL_MODE: heuristic
+      QUALBOT_RETRIEVAL_BACKEND: keyword
+      QUALBOT_ENABLE_OLLAMA: "0"
+      QUALBOT_ENABLE_CHROMA: "0"
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./storage:/app/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ./python
+    environment:
+      QUALBOT_DATABASE_URL: postgresql+psycopg://qualbot:qualbot@postgres:5432/qualbot
+      QUALBOT_SESSION_SECRET: qualbot-compose-session-secret
+      QUALBOT_ADMIN_EMAIL: admin@example.com
+      QUALBOT_ADMIN_PASSWORD: password123
+      QUALBOT_STORAGE_ROOT: /app/storage
+      QUALBOT_EVAL_MODE: heuristic
+      QUALBOT_RETRIEVAL_BACKEND: keyword
+      QUALBOT_ENABLE_OLLAMA: "0"
+      QUALBOT_ENABLE_CHROMA: "0"
+    command: python -m cli.main worker
+    volumes:
+      - ./storage:/app/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_started
+
+  web:
+    build:
+      context: ./react
+    environment:
+      VITE_API_BASE_URL: http://localhost:8000
+    command: pnpm dev --host 0.0.0.0
+    ports:
+      - "5173:5173"
+    depends_on:
+      api:
+        condition: service_started
+
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["ai"]
+    ports:
+      - "11434:11434"
+
+  chroma:
+    image: chromadb/chroma:0.5.20
+    profiles: ["ai"]
+    ports:
+      - "8001:8000"
+
+volumes:
+  postgres-data:

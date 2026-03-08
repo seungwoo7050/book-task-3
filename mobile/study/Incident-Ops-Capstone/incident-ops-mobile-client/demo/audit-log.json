@@ -1,0 +1,44 @@
+{
+  "items": [
+    {
+      "id": 1,
+      "incidentId": "af198910-6686-4513-9fd1-91ef579e432a",
+      "actorId": "reporter.demo",
+      "actorRole": "REPORTER",
+      "action": "incident.create",
+      "result": "SUCCESS",
+      "detail": "created incident af198910-6686-4513-9fd1-91ef579e432a",
+      "createdAt": "2026-03-07T13:42:32.139Z"
+    },
+    {
+      "id": 2,
+      "incidentId": "af198910-6686-4513-9fd1-91ef579e432a",
+      "actorId": "operator.demo",
+      "actorRole": "OPERATOR",
+      "action": "incident.ack",
+      "result": "SUCCESS",
+      "detail": "acked incident af198910-6686-4513-9fd1-91ef579e432a",
+      "createdAt": "2026-03-07T13:42:32.141Z"
+    },
+    {
+      "id": 3,
+      "incidentId": "af198910-6686-4513-9fd1-91ef579e432a",
+      "actorId": "operator.demo",
+      "actorRole": "OPERATOR",
+      "action": "incident.request_resolution",
+      "result": "SUCCESS",
+      "detail": "approval 089ad138-1690-4e8a-910d-5d2691a0cb53 requested",
+      "createdAt": "2026-03-07T13:42:32.142Z"
+    },
+    {
+      "id": 4,
+      "incidentId": "af198910-6686-4513-9fd1-91ef579e432a",
+      "actorId": "approver.demo",
+      "actorRole": "APPROVER",
+      "action": "approval.decide",
+      "result": "SUCCESS",
+      "detail": "approval 089ad138-1690-4e8a-910d-5d2691a0cb53 -> APPROVE",
+      "createdAt": "2026-03-07T13:42:32.143Z"
+    }
+  ]
+}

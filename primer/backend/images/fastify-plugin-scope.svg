@@ -1,0 +1,61 @@
+<svg width="1280" height="880" viewBox="0 0 1280 880" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5B7592"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#17324B" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #43627D; letter-spacing: 0.14em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #536980; }
+    .miniTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .miniText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #61788F; }
+    .badge { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #42607A; }
+  </style>
+
+  <rect width="1280" height="880" rx="36" fill="#F7FBFF"/>
+  <circle cx="1138" cy="106" r="116" fill="#DDF4EA" fill-opacity="0.72"/>
+  <circle cx="126" cy="786" r="150" fill="#DAEDFF" fill-opacity="0.64"/>
+
+  <text x="72" y="70" class="eyebrow">PLUGIN SCOPE</text>
+  <text x="72" y="116" class="title">`register()`는 하위 스코프를 만들고, `fp()`는 위로 올린다</text>
+  <text x="72" y="148" class="subtitle">Fastify plugin을 이해할 때 핵심은 "어디서 등록했고, 어디까지 보이는가"다.</text>
+
+  <rect x="420" y="188" width="412" height="120" rx="28" fill="#EAF4FF" stroke="#B8D7F1" filter="url(#shadow)"/>
+  <text x="462" y="238" class="miniTitle">root app scope</text>
+  <text x="462" y="268" class="miniText">logger, cors, global decorators, shared schemas</text>
+
+  <rect x="166" y="430" width="312" height="188" rx="30" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="208" y="486" class="miniTitle">app.register(userRoutes)</text>
+  <text x="208" y="516" class="miniText">이 안에서 만든 decorator와 hook은</text>
+  <text x="208" y="540" class="miniText">기본적으로 userRoutes 스코프 안에서만 보인다</text>
+  <rect x="208" y="562" width="116" height="32" rx="16" fill="#F3FBF7" stroke="#C2E0D0"/>
+  <text x="238" y="583" class="badge">encapsulated</text>
+
+  <rect x="514" y="430" width="252" height="188" rx="30" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="552" y="486" class="miniTitle">privatePlugin</text>
+  <text x="552" y="516" class="miniText">app.decorate("privateUtil", ...)</text>
+  <text x="552" y="540" class="miniText">같은 스코프와 자식에서만 사용 가능</text>
+  <rect x="552" y="562" width="116" height="32" rx="16" fill="#FFF7E7" stroke="#EAC97E"/>
+  <text x="586" y="583" class="badge">local only</text>
+
+  <rect x="802" y="430" width="312" height="188" rx="30" fill="#F1ECFF" stroke="#D8CEF8" filter="url(#shadow)"/>
+  <text x="844" y="486" class="miniTitle">fp(authPlugin)</text>
+  <text x="844" y="516" class="miniText">`fastify-plugin`으로 감싸면</text>
+  <text x="844" y="540" class="miniText">부모와 다른 route plugin에서도 접근 가능</text>
+  <rect x="844" y="562" width="122" height="32" rx="16" fill="#F5F0FF" stroke="#D8CBF6"/>
+  <text x="874" y="583" class="badge">promoted</text>
+
+  <rect x="516" y="700" width="248" height="88" rx="24" fill="#FFFFFF" stroke="#C8D9E8" filter="url(#shadow)"/>
+  <text x="552" y="748" class="miniTitle">실무 규칙</text>
+  <text x="552" y="776" class="miniText">route별 전용 기능은 캡슐화하고, 공유 인프라는 fp()로 올린다</text>
+
+  <line x1="640" y1="308" x2="322" y2="430" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="640" y1="308" x2="640" y2="430" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="640" y1="308" x2="958" y2="430" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M958 430 C958 344 864 340 832 340" stroke="#7A63B7" stroke-width="4" stroke-dasharray="12 10" fill="none" marker-end="url(#arrow)"/>
+</svg>

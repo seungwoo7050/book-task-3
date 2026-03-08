@@ -1,0 +1,66 @@
+<svg width="1280" height="780" viewBox="0 0 1280 780" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="90" y1="50" x2="1190" y2="740" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7FBFF"/>
+      <stop offset="1" stop-color="#F1F8F1"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#17324B" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5B7592"/>
+    </marker>
+  </defs>
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #46637D; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14263A; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #566A80; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4C6881; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .nodeText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #60778E; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #415F79; }
+  </style>
+
+  <rect width="1280" height="780" rx="36" fill="url(#bg)"/>
+  <circle cx="1120" cy="108" r="102" fill="#DDEFE8" fill-opacity="0.68"/>
+  <circle cx="146" cy="694" r="136" fill="#DDEBFF" fill-opacity="0.58"/>
+
+  <text x="72" y="68" class="eyebrow">GO METHOD SET</text>
+  <text x="72" y="112" class="title">리시버 종류가 상태 변경과 인터페이스 만족을 결정한다</text>
+  <text x="72" y="144" class="subtitle">Go는 explicit implements가 없기 때문에, 어떤 메서드가 값과 포인터에 붙는지 먼저 보면 인터페이스 만족 여부도 같이 보인다.</text>
+
+  <text x="84" y="214" class="section">RECEIVER CHOICE</text>
+
+  <rect x="72" y="248" width="332" height="420" rx="28" fill="#FFFFFF" stroke="#CDDCE9" filter="url(#shadow)"/>
+  <text x="108" y="304" class="nodeTitle">값 리시버</text>
+  <text x="108" y="332" class="nodeText">메서드가 복사된 값을 받는다</text>
+  <text x="108" y="360" class="nodeText">읽기 중심이고 상태 변경이 없을 때 적합하다</text>
+  <rect x="108" y="426" width="250" height="86" rx="20" fill="#EAF4FF" stroke="#BCD5EE"/>
+  <text x="138" y="464" class="nodeText">Rect.Area()</text>
+  <text x="138" y="492" class="nodeText">Width, Height를 읽기만 함</text>
+  <rect x="108" y="556" width="192" height="42" rx="21" fill="#EEF7FF" stroke="#BCD5EE"/>
+  <text x="136" y="584" class="chip">복사 비용이 작은 타입에 적합</text>
+
+  <rect x="472" y="248" width="332" height="420" rx="28" fill="#FFFFFF" stroke="#CDDCE9" filter="url(#shadow)"/>
+  <text x="508" y="304" class="nodeTitle">포인터 리시버</text>
+  <text x="508" y="332" class="nodeText">메서드가 원본을 가리킨다</text>
+  <text x="508" y="360" class="nodeText">상태 변경, 큰 구조체, 일관된 메서드 집합에 적합하다</text>
+  <rect x="508" y="426" width="250" height="86" rx="20" fill="#EEF8EF" stroke="#B9DEC9"/>
+  <text x="538" y="464" class="nodeText">Rect.Scale()</text>
+  <text x="538" y="492" class="nodeText">원본 Width, Height를 직접 바꿈</text>
+  <rect x="508" y="556" width="192" height="42" rx="21" fill="#EEF8EF" stroke="#B9DEC9"/>
+  <text x="540" y="584" class="chip">mutation이 있으면 보통 포인터</text>
+
+  <rect x="872" y="248" width="336" height="420" rx="28" fill="#FFFFFF" stroke="#CDDCE9" filter="url(#shadow)"/>
+  <text x="908" y="304" class="nodeTitle">인터페이스 만족</text>
+  <text x="908" y="332" class="nodeText">메서드 집합이 맞으면 자동으로 구현체가 된다</text>
+  <rect x="908" y="394" width="128" height="86" rx="20" fill="#FFF6E8" stroke="#E8CE96"/>
+  <text x="944" y="434" class="nodeTitle">Reader</text>
+  <text x="940" y="462" class="nodeText">Read 메서드</text>
+  <rect x="1066" y="394" width="110" height="86" rx="20" fill="#F3EEFF" stroke="#D8CCF6"/>
+  <text x="1088" y="434" class="nodeTitle">File</text>
+  <text x="1082" y="462" class="nodeText">Read 구현</text>
+  <line x1="1036" y1="437" x2="1066" y2="437" stroke="#5B7592" stroke-width="4" marker-end="url(#arrow)"/>
+  <rect x="908" y="544" width="242" height="70" rx="20" fill="#FFF3ED" stroke="#F0B7AF"/>
+  <text x="938" y="584" class="nodeText">작은 인터페이스를 호출 측에서 정의하는 이유</text>
+</svg>

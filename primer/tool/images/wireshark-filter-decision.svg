@@ -1,0 +1,60 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#597592"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#173149" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #47637E; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #102237; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #566B82; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #17304A; }
+    .nodeText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #596F86; }
+    .code { font: 700 15px "SF Mono", "SFMono-Regular", "Menlo", monospace; fill: #17304A; }
+    .small { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #45627B; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F8FBFF"/>
+
+  <text x="72" y="70" class="eyebrow">FILTER DECISION</text>
+  <text x="72" y="114" class="title">먼저 줄일 것인가, 나중에 고를 것인가?</text>
+  <text x="72" y="146" class="subtitle">Capture Filter와 Display Filter는 비슷해 보여도 적용 시점과 문법이 다르다.</text>
+
+  <rect x="392" y="204" width="496" height="116" rx="28" fill="#FFFFFF" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="482" y="252" class="nodeTitle">필터를 거는 이유가 무엇인가?</text>
+  <text x="448" y="282" class="nodeText">캡처량을 줄이는지, 이미 잡은 패킷에서 특정 필드를 찾는지 먼저 구분한다.</text>
+
+  <line x1="640" y1="320" x2="640" y2="382" stroke="#597592" stroke-width="4"/>
+  <line x1="640" y1="382" x2="246" y2="382" stroke="#597592" stroke-width="4"/>
+  <line x1="640" y1="382" x2="1034" y2="382" stroke="#597592" stroke-width="4"/>
+  <line x1="246" y1="382" x2="246" y2="444" stroke="#597592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="1034" y1="382" x2="1034" y2="444" stroke="#597592" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="104" y="444" width="284" height="244" rx="28" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="158" y="502" class="nodeTitle">Capture Filter</text>
+  <text x="142" y="536" class="nodeText">캡처 시작 전에 적용</text>
+  <text x="142" y="560" class="nodeText">BPF 문법, 패킷 수 자체를 줄임</text>
+  <text x="142" y="606" class="code">tcp port 443</text>
+  <text x="142" y="636" class="code">host 10.0.0.1</text>
+  <rect x="142" y="654" width="112" height="34" rx="17" fill="#EEF7FF" stroke="#BCD6EE"/>
+  <text x="170" y="676" class="small">변경 중 불가</text>
+
+  <rect x="892" y="444" width="284" height="244" rx="28" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="946" y="502" class="nodeTitle">Display Filter</text>
+  <text x="930" y="536" class="nodeText">캡처 후 언제든 적용</text>
+  <text x="930" y="560" class="nodeText">프로토콜 필드와 문자열까지 접근 가능</text>
+  <text x="930" y="606" class="code">tcp.port == 443</text>
+  <text x="930" y="636" class="code">http.host contains "api"</text>
+  <rect x="930" y="654" width="124" height="34" rx="17" fill="#F3FBF7" stroke="#C2E0D0"/>
+  <text x="958" y="676" class="small">정밀 분석용</text>
+
+  <rect x="430" y="470" width="420" height="176" rx="28" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="492" y="520" class="nodeTitle">빠른 선택 기준</text>
+  <text x="474" y="556" class="nodeText">디스크와 메모리를 아끼며 처음부터 범위를 줄여야 하면 Capture Filter</text>
+  <text x="474" y="586" class="nodeText">이미 잡은 파일에서 TLS SNI, HTTP URI, TCP flag를 찾을 때는 Display Filter</text>
+  <text x="474" y="616" class="nodeText">문법을 섞지 않는다: `tcp port 443` ≠ `tcp.port == 443`</text>
+</svg>

@@ -1,0 +1,17 @@
+{
+  "eval_mode": "heuristic",
+  "policy": "strict",
+  "retrieval_backend": "keyword",
+  "provider_chain": [
+    "upstage",
+    "openai",
+    "ollama"
+  ],
+  "upstage_configured": false,
+  "openai_configured": false,
+  "ollama_reachable": false,
+  "chroma_reachable": false,
+  "models_configured": true,
+  "langfuse_prepared": true,
+  "storage_backend": "sqlite"
+}

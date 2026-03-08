@@ -1,0 +1,30 @@
+name: production-readiness-check
+
+on:
+  push:
+    paths:
+      - "study/Node-Backend-Architecture/08-production-readiness/**"
+  pull_request:
+    paths:
+      - "study/Node-Backend-Architecture/08-production-readiness/**"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: study/Node-Backend-Architecture/08-production-readiness/nestjs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: study/Node-Backend-Architecture/08-production-readiness/nestjs/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+      - run: pnpm run test
+      - run: pnpm run test:e2e

@@ -1,0 +1,14 @@
+[
+  {
+    "module": "BatteryModule",
+    "methodCount": 3
+  },
+  {
+    "module": "HapticsModule",
+    "methodCount": 3
+  },
+  {
+    "module": "SensorModule",
+    "methodCount": 4
+  }
+]

@@ -1,0 +1,82 @@
+<svg width="1280" height="900" viewBox="0 0 1280 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#597592"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#18324A" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #476581; letter-spacing: 0.14em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #556C83; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #15314B; }
+    .nodeText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5D748B; }
+    .badge { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #44627A; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #476581; letter-spacing: 0.12em; }
+  </style>
+
+  <rect width="1280" height="900" rx="34" fill="#F7FBFF"/>
+  <circle cx="1148" cy="114" r="118" fill="#DDF3EA" fill-opacity="0.76"/>
+  <circle cx="132" cy="804" r="150" fill="#DDEEFF" fill-opacity="0.66"/>
+
+  <text x="72" y="70" class="eyebrow">API TEST AND ROUTE MOCKING</text>
+  <text x="72" y="116" class="title">Mocking은 네트워크 경계를 어디서 끊는지 정하는 일이다</text>
+  <text x="72" y="148" class="subtitle">UI를 통째로 돌릴지, 일부 응답만 바꿀지, 실패를 강제로 열지에 따라 테스트 가치가 달라진다.</text>
+
+  <rect x="88" y="228" width="262" height="166" rx="28" fill="#EAF4FF" stroke="#BDD7EF" filter="url(#shadow)"/>
+  <text x="148" y="284" class="nodeTitle">`request` fixture</text>
+  <text x="132" y="314" class="nodeText">브라우저 없이 API 계약만 검증</text>
+  <text x="132" y="338" class="nodeText">상태 코드, JSON 구조 확인</text>
+  <rect x="132" y="356" width="132" height="32" rx="16" fill="#EEF7FF" stroke="#BDD7EF"/>
+  <text x="158" y="378" class="badge">가장 짧은 경로</text>
+
+  <rect x="402" y="228" width="246" height="166" rx="28" fill="#EEF8F3" stroke="#C4E1D2" filter="url(#shadow)"/>
+  <text x="474" y="284" class="nodeTitle">UI + `page.route`</text>
+  <text x="446" y="314" class="nodeText">브라우저를 띄우고 요청 직전에</text>
+  <text x="474" y="338" class="nodeText">네트워크를 가로챈다</text>
+
+  <polygon points="782,220 974,330 782,440 590,330" fill="#FFF6E8" stroke="#EAD29D" filter="url(#shadow)"/>
+  <text x="724" y="318" class="nodeTitle">실제 백엔드로</text>
+  <text x="702" y="346" class="nodeTitle">보낼 필요가 있는가?</text>
+
+  <rect x="1028" y="248" width="162" height="164" rx="28" fill="#FFFFFF" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="1072" y="304" class="nodeTitle">실제 API</text>
+  <text x="1060" y="334" class="nodeText">통합 흐름 검증</text>
+  <text x="1062" y="358" class="nodeText">백엔드 상태까지 포함</text>
+
+  <text x="84" y="510" class="section">INTERCEPT OPTIONS</text>
+
+  <rect x="92" y="548" width="330" height="214" rx="30" fill="#EAF4FF" stroke="#BDD7EF" filter="url(#shadow)"/>
+  <text x="138" y="606" class="nodeTitle">`route.fulfill()`</text>
+  <text x="138" y="638" class="nodeText">응답 전체를 고정한다.</text>
+  <text x="138" y="662" class="nodeText">로딩 후 특정 목록, 빈 상태,</text>
+  <text x="138" y="686" class="nodeText">권한 에러처럼 UI 분기 검증에 적합</text>
+
+  <rect x="474" y="548" width="330" height="214" rx="30" fill="#EEF8F3" stroke="#C4E1D2" filter="url(#shadow)"/>
+  <text x="516" y="606" class="nodeTitle">`route.fetch() + fulfill()`</text>
+  <text x="516" y="638" class="nodeText">실제 응답을 받은 뒤 일부만 수정한다.</text>
+  <text x="516" y="662" class="nodeText">추가 행 삽입, feature flag 주입처럼</text>
+  <text x="516" y="686" class="nodeText">부분 변형이 필요할 때 쓴다.</text>
+
+  <rect x="856" y="548" width="330" height="214" rx="30" fill="#FFF0EE" stroke="#F0B9B1" filter="url(#shadow)"/>
+  <text x="936" y="606" class="nodeTitle">`route.abort()`</text>
+  <text x="900" y="638" class="nodeText">연결 실패, 타임아웃 같은</text>
+  <text x="910" y="662" class="nodeText">실패 경로를 강제로 연다.</text>
+  <text x="902" y="686" class="nodeText">에러 배너, 재시도 버튼 검증에 적합</text>
+
+  <line x1="350" y1="312" x2="402" y2="312" stroke="#597592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="648" y1="312" x2="590" y2="330" stroke="#597592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="974" y1="330" x2="1028" y2="330" stroke="#597592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="782" y1="440" x2="782" y2="500" stroke="#597592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="782" y1="500" x2="258" y2="548" stroke="#597592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="782" y1="500" x2="639" y2="548" stroke="#597592" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="782" y1="500" x2="1020" y2="548" stroke="#597592" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="984" y="454" width="58" height="34" rx="17" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="1004" y="477" class="badge">예</text>
+  <rect x="752" y="454" width="70" height="34" rx="17" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="772" y="477" class="badge">아니오</text>
+</svg>

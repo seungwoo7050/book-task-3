@@ -1,0 +1,23 @@
+{
+  "name": "@front-react/render-pipeline",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./ts/src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "verify": "npm run test && npm run typecheck"
+  },
+  "dependencies": {
+    "@front-react/vdom-foundations": "*"
+  },
+  "devDependencies": {
+    "jsdom": "^24.0.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.6.0"
+  }
+}
