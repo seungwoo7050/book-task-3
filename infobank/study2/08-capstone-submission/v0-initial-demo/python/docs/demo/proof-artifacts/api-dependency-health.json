@@ -1,8 +1,0 @@
-{
-  "eval_mode": "heuristic",
-  "policy": "strict",
-  "retrieval_backend": "keyword",
-  "ollama_reachable": false,
-  "chroma_reachable": false,
-  "models_configured": false
-}

@@ -1,2 +1,0 @@
-evaluated=30 avg_score=84.06 critical=2 pass_count=16 fail_count=14
-assertion_failures=14
