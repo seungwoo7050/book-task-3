@@ -1,0 +1,65 @@
+<svg width="1280" height="860" viewBox="0 0 1280 860" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .cardTitle { font: 700 24px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .cardText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .node { font: 700 18px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .footnote { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="860" rx="32" fill="#F7FAFD"/>
+  <text x="72" y="68" class="eyebrow">JAVA CONCURRENCY OPTIONS</text>
+  <text x="72" y="112" class="title">직접 스레드 관리, 작업 풀, 비동기 합성, 가상 스레드를 구분하기</text>
+  <text x="72" y="142" class="subtitle">동시성 도구는 많지만 질문은 단순하다. 스레드를 직접 만들 것인가, 작업을 제출만 할 것인가, 결과를 조합할 것인가, 대량 I/O를 처리할 것인가다.</text>
+
+  <rect x="56" y="192" width="280" height="584" rx="28" fill="#FFFFFF" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="84" y="232" class="section">LOW LEVEL</text>
+  <text x="84" y="268" class="cardTitle">Thread</text>
+  <text x="84" y="296" class="cardText">학습용과 특수 제어용. 실무 기본값은 아님.</text>
+  <text x="84" y="620" class="cardText">직접 start/join, 인터럽트, 생명주기 관리</text>
+
+  <rect x="356" y="192" width="280" height="584" rx="28" fill="#FFFFFF" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="384" y="232" class="section">DEFAULT</text>
+  <text x="384" y="268" class="cardTitle">ExecutorService</text>
+  <text x="384" y="296" class="cardText">작업 제출과 스레드 풀 재사용이 목적일 때 기본 선택.</text>
+  <text x="384" y="620" class="cardText">Future, timeout, shutdown 관리</text>
+
+  <rect x="656" y="192" width="280" height="584" rx="28" fill="#FFFFFF" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="684" y="232" class="section">COMPOSITION</text>
+  <text x="684" y="268" class="cardTitle">CompletableFuture</text>
+  <text x="684" y="296" class="cardText">결과 합성, 파이프라인, 예외 체이닝이 필요할 때.</text>
+  <text x="684" y="620" class="cardText">thenApply, thenCombine, exceptionally</text>
+
+  <rect x="956" y="192" width="268" height="584" rx="28" fill="#FFFFFF" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="984" y="232" class="section">I/O SCALE</text>
+  <text x="984" y="268" class="cardTitle">Virtual Thread</text>
+  <text x="984" y="296" class="cardText">Java 21+. 대량 I/O 바운드 요청을 단순한 코드로 처리.</text>
+  <text x="984" y="620" class="cardText">블로킹 스타일을 유지한 채 동시성 확장</text>
+
+  <rect x="96" y="376" width="200" height="148" rx="22" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="154" y="420" class="node">new Thread()</text>
+  <text x="136" y="448" class="cardText">직접 생성과 제어</text>
+
+  <rect x="396" y="376" width="200" height="148" rx="22" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="428" y="420" class="node">submit(callable)</text>
+  <text x="432" y="448" class="cardText">풀에 작업 위임</text>
+
+  <rect x="696" y="376" width="200" height="148" rx="22" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="724" y="420" class="node">thenCombine()</text>
+  <text x="742" y="448" class="cardText">결과 합성</text>
+
+  <rect x="992" y="376" width="196" height="148" rx="22" fill="#FFF0EE" stroke="#F0B7AF"/>
+  <text x="1020" y="420" class="node">newVirtualThreadPerTask</text>
+  <text x="1046" y="448" class="cardText">I/O 대량 처리</text>
+
+  <text x="72" y="824" class="footnote">읽는 법: 직접 스레드는 마지막 수단, 기본 실행기는 ExecutorService, 결과 합성은 CompletableFuture, Java 21 이후 대량 I/O는 Virtual Thread가 가장 단순하다.</text>
+</svg>

@@ -1,0 +1,64 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .footnote { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F7FAFD"/>
+  <text x="72" y="68" class="eyebrow">JAVA COLLECTIONS</text>
+  <text x="72" y="112" class="title">인터페이스를 먼저 고르고, 구현체는 요구사항으로 좁힌다</text>
+  <text x="72" y="142" class="subtitle">컬렉션 선택은 API 이름 외우기보다 “순서가 필요한가, 키 조회가 중심인가, 정렬이 필요한가”로 결정한다.</text>
+
+  <rect x="56" y="192" width="1168" height="520" rx="28" fill="#FFFFFF" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="84" y="232" class="section">CHOICE MAP</text>
+
+  <rect x="94" y="332" width="180" height="148" rx="22" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="154" y="378" class="nodeTitle">List</text>
+  <text x="124" y="406" class="nodeText">순서와 인덱스 필요</text>
+  <text x="118" y="430" class="nodeText">기본: ArrayList</text>
+
+  <rect x="304" y="332" width="180" height="148" rx="22" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="368" y="378" class="nodeTitle">Set</text>
+  <text x="342" y="406" class="nodeText">중복 제거와 멤버십</text>
+  <text x="334" y="430" class="nodeText">기본: HashSet</text>
+
+  <rect x="514" y="332" width="180" height="148" rx="22" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="564" y="378" class="nodeTitle">Map</text>
+  <text x="554" y="406" class="nodeText">키 기반 조회</text>
+  <text x="544" y="430" class="nodeText">기본: HashMap</text>
+
+  <rect x="724" y="332" width="180" height="148" rx="22" fill="#FFF0EE" stroke="#F0B7AF"/>
+  <text x="760" y="378" class="nodeTitle">Deque / Queue</text>
+  <text x="754" y="406" class="nodeText">FIFO, LIFO, 버퍼</text>
+  <text x="742" y="430" class="nodeText">기본: ArrayDeque</text>
+
+  <rect x="934" y="332" width="180" height="148" rx="22" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="972" y="378" class="nodeTitle">PriorityQueue</text>
+  <text x="970" y="406" class="nodeText">우선순위 정렬</text>
+  <text x="966" y="430" class="nodeText">min-heap 기본</text>
+
+  <rect x="156" y="538" width="180" height="104" rx="20" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="200" y="580" class="nodeText">정렬이 필요하면</text>
+  <text x="198" y="604" class="nodeText">TreeSet / TreeMap</text>
+
+  <rect x="406" y="538" width="220" height="104" rx="20" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="452" y="580" class="nodeText">삽입 순서를 보존하려면</text>
+  <text x="446" y="604" class="nodeText">LinkedHashSet / LinkedHashMap</text>
+
+  <rect x="696" y="538" width="250" height="104" rx="20" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="736" y="580" class="nodeText">동시 접근이 많으면</text>
+  <text x="734" y="604" class="nodeText">ConcurrentHashMap 등 고려</text>
+
+  <text x="84" y="760" class="footnote">읽는 법: 먼저 List, Set, Map, Queue 중 인터페이스를 정하고, 그다음 정렬·순서 보존·동시성 같은 추가 요구사항으로 구현체를 바꾼다.</text>
+</svg>

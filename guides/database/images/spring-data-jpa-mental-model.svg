@@ -1,0 +1,77 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5E7895"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .cardNum { font: 700 16px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4B6781; }
+    .cardTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .cardText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5C7289; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 20px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+    .footnote { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F7FAFD"/>
+  <text x="72" y="68" class="eyebrow">SPRING DATA JPA MENTAL MODEL</text>
+  <text x="72" y="112" class="title">Repository 뒤에는 EntityManager와 영속성 컨텍스트가 있다</text>
+  <text x="72" y="142" class="subtitle">Spring Data JPA는 CRUD 메서드를 쉽게 만들지만, 실제 상태 추적과 flush는 JPA의 영속성 컨텍스트가 담당한다.</text>
+
+  <rect x="72" y="184" width="360" height="124" rx="24" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="102" y="218" class="cardNum">1. MAPPING</text>
+  <text x="102" y="252" class="cardTitle">객체가 어떤 테이블과 이어지는가?</text>
+  <text x="102" y="280" class="cardText">`@Entity`, `@Column`, `@JoinColumn`이</text>
+  <text x="102" y="302" class="cardText">객체와 스키마를 연결한다.</text>
+
+  <rect x="460" y="184" width="360" height="124" rx="24" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="490" y="218" class="cardNum">2. PERSISTENCE CONTEXT</text>
+  <text x="490" y="252" class="cardTitle">같은 트랜잭션 안에서 무슨 일이 일어나는가?</text>
+  <text x="490" y="280" class="cardText">1차 캐시, dirty checking, flush가</text>
+  <text x="490" y="302" class="cardText">엔티티 상태를 추적한다.</text>
+
+  <rect x="848" y="184" width="360" height="124" rx="24" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="878" y="218" class="cardNum">3. SQL COUNT</text>
+  <text x="878" y="252" class="cardTitle">실제로 몇 번 쿼리하는가?</text>
+  <text x="878" y="280" class="cardText">Repository 메서드보다 최종 SQL 수와</text>
+  <text x="878" y="302" class="cardText">fetch 전략을 같이 본다.</text>
+
+  <rect x="56" y="352" width="1168" height="396" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="392" class="section">TRANSACTION VIEW</text>
+
+  <rect x="88" y="506" width="196" height="120" rx="22" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="124" y="550" class="nodeTitle">Repository</text>
+  <text x="122" y="578" class="nodeText">findById(), save()</text>
+
+  <rect x="334" y="486" width="232" height="160" rx="22" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="356" y="530" class="nodeTitle">Persistence Context</text>
+  <text x="376" y="558" class="nodeText">1차 캐시</text>
+  <text x="366" y="582" class="nodeText">dirty checking</text>
+  <text x="384" y="606" class="nodeText">flush 대기</text>
+
+  <rect x="624" y="506" width="186" height="120" rx="22" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="650" y="550" class="nodeTitle">EntityManager</text>
+  <text x="672" y="578" class="nodeText">SQL 생성과 실행</text>
+
+  <rect x="870" y="506" width="174" height="120" rx="22" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="938" y="550" class="nodeTitle">DB</text>
+  <text x="912" y="578" class="nodeText">commit 시 flush</text>
+
+  <line x1="284" y1="566" x2="334" y2="566" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="566" y1="566" x2="624" y2="566" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="810" y1="566" x2="870" y2="566" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="390" y="448" width="116" height="28" rx="14" fill="#FFF0EE" stroke="#F0B7AF"/>
+  <text x="410" y="467" class="chip">트랜잭션 경계</text>
+
+  <text x="84" y="704" class="footnote">읽는 법: Repository가 끝이 아니라 영속성 컨텍스트가 상태를 기억하고, 커밋 직전 flush가 실제 SQL을 밀어낸다는 점을 같이 봐야 JPA 동작이 이해된다.</text>
+</svg>

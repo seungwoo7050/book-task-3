@@ -1,0 +1,88 @@
+<svg width="1280" height="760" viewBox="0 0 1280 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5E7895"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+    .footnote { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="760" rx="32" fill="#F7FAFD"/>
+  <text x="72" y="68" class="eyebrow">CELERY RETRY LIFECYCLE</text>
+  <text x="72" y="112" class="title">실패를 한 번으로 끝내지 않는 기본 흐름</text>
+  <text x="72" y="142" class="subtitle">재시도는 예외를 삼키는 기능이 아니라, 일시 장애를 큐로 되돌리고 영구 장애를 명확히 종료하는 정책이다.</text>
+
+  <rect x="56" y="192" width="1168" height="492" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="232" class="section">ACK AND RETRY FLOW</text>
+
+  <line x1="168" y1="438" x2="1118" y2="438" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="88" y="376" width="170" height="124" rx="22" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="122" y="422" class="nodeTitle">1. Dequeue</text>
+  <text x="118" y="450" class="nodeText">워커가 메시지를 꺼낸다</text>
+  <text x="130" y="474" class="nodeText">시도 횟수도 함께 추적</text>
+
+  <rect x="304" y="356" width="184" height="164" rx="22" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="354" y="402" class="nodeTitle">2. Execute</text>
+  <text x="334" y="430" class="nodeText">비즈니스 로직 실행</text>
+  <text x="330" y="454" class="nodeText">외부 API, DB, 파일 작업</text>
+  <rect x="344" y="478" width="102" height="30" rx="15" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="360" y="498" class="chip">acks_late</text>
+
+  <rect x="540" y="236" width="210" height="124" rx="22" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="596" y="298" class="nodeTitle">Success</text>
+  <text x="570" y="324" class="nodeText">결과 저장이 필요하면 backend 기록</text>
+  <text x="582" y="348" class="nodeText">그 다음 ack 전송</text>
+
+  <rect x="540" y="428" width="210" height="136" rx="22" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="600" y="474" class="nodeTitle">Retry</text>
+  <text x="564" y="502" class="nodeText">`self.retry()` 또는 autoretry</text>
+  <text x="586" y="526" class="nodeText">countdown 후 재큐잉</text>
+
+  <rect x="806" y="428" width="202" height="136" rx="22" fill="#FFF0EE" stroke="#F0B7AF" filter="url(#shadow)"/>
+  <text x="848" y="474" class="nodeTitle">Permanent</text>
+  <text x="860" y="502" class="nodeText">재시도하지 않는 오류</text>
+  <text x="842" y="526" class="nodeText">실패 상태와 원인 기록</text>
+
+  <rect x="1052" y="428" width="140" height="136" rx="22" fill="#F7FAFD" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="1086" y="474" class="nodeTitle">Alert</text>
+  <text x="1072" y="502" class="nodeText">로그, 메트릭,</text>
+  <text x="1076" y="526" class="nodeText">보상 작업</text>
+
+  <rect x="538" y="596" width="214" height="56" rx="18" fill="#F7FAFD" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="606" y="630" class="nodeTitle">Requeue</text>
+
+  <line x1="396" y1="356" x2="396" y2="280" stroke="#5E7895" stroke-width="3"/>
+  <line x1="396" y1="280" x2="540" y2="280" stroke="#5E7895" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="420" y="246" width="92" height="28" rx="14" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="444" y="265" class="chip">성공</text>
+
+  <line x1="488" y1="438" x2="540" y2="438" stroke="#5E7895" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="442" y="404" width="84" height="28" rx="14" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="456" y="423" class="chip">일시 오류</text>
+
+  <line x1="750" y1="496" x2="806" y2="496" stroke="#5E7895" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="756" y="460" width="118" height="28" rx="14" fill="#FFF0EE" stroke="#F0B7AF"/>
+  <text x="776" y="479" class="chip">한도 초과</text>
+
+  <line x1="1008" y1="496" x2="1052" y2="496" stroke="#5E7895" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="646" y1="564" x2="646" y2="596" stroke="#5E7895" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="538" y1="624" x2="258" y2="624" stroke="#5E7895" stroke-width="3"/>
+  <line x1="258" y1="624" x2="258" y2="438" stroke="#5E7895" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="430" y="594" width="94" height="28" rx="14" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="448" y="613" class="chip">재큐잉</text>
+
+  <text x="84" y="668" class="footnote">읽는 법: 재시도는 성공 가능성이 남은 오류만 되돌리고, 영구 오류는 빠르게 종료해야 큐가 막히지 않는다.</text>
+</svg>

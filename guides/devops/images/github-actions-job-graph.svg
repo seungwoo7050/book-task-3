@@ -1,0 +1,63 @@
+<svg width="1280" height="780" viewBox="0 0 1280 780" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5E7895"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .cardTitle { font: 700 24px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .cardText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .node { font: 700 18px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .footnote { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="780" rx="32" fill="#F7FAFD"/>
+  <text x="72" y="68" class="eyebrow">GITHUB ACTIONS JOB GRAPH</text>
+  <text x="72" y="112" class="title">병렬 기본값 위에 `needs`와 `matrix`를 얹는다</text>
+  <text x="72" y="142" class="subtitle">잡은 YAML에 적힌 순서대로가 아니라 의존성 그래프대로 실행된다. matrix는 그 잡을 여러 조합으로 복제한다.</text>
+
+  <rect x="56" y="192" width="360" height="520" rx="28" fill="#FFFFFF" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="84" y="232" class="section">PARALLEL</text>
+  <text x="84" y="268" class="cardTitle">기본은 동시 실행</text>
+  <text x="84" y="296" class="cardText">`needs`가 없으면 lint와 test는 동시에 돈다.</text>
+  <rect x="116" y="396" width="120" height="72" rx="18" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="150" y="440" class="node">lint</text>
+  <rect x="248" y="396" width="120" height="72" rx="18" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="286" y="440" class="node">test</text>
+  <text x="84" y="620" class="cardText">독립 잡은 굳이 직렬화하지 않는다.</text>
+
+  <rect x="460" y="192" width="360" height="520" rx="28" fill="#FFFFFF" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="488" y="232" class="section">SEQUENTIAL</text>
+  <text x="488" y="268" class="cardTitle">`needs`로 게이트 만들기</text>
+  <text x="488" y="296" class="cardText">build가 끝나야 deploy가 시작된다.</text>
+  <rect x="570" y="360" width="132" height="72" rx="18" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="606" y="404" class="node">build</text>
+  <rect x="570" y="500" width="132" height="72" rx="18" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="600" y="544" class="node">deploy</text>
+  <line x1="636" y1="432" x2="636" y2="500" stroke="#5E7895" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="488" y="620" class="cardText">실패한 선행 잡이 있으면 뒤 잡은 시작하지 않는다.</text>
+
+  <rect x="864" y="192" width="360" height="520" rx="28" fill="#FFFFFF" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="892" y="232" class="section">MATRIX</text>
+  <text x="892" y="268" class="cardTitle">한 잡을 여러 조합으로 복제</text>
+  <text x="892" y="296" class="cardText">예: Java 17/21 × postgres/mysql</text>
+  <rect x="904" y="376" width="112" height="72" rx="18" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="924" y="420" class="node">17-postgres</text>
+  <rect x="1036" y="376" width="112" height="72" rx="18" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="1060" y="420" class="node">17-mysql</text>
+  <rect x="904" y="484" width="112" height="72" rx="18" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="926" y="528" class="node">21-postgres</text>
+  <rect x="1036" y="484" width="112" height="72" rx="18" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="1064" y="528" class="node">21-mysql</text>
+  <text x="892" y="620" class="cardText">실패를 독립적으로 보고 싶으면 `fail-fast: false`를 둔다.</text>
+
+  <text x="72" y="748" class="footnote">읽는 법: 기본은 병렬, 배포 게이트는 `needs`, 환경 조합 확장은 `matrix`다. 이 세 개만 잡아도 job 설계가 대부분 정리된다.</text>
+</svg>

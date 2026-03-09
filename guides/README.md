@@ -18,9 +18,11 @@
 | 네트워크 실습 | [Python](language/python.md) → [C++](language/cpp.md) → [CMake](tool/cmake.md) → [Wireshark](tool/wireshark.md) |
 | Go 백엔드 | [Go](language/go.md) → [SQL](database/sql.md) → [gRPC](backend/grpc.md) → [Docker](devops/docker.md) → [Docker Compose](devops/docker-compose.md) → [Makefile](tool/makefile.md) |
 | Node 백엔드 | [TypeScript](language/typescript.md) → [Node.js](backend/nodejs.md) → [Express](backend/express.md) 또는 [NestJS](backend/nestjs.md) → [Drizzle ORM](database/drizzle-orm.md) → [Vitest](testing/vitest.md) |
-| Python 백엔드 | [Python](language/python.md) → [FastAPI](backend/fastapi.md) → [Pydantic](backend/pydantic.md) → [SQLAlchemy](database/sqlalchemy.md) → [uv](tool/uv-py.md) → [pytest](testing/pytest.md) |
+| Python 백엔드 | [Python](language/python.md) → [FastAPI](backend/fastapi.md) → [Pydantic](backend/pydantic.md) → [SQLAlchemy](database/sqlalchemy.md) → [Celery](backend/celery.md) → [Redis](database/redis.md) → [uv](tool/uv-py.md) → [pytest](testing/pytest.md) → [GitHub Actions](devops/github-actions.md) |
 | 프론트엔드 | [HTML](frontend/html.md) → [CSS](frontend/css.md) → [TypeScript](language/typescript.md) → [React](frontend/react.md) → [Next.js](frontend/nextjs.md) → [Vite](frontend/vite.md) → [Vitest](testing/vitest.md) → [Playwright](testing/playwright.md) |
 | 모바일 앱 | [TypeScript](language/typescript.md) → [React](frontend/react.md) → [React Native](frontend/react-native.md) → [Kotlin](language/kotlin.md) → [Swift](language/swift.md) |
+| Spring 백엔드 | [Java](language/java.md) → [Spring Boot](backend/spring-boot.md) → [Spring Data JPA](database/spring-data-jpa.md) → [Gradle](tool/gradle.md) → [Redis](database/redis.md) → [Kafka](backend/kafka.md) → [JUnit 5](testing/junit.md) → [GitHub Actions](devops/github-actions.md) |
+| C++ 서버 | [C++](language/cpp.md) → [CMake](tool/cmake.md) → [Makefile](tool/makefile.md) → [GitHub Actions](devops/github-actions.md) |
 | 클라우드·보안 | [Python](language/python.md) → [Terraform](devops/terraform.md) → [Docker](devops/docker.md) → [Docker Compose](devops/docker-compose.md) → [Makefile](tool/makefile.md) |
 
 ---
@@ -40,6 +42,7 @@
 | [JavaScript](language/javascript.md) | 브라우저와 Node를 잇는 동적 언어 |
 | [TypeScript](language/typescript.md) | 컴파일 시점 타입으로 설계를 강화하는 JS 상위 집합 |
 | [Kotlin](language/kotlin.md) | Android 네이티브 진입점 언어 |
+| [Java](language/java.md) | 정적 타입 클래스 기반의 JVM 범용 언어 |
 | [Swift](language/swift.md) | iOS 네이티브 진입점 언어 |
 
 ### Frontend
@@ -67,6 +70,9 @@
 | [Fastify](backend/fastify.md) | 스키마 기반 검증과 플러그인 캡슐화 중심의 Node.js 프레임워크 |
 | [FastAPI](backend/fastapi.md) | Pydantic 모델 중심의 Python 비동기 API 프레임워크 |
 | [Pydantic](backend/pydantic.md) | 타입힌트 기반 런타임 검증 모델 시스템 |
+| [Spring Boot](backend/spring-boot.md) | 자동 구성 기반의 Java 백엔드 프레임워크 |
+| [Celery](backend/celery.md) | Python 비동기 작업 큐 |
+| [Kafka](backend/kafka.md) | 분산 이벤트 스트리밍 플랫폼 |
 | [gRPC](backend/grpc.md) | Protocol Buffers 기반의 스키마 중심 RPC 프레임워크 |
 
 ### Database
@@ -77,7 +83,9 @@
 |------|-----------|
 | [SQL](database/sql.md) | 관계형 데이터를 다루는 선언적 질의 언어 |
 | [SQLAlchemy](database/sqlalchemy.md) | Python의 표준 ORM과 DB 세션 관리 |
+| [Spring Data JPA](database/spring-data-jpa.md) | Repository 추상화 기반의 Java ORM |
 | [Drizzle ORM](database/drizzle-orm.md) | 타입 안전 스키마와 쿼리 빌더를 제공하는 TS ORM |
+| [Redis](database/redis.md) | 인메모리 키-값 데이터 저장소 |
 
 ### Testing
 
@@ -88,6 +96,7 @@
 | [Vitest](testing/vitest.md) | Vite 기반 TypeScript 테스트 러너 |
 | [Playwright](testing/playwright.md) | 사용자 흐름 기반 E2E 테스트 도구 |
 | [pytest](testing/pytest.md) | Python 테스트 프레임워크 |
+| [JUnit 5](testing/junit.md) | Java 테스트 프레임워크 |
 
 ### DevOps
 
@@ -98,6 +107,7 @@
 | [Docker](devops/docker.md) | 컨테이너 이미지 빌드와 실행의 기본 도구 |
 | [Docker Compose](devops/docker-compose.md) | 로컬 인프라를 선언적으로 띄우는 도구 |
 | [Terraform](devops/terraform.md) | 인프라를 코드로 선언하고 관리하는 IaC 도구 |
+| [GitHub Actions](devops/github-actions.md) | GitHub 내장 CI/CD 파이프라인 |
 
 ### Tool
 
@@ -109,6 +119,7 @@
 | [CMake](tool/cmake.md) | 멀티 타깃 C/C++ 빌드 시스템 |
 | [uv](tool/uv-py.md) | Python 의존성·실행 환경 통합 관리 도구 |
 | [Git](tool/git.md) | 버전 관리와 협업의 기본 도구 |
+| [Gradle](tool/gradle.md) | JVM 프로젝트 빌드 자동화 도구 |
 | [Wireshark](tool/wireshark.md) | 프로토콜 계층별 패킷 분석 도구 |
 
 ---

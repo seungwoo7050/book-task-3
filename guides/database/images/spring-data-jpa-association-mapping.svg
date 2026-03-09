@@ -1,0 +1,59 @@
+<svg width="1280" height="760" viewBox="0 0 1280 760" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5E7895"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+    .footnote { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="760" rx="32" fill="#F7FAFD"/>
+  <text x="72" y="68" class="eyebrow">SPRING DATA JPA ASSOCIATIONS</text>
+  <text x="72" y="112" class="title">외래 키를 가진 쪽이 연관관계의 주인이다</text>
+  <text x="72" y="142" class="subtitle">양방향 매핑은 객체 탐색 편의를 주지만, 실제 FK 값과 SQL은 owning side가 결정한다.</text>
+
+  <rect x="56" y="192" width="1168" height="492" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="232" class="section">OWNING SIDE</text>
+
+  <rect x="126" y="336" width="270" height="204" rx="24" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="226" y="382" class="nodeTitle">User</text>
+  <text x="172" y="410" class="nodeText">@OneToMany(mappedBy = "author")</text>
+  <text x="182" y="434" class="nodeText">posts: List&lt;Post&gt;</text>
+  <text x="186" y="458" class="nodeText">읽기용 컬렉션, FK는 없음</text>
+
+  <rect x="508" y="336" width="270" height="204" rx="24" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="618" y="382" class="nodeTitle">Post</text>
+  <text x="566" y="410" class="nodeText">@ManyToOne(fetch = LAZY)</text>
+  <text x="580" y="434" class="nodeText">@JoinColumn(name = "author_id")</text>
+  <text x="594" y="458" class="nodeText">실제 FK를 가진 owning side</text>
+
+  <rect x="890" y="336" width="230" height="204" rx="24" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="938" y="382" class="nodeTitle">posts table</text>
+  <text x="956" y="410" class="nodeText">id</text>
+  <text x="956" y="434" class="nodeText">title</text>
+  <text x="956" y="458" class="nodeText">author_id FK</text>
+
+  <line x1="396" y1="438" x2="508" y2="438" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="778" y1="438" x2="890" y2="438" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <rect x="432" y="404" width="118" height="28" rx="14" fill="#FFF0EE" stroke="#F0B7AF"/>
+  <text x="450" y="423" class="chip">mappedBy only</text>
+  <rect x="790" y="404" width="76" height="28" rx="14" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="810" y="423" class="chip">FK write</text>
+
+  <rect x="424" y="578" width="430" height="64" rx="18" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="456" y="618" class="nodeText">`user.addPost(post)` 같은 편의 메서드로 `posts.add(post)`와 `post.setAuthor(user)`를 함께 맞춘다.</text>
+
+  <text x="84" y="668" class="footnote">읽는 법: 객체 탐색은 양쪽에서 할 수 있어도, FK를 누가 쓰는지는 한쪽뿐이다. 그 한쪽을 못 잡으면 양방향 매핑이 쉽게 꼬인다.</text>
+</svg>

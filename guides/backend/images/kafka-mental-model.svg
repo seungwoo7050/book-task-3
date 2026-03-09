@@ -1,0 +1,91 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#5E7895"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .cardNum { font: 700 16px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4B6781; }
+    .cardTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .cardText { font: 500 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5C7289; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 20px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .chip { font: 700 13px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #425E79; }
+    .footnote { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F7FAFD"/>
+
+  <text x="72" y="68" class="eyebrow">KAFKA MENTAL MODEL</text>
+  <text x="72" y="112" class="title">토픽은 로그이고, 파티션이 병렬성과 순서를 만든다</text>
+  <text x="72" y="142" class="subtitle">Kafka는 메시지를 읽고 없애는 큐보다, 파티션별 로그에 append하고 컨슈머 그룹이 offset으로 따라가는 시스템에 가깝다.</text>
+
+  <rect x="72" y="184" width="360" height="124" rx="24" fill="#EAF4FF" stroke="#BCD6EE" filter="url(#shadow)"/>
+  <text x="102" y="218" class="cardNum">1. TOPIC AND PARTITION</text>
+  <text x="102" y="252" class="cardTitle">어디에 append되는가?</text>
+  <text x="102" y="280" class="cardText">이벤트는 토픽 안의 파티션에</text>
+  <text x="102" y="302" class="cardText">순서대로 쌓인다.</text>
+
+  <rect x="460" y="184" width="360" height="124" rx="24" fill="#EEF8F3" stroke="#C2E0D0" filter="url(#shadow)"/>
+  <text x="490" y="218" class="cardNum">2. CONSUMER GROUP</text>
+  <text x="490" y="252" class="cardTitle">누가 어느 파티션을 읽는가?</text>
+  <text x="490" y="280" class="cardText">같은 그룹 안에서 파티션이 나뉘어</text>
+  <text x="490" y="302" class="cardText">병렬 처리된다.</text>
+
+  <rect x="848" y="184" width="360" height="124" rx="24" fill="#FFF6E8" stroke="#E9D29D" filter="url(#shadow)"/>
+  <text x="878" y="218" class="cardNum">3. OFFSET</text>
+  <text x="878" y="252" class="cardTitle">어디까지 처리했는가?</text>
+  <text x="878" y="280" class="cardText">컨슈머는 commit한 offset으로</text>
+  <text x="878" y="302" class="cardText">재시작 위치를 기억한다.</text>
+
+  <rect x="56" y="352" width="1168" height="396" rx="28" fill="#FFFFFF" stroke="#D1DEEA"/>
+  <text x="84" y="392" class="section">EVENT FLOW</text>
+
+  <rect x="90" y="490" width="172" height="150" rx="22" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="130" y="534" class="nodeTitle">Producer</text>
+  <text x="132" y="562" class="nodeText">`userId` 같은 key로</text>
+  <text x="140" y="586" class="nodeText">파티션 선택</text>
+
+  <rect x="330" y="444" width="360" height="226" rx="24" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="460" y="486" class="nodeTitle">Topic: user-events</text>
+  <rect x="364" y="516" width="82" height="120" rx="16" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="386" y="552" class="chip">P0</text>
+  <text x="380" y="582" class="nodeText">offset 0</text>
+  <text x="380" y="606" class="nodeText">offset 1</text>
+  <rect x="470" y="516" width="82" height="120" rx="16" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="492" y="552" class="chip">P1</text>
+  <text x="486" y="582" class="nodeText">offset 0</text>
+  <text x="486" y="606" class="nodeText">offset 1</text>
+  <rect x="576" y="516" width="82" height="120" rx="16" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="598" y="552" class="chip">P2</text>
+  <text x="592" y="582" class="nodeText">offset 0</text>
+  <text x="592" y="606" class="nodeText">offset 1</text>
+
+  <rect x="780" y="456" width="378" height="214" rx="24" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="892" y="496" class="nodeTitle">Consumer Group</text>
+  <rect x="816" y="528" width="136" height="112" rx="18" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="850" y="570" class="nodeTitle">Consumer A</text>
+  <text x="848" y="598" class="nodeText">P0, P1 담당</text>
+  <rect x="986" y="528" width="136" height="112" rx="18" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="1020" y="570" class="nodeTitle">Consumer B</text>
+  <text x="1028" y="598" class="nodeText">P2 담당</text>
+
+  <line x1="262" y1="566" x2="330" y2="566" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="658" y1="556" x2="816" y2="556" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="658" y1="596" x2="986" y2="596" stroke="#5E7895" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <rect x="248" y="520" width="68" height="28" rx="14" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="264" y="539" class="chip">key hash</text>
+  <rect x="826" y="438" width="176" height="28" rx="14" fill="#FFF0EE" stroke="#F0B7AF"/>
+  <text x="846" y="457" class="chip">그룹당 파티션 하나씩만 소비</text>
+
+  <text x="84" y="704" class="footnote">읽는 법: 처리량은 파티션 수가 만들고, 순서는 key가 만든다. 컨슈머 그룹은 그 파티션을 나눠 맡을 뿐이다.</text>
+</svg>

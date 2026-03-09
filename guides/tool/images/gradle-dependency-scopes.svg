@@ -1,0 +1,60 @@
+<svg width="1280" height="820" viewBox="0 0 1280 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#18324A" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <style>
+    .eyebrow { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #496784; letter-spacing: 0.16em; }
+    .title { font: 700 34px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #112338; }
+    .subtitle { font: 500 18px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5A6F85; }
+    .section { font: 700 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #4A6782; letter-spacing: 0.14em; }
+    .nodeTitle { font: 700 22px "SF Pro Display", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #14304A; }
+    .nodeText { font: 500 14px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #5F768E; }
+    .footnote { font: 600 15px "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; fill: #35526D; }
+  </style>
+
+  <rect width="1280" height="820" rx="32" fill="#F7FAFD"/>
+  <text x="72" y="68" class="eyebrow">GRADLE DEPENDENCY SCOPES</text>
+  <text x="72" y="112" class="title">라이브러리가 어느 classpath에 보이는지로 스코프를 읽는다</text>
+  <text x="72" y="142" class="subtitle">Configuration 이름은 결국 “컴파일에서 보이나, 런타임에서 보이나, 테스트에서만 보이나”를 표현한다.</text>
+
+  <rect x="56" y="192" width="1168" height="520" rx="28" fill="#FFFFFF" stroke="#D1DEEA" filter="url(#shadow)"/>
+  <text x="84" y="232" class="section">CONFIGURATION MAP</text>
+
+  <rect x="96" y="312" width="180" height="148" rx="22" fill="#EAF4FF" stroke="#BCD6EE"/>
+  <text x="134" y="358" class="nodeTitle">implementation</text>
+  <text x="130" y="386" class="nodeText">현재 모듈 컴파일 + 런타임</text>
+  <text x="120" y="410" class="nodeText">소비자에는 숨김</text>
+
+  <rect x="306" y="312" width="180" height="148" rx="22" fill="#EEF8F3" stroke="#C2E0D0"/>
+  <text x="370" y="358" class="nodeTitle">api</text>
+  <text x="346" y="386" class="nodeText">현재 모듈 + 소비자</text>
+  <text x="354" y="410" class="nodeText">컴파일에 노출</text>
+
+  <rect x="516" y="312" width="180" height="148" rx="22" fill="#FFF6E8" stroke="#E9D29D"/>
+  <text x="548" y="358" class="nodeTitle">runtimeOnly</text>
+  <text x="562" y="386" class="nodeText">실행 시에만 필요</text>
+  <text x="548" y="410" class="nodeText">예: JDBC driver</text>
+
+  <rect x="726" y="312" width="180" height="148" rx="22" fill="#FFF0EE" stroke="#F0B7AF"/>
+  <text x="740" y="358" class="nodeTitle">compileOnly</text>
+  <text x="758" y="386" class="nodeText">컴파일 시에만 필요</text>
+  <text x="770" y="410" class="nodeText">예: Lombok</text>
+
+  <rect x="936" y="312" width="180" height="148" rx="22" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="950" y="358" class="nodeTitle">testImplementation</text>
+  <text x="968" y="386" class="nodeText">테스트 classpath 전용</text>
+  <text x="982" y="410" class="nodeText">예: JUnit</text>
+
+  <rect x="256" y="530" width="240" height="104" rx="20" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="292" y="572" class="nodeText">annotationProcessor</text>
+  <text x="296" y="596" class="nodeText">컴파일 시 코드 생성에만 참여</text>
+
+  <rect x="604" y="530" width="240" height="104" rx="20" fill="#F7FAFD" stroke="#D1DEEA"/>
+  <text x="648" y="572" class="nodeText">testRuntimeOnly</text>
+  <text x="632" y="596" class="nodeText">테스트 실행 시만 필요한 런타임</text>
+
+  <text x="84" y="760" class="footnote">읽는 법: 먼저 지금 필요한 classpath가 compile인지 runtime인지 test인지 정하고, 그다음 configuration을 고르면 `implementation` 남용을 피할 수 있다.</text>
+</svg>
