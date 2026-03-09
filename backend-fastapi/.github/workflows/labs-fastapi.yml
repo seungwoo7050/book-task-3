@@ -1,0 +1,57 @@
+name: labs-fastapi
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - workspace: labs/A-auth-lab/fastapi
+            port: "8000"
+          - workspace: labs/B-federation-security-lab/fastapi
+            port: "8000"
+          - workspace: labs/C-authorization-lab/fastapi
+            port: "8001"
+          - workspace: labs/D-data-api-lab/fastapi
+            port: "8002"
+          - workspace: labs/E-async-jobs-lab/fastapi
+            port: "8003"
+          - workspace: labs/F-realtime-lab/fastapi
+            port: "8004"
+          - workspace: labs/G-ops-lab/fastapi
+            port: "8005"
+          - workspace: capstone/workspace-backend/fastapi
+            port: "8010"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install workspace
+        working-directory: ${{ matrix.workspace }}
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Lint
+        working-directory: ${{ matrix.workspace }}
+        run: make lint
+
+      - name: Test
+        working-directory: ${{ matrix.workspace }}
+        run: make test
+
+      - name: Smoke
+        working-directory: ${{ matrix.workspace }}
+        run: make smoke
+
+      - name: Compose health probe
+        run: ./tools/compose_probe.sh "${{ matrix.workspace }}" "${{ matrix.port }}"

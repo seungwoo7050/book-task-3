@@ -1,0 +1,27 @@
+app:
+  name: commerce-backend-v2-test
+  track: study2
+  summary: test profile
+  auth:
+    jwt-secret: this-is-a-study2-commerce-backend-v2-jwt-secret-key-123456789
+    access-token-seconds: 900
+    refresh-token-seconds: 1209600
+    oauth-state-ttl-seconds: 600
+    google-client-id: local-study2-client
+    google-redirect-uri: http://localhost:8111/api/v1/auth/google/callback
+  bootstrap-admin:
+    email: admin@study2.local
+    password: Admin1234!
+    display-name: Bootstrap Admin
+  features:
+    redis-cart-enabled: false
+    redis-rate-limit-enabled: false
+    messaging-enabled: false
+  messaging:
+    order-paid-topic: commerce.order-paid
+    publish-delay-ms: 100
+  rate-limit:
+    login-max-attempts: 20
+    login-window-seconds: 60
+    refresh-max-attempts: 20
+    refresh-window-seconds: 60

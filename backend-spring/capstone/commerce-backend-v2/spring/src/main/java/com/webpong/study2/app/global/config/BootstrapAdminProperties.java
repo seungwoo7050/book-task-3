@@ -1,0 +1,6 @@
+package com.webpong.study2.app.global.config;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@ConfigurationProperties(prefix = "app.bootstrap-admin")
+public record BootstrapAdminProperties(String email, String password, String displayName) {}

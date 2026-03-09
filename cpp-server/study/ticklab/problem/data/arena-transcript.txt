@@ -1,0 +1,18 @@
+HELLO alpha
+HELLO bravo
+QUEUE alpha
+QUEUE bravo
+READY alpha
+READY bravo
+TICK
+TICK
+TICK
+INPUT alpha 1 0 0 E 1
+TICK
+TICK
+INPUT alpha 2 0 0 E 1
+TICK
+TICK
+INPUT alpha 3 0 0 E 1
+TICK
+TICK
