@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: study2-control-plane-postgres
+    environment:
+      POSTGRES_USER: study2
+      POSTGRES_PASSWORD: study2
+      POSTGRES_DB: study2_control_plane
+    ports:
+      - "54340:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U study2 -d study2_control_plane"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+

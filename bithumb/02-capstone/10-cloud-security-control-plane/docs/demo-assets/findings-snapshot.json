@@ -1,0 +1,39 @@
+{
+  "findings": [
+    {
+      "control_id": "CSPM-001",
+      "severity": "HIGH",
+      "resource_id": "study2-public-logs",
+      "status": "suppressed",
+      "title": "S3 bucket does not fully block public access"
+    },
+    {
+      "control_id": "CSPM-002",
+      "severity": "HIGH",
+      "resource_id": "ssh_open",
+      "status": "open",
+      "title": "Security group exposes SSH or RDP to the internet"
+    },
+    {
+      "control_id": "IAM-001",
+      "severity": "HIGH",
+      "resource_id": "BroadAdmin",
+      "status": "open",
+      "title": "Policy allows every action"
+    },
+    {
+      "control_id": "LAKE-004",
+      "severity": "MEDIUM",
+      "resource_id": "DeleteTrail",
+      "status": "open",
+      "title": "Detected DeleteTrail event"
+    },
+    {
+      "control_id": "K8S-003",
+      "severity": "HIGH",
+      "resource_id": "insecure-api",
+      "status": "open",
+      "title": "Container security context is too broad"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "image": "nginx:latest",
+  "run_as_root": true,
+  "capabilities": ["ALL"]
+}
+
