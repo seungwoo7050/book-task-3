@@ -1,0 +1,28 @@
+# BOJ 1197 — 개발 타임라인
+
+## Phase 1: 프로젝트 생성
+
+```bash
+python3 tools/migrate_legacy_to_study.py legacy/core/0D-mst-topo/silver-1197 study/Core-0D-MST-Topo/1197
+```
+
+Silver, 다만 `cpp/` 포함.
+
+## Phase 2: Python 구현
+
+크루스칼 + Union-Find (경로 압축 + 랭크).
+
+## Phase 3: C++ 비교 구현 및 테스트
+
+```bash
+make -C problem test
+make -C problem run-cpp
+```
+
+PASS.
+
+## 사용 도구
+
+- Python 3
+- g++-14
+- GNU Make
