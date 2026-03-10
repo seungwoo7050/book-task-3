@@ -1,29 +1,28 @@
-# Demo Walkthrough
+# 데모 워크스루
 
-이 문서는 `10-cloud-security-control-plane`를 처음 보는 사람이 실행 없이도 데모 흐름과 결과를
-빠르게 이해하도록 만든 공개용 요약이다.
+이 문서는 `10-cloud-security-control-plane`를 처음 보는 사람이 실행 없이도 데모 흐름과 결과를 빠르게 이해하도록 만든 공개용 요약입니다.
 
-## One Command
+## 한 번에 재현하는 명령
 
 ```bash
-cd study2
 make demo-capstone
 ```
 
-- Docker daemon이 있으면 PostgreSQL 경로로 실행한다.
-- Docker daemon이 없으면 SQLite fallback으로 같은 흐름을 재현한다.
+- Docker daemon이 있으면 PostgreSQL 경로로 실행합니다.
+- Docker daemon이 없으면 SQLite fallback으로 같은 흐름을 재현합니다.
+- PostgreSQL 경로를 쓰는 경우 `docker-compose.yml`의 기본 DB 이름은 `study2_control_plane`입니다.
 
-## Scenario
+## 데모 시나리오
 
-1. insecure Terraform plan과 broad IAM policy를 scan request로 넣는다.
-2. scan worker가 pending job을 처리하고 findings를 저장한다.
-3. CloudTrail fixture를 ingest해서 suspicious event finding을 추가한다.
-4. insecure Kubernetes manifest를 ingest해서 container guardrail finding을 추가한다.
-5. finding 하나를 예외 승인 상태로 바꾼다.
-6. 다른 finding에 대해 remediation dry-run을 만든다.
-7. 최종 markdown report를 export한다.
+1. insecure Terraform plan과 broad IAM policy를 scan request로 넣습니다.
+2. scan worker가 pending job을 처리하고 findings를 저장합니다.
+3. CloudTrail fixture를 ingest해서 suspicious event finding을 추가합니다.
+4. insecure Kubernetes manifest를 ingest해서 container guardrail finding을 추가합니다.
+5. finding 하나를 예외 승인 상태로 바꿉니다.
+6. 다른 finding에 대해 remediation dry-run을 만듭니다.
+7. 최종 markdown report를 export합니다.
 
-## What The Demo Proves
+## 이 데모가 증명하는 것
 
 - Terraform plan 기반 CSPM finding 생성
 - IAM least privilege finding 생성
@@ -33,15 +32,15 @@ make demo-capstone
 - remediation dry-run generation
 - report export
 
-## Recorded Outputs
+## 기록된 샘플 출력
 
-아래 샘플은 실제 `make demo-capstone` 산출물을 요약해 tracked 문서로 옮긴 것이다.
+아래 파일은 마지막 검증 실행에서 골라 둔 대표 샘플입니다.
 
 - [demo-assets/findings-snapshot.json](demo-assets/findings-snapshot.json)
 - [demo-assets/remediation-snapshot.json](demo-assets/remediation-snapshot.json)
 - [demo-assets/report-excerpt.md](demo-assets/report-excerpt.md)
 
-## Key Numbers From The Last Run
+## 마지막 실행에서 본 핵심 숫자
 
 - scan worker processed jobs: `2`
 - CloudTrail findings added: `2`
@@ -51,9 +50,3 @@ make demo-capstone
   - `iam-policy`
   - `cloudtrail`
   - `k8s-manifest`
-
-## Why This Matters For The Target Job
-
-- 단순 스캐너가 아니라 `탐지 -> triage -> 예외 -> 조치안 -> 리포트` 흐름을 보여 준다.
-- 실제 AWS 계정 없이도 CSPM, IAM, 로그 분석, 자동화의 핵심 동작을 설명할 수 있다.
-- 공고에서 요구하는 “반복 업무 자동화”와 “보안 로그 활용”을 둘 다 한 프로젝트에서 증명한다.

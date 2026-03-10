@@ -1,20 +1,33 @@
-# 07 Security Lake Mini — Notion 문서 안내
+# 07 Security Lake Mini notion 기록
 
-## 이 폴더의 목적
+## 이 문서 묶음이 하는 일
 
-이 `notion/` 폴더는 프로젝트 07-security-lake-mini의 전체 개발 과정과 학습 내용을
-Notion으로 옮길 수 있는 형태로 정리한 문서 세트입니다.
+이 `notion/`은 로그를 적재하는 단계 위에 detection query를 얹어, alert 생성까지 이어지는 작은 security lake 흐름을 설명합니다.
+현재 버전은 `lake.py`, suspicious CloudTrail fixture, 테스트가 실제로 보장하는 다섯 개 alert를 중심으로 다시 정리했습니다.
 
-## 문서 목록과 읽기 순서
+## 이 문서를 읽을 때 잡아야 할 질문
 
-| 순서 | 문서 | 목적 | 추천 독자 |
-|------|------|------|-----------|
-| 1 | [essay.md](essay.md) | "로그를 모으는 것"과 "이상 행위를 탐지하는 것"의 차이를 서사적으로 풀어낸 에세이 | Security Lake 개념이 처음인 사람, detection engineering 입문 |
-| 2 | [dev-timeline.md](dev-timeline.md) | CloudTrail 적재부터 detection query 실행까지 전체 개발 과정의 타임라인 | 프로젝트를 재현하려는 사람 |
+- alert는 finding과 무엇이 다른가?
+- 왜 detection rule을 SQL처럼 읽히는 구조로 유지하려 했는가?
+- 정규화된 CloudTrail 이벤트가 있어야 왜 이 단계가 가능해지는가?
 
-## 언제 어떤 문서를 읽을까
+## 추천 읽기 순서
 
-- **"Security Lake가 구체적으로 뭘 하는지 알고 싶다"** → `essay.md`
-- **"detection query를 직접 만들어 보고 싶다"** → `dev-timeline.md`
-- **"과제 03과 이 과제의 차이가 궁금하다"** → `essay.md`의 첫 섹션
-- **"alert가 어떤 구조로 만들어지는지 보고 싶다"** → `essay.md`의 설계 섹션
+학습자가 가장 빨리 손에 잡히는 재현 경로를 보려면 `05-reproduction-guide.md`를 초반에 읽는 편이 좋습니다.
+
+1. [00-problem-framing.md](00-problem-framing.md): 문제와 경계를 먼저 확인합니다.
+2. [05-reproduction-guide.md](05-reproduction-guide.md): 가장 짧은 재현 경로와 기대 결과를 확인합니다.
+3. [01-approach-log.md](01-approach-log.md): 현재 구현 방향을 왜 택했는지 읽습니다.
+4. [02-debug-log.md](02-debug-log.md): 어디서 자주 막히는지와 어떤 테스트가 근거인지 확인합니다.
+5. [03-retrospective.md](03-retrospective.md): 지금 구현이 무엇을 증명했고 무엇을 의도적으로 비워 두었는지 읽습니다.
+6. [04-knowledge-index.md](04-knowledge-index.md): 다음 프로젝트로 이어지는 개념과 근거 파일을 모아 봅니다.
+
+## 이 버전의 근거
+
+- 현재 문제 설명: [../problem/README.md](../problem/README.md)
+- 현재 구현 안내: [../python/README.md](../python/README.md)
+- 구현 진입점: [../python/src/security_lake_mini/lake.py](../python/src/security_lake_mini/lake.py)
+- CLI 진입점: [../python/src/security_lake_mini/cli.py](../python/src/security_lake_mini/cli.py)
+- 검증 코드: [../python/tests/test_lake.py](../python/tests/test_lake.py)
+- 입력 fixture: [../problem/data/cloudtrail_suspicious.json](../problem/data/cloudtrail_suspicious.json)
+- 이전 장문 기록: [../notion-archive/essay.md](../notion-archive/essay.md)

@@ -1,8 +1,30 @@
-# Python Implementation
+# Python 구현
 
-- Scope: Kubernetes manifest와 Docker metadata를 읽고 guardrail finding을 생성한다.
-- Build: `PYTHONPATH=src python -m container_guardrails.cli <manifest.yaml> <image.json>`
-- Test: `PYTHONPATH=src python -m pytest tests`
-- Status: `verified`
-- Known gaps: PodSecurity admission 전체를 재현하지는 않는다.
+아래 내용은 모두 레포 루트 기준입니다.
 
+## 다루는 범위
+
+- Kubernetes manifest를 읽고 위험한 보안 설정을 찾습니다.
+- 이미지 메타데이터와 함께 해석해 guardrail finding을 생성합니다.
+- manifest 수준에서 설명 가능한 규칙에 집중합니다.
+
+## 실행 예시
+
+```bash
+make venv
+PYTHONPATH=01-cloud-security-core/08-container-guardrails/python/src .venv/bin/python -m container_guardrails.cli 01-cloud-security-core/08-container-guardrails/problem/data/insecure_k8s.yaml 01-cloud-security-core/08-container-guardrails/problem/data/insecure_image.json
+```
+
+## 테스트
+
+```bash
+PYTHONPATH=01-cloud-security-core/08-container-guardrails/python/src .venv/bin/python -m pytest 01-cloud-security-core/08-container-guardrails/python/tests
+```
+
+## 상태
+
+`verified`
+
+## 구현 메모
+
+scanner는 manifest와 image metadata를 함께 읽어 설명 가능한 finding만 남기도록 설계했습니다.

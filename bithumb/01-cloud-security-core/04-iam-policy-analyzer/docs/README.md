@@ -1,4 +1,15 @@
-# Docs
+# 문서 묶음 안내
 
-- 핵심 개념: [least-privilege-findings.md](concepts/least-privilege-findings.md)
-- 참고 자료: [references/README.md](references/README.md)
+## 이 문서 묶음의 역할
+
+이 문서 묶음은 “정책 평가”에서 한 단계 더 나아가, 위험 finding을 설계하는 기준을 정리합니다.
+
+## 먼저 읽을 순서
+
+1. [concepts/least-privilege-findings.md](concepts/least-privilege-findings.md)
+2. [references/README.md](references/README.md)
+
+## 이 문서로 답할 수 있는 질문
+
+- broad policy와 escalation action은 왜 다른 finding으로 다뤄야 하는가?
+- false positive를 줄이려면 어떤 정책은 finding에서 제외해야 하는가?

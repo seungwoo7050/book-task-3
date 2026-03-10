@@ -1,20 +1,33 @@
-# 08 Container Guardrails — Notion 문서 안내
+# 08 Container Guardrails notion 기록
 
-## 이 폴더의 목적
+## 이 문서 묶음이 하는 일
 
-이 `notion/` 폴더는 프로젝트 08-container-guardrails의 전체 개발 과정과 학습 내용을
-Notion으로 옮길 수 있는 형태로 정리한 문서 세트입니다.
+이 `notion/`은 EKS 클러스터 없이도 컨테이너 보안의 핵심 guardrail을 학습할 수 있다는 점을 보여 주는 기록입니다.
+현재 버전은 manifest scanner, image metadata scanner, insecure/secure fixture 쌍과 테스트가 실제로 증명하는 여덟 개 control을 중심으로 다시 정리했습니다.
 
-## 문서 목록과 읽기 순서
+## 이 문서를 읽을 때 잡아야 할 질문
 
-| 순서 | 문서 | 목적 | 추천 독자 |
-|------|------|------|-----------|
-| 1 | [essay.md](essay.md) | EKS 없이도 컨테이너 보안을 학습할 수 있다는 발상과, manifest 검사의 실용성을 서사적으로 풀어낸 에세이 | 컨테이너 보안이 처음인 사람, K8s manifest 분석에 관심 있는 사람 |
-| 2 | [dev-timeline.md](dev-timeline.md) | YAML 파싱부터 이미지 메타데이터 검사까지 전체 개발 과정의 타임라인 | 프로젝트를 재현하려는 사람 |
+- 왜 manifest만으로도 충분히 배울 수 있는 보안 규칙이 많은가?
+- image metadata와 manifest는 어떤 다른 시점의 증거인가?
+- secure fixture 0건이 왜 guardrail 문서에서 핵심 근거인가?
 
-## 언제 어떤 문서를 읽을까
+## 추천 읽기 순서
 
-- **"EKS 없이 컨테이너 보안을 어떻게 학습하는지 알고 싶다"** → `essay.md`
-- **"K8s manifest에서 잡을 수 있는 위험 설정이 뭔지 알고 싶다"** → `essay.md`의 규칙 섹션
-- **"직접 guardrail scanner를 만들어 보고 싶다"** → `dev-timeline.md`
-- **"insecure/secure manifest의 차이를 빠르게 비교하고 싶다"** → `dev-timeline.md`의 fixture 섹션
+학습자가 가장 빨리 손에 잡히는 재현 경로를 보려면 `05-reproduction-guide.md`를 초반에 읽는 편이 좋습니다.
+
+1. [00-problem-framing.md](00-problem-framing.md): 문제와 경계를 먼저 확인합니다.
+2. [05-reproduction-guide.md](05-reproduction-guide.md): 가장 짧은 재현 경로와 기대 결과를 확인합니다.
+3. [01-approach-log.md](01-approach-log.md): 현재 구현 방향을 왜 택했는지 읽습니다.
+4. [02-debug-log.md](02-debug-log.md): 어디서 자주 막히는지와 어떤 테스트가 근거인지 확인합니다.
+5. [03-retrospective.md](03-retrospective.md): 지금 구현이 무엇을 증명했고 무엇을 의도적으로 비워 두었는지 읽습니다.
+6. [04-knowledge-index.md](04-knowledge-index.md): 다음 프로젝트로 이어지는 개념과 근거 파일을 모아 봅니다.
+
+## 이 버전의 근거
+
+- 현재 문제 설명: [../problem/README.md](../problem/README.md)
+- 현재 구현 안내: [../python/README.md](../python/README.md)
+- 구현 진입점: [../python/src/container_guardrails/scanner.py](../python/src/container_guardrails/scanner.py)
+- CLI 진입점: [../python/src/container_guardrails/cli.py](../python/src/container_guardrails/cli.py)
+- 검증 코드: [../python/tests/test_scanner.py](../python/tests/test_scanner.py)
+- 입력 fixture: [../problem/data/](../problem/data/)
+- 이전 장문 기록: [../notion-archive/essay.md](../notion-archive/essay.md)

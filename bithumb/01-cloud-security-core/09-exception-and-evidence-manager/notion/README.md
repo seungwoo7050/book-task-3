@@ -1,20 +1,33 @@
-# 09 Exception & Evidence Manager — Notion 문서 안내
+# 09 Exception and Evidence Manager notion 기록
 
-## 이 폴더의 목적
+## 이 문서 묶음이 하는 일
 
-이 `notion/` 폴더는 프로젝트 09-exception-and-evidence-manager의 개발 과정과 학습 내용을
-Notion으로 옮길 수 있는 형태로 정리한 문서 세트입니다.
+이 `notion/`은 모든 finding을 즉시 고치는 대신, 예외와 증거를 어떻게 관리할 것인가를 다루는 프로젝트 기록입니다.
+현재 버전은 `ExceptionManager`, CLI demo, 테스트가 실제로 보장하는 suppression, expiry, append-only audit 흐름을 중심으로 다시 썼습니다.
 
-## 문서 목록과 읽기 순서
+## 이 문서를 읽을 때 잡아야 할 질문
 
-| 순서 | 문서 | 목적 | 추천 독자 |
-|------|------|------|-----------|
-| 1 | [essay.md](essay.md) | 보안 예외 관리가 왜 필요한지, 증거 첨부와 감사 로그라는 두 축이 어떻게 맞물리는지를 서사적으로 풀어낸 에세이 | CSPM에서 예외 처리를 설계해야 하는 사람 |
-| 2 | [dev-timeline.md](dev-timeline.md) | 데이터 모델 설계부터 승인 흐름, 만료 검사까지 전체 개발 과정의 타임라인 | 프로젝트를 재현하려는 사람 |
+- 왜 exception을 단순 mute가 아니라 관리 대상 레코드로 봐야 하는가?
+- approval, expiry, evidence, audit를 왜 서로 다른 필드와 이벤트로 나눠야 하는가?
+- 이 메모리 모델이 capstone DB 모델로 넘어갈 때 유지돼야 하는 핵심은 무엇인가?
 
-## 언제 어떤 문서를 읽을까
+## 추천 읽기 순서
 
-- **"보안 예외 관리가 왜 필요한지 이해하고 싶다"** → `essay.md`
-- **"suppress/unsuppress 로직을 어떻게 구현하나"** → `essay.md`의 핵심 흐름 섹션
-- **"직접 ExceptionManager를 처음부터 만들어 보고 싶다"** → `dev-timeline.md`
-- **"감사 추적(audit trail)이 왜 append-only인지 알고 싶다"** → `essay.md`
+학습자가 가장 빨리 손에 잡히는 재현 경로를 보려면 `05-reproduction-guide.md`를 초반에 읽는 편이 좋습니다.
+
+1. [00-problem-framing.md](00-problem-framing.md): 문제와 경계를 먼저 확인합니다.
+2. [05-reproduction-guide.md](05-reproduction-guide.md): 가장 짧은 재현 경로와 기대 결과를 확인합니다.
+3. [01-approach-log.md](01-approach-log.md): 현재 구현 방향을 왜 택했는지 읽습니다.
+4. [02-debug-log.md](02-debug-log.md): 어디서 자주 막히는지와 어떤 테스트가 근거인지 확인합니다.
+5. [03-retrospective.md](03-retrospective.md): 지금 구현이 무엇을 증명했고 무엇을 의도적으로 비워 두었는지 읽습니다.
+6. [04-knowledge-index.md](04-knowledge-index.md): 다음 프로젝트로 이어지는 개념과 근거 파일을 모아 봅니다.
+
+## 이 버전의 근거
+
+- 현재 문제 설명: [../problem/README.md](../problem/README.md)
+- 현재 구현 안내: [../python/README.md](../python/README.md)
+- 구현 진입점: [../python/src/exception_evidence_manager/manager.py](../python/src/exception_evidence_manager/manager.py)
+- CLI 진입점: [../python/src/exception_evidence_manager/cli.py](../python/src/exception_evidence_manager/cli.py)
+- 검증 코드: [../python/tests/test_manager.py](../python/tests/test_manager.py)
+- 이전 장문 기록: [../notion-archive/essay.md](../notion-archive/essay.md)
+- 이전 작업 로그: [../notion-archive/dev-timeline.md](../notion-archive/dev-timeline.md)
