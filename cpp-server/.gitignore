@@ -1,0 +1,19 @@
+# macOS noise
+.DS_Store
+
+# C and C++ build artifacts
+*.o
+*.d
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+
+# Project binaries produced by the study labs
+/study/eventlab/cpp/eventlabd
+/study/msglab/cpp/msglab_tests
+/study/roomlab/cpp/roomlabd
+/study/ticklab/cpp/ticklab_tests
+/study/ircserv/cpp/ircserv
+/study/arenaserv/cpp/arenaserv

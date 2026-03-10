@@ -1,35 +1,34 @@
-# ircserv Problem
+# ircserv 문제 재구성
 
-이 문서는 원본 과제 문서가 없는 상태에서 `legacy/` 코드를 바탕으로 재구성한 문제 설명이다.
+이 문서는 현재 저장소의 구현, 테스트, 보존된 기록을 바탕으로 다시 정리한 학습용 문제 설명이다. `ircserv`는 RFC 전체를 재현하는 프로젝트가 아니라, 이 커리큘럼에서 “pure TCP IRC capstone”이라 부를 만한 핵심 범위를 보여 주는 프로젝트다.
 
-## Reconstructed Prompt
+## 학습 목표
 
-C++17 pure TCP IRC 서버 `ircserv`를 작성한다. 실행 표면은 다음과 같다.
+- 앞선 IRC lab에서 나눈 책임을 한 서버에 다시 통합한다.
+- channel privilege와 advanced command를 다뤄 capstone 수준의 completeness를 만든다.
+- raw TCP 기준으로 end-to-end smoke test를 설계한다.
 
-```sh
-./ircserv <port> <password>
-```
+## 구현해야 할 것
 
-서버는 `roomlab` 범위의 명령 위에 다음을 추가해야 한다.
+- `roomlab` 범위의 core command 유지
+- `CAP LS 302`, `TOPIC`, `MODE`, `KICK`, `INVITE` 추가
+- registration 과정에서 `005 ISUPPORT` 광고
+- raw TCP client로 검증 가능한 smoke test 작성
 
-- `CAP LS 302`
-- `TOPIC`
-- `MODE`
-- `KICK`
-- `INVITE`
-- registration 중 `005 ISUPPORT` 광고
-
-## Deliverables
+## 산출물
 
 - C++17 capstone IRC server
 - raw TCP end-to-end smoke test
 
-## Provenance
+## 범위에서 제외하는 것
 
-| source | why it matters |
-| --- | --- |
-| `legacy/README.md` | 최종 pure TCP 서버를 어디서 분리해야 하는지 보여주는 상위 맥락 |
-| `legacy/src/Server.cpp` | 이벤트 루프, keep-alive, socket lifecycle의 출처 |
-| `legacy/src/Executor.cpp` | advanced IRC commands의 출처 |
-| `legacy/src/execute_join.cpp` | JOIN/PART와 NAMES reply의 출처 |
-| `legacy/src/Channel.cpp` | mode/operator/invite state의 출처 |
+- TLS, SASL, operator services
+- full IRCv3 capability negotiation
+- 운영 배포와 persistence
+
+## 현재 저장소에서 확인할 수 있는 근거
+
+- [../cpp/src/Executor.cpp](../cpp/src/Executor.cpp): advanced command 처리
+- [../cpp/src/Channel.cpp](../cpp/src/Channel.cpp): channel privilege와 state
+- [../cpp/src/Server.cpp](../cpp/src/Server.cpp): event loop와 connection lifecycle
+- [../cpp/tests/test_irc_join.py](../cpp/tests/test_irc_join.py): capstone smoke test

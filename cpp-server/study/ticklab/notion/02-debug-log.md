@@ -1,75 +1,61 @@
-# ticklab — 디버그 기록: sequence 검증, reconnect snapshot, draw 타이밍
+# ticklab 디버그 노트
 
-작성일: 2026-03-09
+이 문서는 현재 구현 기준으로, authoritative simulation에서 특히 쉽게 숨어 버리는 실패 지점을 다시 정리한 백업 노트다. 더 긴 기록은 [../notion-archive/](../notion-archive/)에 남겨 두었다.
 
-## 문제 1: stale sequence가 조용히 덮어써졌다
+## 사례 1. stale sequence가 조용히 덮어써지는 문제
 
-### 어떻게 발견했는가
+### 증상
 
-`test_stale_sequence_and_validation`을 작성하는 과정에서였다. 같은 seq number(1)로 입력을 두 번 보냈는데, 첫 번째 입력이 두 번째로 조용히 대체되었다. 에러도 없고, 무시도 없고, 그냥 마지막 값이 남았다.
+같은 seq 입력이 다시 들어왔을 때 명시적 에러 없이 마지막 값이 기존 입력을 덮어쓴다.
 
-이건 "last writer wins" 동작이고, 실제 게임에서는 위험하다. 클라이언트가 네트워크 지연으로 같은 패킷을 재전송하면, 서버가 이미 처리한 입력을 다시 적용하는 셈이 된다.
+### 왜 위험한가
 
-### 무엇이 문제였는가
+이 문제는 "last writer wins"처럼 보이지만 authoritative 서버에서는 위험하다. 이미 처리한 입력이 네트워크 지연 때문에 다시 들어왔을 때, 서버가 그 입력을 다시 반영해 버릴 수 있기 때문이다.
 
-`submit_input()`에서 pending input이 이미 있을 때 새 입력으로 교체하는 로직은 있었지만, **seq가 단조 증가하는지를 먼저 확인하는 guard가 없었다**. `last_seq` 비교 로직이 있긴 했으나, 함수 중간에 있어서 pending input을 덮어쓴 뒤에야 도달했다.
+### 지금 확인할 파일
 
-### 무엇을 했는가
+- [../cpp/src/MatchEngine.cpp](../cpp/src/MatchEngine.cpp)
+- [../cpp/tests/test_ticklab.cpp](../cpp/tests/test_ticklab.cpp)
 
-`submit_input()`의 초입으로 `seq <= last_seq` 검사를 올렸다. 이 조건에 걸리면 `stale_sequence` 에러를 반환하고 함수를 즉시 종료한다. pending input은 건드리지 않는다.
+현재 테스트는 같은 seq를 두 번 넣었을 때 `stale_sequence`가 나는지 확인한다.
 
-```cpp
-if (input.seq <= participant.last_seq)
-{
-    error = Error("stale_sequence", "input sequence must increase monotonically");
-    return false;
-}
-```
+## 사례 2. 재접속은 되지만 현재 상태를 복구하지 못하는 문제
 
-### 검증
+### 증상
 
-테스트에서 seq=1 입력을 두 번 보내면 두 번째가 `stale_sequence` 에러로 거절되는 것을 확인했다. 추가로, 대각선 이동(`dx=1, dy=1`)이 `invalid_input`으로 거절되는 것도 같은 테스트에서 확인했다.
+rejoin 자체는 성공했는데, 클라이언트가 현재 라운드 상태를 모른 채 돌아온다.
 
-## 문제 2: 재접속은 성공했지만, 현재 상태를 알 수 없었다
+### 왜 위험한가
 
-### 어떻게 발견했는가
+재접속은 단순히 `connected = true`로 끝나지 않는다. 현재 phase, tick, snapshot이 같이 복구되지 않으면 세션 연속성이 아니라 "다시 붙은 껍데기"만 남는다.
 
-`rejoin_player()`를 처음 구현했을 때는 단순히 `participant.connected = true`로 복구하는 것이 전부였다. 재접속 자체는 성공하는데, 재접속한 플레이어가 현재 게임이 어떤 상태인지 — 어떤 phase인지, 몇 번째 tick인지, 다른 플레이어들의 위치가 어디인지 — 전혀 알 수 없었다.
+### 지금 확인할 파일
 
-### 무엇을 했는가
+- [../cpp/src/MatchEngine.cpp](../cpp/src/MatchEngine.cpp)
+- [../cpp/tests/test_ticklab.cpp](../cpp/tests/test_ticklab.cpp)
 
-`rejoin_player()`가 재접속 성공 시 상태 복구 이벤트를 자동으로 밀어주게 했다:
+테스트는 within-grace rejoin과 expired rejoin을 나눠 확인한다. 이 경계가 흐리면 `arenaserv`에서 더 큰 혼란으로 돌아온다.
 
-1. `WELCOME <token>` — 세션 복구 확인
-2. `ROOM <room_id> <phase>` — 현재 room phase 알림
-3. phase가 `countdown`이면 `COUNTDOWN <remaining>` 추가
-4. phase가 `in_round` 또는 `finished`이면 `SNAPSHOT <tick> <json>` 추가
+## 사례 3. draw timeout이 이벤트 없이 끝나는 문제
 
-이렇게 하면 재접속한 클라이언트가 현재 상태를 완전히 복원할 수 있다.
+### 증상
 
-### 검증
+라운드는 종료되는데 `ROUND_END draw` 같은 종료 이벤트가 누락된다.
 
-`test_rejoin_grace_window`에서 disconnect 후 50 tick 이내 rejoin이 성공하고, `grace_ticks + 1` 이후 rejoin이 `expired_session`으로 실패하는 것을 확인했다. snapshot 재전송은 drain_events()로 이벤트를 확인하는 방식으로 검증했다.
+### 왜 위험한가
 
-## 문제 3: timeout draw가 이벤트 없이 끝났다
+authoritative 엔진에서는 내부 상태 전이만큼 바깥으로 나가는 이벤트 계약도 중요하다. phase는 끝났는데 이벤트가 안 나가면, 나중에 네트워크 서버를 붙였을 때 "서버는 끝났다고 생각하지만 클라이언트는 모르는" 상태가 생긴다.
 
-### 어떻게 발견했는가
+### 지금 확인할 파일
 
-`test_draw_timeout`을 작성하면서였다. 양쪽 다 아무 행동도 하지 않으면 `max_round_ticks`(30 tick)에 도달해서 라운드가 끝나야 한다. 그런데 라운드가 끝나기는 하는데, `ROUND_END draw` 이벤트가 나오지 않았다.
+- [../cpp/src/MatchEngine.cpp](../cpp/src/MatchEngine.cpp)
+- [../cpp/tests/test_ticklab.cpp](../cpp/tests/test_ticklab.cpp)
 
-### 무엇이 문제였는가
+현재 테스트는 `max_round_ticks`까지 진행한 뒤 `ROUND_END draw`가 나오는지 확인한다.
 
-`advance_one_tick()` 안에서 snapshot을 emit한 뒤 라운드 종료 조건을 확인하는 순서가 잘못되어 있었다. snapshot emit과 종료 체크 사이에 early return이 있어서, 특정 조건에서 `maybe_finish_round()`가 호출되지 않는 경로가 있었다.
+## 다시 막히면 따를 순서
 
-### 무엇을 했는가
-
-`advance_one_tick()`의 마지막에 `maybe_finish_round()`를 **항상** 호출하도록 고정했다. 이 함수는 라운드가 끝났는지(생존자 0~1명이거나, round_tick이 max에 도달했는지)를 확인하고, 조건이 맞으면 `ROUND_END`를 emit한다.
-
-```cpp
-// advance_one_tick() 마지막
-this->maybe_finish_round();
-```
-
-### 검증
-
-`test_draw_timeout`에서 30 tick 전진 후 `ROUND_END draw` 이벤트가 정확히 발생하는 것을 확인했다.
+1. phase 전이가 정확한 tick에서 일어나는지 본다.
+2. 입력 sequence가 단조 증가 조건을 만족하는지 본다.
+3. reconnect 뒤 복구 이벤트가 충분한지 본다.
+4. 라운드 종료 시 상태 전이와 이벤트 emit이 함께 일어나는지 본다.

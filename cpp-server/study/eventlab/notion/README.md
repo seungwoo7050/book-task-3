@@ -1,12 +1,17 @@
-# eventlab Notion 문서 안내
+# eventlab 노트 안내
 
-이 폴더에는 커리큘럼 프로젝트 `eventlab`와 관련된 생각과 기록이 시간순으로 정리되어 있습니다. 새로 이 폴더를 열었다면 아래 순서대로 읽어보세요:
+이 폴더는 현재 공개용 학습 노트다. 예전 초안, 긴 타임라인, 당시 메모는 [../notion-archive/](../notion-archive/)에 그대로 보존해 두었다. 지금 이 `notion/`은 새 학습자가 빨리 맥락을 잡고, 나중에 자기 포트폴리오용 레포로 옮길 때 무엇을 남겨야 할지 판단하게 돕는 데 집중한다.
 
-1. `00-problem-framing.md` – 과제의 핵심 질문과 배경을 이해합니다.
-2. `01-approach-log.md` – 구현을 시작하며 어떤 선택을 했는지 설명합니다.
-3. `02-debug-log.md` – 개발 도중 만난 버그와 해결 과정을 봅니다.
-4. `03-retrospective.md` – 프로젝트를 되돌아보며 교훈과 제안을 정리합니다.
-5. `04-knowledge-index.md` – 얻은 지식과 주요 패턴을 색인 형태로 모았습니다.
-6. `05-development-timeline.md` – 개발부터 테스트, 빌드까지 전체 과정을 날짜와 명령으로 재구성합니다.
+## 읽는 순서
 
-문서들 사이에는 상호참조가 많으므로 차례대로 읽으면 흐름을 이해하기 쉽습니다. 특정 주제만 찾고 싶다면 `knowledge-index` 혹은 `debug-log`를 먼저 펼쳐보세요.
+1. [00-problem-framing.md](00-problem-framing.md)
+2. [01-approach-log.md](01-approach-log.md)
+3. [02-debug-log.md](02-debug-log.md)
+4. [03-retrospective.md](03-retrospective.md)
+5. [04-knowledge-index.md](04-knowledge-index.md)
+
+## 이 폴더를 어떻게 쓰면 좋은가
+
+- 처음 읽는 사람이라면 00, 01로 범위와 선택 이유를 먼저 본다.
+- 구현 중 막히면 02에서 자주 틀리는 포인트를 본다.
+- 포트폴리오 설명을 준비한다면 03과 04를 먼저 읽어도 좋다.

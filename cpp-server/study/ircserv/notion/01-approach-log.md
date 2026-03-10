@@ -1,51 +1,58 @@
-# ircserv — 접근 방식: legacy 복원이 아니라 커리큘럼 통합
+# ircserv 접근 기록
 
-작성일: 2026-03-08
+## 먼저 정한 정체성
 
-## 이 capstone의 정체성
+`ircserv`에서 가장 중요한 질문은 "이 프로젝트가 이전 구현의 복원인가, 아니면 커리큘럼의 통합 capstone인가"였다. 이 질문에 대한 답이 애매하면 범위가 계속 커진다.
 
-이 capstone을 시작할 때 가장 먼저 해야 했던 것은, "이것이 무엇이냐"를 정의하는 것이었다. 두 가지 해석이 가능했다:
+이번 버전은 분명히 두 번째를 택했다. 즉 `ircserv`는 `eventlab`, `msglab`, `roomlab`에서 나눈 경계를 다시 한 서버로 합치는 capstone이다.
 
-1. "legacy 서버의 pure IRC 부분을 복원하는 것"
-2. "앞선 세 lab의 개념을 실제 서버로 통합하는 것"
+## 실제로 고정한 구조
 
-첫 번째 해석을 따르면, legacy 코드를 최대한 가져와서 비-IRC 부분만 제거하면 된다. 빠르지만, 학습 트랙으로서의 의미가 약하다. 이미 존재하는 코드를 정리한 것에 불과하다.
+- core server 흐름은 `roomlab` 위에 둔다.
+- advanced IRC command는 [../cpp/src/Executor.cpp](../cpp/src/Executor.cpp)와 [../cpp/src/Channel.cpp](../cpp/src/Channel.cpp)에 집중시킨다.
+- smoke test는 [../cpp/tests/test_irc_join.py](../cpp/tests/test_irc_join.py)에서 세 클라이언트 역할을 통해 실제 호환성 경로를 검증한다.
 
-두 번째 해석을 따르면, capstone의 구조가 "eventlab(event loop) + msglab(parser) + roomlab(state machine) + advanced IRC commands"로 읽혀야 한다. 이것이 더 어렵지만, 커리큘럼의 흐름이 살아난다.
+## 왜 세 클라이언트를 쓰는가
 
-두 번째를 택했다.
+`alice`, `bob`, `carol` 세 역할이 있어야 다음이 분명해진다.
 
-## 실제로 한 일: roomlab 코어 위에 advanced commands를 얹다
+- operator 역할
+- 일반 member 역할
+- invite를 받고 합류하는 guest 역할
 
-`ircserv`의 파일 구조는 `roomlab`과 동일하다. 같은 11개의 소스 파일, 같은 10개의 헤더. 차이점은 다음 네 가지다:
+이 셋이 있어야 `MODE +i`, `INVITE`, `KICK`, 재입장 거절 같은 시나리오를 한 smoke test에서 설득력 있게 묶을 수 있다.
 
-1. **Executor**에 `_execute_topic()`, `_execute_mode()`, `_execute_kick()`, `_execute_invite()` handler가 추가되었다.
-2. **Channel**의 mode flag(`ibit`, `tbit`, `kbit`, `lbit`)가 **활성화**되었다. roomlab에서는 이 flag들이 코드에 있었지만 0 상태에서 변하지 않았다. ircserv에서는 `MODE` command가 이 flag들을 실제로 변경한다.
-3. **CAP LS 302** 처리가 추가되었다. 클라이언트가 연결 시 capability를 물어보면 응답한다.
-4. **005 ISUPPORT**가 registration 완료 시 전송된다. CHANTYPES, NICKLEN, CHANNELLEN 등의 서버 제약을 광고한다.
+## 일부러 하지 않은 선택
 
-## 의도적으로 하지 않은 것
+- full IRCv3 capability negotiation
+- TLS, SASL, operator services
+- 게임 관련 확장이나 운영 배포 주제
 
-- **IRCv3 capability 전체 구현**: `CAP LS 302`에 빈 capability list로 응답하는 것이 이 capstone의 최소 범위다. `sasl`, `message-tags` 같은 확장은 넣지 않았다.
-- **Services**: NickServ, ChanServ 같은 서비스 봇은 범위 밖이다.
-- **TLS**: 암호화는 이 학습 트랙의 관심사가 아니다.
-- **Feature maximalism**: capstone이라고 해서 기능을 최대한 많이 넣을 이유가 없다. 오히려 "앞선 lab의 통합"이라는 정체성을 유지하는 것이 학습 아카이브로서 더 가치 있다.
+이것들은 전부 가치 있지만, 지금 capstone의 목적은 "IRC 축을 한 프로젝트로 통합해 보이는 것"이지 기능 최대화가 아니다.
 
-## 테스트 전략
+## 이 선택의 장점과 대가
 
-smoke test 범위를 `roomlab`의 6개 시나리오에서 11개로 확장했다:
+장점:
 
-1. `CAP LS 302` 응답 확인
-2. alice, bob, carol 세 클라이언트 registration + 005 ISUPPORT
-3. alice JOIN #ops
-4. bob JOIN #ops
-5. alice `MODE #ops +i` — invite-only 설정 및 broadcast 확인
-6. alice `INVITE carol #ops` — 초대 acknowledgment(341)과 carol에게 INVITE 이벤트
-7. carol JOIN #ops — invite 후 가입 성공
-8. alice `TOPIC #ops :control room` — topic broadcast 확인
-9. alice `PRIVMSG #ops :hello capstone` — channel message broadcast
-10. alice `KICK #ops bob :bye` — bob에게 KICK 이벤트 전달
-11. bob `JOIN #ops` 재시도 → 473 ERR_INVITEONLYCHAN — invite-only 채널 재입장 거절
-12. alice `PING capstone` → PONG 응답
+- `roomlab`과의 차이를 분명하게 설명할 수 있다.
+- command surface를 늘리더라도 책임 경계가 완전히 흐려지지 않는다.
+- 학생이 자기 포트폴리오에서 "왜 이 범위까지를 capstone으로 잡았는가"를 설명하기 쉬워진다.
 
-테스트에서 세 클라이언트를 사용하는 이유: operator(alice), 일반 member(bob), invited guest(carol)이라는 세 가지 역할이 있어야 invite/kick 시나리오가 완전해진다.
+대가:
+
+- 현대 IRC 전체 구현이라고 부를 수는 없다.
+- 호환성도 최소 범위만 다룬다.
+- smoke test는 강하지만 exhaustive compliance suite는 아니다.
+
+## 학생이 가져가면 좋은 기준
+
+- capstone은 기능 수가 아니라 통합 방식으로 설명하는 편이 강하다.
+- subset 프로젝트와의 비교 표가 문서 설명력을 크게 올린다.
+- 실제 클라이언트 시나리오를 그대로 테스트로 옮기면 README 신뢰도가 높아진다.
+
+## 읽기 추천 경로
+
+1. [../cpp/src/Channel.cpp](../cpp/src/Channel.cpp)
+2. [../cpp/src/Executor.cpp](../cpp/src/Executor.cpp)
+3. [../cpp/src/Server.cpp](../cpp/src/Server.cpp)
+4. [../cpp/tests/test_irc_join.py](../cpp/tests/test_irc_join.py)

@@ -1,33 +1,37 @@
-# C++17 Implementation
+# roomlab C++ 구현
 
-상태: `verified`
+상태: `verified`  
+2026-03-10 기준 `make clean && make test`를 다시 확인했다.
 
-## Problem Scope Covered
+## 이 구현이 맡는 범위
 
 - raw TCP IRC registration
 - room create/join/part lifecycle
-- `PRIVMSG`/`NOTICE` delivery
+- `PRIVMSG`, `NOTICE` 전달
 - `PING`/`PONG`, `QUIT`, duplicate nick rejection
 
-## Build Command
+## 아직 다루지 않는 것
+
+- `TOPIC`, `MODE`, `KICK`, `INVITE`, `CAP`
+- TLS, SASL, services integration
+- 제품 수준의 persistence와 운영 기능
+
+## 빌드와 테스트
 
 ```sh
 make clean && make
-```
-
-## Test Command
-
-```sh
 make test
 ```
 
-## Known Gaps
+## 코드 읽기 포인트
 
-- `TOPIC`, `MODE`, `KICK`, `INVITE`, `CAP`는 intentionally unsupported다.
-- TLS, SASL, services integration은 없다.
+- [src/Connection.cpp](src/Connection.cpp): 연결별 상태 저장
+- [src/Executor.cpp](src/Executor.cpp): core command 처리
+- [src/execute_join.cpp](src/execute_join.cpp): room lifecycle
+- [tests/test_roomlab.py](tests/test_roomlab.py): registration과 broadcast smoke test
 
-## Implementation Notes
+## 포트폴리오로 옮길 때 보여 줄 증거
 
-- WebSocket/game/store/metrics 흔적은 제거했다.
-- 바이너리 이름은 `roomlabd`다.
-- 테스트는 두 클라이언트 이상을 붙여 registration, broadcast, error path를 확인한다.
+- duplicate nick과 room broadcast를 재현하는 테스트 캡처
+- registration 전후로 허용 명령이 달라지는 상태 전이 표
+- `ircserv`에서 어떤 고급 명령을 추가했는지 연결해 설명한 문서

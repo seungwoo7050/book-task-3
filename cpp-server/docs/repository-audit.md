@@ -1,36 +1,41 @@
-# Repository Audit
+# 저장소 감사
 
-기준 점검일: 2026-03-09
+기준 점검일: 2026-03-10
 
-## Observed State
+## 현재 확인된 사실
 
-- 현재 작업 디렉터리는 Git 메타데이터가 없는 로컬 폴더다.
-- `legacy/`는 C++17 IRC 서버 위에 오목, WebSocket, React, Nginx, Docker, MySQL/Redis를 덧붙인 단일 포트폴리오 프로젝트였다.
-- 생성물과 문서가 소스 트리와 함께 섞여 있어서, 학습용 project set으로는 읽기 어려웠다.
+- 이 디렉터리에는 `legacy/`가 없다. 따라서 문서는 더 이상 존재하지 않는 경로를 전제로 쓰면 안 된다.
+- `study/*/notion/`은 이미 Git 추적 대상이다. `notion/`을 local-only로 설명하는 문장은 현재 사실과 어긋난다.
+- `eventlab`, `msglab`, `roomlab`, `ticklab`, `ircserv`, `arenaserv`의 `make clean && make test`를 모두 다시 실행했고 통과를 확인했다.
+- 학습 경로는 이미 6개 lab으로 나뉘어 있지만, 문서 톤과 provenance 설명은 아직 이전 전제를 많이 끌고 있었다.
 
-## Legacy Classification
+## 왜 문서를 다시 써야 했는가
 
-| 영역 | 경로 예시 | 분류 | 현재 처리 |
-| --- | --- | --- | --- |
-| 이벤트 루프와 TCP 코어 | `legacy/src/EventManager.*`, `legacy/src/Server.cpp`, `legacy/src/utils.cpp` | solution | `eventlab`, `ircserv`, `arenaserv`의 핵심 구현 근거로 사용 |
-| 메시지 모델과 parser | `legacy/src/Message.*`, `legacy/src/Parser.*`, `legacy/src/inc/macros.hpp` | solution | `msglab`, `roomlab`, `ircserv`의 근거로 사용 |
-| IRC room lifecycle | `legacy/src/Connection.*`, `legacy/src/Channel.*`, `legacy/src/Executor.*`, `legacy/src/execute_join.cpp` | solution | `roomlab`, `ircserv`의 핵심 reference로 사용 |
-| 게임 규칙/운영 확장 | `legacy/src/GameLogic.*`, `legacy/src/GameRoom.*`, `legacy/src/Protocol.*`, `legacy/src/WebSocket.*`, `legacy/web/`, `legacy/nginx/` | solution / ops | 새 `study/`에는 직접 복제하지 않음 |
-| 상위 설계 문서 | `legacy/README.md`, `legacy/docs/game-protocol.md`, `legacy/docs/portfolio-checklist.md` | docs | reconstructed problem docs와 capstone 설계의 provenance source로 사용 |
-| 발표/회고성 문서 | `legacy/docs/presentation-ko.md`, `legacy/docs/refactor-log.md`, `legacy/dev.log` | notes | public docs로 직접 복제하지 않음 |
-| 생성물/노이즈 | `legacy/src/*.o`, `legacy/src/*.d`, `legacy/ircserv`, `legacy/web/dist`, `legacy/web/node_modules` | generated | `study/`로 가져오지 않음 |
+- 존재하지 않는 `legacy/...` 경로가 README와 개념 노트 전반에 남아 있었다.
+- `notion/`이 실제로는 공개 백업 문서인데도 local-only처럼 설명되고 있었다.
+- 공개 문서가 “무엇을 배우는가”보다 “예전에 무엇이 있었는가”에 더 가까워, 새 학습자가 읽기 어려웠다.
+- 개별 lab의 README는 빌드 명령은 알려 주지만, 왜 이 lab을 먼저 읽어야 하는지와 포트폴리오로 어떻게 확장할지에 대한 안내가 약했다.
 
-## Main Findings
+## 이번 재정의에서 고정한 판단
 
-- 레거시 트리는 “하나의 제품”으로는 풍부했지만, “여러 개의 공부 가능한 과제”로는 약했다.
-- 순수 네트워크/프로토콜 학습만 복원하면 `eventlab -> msglab -> roomlab -> ircserv`가 자연스럽다.
-- 하지만 C++ 게임서버 포지션 포트폴리오를 의식하면 authoritative simulation과 reconnect/snapshot를 별도 bridge와 capstone으로 보여줄 필요가 있다.
-- 그래서 flat `study/`는 IRC capstone 하나로 끝나지 않고, `ticklab`와 `arenaserv`를 추가한 6개 lab 구조가 더 적합하다.
+- 이 레포는 “이전 버전 서버 작업에서 추린 학습 커리큘럼”으로 설명한다. 더 이상 실제 `legacy/` 디렉터리를 전제로 두지 않는다.
+- `study/`는 계속 flat 구조를 사용한다. 이번 패스에서는 프로젝트 이름과 순서를 바꾸지 않는다.
+- `notion/`은 tracked public backup이다.
+- 기존 `notion/`을 다시 쓸 때는 `notion-archive/`로 보존하고, 새 `notion/`은 정리된 5문서 표준으로 다시 만든다.
+- 공개 문서는 학생이 자기 포트폴리오 레포를 만들 때 정보 구조를 어떻게 잡아야 하는지까지 안내해야 한다.
 
-## Redesign Decisions
+## 현재 커리큘럼이 보여 주는 것
 
-- `legacy/`는 그대로 둔다.
-- `study/`는 중간 track 폴더 없이 flat lab 구조를 사용한다.
-- lab 셋은 `eventlab`, `msglab`, `roomlab`, `ticklab`, `ircserv`, `arenaserv`로 고정한다.
-- `ircserv`는 pure protocol/state-machine capstone이고, `arenaserv`는 authoritative game-server capstone이다.
-- WebSocket, React, Docker/Nginx, DB/Redis, metrics는 새 `study/` 공식 커리큘럼에서 제외한다.
+| 축 | lab | 최종적으로 보여 주는 역량 |
+| --- | --- | --- |
+| 네트워크/IRC | `eventlab` → `msglab` → `roomlab` → `ircserv` | event loop, parser, 상태 전이, IRC capstone |
+| 게임 서버 | `ticklab` → `arenaserv` | authoritative simulation, reconnect, snapshot, room state machine |
+
+## 이번 패스에서 일부러 하지 않는 것
+
+- 코드 구조 변경
+- 프로젝트 순서 변경
+- 새로운 lab 추가
+- 운영 배포 문서 확장
+
+이번 작업의 목적은 코드를 바꾸는 것이 아니라, 현재 저장소가 이미 가진 학습 가치를 학생이 더 쉽게 꺼내 쓸 수 있게 문서 계약을 다시 맞추는 것이다.

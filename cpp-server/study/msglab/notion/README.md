@@ -1,12 +1,16 @@
-# msglab Notion 문서 안내
+# msglab 노트 안내
 
-이 폴더에는 `msglab` 커리큘럼 과제와 관련된 메모가 포함되어 있습니다. 처음 방문했다면 다음 순서를 따라 읽는 것을 권장합니다:
+이 폴더는 현재 공개용 학습 노트다. 과거의 상세 기록과 타임라인은 [../notion-archive/](../notion-archive/)에 보존했다. 새 `notion/`은 parser를 왜 독립 lab으로 분리했는지, 그리고 그 판단이 이후 서버 구현에 어떤 도움을 주는지 설명하는 데 집중한다.
 
-1. **00-problem-framing.md** – 파서 독립이라는 문제 정의와 동기를 설명합니다.
-2. **01-approach-log.md** – 구현 계획과 주요 설계 결정이 기록되어 있습니다.
-3. **02-debug-log.md** – 개발 과정에서 드러난 문제점과 그 해결책이 정리되어 있습니다.
-4. **03-retrospective.md** – 과제를 되돌아보며 학습 효과와 연관성을 살펴봅니다.
-5. **04-knowledge-index.md** – 파서 관련 핵심 지식과 팁을 한데 묶은 색인입니다.
-6. **05-development-timeline.md** – 실제 개발 명령과 파일 생성 순서를 일자별로 재구성했습니다.
+## 읽는 순서
 
-특정 문서를 빠르게 찾고 싶을 때는 위 목록에서 목적에 맞는 제목을 참고하세요.
+1. [00-problem-framing.md](00-problem-framing.md)
+2. [01-approach-log.md](01-approach-log.md)
+3. [02-debug-log.md](02-debug-log.md)
+4. [03-retrospective.md](03-retrospective.md)
+5. [04-knowledge-index.md](04-knowledge-index.md)
+
+## 추천 사용법
+
+- parser 책임이 낯설다면 00, 01부터 읽는다.
+- 테스트를 어떻게 설계할지 고민 중이라면 02와 04를 먼저 본다.

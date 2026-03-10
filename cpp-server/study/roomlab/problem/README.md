@@ -1,29 +1,35 @@
-# roomlab Problem
+# roomlab 문제 재구성
 
-이 문서는 원본 과제 문서가 없는 상태에서 `legacy/` 코드를 바탕으로 재구성한 문제 설명이다.
+이 문서는 현재 저장소의 구현, 테스트, 보존된 기록을 바탕으로 다시 정리한 학습용 문제 설명이다. 이 lab의 핵심은 “작동하는 작은 IRC subset 서버”를 만드는 것이지, RFC 전체를 한 번에 구현하는 것이 아니다.
 
-## Reconstructed Prompt
+## 학습 목표
 
-C++17 pure TCP IRC subset 서버를 작성한다. 다음 명령 집합만 지원한다.
+- registration과 room lifecycle을 실제 TCP 서버 위에서 다룬다.
+- room membership과 broadcast가 어떤 인덱스 갱신을 요구하는지 이해한다.
+- 네트워크 오류와 사용자 종료가 cleanup 단계에서 어떻게 다른지 구분한다.
 
-- 등록: `PASS`, `NICK`, `USER`
-- 채널: `JOIN`, `PART`
-- 메시지: `PRIVMSG`, `NOTICE`
-- 연결 관리: `PING`, `PONG`, `QUIT`
+## 구현해야 할 것
 
-서버는 중복 닉네임을 거절해야 하고, room 가입/탈퇴와 room broadcast를 처리해야 하며, idle client에 keep-alive를 수행해야 한다.
+- `PASS`, `NICK`, `USER` 기반 등록
+- `JOIN`, `PART` 기반 room create, join, leave
+- `PRIVMSG`, `NOTICE` 전달
+- `PING`, `PONG`, `QUIT`과 idle keep-alive 처리
+- duplicate nick 거절과 disconnect cleanup
 
-## Deliverables
+## 산출물
 
 - raw TCP mini IRC room server
-- 등록/중복 nick/room broadcast/QUIT cleanup smoke test
+- registration, duplicate nick, room broadcast, cleanup smoke test
 
-## Provenance
+## 범위에서 제외하는 것
 
-| source | why it matters |
-| --- | --- |
-| `legacy/src/Connection.cpp` | connection lifetime 모델의 출처 |
-| `legacy/src/Channel.cpp` | channel membership/state의 출처 |
-| `legacy/src/Executor.cpp` | PASS/NICK/USER/PRIVMSG/NOTICE/QUIT 처리의 출처 |
-| `legacy/src/execute_join.cpp` | JOIN/PART 흐름의 출처 |
-| `legacy/src/Server.cpp` | event loop와 disconnect cleanup의 출처 |
+- `TOPIC`, `MODE`, `KICK`, `INVITE`, `CAP`
+- TLS, SASL, services
+- 게임 관련 command와 state
+
+## 현재 저장소에서 확인할 수 있는 근거
+
+- [../cpp/src/Executor.cpp](../cpp/src/Executor.cpp): core command 처리
+- [../cpp/src/execute_join.cpp](../cpp/src/execute_join.cpp): JOIN/PART 흐름
+- [../cpp/src/Server.cpp](../cpp/src/Server.cpp): 연결 수명주기와 cleanup
+- [../cpp/tests/test_roomlab.py](../cpp/tests/test_roomlab.py): end-to-end smoke test

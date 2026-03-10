@@ -1,12 +1,16 @@
-# ticklab Notion 문서 안내
+# ticklab 노트 안내
 
-이 디렉터리는 `ticklab` 프로젝트의 사고 과정을 담고 있습니다. 읽기 위한 가이드는 다음과 같습니다:
+이 폴더는 현재 공개용 학습 노트다. 과거의 긴 설계 메모와 타임라인은 [../notion-archive/](../notion-archive/)에 보존했다. 새 `notion/`은 authoritative simulation을 왜 네트워크보다 먼저 검증해야 하는지 설명하는 데 초점을 둔다.
 
-1. **00-problem-framing.md** – 네트워크 없는 게임 엔진을 먼저 분리한 이유와 질문을 제시합니다.
-2. **01-approach-log.md** – headless 설계, 테스트 전략, 파싱 유무 등 주요 결정을 다룹니다.
-3. **02-debug-log.md** – 시퀀스 검증, reconnect snapshot, draw 타이밍과 같은 버그를 추적합니다.
-4. **03-retrospective.md** – 소규모 프로젝트임에도 커리큘럼에서 차지하는 역할을 평가합니다.
-5. **04-knowledge-index.md** – tick 기반 시뮬레이션에서 적용되는 원칙들을 색인 형태로 정리했습니다.
-6. **05-development-timeline.md** – 개발 당시 입력한 명령어와 파일 구조를 단계별로 기록해 두었습니다.
+## 읽는 순서
 
-개별 섹션을 빠르게 찾고 싶다면 위 타이틀을 참고하시고, 다른 lab과의 연결점은 `retrospective`와 `knowledge-index`에서 확인할 수 있습니다.
+1. [00-problem-framing.md](00-problem-framing.md)
+2. [01-approach-log.md](01-approach-log.md)
+3. [02-debug-log.md](02-debug-log.md)
+4. [03-retrospective.md](03-retrospective.md)
+5. [04-knowledge-index.md](04-knowledge-index.md)
+
+## 추천 사용법
+
+- fixed-step 감각이 낯설다면 00과 04부터 읽는다.
+- reconnect와 snapshot을 어떻게 설명할지 고민 중이라면 02와 03이 도움이 된다.
