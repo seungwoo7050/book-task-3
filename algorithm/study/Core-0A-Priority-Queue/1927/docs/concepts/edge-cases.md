@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 1927 Min Heap
+# 경계 사례 점검 — BOJ 1927 Min Heap
 
 ## 1. 빈 힙에서 추출
 0 출력.

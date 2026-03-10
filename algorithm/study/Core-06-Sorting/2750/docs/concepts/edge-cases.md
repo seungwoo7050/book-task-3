@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 2750 Sort Numbers
+# 경계 사례 점검 — BOJ 2750 Sort Numbers
 
 ## 1. N = 1
 한 개 원소 → 그대로 출력.

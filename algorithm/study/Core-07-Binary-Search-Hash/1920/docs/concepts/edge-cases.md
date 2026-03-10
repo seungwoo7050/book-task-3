@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 1920 Find Number
+# 경계 사례 점검 — BOJ 1920 Find Number
 
 ## 1. 쿼리 값이 모두 없음
 전부 0 출력.

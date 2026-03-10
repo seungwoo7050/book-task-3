@@ -1,31 +1,26 @@
-# Legacy Audit
+# 레거시 감사 메모
 
-## Baseline
+## 현재 기준선
 
-- Audit date: 2026-03-07
-- Legacy core problems discovered: 42
-- Legacy `problem` test status: 42/42 `make test` passed
-- Repository git status: not a git repository
-- Broken internal Markdown links caused by missing `RULEBOOK.md`: 44
-- Metrics artifact present: `legacy/core/.devlog_test_metrics.json`
-- Manifest snapshot: `docs/legacy-file-manifest.txt`
+- 감사 기준일: 2026-03-10
+- 현재 작업 트리의 프로젝트 수: 53
+- 자동 검증 통과 수: 53/53
+- 현재 워크스페이스의 `legacy/` 디렉터리: 없음
 
-## What Was Accepted As Source Material
+## 계속 유지하는 provenance 원칙
 
-- `legacy/core/*/*/problem`: original statements, starter code, fixtures, scripts
-- `legacy/core/*/*/solve/solution/*`: user-authored solutions
-- `legacy/core/*/*/docs/*`: public study notes
-- `legacy/core/*/*/devlog/*`, `lab-report.md`: private/process-heavy notes to be reclassified into `study/**/notion/`
+- 예전 마이그레이션에서 기록한 `legacy/core/...` 경로는 "원본이 있었다면 여기에서 왔다"는 provenance 메모로만 유지한다.
+- 현재 워크스페이스에 `legacy/`가 없더라도, README와 공개 문서는 깨지지 않아야 한다.
+- 실제 학습 동선은 항상 `study/` 기준으로 설명한다.
 
-## What Was Not Carried Forward Verbatim
+## 이번 라운드에서 정리한 항목
 
-- Broken `RULEBOOK.md` references
-- `algorithm-clrs/advanced/` and `common-docs/` ghost paths mentioned only in legacy docs
-- fabricated git metadata inside legacy devlogs
-- standalone metrics blobs copied into prose
+- 템플릿성 영어 헤더와 혼종 표현을 한국어 중심으로 정리했다.
+- `notion/`을 공개 가능한 학습 노트로 재정의하고, 기존 자료는 `notion-archive/`로 보존한다.
+- `05-development-timeline.md`를 다시 공개 노트 세트에 포함해, 빠른 검증 문서와 별도로 전체 재현 흐름을 남긴다.
+- 프로젝트 README의 상태 표시는 이번 라운드에 실제로 다시 확인한 자동 검증 결과만 반영한다.
 
-## Migration Decisions
+## 아직 남겨 둔 보수적 원칙
 
-- Preserve all 42 core problems.
-- Add one bridge project for BOJ 1717 (union-find) before the MST/topological-sort capstone track.
-- Retain C++ only for all legacy gold problems plus BOJ 1753 and 1197.
+- C++ 비교 구현은 보관하되, 이번 문서 정리 라운드에서는 별도 자동 재검증 대상으로 삼지 않는다.
+- 개념 문서의 세부 내용은 기존 학습 로그를 우선 존중하되, 경로와 정책 문장은 새 구조에 맞게 보정한다.

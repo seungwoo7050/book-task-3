@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 1260 DFS and BFS
+# 경계 사례 점검 — BOJ 1260 DFS and BFS
 
 ## 1. 정점 하나 (N=1)
 

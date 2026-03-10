@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 1715 Card Sorting
+# 경계 사례 점검 — BOJ 1715 Card Sorting
 
 ## 1. N = 1
 합칠 필요 없음. 답 = 0.

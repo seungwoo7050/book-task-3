@@ -1,6 +1,32 @@
-# Reproducibility
+# 검증 메모 — 상각 분석 실습
 
-- 기본 검증: `make -C ../../problem test`
-- 대표 실행: `make -C ../../problem run-py`
-- fixture는 `../../problem/data/input*.txt`와 `output*.txt`에 저장한다.
-- 현재 public status는 2026-03-08 기준 Python verified다.
+## 기본 검증 명령
+
+```bash
+make -C problem test
+```
+
+- 문서를 다 읽지 않았더라도, 먼저 이 명령으로 구현이 현재 fixture를 통과하는지 확인하는 편이 좋다.
+
+## 대표 수동 실행 명령
+
+```bash
+make -C problem run-py
+```
+
+## 이 문서와 05 노트의 차이
+
+- 이 문서는 실행 명령과 최근 검증 결과를 빠르게 확인하기 위한 요약본이다.
+- 전체 재현 흐름과 단계별 판단은 `../../notion/05-development-timeline.md`에서 이어서 본다.
+
+## 마지막 확인
+
+- 날짜: 2026-03-10
+- 결과: 통과
+- 요약: `Results: 2/2 passed, 0 failed`
+
+## 독자 체크리스트
+
+- 구현을 바꿨다면 `make -C problem test`를 먼저 다시 돌렸는가?
+- 자동 검증이 통과한 뒤에 수동 실행으로 출력 형식을 다시 확인했는가?
+- 설명 문서와 실제 구현 경로가 서로 어긋나지 않는가?

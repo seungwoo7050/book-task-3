@@ -1,28 +1,28 @@
-# Python Implementation
+# Python 구현 안내
 
-## Scope
+## 구현 범위
 
-- Full BOJ 9663 problem scope
-- Uses the migrated fixtures stored in `../problem/data/`
+- N-Queen 프로젝트의 기본 구현
+- BOJ 전체 채점 범위
 
-## Build Command
+## 왜 이 구현을 먼저 보는가
 
-- `python3 src/solution.py < ../problem/data/input1.txt`
+이 레포에서 기본 구현은 Python을 기준으로 설명한다. 먼저 여기서 상태 전이를 따라가고, 필요하면 다른 구현과 비교한다.
 
-## Test Command
+## 실행 명령
 
-- `make -C ../problem test`
+- `python3 src/solution.py < ../problem/data/input1.txt`: 가장 짧은 수동 실행 경로다.
 
-## Current Status
+## 검증 명령
 
-- verified
+- `make -C ../problem test`: 현재 프로젝트의 기본 자동 검증 루프다. 구현을 수정한 뒤에는 이 명령부터 다시 실행하는 편이 좋다.
 
-## Known Gaps
+## 현재 상태
 
-- Fixture 중심 검증만 제공한다.
-- 스트레스 테스트나 속성 기반 테스트는 아직 없다.
+- 2026-03-10 기준 `make -C ../problem test` 통과
 
-## Implementation Notes
+## 구현 메모
 
-- 기본 구현 언어는 Python이다.
-- public reasoning은 `../docs/`에, process-heavy notes는 `../notion/`에 둔다.
+- 공개용 판단 근거는 `../docs/`에 둔다.
+- 전체 재현 흐름은 `../notion/05-development-timeline.md`에서 먼저 확인하고, 더 긴 학습 노트는 `../notion/`에서 이어서 읽는다.
+- 이전 버전 메모나 예전 템플릿 흔적은 `../notion-archive/`에 보관한다.

@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 10872 Factorial
+# 경계 사례 점검 — BOJ 10872 Factorial
 
 ## 1. N = 0
 

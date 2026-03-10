@@ -1,79 +1,32 @@
-# Reproducibility — BOJ 2920 (Scale (음계))
+# 검증 메모 — 음계
 
-## 환경
-
-- BOJ 2920 실행 시각: 2026-02-28 05:11:48
-- BOJ 2920 OS: `Darwin macbook_air 25.3.0 Darwin Kernel Version 25.3.0: Wed Jan 28 20:53:01 PST 2026; root:xnu-12377.81.4~5/RELEASE_ARM64_T8103 arm64`
-- BOJ 2920 Shell: `zsh`
-- BOJ 2920 작업 경로: `core/05-simulation/bronze-2920/problem`
-
-## 실행 명령
+## 기본 검증 명령
 
 ```bash
-cd core/05-simulation/bronze-2920/problem
-make test
+make -C problem test
 ```
 
-## Observed Output(공식 테스트)
+- 문서를 다 읽지 않았더라도, 먼저 이 명령으로 구현이 현재 fixture를 통과하는지 확인하는 편이 좋다.
 
-```text
-Test 1: PASS
-Test 2: PASS
-Test 3: PASS
-
-Results: 3/3 passed, 0 failed
-```
-
-## Observed Output(수동 케이스 1개)
-
-수동 케이스 목적: 완전 내림차순 입력에서 분기 우선순위가 올바른지 검증한다.
-
-### 입력
-
-```text
-8 7 6 5 4 3 2 1
-```
-
-### 실행 명령 (Python)
+## 대표 수동 실행 명령
 
 ```bash
-cd core/05-simulation/bronze-2920/problem
-python3 ../solve/solution/solution.py <<'EOF'
-8 7 6 5 4 3 2 1
-EOF
+make -C problem run-py
 ```
 
-### 실행 명령 (C++)
+## 이 문서와 05 노트의 차이
 
-```bash
-cd core/05-simulation/bronze-2920/problem
-g++-14 -std=c++17 -D_Alignof=alignof -O2 -Wall ../solve/solution/solution.cpp -o /tmp/clrs_05_simulation__bronze_2920
-/tmp/clrs_05_simulation__bronze_2920 <<'EOF'
-8 7 6 5 4 3 2 1
-EOF
-```
+- 이 문서는 실행 명령과 최근 검증 결과를 빠르게 확인하기 위한 요약본이다.
+- 전체 재현 흐름과 단계별 판단은 `../../notion/05-development-timeline.md`에서 이어서 본다.
 
-### 관측 출력 (Python)
+## 마지막 확인
 
-```text
-descending
-```
+- 날짜: 2026-03-10
+- 결과: 통과
+- 요약: `Results: 3/3 passed, 0 failed`
 
-### 관측 출력 (C++)
+## 독자 체크리스트
 
-```text
-descending
-```
-
-## 검증 메모
-
-- BOJ 2920 공식 테스트 요약: `Results: 3/3 passed, 0 failed`
-- BOJ 2920 수동 케이스 교차검증: BOJ 2920 수동 케이스에서 Python/C++ 출력이 완전히 일치한다.
-- BOJ 2920 문서에서는 공식 로그와 수동 로그를 분리 저장해 회귀 시 원인 구간을 빠르게 좁힌다.
-- 이번 수동 케이스는 "완전 내림차순 입력에서 분기 우선순위가 올바른지 검증한다." 검증에 초점을 맞췄다.
-
-## 재현 체크리스트
-
-- [ ] `make test`를 재실행했을 때 `Results: 3/3 passed, 0 failed` 패턴이 유지되는가?
-- [ ] BOJ 2920 수동 케이스 입력을 재사용했을 때 Python/C++ 출력이 계속 일치하는가?
-- [ ] BOJ 2920 기준으로 `approach.md`의 복잡도/정당성 설명이 관측 출력과 충돌하지 않는가?
+- 구현을 바꿨다면 `make -C problem test`를 먼저 다시 돌렸는가?
+- 자동 검증이 통과한 뒤에 수동 실행으로 출력 형식을 다시 확인했는가?
+- 설명 문서와 실제 구현 경로가 서로 어긋나지 않는가?

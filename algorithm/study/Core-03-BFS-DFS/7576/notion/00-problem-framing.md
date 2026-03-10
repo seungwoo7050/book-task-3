@@ -1,4 +1,7 @@
-# BOJ 7576 — 토마토: 다중 소스 BFS의 정석
+# 문제 프레이밍
+
+> 프로젝트: 토마토
+> 아래 내용은 `notion-archive/00-problem-framing.md`에 남아 있던 기존 학습 기록을 현재 공개 노트 기준으로 다듬은 버전이다.
 
 ## 첫인상
 
@@ -20,3 +23,24 @@ Core-03의 Gold 문제로, BFS의 실전 응용을 체험하기 위해 선택했
 ## 난이도 평가
 
 Gold 등급. 알고리즘 아이디어 자체(다중 소스 BFS)는 간단하지만, 격자 탐색의 디테일(범위 검사, 방문 처리, 불가능 판별)과 성능 최적화(C++ 구현 포함)가 요구된다.
+
+## 지금 이 프로젝트에서 먼저 고정할 것
+
+- `토마토`에서 실제로 확인하려는 학습 목표는 `그래프 표현을 고르고 방문 순서를 안정적으로 제어하는 연습`이다.
+- 문제를 읽을 때는 "정답을 맞힌다"보다 어떤 상태와 규칙을 끝까지 유지해야 하는지를 먼저 적어 두는 편이 좋다.
+- 비슷한 유형을 다시 만났을 때 바로 적용할 수 있는 작은 판단 기준을 남겨 두는 것이 핵심이었다.
+- 학습자 입장에서는 `05-development-timeline.md`를 같이 열어 두면 실제 재현 순서와 문제 해석이 어떻게 맞물리는지 더 잘 보인다.
+
+## 시작 전 성공 기준
+
+- `problem/README.md`의 입력 계약을 내 말로 다시 쓸 수 있는가?
+- `python/src/solution.py`를 읽기 전에 어떤 자료구조나 상태 정의가 필요할지 예측했는가?
+- `make -C problem test`를 돌렸을 때 어떤 fixture가 왜 필요한지 설명할 수 있는가?
+
+## 같이 다시 볼 문서
+
+- [`edge-cases.md`](../docs/concepts/edge-cases.md)
+- [`multi-source-bfs-concept.md`](../docs/concepts/multi-source-bfs-concept.md)
+- [`../docs/references/approach.md`](../docs/references/approach.md)
+- [`../docs/references/reproducibility.md`](../docs/references/reproducibility.md)
+- 앞 프로젝트: [`../../24479/README.md`](../../24479/README.md) (알고리즘 수업 - 깊이 우선 탐색 1)

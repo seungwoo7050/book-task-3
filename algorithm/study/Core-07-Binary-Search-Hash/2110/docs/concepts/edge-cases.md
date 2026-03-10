@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 2110 Install Routers
+# 경계 사례 점검 — BOJ 2110 Install Routers
 
 ## 1. C = 2
 양 끝 집에 설치 → 답 = max - min.

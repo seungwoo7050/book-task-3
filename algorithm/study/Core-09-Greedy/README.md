@@ -1,24 +1,27 @@
 # Core-09-Greedy
 
-## Topic
+## 트랙 소개
 
-- BarkingDog sequence: `0x09`
-- Topic: Greedy
-- CLRS reference: Ch 16
+매 단계에서 가장 좋아 보이는 선택이 전체 최적과 맞물리는 조건을 사례 중심으로 익히는 트랙이다.
 
-## Why This Track Exists
+## 왜 이 순서로 배우는가
 
-그리디 선택 조건이 성립하는 경우와 아닌 경우를 사례로 구분한다.
+그리디는 맞는 이유를 설명하지 못하면 거의 가치가 없다. 이 트랙은 선택 기준과 반례 의식을 함께 키우기 위해 구성했다.
 
-## Projects
+## 프로젝트 목록
 
-| Tier | BOJ | Title | Implementations |
-| :--- | :--- | :--- | :--- |
-| Bronze | [11047](11047/README.md) | Coin 0 | Python |
-| Gold | [1744](1744/README.md) | Number Bundling | Python + C++ |
-| Silver | [1931](1931/README.md) | Meeting Room Assignment | Python |
+| 순서 | 프로젝트 | 문제명/주제 | 구현 | 읽는 포인트 |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | [11047](11047/README.md) | 동전 0 | Python | 탐욕 선택의 기준을 말로 설명하고 반례 가능성을 점검하는 연습 |
+| 2 | [1931](1931/README.md) | 회의실 배정 | Python | 탐욕 선택의 기준을 말로 설명하고 반례 가능성을 점검하는 연습 |
+| 3 | [1744](1744/README.md) | 수 묶기 | Python + C++ | 탐욕 선택의 기준을 말로 설명하고 반례 가능성을 점검하는 연습 |
 
-## Notes
+## 먼저 읽을 문서
 
-- 모든 프로젝트는 `problem/`, `python/`, 선택적 `cpp/`, `docs/`, `notion/` 구조를 사용한다.
-- 공개 README는 스포일러를 허용하되, 문제 원문은 `problem/`에만 둔다.
+1. [../README.md](../README.md)에서 전체 학습 트리를 훑는다.
+2. [../../docs/curriculum-map.md](../../docs/curriculum-map.md)에서 이 트랙이 어디에 놓이는지 본다.
+3. 첫 번째 프로젝트 README를 읽고, `problem/` -> `docs/` -> 구현 -> `notion/05-development-timeline.md` 순서로 내려간다.
+
+## 이 트랙을 자기 포트폴리오에 옮길 때의 팁
+
+포트폴리오에서는 '왜 이 선택이 다음 선택의 자유도를 해치지 않는가'를 짧게라도 남겨 두는 편이 좋다.

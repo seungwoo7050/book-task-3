@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 2748 Fibonacci 2
+# 경계 사례 점검 — BOJ 2748 Fibonacci 2
 
 ## 1. n = 0
 $F(0) = 0$.

@@ -1,11 +1,11 @@
-# Edge Cases — BOJ 5397 Keylogger
+# 경계 사례 점검 — BOJ 5397 Keylogger
 
 ## Constraints
 - $T \le 1{,}000$ test cases
 - Keystroke length per case $\le 1{,}000{,}000$
 - Total across all cases $\le 5{,}000{,}000$
 
-## Edge Cases
+## 경계 사례 점검
 
 ### 1. All Special Keys — Empty Password
 Input: `<<<--->>>` → No characters inserted → empty output line.
@@ -28,7 +28,7 @@ $T = 1{,}000$ each with ~5000 chars — tests per-case initialization overhead.
 ### 7. Insert-Move-Insert Pattern
 `a>b<c` → final position depends on careful cursor tracking.
 
-## Summary
+## 요약
 
 | # | Case | Key Test |
 | :--- | :--- | :--- |

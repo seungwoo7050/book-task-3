@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 10807 Count Occurrences
+# 경계 사례 점검 — BOJ 10807 Count Occurrences
 
 ## Constraints Recap
 
@@ -6,7 +6,7 @@
 - $-100 \le A_i \le 100$
 - $-100 \le v \le 100$
 
-## Edge Case Analysis
+## 경계 사례 점검
 
 ### 1. Target Not Present
 
@@ -53,7 +53,7 @@ Tests handling of negative integers.
 **Input**: 100 elements, all equal to target  
 **Expected**: `100`
 
-## Summary
+## 요약
 
 | # | Case | Expected | Key Test |
 | :--- | :--- | :--- | :--- |

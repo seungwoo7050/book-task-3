@@ -1,36 +1,34 @@
 # Advanced-CLRS
 
-이 트랙은 CLRS 고급 챕터를 repo-authored study project로 재구성한 심화 학습 트랙이다. Core처럼 BOJ 문제를 옮기는 대신, 각 챕터의 핵심 알고리즘이나 proof workflow를 재현 가능한 입력/출력 프로젝트로 바꿨다.
+## 트랙 소개
 
-## Why This Track Exists
+Core를 지나 CLRS의 고급 주제를 직접 구현 가능한 작은 실험으로 바꿔 보는 심화 트랙이다.
 
-- Core에서 다룬 구현형 문제를 넘어 CLRS의 이론-heavy 주제를 직접 다룬다.
-- 증명, 불변식, 자료구조 인터페이스, verifier/approximation 같은 주제를 runnable artifact로 남긴다.
-- 너무 넓은 원안 슬롯은 학습 가능한 프로젝트 단위로 좁혀서 track 전체를 완성했다.
+## 왜 이 순서로 배우는가
 
-## Project Set
+고급 알고리즘은 읽기만 하면 남지 않는다. 이 트랙은 proof-heavy 챕터를 실행 가능한 과제로 바꿔 학습 장벽을 낮춘다.
 
-| Slot | Project | CLRS | Status | Notes |
+## 프로젝트 목록
+
+| 순서 | 프로젝트 | 문제명/주제 | 구현 | 읽는 포인트 |
 | :--- | :--- | :--- | :--- | :--- |
-| 0x10 | [Strassen Matrix Multiplication](0x10-strassen-matrix/README.md) | Ch 4 | Verified | divide and conquer + padding |
-| 0x11 | [Amortized Analysis Lab](0x11-amortized-analysis-lab/README.md) | Ch 17 | Verified | MULTIPOP + binary counter |
-| 0x12 | [Red-Black Tree Insert and Validate](0x12-red-black-tree/README.md) | Ch 13, 18 | Verified | B-tree is kept as docs follow-up |
-| 0x13 | [Meldable Heap Bridge](0x13-meldable-heap/README.md) | Ch 19 | Verified | pairing heap bridge before Fibonacci heap notes |
-| 0x14 | [Network Flow with Edmonds-Karp](0x14-network-flow/README.md) | Ch 26 | Verified | deterministic augmenting-path variant |
-| 0x15 | [Advanced String Matching](0x15-string-matching/README.md) | Ch 32 | Verified | KMP and Rabin-Karp under one CLI |
-| 0x16 | [Computational Geometry Lab](0x16-computational-geometry/README.md) | Ch 33 | Verified | hull + segment intersection |
-| 0x17 | [Number Theory Lab](0x17-number-theory-lab/README.md) | Ch 31 | Verified | extended GCD, CRT, toy RSA |
-| 0x18 | [NP-Completeness Lab](0x18-np-completeness-lab/README.md) | Ch 34 | Verified | certificate verification, not fake exact solvers |
-| 0x19 | [Approximation Algorithms Lab](0x19-approximation-lab/README.md) | Ch 35 | Verified | set cover + vertex cover approximation |
+| 1 | [0x10-strassen-matrix](0x10-strassen-matrix/README.md) | Strassen 행렬 곱셈 | Python | 이론 중심 알고리즘을 작은 실험과 검증 가능한 입출력 문제로 재구성하는 연습 |
+| 2 | [0x11-amortized-analysis-lab](0x11-amortized-analysis-lab/README.md) | 상각 분석 실습 | Python | 이론 중심 알고리즘을 작은 실험과 검증 가능한 입출력 문제로 재구성하는 연습 |
+| 3 | [0x12-red-black-tree](0x12-red-black-tree/README.md) | 레드-블랙 트리 삽입과 검증 | Python | 이론 중심 알고리즘을 작은 실험과 검증 가능한 입출력 문제로 재구성하는 연습 |
+| 4 | [0x13-meldable-heap](0x13-meldable-heap/README.md) | 합칠 수 있는 힙 브리지 | Python | 이론 중심 알고리즘을 작은 실험과 검증 가능한 입출력 문제로 재구성하는 연습 |
+| 5 | [0x14-network-flow](0x14-network-flow/README.md) | 네트워크 플로우 | Python | 이론 중심 알고리즘을 작은 실험과 검증 가능한 입출력 문제로 재구성하는 연습 |
+| 6 | [0x15-string-matching](0x15-string-matching/README.md) | 고급 문자열 매칭 | Python | 이론 중심 알고리즘을 작은 실험과 검증 가능한 입출력 문제로 재구성하는 연습 |
+| 7 | [0x16-computational-geometry](0x16-computational-geometry/README.md) | 계산 기하 실습 | Python | 이론 중심 알고리즘을 작은 실험과 검증 가능한 입출력 문제로 재구성하는 연습 |
+| 8 | [0x17-number-theory-lab](0x17-number-theory-lab/README.md) | 정수론 실습 | Python | 이론 중심 알고리즘을 작은 실험과 검증 가능한 입출력 문제로 재구성하는 연습 |
+| 9 | [0x18-np-completeness-lab](0x18-np-completeness-lab/README.md) | NP-완전성 실습 | Python | 이론 중심 알고리즘을 작은 실험과 검증 가능한 입출력 문제로 재구성하는 연습 |
+| 10 | [0x19-approximation-lab](0x19-approximation-lab/README.md) | 근사 알고리즘 실습 | Python | 이론 중심 알고리즘을 작은 실험과 검증 가능한 입출력 문제로 재구성하는 연습 |
 
-## Redesign Decisions
+## 먼저 읽을 문서
 
-- `0x12`: 원안의 red-black tree와 B-tree를 한 프로젝트에 모두 구현하는 것은 범위가 과해서, 구현은 red-black tree insertion/validation에 집중하고 B-tree는 docs reading path로 남겼다.
-- `0x13`: raw Fibonacci heap 구현 대신 pairing heap 기반 meld lab으로 바꿨다. 핵심 인터페이스를 먼저 잡고 docs에서 Fibonacci heap으로 연결하는 편이 학습 효율이 높다.
-- `0x18`: NP-completeness는 solver보다 verifier와 reduction 사고가 우선이라서 certificate verification lab으로 바꿨다.
+1. [../README.md](../README.md)에서 전체 학습 트리를 훑는다.
+2. [../../docs/curriculum-map.md](../../docs/curriculum-map.md)에서 이 트랙이 어디에 놓이는지 본다.
+3. 첫 번째 프로젝트 README를 읽고, `problem/` -> `docs/` -> 구현 -> `notion/05-development-timeline.md` 순서로 내려간다.
 
-## Policy
+## 이 트랙을 자기 포트폴리오에 옮길 때의 팁
 
-- 모든 advanced 프로젝트는 Python 구현과 fixture 기반 검증을 제공한다.
-- C++는 현재 유지하지 않는다. 이 트랙의 목표는 low-level optimization보다 개념적 정확성과 재현 가능한 reasoning이다.
-- 각 프로젝트는 `problem/`, `python/`, `docs/`, `notion/` 구조를 사용한다.
+심화 트랙은 '책 내용을 그대로 베꼈다'가 아니라 '핵심 개념을 실행 가능한 형태로 재구성했다'는 점이 드러나야 한다.

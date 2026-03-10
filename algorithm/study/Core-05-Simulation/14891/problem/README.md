@@ -1,48 +1,28 @@
-# Problem: Gear (BOJ 14891)
+# BOJ 14891 문제 자료
 
-## Problem Statement
+## 이 디렉터리의 역할
 
-There are 4 gears, each with 8 teeth arranged in a circle. Each tooth is either N-pole (0) or S-pole (1). The teeth are numbered 0–7 clockwise starting from the 12 o'clock position. The right contact point of a gear is tooth index 2, and the left contact point is tooth index 6.
+이 디렉터리는 문제 링크, fixture, starter code, 실행 스크립트를 한곳에 모아 둔 보관함이다. 구현을 보기 전에 여기서 어떤 자료가 준비되어 있는지 먼저 확인하면 학습 동선이 안정적이다.
 
-Given $K$ rotation commands, each specifying a gear number and direction (1 = clockwise, −1 = counter-clockwise):
+## 프로젝트 스펙 요약
 
-1. Before rotating, check adjacent gears. If two adjacent gears have **different** poles at their contact points, the adjacent gear rotates in the **opposite** direction; if the poles are the **same**, it does not rotate.
-2. Propagation ripples outward (gear 1↔2, 2↔3, 3↔4).
-3. After all rotations are determined, rotate all affected gears simultaneously.
+- 주제: 톱니바퀴
+- 초점: 복잡한 설명을 작은 상태 전이 규칙으로 나누어 구현하는 연습
+- 예제 입력과 기대 출력은 `data/input*.txt`, `data/output*.txt`에 정리했다.
 
-After processing all commands, compute the score:
-- Gear 1 top (index 0) is S-pole → +1
-- Gear 2 top (index 0) is S-pole → +2
-- Gear 3 top (index 0) is S-pole → +4
-- Gear 4 top (index 0) is S-pole → +8
+## 왜 이 자료를 남기는가
 
-Print the total score.
+- 이 프로젝트의 핵심은 복잡한 설명을 작은 상태 전이 규칙으로 나누어 구현하는 연습이다.
+- `docs/`는 판단 근거를, 구현 디렉터리는 실제 코드를, `notion/`은 더 긴 학습 노트와 재현 타임라인을 담당한다.
 
-## Input
+## 포함 자료
 
-- Lines 1–4: 8-character string of `0`s and `1`s for each gear.
-- Line 5: integer $K$ ($1 \le K \le 100$).
-- Next $K$ lines: two integers — gear number (1–4) and direction (1 or −1).
+- `data/`: 대표 입력과 기대 출력
+- `code/`: starter code 또는 문제 보조 자료
+- `script/`: 수동 실행이나 채점 보조 스크립트
+- `Makefile`: 재현 명령 진입점
 
-## Output
+## 먼저 실행해볼 명령
 
-Print the total score.
-
-## Examples
-
-**Input**:
-```
-10101111
-01111101
-11001110
-00000010
-2
-3 -1
-1 1
-```
-
-**Output**: `7`
-
-## Source
-
-https://www.acmicpc.net/problem/14891
+- `make test`: 현재 기본 구현이 fixture를 통과하는지 빠르게 확인한다.
+- `make run-py`: 대표 입력으로 Python 구현을 눈으로 추적할 때 사용한다.

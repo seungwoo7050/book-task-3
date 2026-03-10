@@ -1,24 +1,27 @@
 # Core-07-Binary-Search-Hash
 
-## Topic
+## 트랙 소개
 
-- BarkingDog sequence: `0x07`
-- Topic: Binary Search & Hash
-- CLRS reference: Ch 11, 12.3
+탐색 문제를 선형 탐색으로 버티지 않고, 집합/카운터/매개변수 탐색으로 재구성하는 방법을 익히는 트랙이다.
 
-## Why This Track Exists
+## 왜 이 순서로 배우는가
 
-검색 문제를 집합/카운터/매개변수 탐색으로 나누어 푼다.
+많은 문제에서 병목은 구현이 아니라 탐색 전략이다. 이 트랙은 '무엇을 탐색 대상으로 볼 것인가'를 바꾸는 감각을 만든다.
 
-## Projects
+## 프로젝트 목록
 
-| Tier | BOJ | Title | Implementations |
-| :--- | :--- | :--- | :--- |
-| Bronze | [1920](1920/README.md) | Find Number | Python |
-| Gold | [2110](2110/README.md) | Install Routers | Python + C++ |
-| Silver | [10816](10816/README.md) | Number Card 2 | Python |
+| 순서 | 프로젝트 | 문제명/주제 | 구현 | 읽는 포인트 |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | [1920](1920/README.md) | 수 찾기 | Python | 탐색 대상을 재정의하고 자료구조 또는 매개변수 탐색으로 문제를 다시 보는 연습 |
+| 2 | [10816](10816/README.md) | 숫자 카드 2 | Python | 탐색 대상을 재정의하고 자료구조 또는 매개변수 탐색으로 문제를 다시 보는 연습 |
+| 3 | [2110](2110/README.md) | 공유기 설치 | Python + C++ | 탐색 대상을 재정의하고 자료구조 또는 매개변수 탐색으로 문제를 다시 보는 연습 |
 
-## Notes
+## 먼저 읽을 문서
 
-- 모든 프로젝트는 `problem/`, `python/`, 선택적 `cpp/`, `docs/`, `notion/` 구조를 사용한다.
-- 공개 README는 스포일러를 허용하되, 문제 원문은 `problem/`에만 둔다.
+1. [../README.md](../README.md)에서 전체 학습 트리를 훑는다.
+2. [../../docs/curriculum-map.md](../../docs/curriculum-map.md)에서 이 트랙이 어디에 놓이는지 본다.
+3. 첫 번째 프로젝트 README를 읽고, `problem/` -> `docs/` -> 구현 -> `notion/05-development-timeline.md` 순서로 내려간다.
+
+## 이 트랙을 자기 포트폴리오에 옮길 때의 팁
+
+탐색 문제는 구현보다 전략 선택이 핵심이다. 왜 이분 탐색인지, 왜 Counter인지 먼저 적어 두면 문서가 훨씬 설득력 있어진다.

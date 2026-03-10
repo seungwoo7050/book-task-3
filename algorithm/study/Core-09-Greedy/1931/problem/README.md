@@ -1,38 +1,28 @@
-# Problem: Meeting Room Assignment (BOJ 1931)
+# BOJ 1931 문제 자료
 
-## Problem Statement
+## 이 디렉터리의 역할
 
-Given $N$ meetings, each with a start time and end time, find the maximum number of non-overlapping meetings that can be scheduled in one room. A meeting that ends at time $t$ can be immediately followed by one that starts at time $t$.
+이 디렉터리는 문제 링크, fixture, starter code, 실행 스크립트를 한곳에 모아 둔 보관함이다. 구현을 보기 전에 여기서 어떤 자료가 준비되어 있는지 먼저 확인하면 학습 동선이 안정적이다.
 
-## Input
+## 프로젝트 스펙 요약
 
-- Line 1: $N$ ($1 \le N \le 100\,000$)
-- Next $N$ lines: start and end times ($0 \le start \le end \le 2^{31} - 1$)
+- 주제: 회의실 배정
+- 초점: 탐욕 선택의 기준을 말로 설명하고 반례 가능성을 점검하는 연습
+- 예제 입력과 기대 출력은 `data/input*.txt`, `data/output*.txt`에 정리했다.
 
-## Output
+## 왜 이 자료를 남기는가
 
-Print the maximum number of meetings.
+- 이 프로젝트의 핵심은 탐욕 선택의 기준을 말로 설명하고 반례 가능성을 점검하는 연습이다.
+- `docs/`는 판단 근거를, 구현 디렉터리는 실제 코드를, `notion/`은 더 긴 학습 노트와 재현 타임라인을 담당한다.
 
-## Examples
+## 포함 자료
 
-**Input**:
-```
-11
-1 4
-3 5
-0 6
-5 7
-3 8
-5 9
-6 10
-8 11
-8 12
-2 13
-12 14
-```
+- `data/`: 대표 입력과 기대 출력
+- `code/`: starter code 또는 문제 보조 자료
+- `script/`: 수동 실행이나 채점 보조 스크립트
+- `Makefile`: 재현 명령 진입점
 
-**Output**: `4`
+## 먼저 실행해볼 명령
 
-## Source
-
-https://www.acmicpc.net/problem/1931
+- `make test`: 현재 기본 구현이 fixture를 통과하는지 빠르게 확인한다.
+- `make run-py`: 대표 입력으로 Python 구현을 눈으로 추적할 때 사용한다.

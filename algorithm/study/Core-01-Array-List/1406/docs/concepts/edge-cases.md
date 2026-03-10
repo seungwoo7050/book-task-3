@@ -1,10 +1,10 @@
-# Edge Cases — BOJ 1406 Editor
+# 경계 사례 점검 — BOJ 1406 Editor
 
 ## Constraints Recap
 - Initial string length: $\le 100{,}000$
 - Commands: $M \le 500{,}000$
 
-## Edge Case Analysis
+## 경계 사례 점검
 
 ### 1. Cursor at Start — L and B Ignored
 Cursor is at position 0. `L` and `B` should do nothing.
@@ -27,7 +27,7 @@ Rapid alternation of L, D, P, B — tests that stack operations are correctly pa
 ### 7. Insert and Immediately Delete
 `P x` followed by `B` should cancel out.
 
-## Summary
+## 요약
 
 | # | Case | Key Test |
 | :--- | :--- | :--- |

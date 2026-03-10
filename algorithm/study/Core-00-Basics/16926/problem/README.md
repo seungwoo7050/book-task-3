@@ -1,66 +1,28 @@
-# Problem: Array Rotation 1 (BOJ 16926)
+# BOJ 16926 문제 자료
 
-## Problem Statement
+## 이 디렉터리의 역할
 
-Given an $N \times M$ array and an integer $R$, rotate the array counterclockwise by $R$ steps and print the result.
+이 디렉터리는 문제 링크, fixture, starter code, 실행 스크립트를 한곳에 모아 둔 보관함이다. 구현을 보기 전에 여기서 어떤 자료가 준비되어 있는지 먼저 확인하면 학습 동선이 안정적이다.
 
-The array is composed of $\min(N, M) / 2$ concentric rectangular layers. Each layer is rotated independently.
+## 프로젝트 스펙 요약
 
-## Input
+- 주제: 배열 돌리기 1
+- 초점: 작은 입력을 안정적으로 읽고, 조건 분기를 코드와 문서로 함께 정리하는 감각
+- 예제 입력과 기대 출력은 `data/input*.txt`, `data/output*.txt`에 정리했다.
 
-- Line 1: Three integers $N$, $M$, $R$ separated by spaces.
-- Lines 2 to $N+1$: $M$ integers per line representing the array.
+## 왜 이 자료를 남기는가
 
-### Constraints
+- 이 프로젝트의 핵심은 작은 입력을 안정적으로 읽고, 조건 분기를 코드와 문서로 함께 정리하는 감각이다.
+- `docs/`는 판단 근거를, 구현 디렉터리는 실제 코드를, `notion/`은 더 긴 학습 노트와 재현 타임라인을 담당한다.
 
-- $2 \le N, M \le 300$
-- $1 \le R \le 10^9$
-- $\min(N, M) \mod 2 = 0$
-- $1 \le A_{i,j} \le 10^8$
+## 포함 자료
 
-## Output
+- `data/`: 대표 입력과 기대 출력
+- `code/`: starter code 또는 문제 보조 자료
+- `script/`: 수동 실행이나 채점 보조 스크립트
+- `Makefile`: 재현 명령 진입점
 
-Print the rotated $N \times M$ array, with elements separated by spaces.
+## 먼저 실행해볼 명령
 
-## Examples
-
-### Example 1
-
-**Input**
-```
-4 4 2
-1 2 3 4
-5 6 7 8
-9 10 11 12
-13 14 15 16
-```
-
-**Output**
-```
-3 4 8 12
-2 11 10 16
-1 7 6 15
-5 9 13 14
-```
-
-### Example 2
-
-**Input**
-4 4 1
-1 2 3 4
-5 6 7 8
-9 10 11 12
-13 14 15 16
-```
-
-**Output**
-```
-2 3 4 8
-1 7 11 12
-5 6 10 16
-9 13 14 15
-```
-
-## Source
-
-https://www.acmicpc.net/problem/16926
+- `make test`: 현재 기본 구현이 fixture를 통과하는지 빠르게 확인한다.
+- `make run-py`: 대표 입력으로 Python 구현을 눈으로 추적할 때 사용한다.

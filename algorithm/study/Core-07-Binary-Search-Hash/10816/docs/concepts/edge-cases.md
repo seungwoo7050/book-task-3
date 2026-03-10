@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 10816 Number Card 2
+# 경계 사례 점검 — BOJ 10816 Number Card 2
 
 ## 1. 없는 숫자 쿼리
 `Counter[x]` → 0 (KeyError 없음).

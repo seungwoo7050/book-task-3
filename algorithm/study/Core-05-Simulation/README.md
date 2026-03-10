@@ -1,24 +1,27 @@
 # Core-05-Simulation
 
-## Topic
+## 트랙 소개
 
-- BarkingDog sequence: `0x05`
-- Topic: Simulation
-- CLRS reference: Implementation discipline
+문제 설명을 상태 전이 규칙으로 번역하는 힘을 키우는 트랙이다. 구현은 길어도 논리는 짧게 정리하는 연습이 핵심이다.
 
-## Why This Track Exists
+## 왜 이 순서로 배우는가
 
-문제 설명을 상태 전이와 방향 규칙으로 번역하는 연습을 한다.
+시뮬레이션은 실수하기 쉬운 대신, 문서화가 잘되면 실력을 보여 주기 좋은 분야다. 상태 표와 규칙 분리를 익히기 좋다.
 
-## Projects
+## 프로젝트 목록
 
-| Tier | BOJ | Title | Implementations |
-| :--- | :--- | :--- | :--- |
-| Bronze | [2920](2920/README.md) | Scale | Python |
-| Gold | [14503](14503/README.md) | Robot Vacuum Cleaner | Python + C++ |
-| Silver | [14891](14891/README.md) | Gear | Python |
+| 순서 | 프로젝트 | 문제명/주제 | 구현 | 읽는 포인트 |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | [2920](2920/README.md) | 음계 | Python | 복잡한 설명을 작은 상태 전이 규칙으로 나누어 구현하는 연습 |
+| 2 | [14503](14503/README.md) | 로봇 청소기 | Python + C++ | 복잡한 설명을 작은 상태 전이 규칙으로 나누어 구현하는 연습 |
+| 3 | [14891](14891/README.md) | 톱니바퀴 | Python | 복잡한 설명을 작은 상태 전이 규칙으로 나누어 구현하는 연습 |
 
-## Notes
+## 먼저 읽을 문서
 
-- 모든 프로젝트는 `problem/`, `python/`, 선택적 `cpp/`, `docs/`, `notion/` 구조를 사용한다.
-- 공개 README는 스포일러를 허용하되, 문제 원문은 `problem/`에만 둔다.
+1. [../README.md](../README.md)에서 전체 학습 트리를 훑는다.
+2. [../../docs/curriculum-map.md](../../docs/curriculum-map.md)에서 이 트랙이 어디에 놓이는지 본다.
+3. 첫 번째 프로젝트 README를 읽고, `problem/` -> `docs/` -> 구현 -> `notion/05-development-timeline.md` 순서로 내려간다.
+
+## 이 트랙을 자기 포트폴리오에 옮길 때의 팁
+
+포트폴리오에서는 상태 전이 표, 방향 정의, 반복 종료 조건 세 가지만 깔끔하게 보여 줘도 문제 이해도가 확 올라간다.

@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 2252 Lineup
+# 경계 사례 점검 — BOJ 2252 Lineup
 
 ## 1. 비교 없음 (M = 0)
 아무 순서나 유효.

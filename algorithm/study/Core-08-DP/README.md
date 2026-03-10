@@ -1,24 +1,27 @@
 # Core-08-DP
 
-## Topic
+## 트랙 소개
 
-- BarkingDog sequence: `0x08`
-- Topic: Dynamic Programming
-- CLRS reference: Ch 15
+점화식, 상태 정의, 전이 방향을 가장 기본적인 형태부터 차근차근 고정하는 트랙이다.
 
-## Why This Track Exists
+## 왜 이 순서로 배우는가
 
-점화식 설계, 상태 정의, 1차원과 2차원 DP의 기초를 고정한다.
+DP는 풀이를 외우면 금방 무너지고, 상태 정의를 스스로 세워야 오래 간다. 그래서 작은 1차원 DP부터 배낭 문제까지 묶는다.
 
-## Projects
+## 프로젝트 목록
 
-| Tier | BOJ | Title | Implementations |
-| :--- | :--- | :--- | :--- |
-| Bronze | [2748](2748/README.md) | Fibonacci Number 2 | Python |
-| Gold | [12865](12865/README.md) | Normal Knapsack | Python + C++ |
-| Silver | [1149](1149/README.md) | RGB Street | Python |
+| 순서 | 프로젝트 | 문제명/주제 | 구현 | 읽는 포인트 |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | [2748](2748/README.md) | 피보나치 수 2 | Python | 상태와 전이를 명시적으로 정의하고 표나 배열 의미를 끝까지 유지하는 연습 |
+| 2 | [1149](1149/README.md) | RGB거리 | Python | 상태와 전이를 명시적으로 정의하고 표나 배열 의미를 끝까지 유지하는 연습 |
+| 3 | [12865](12865/README.md) | 평범한 배낭 | Python + C++ | 상태와 전이를 명시적으로 정의하고 표나 배열 의미를 끝까지 유지하는 연습 |
 
-## Notes
+## 먼저 읽을 문서
 
-- 모든 프로젝트는 `problem/`, `python/`, 선택적 `cpp/`, `docs/`, `notion/` 구조를 사용한다.
-- 공개 README는 스포일러를 허용하되, 문제 원문은 `problem/`에만 둔다.
+1. [../README.md](../README.md)에서 전체 학습 트리를 훑는다.
+2. [../../docs/curriculum-map.md](../../docs/curriculum-map.md)에서 이 트랙이 어디에 놓이는지 본다.
+3. 첫 번째 프로젝트 README를 읽고, `problem/` -> `docs/` -> 구현 -> `notion/05-development-timeline.md` 순서로 내려간다.
+
+## 이 트랙을 자기 포트폴리오에 옮길 때의 팁
+
+DP 문서는 점화식을 먼저 쓰고, 각 항이 무엇을 의미하는지 바로 아래에 풀어 써야 읽는 사람이 따라오기 쉽다.

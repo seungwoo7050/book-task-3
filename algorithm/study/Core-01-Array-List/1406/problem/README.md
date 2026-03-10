@@ -1,68 +1,28 @@
-# Problem: Editor (BOJ 1406)
+# BOJ 1406 문제 자료
 
-## Problem Statement
+## 이 디렉터리의 역할
 
-You have an initial string and a cursor positioned at the **end** of the string. Process $M$ commands:
+이 디렉터리는 문제 링크, fixture, starter code, 실행 스크립트를 한곳에 모아 둔 보관함이다. 구현을 보기 전에 여기서 어떤 자료가 준비되어 있는지 먼저 확인하면 학습 동선이 안정적이다.
 
-| Command | Effect |
-| :--- | :--- |
-| `L` | Move cursor one position left (ignored if at the start) |
-| `D` | Move cursor one position right (ignored if at the end) |
-| `B` | Delete the character to the left of the cursor (ignored if at the start) |
-| `P x` | Insert character `x` to the left of the cursor |
+## 프로젝트 스펙 요약
 
-Print the resulting string after all commands.
+- 주제: 에디터
+- 초점: 순차 자료구조를 선택하고 편집 연산의 비용 모델을 설명하는 연습
+- 예제 입력과 기대 출력은 `data/input*.txt`, `data/output*.txt`에 정리했다.
 
-## Input
+## 왜 이 자료를 남기는가
 
-- Line 1: Initial string (lowercase letters, length $\le 100{,}000$)
-- Line 2: Integer $M$ ($1 \le M \le 500{,}000$)
-- Next $M$ lines: One command each
+- 이 프로젝트의 핵심은 순차 자료구조를 선택하고 편집 연산의 비용 모델을 설명하는 연습이다.
+- `docs/`는 판단 근거를, 구현 디렉터리는 실제 코드를, `notion/`은 더 긴 학습 노트와 재현 타임라인을 담당한다.
 
-## Output
+## 포함 자료
 
-Print the final string.
+- `data/`: 대표 입력과 기대 출력
+- `code/`: starter code 또는 문제 보조 자료
+- `script/`: 수동 실행이나 채점 보조 스크립트
+- `Makefile`: 재현 명령 진입점
 
-## Examples
+## 먼저 실행해볼 명령
 
-### Example 1
-
-**Input**
-```
-abcd
-3
-P x
-L
-L
-```
-
-**Output**
-```
-abcdx
-```
-
-### Example 2
-
-**Input**
-```
-abc
-9
-L
-L
-L
-L
-L
-P x
-L
-B
-P y
-```
-
-**Output**
-```
-yxbc
-```
-
-## Source
-
-https://www.acmicpc.net/problem/1406
+- `make test`: 현재 기본 구현이 fixture를 통과하는지 빠르게 확인한다.
+- `make run-py`: 대표 입력으로 Python 구현을 눈으로 추적할 때 사용한다.

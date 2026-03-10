@@ -1,11 +1,11 @@
-# Edge Cases — BOJ 11053 Longest Increasing Subsequence
+# 경계 사례 점검 — BOJ 11053 Longest Increasing Subsequence
 
 ## Constraints Recap
 
 - $1 \le N \le 1{,}000$
 - $1 \le A_i \le 1{,}000$
 
-## Edge Case Analysis
+## 경계 사례 점검
 
 ### 1. Single Element ($N = 1$)
 
@@ -56,7 +56,7 @@ Tests that the algorithm correctly navigates "zigzag" patterns.
 
 The LIS elements are scattered. Tests that the algorithm uses subsequences, not subarrays.
 
-## Summary
+## 요약
 
 | # | Case | N | Expected | Key Test |
 | :--- | :--- | :--- | :--- | :--- |

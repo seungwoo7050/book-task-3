@@ -1,30 +1,28 @@
-# Problem: RGB Street (BOJ 1149)
+# BOJ 1149 문제 자료
 
-## Problem Statement
+## 이 디렉터리의 역할
 
-There are $N$ houses in a row. Each house must be painted one of three colors: Red, Green, or Blue. The cost of painting house $i$ with each color is given. No two adjacent houses may have the same color. Find the minimum total cost.
+이 디렉터리는 문제 링크, fixture, starter code, 실행 스크립트를 한곳에 모아 둔 보관함이다. 구현을 보기 전에 여기서 어떤 자료가 준비되어 있는지 먼저 확인하면 학습 동선이 안정적이다.
 
-## Input
+## 프로젝트 스펙 요약
 
-- Line 1: $N$ ($2 \le N \le 1000$)
-- Next $N$ lines: three integers $R_i$, $G_i$, $B_i$ ($1 \le cost \le 1000$)
+- 주제: RGB거리
+- 초점: 상태와 전이를 명시적으로 정의하고 표나 배열 의미를 끝까지 유지하는 연습
+- 예제 입력과 기대 출력은 `data/input*.txt`, `data/output*.txt`에 정리했다.
 
-## Output
+## 왜 이 자료를 남기는가
 
-Print the minimum cost.
+- 이 프로젝트의 핵심은 상태와 전이를 명시적으로 정의하고 표나 배열 의미를 끝까지 유지하는 연습이다.
+- `docs/`는 판단 근거를, 구현 디렉터리는 실제 코드를, `notion/`은 더 긴 학습 노트와 재현 타임라인을 담당한다.
 
-## Examples
+## 포함 자료
 
-**Input**:
-```
-3
-26 40 83
-49 60 57
-13 89 99
-```
+- `data/`: 대표 입력과 기대 출력
+- `code/`: starter code 또는 문제 보조 자료
+- `script/`: 수동 실행이나 채점 보조 스크립트
+- `Makefile`: 재현 명령 진입점
 
-**Output**: `96`
+## 먼저 실행해볼 명령
 
-## Source
-
-https://www.acmicpc.net/problem/1149
+- `make test`: 현재 기본 구현이 fixture를 통과하는지 빠르게 확인한다.
+- `make run-py`: 대표 입력으로 Python 구현을 눈으로 추적할 때 사용한다.

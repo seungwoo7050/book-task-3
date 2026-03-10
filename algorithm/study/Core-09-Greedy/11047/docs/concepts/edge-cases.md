@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 11047 Coin 0
+# 경계 사례 점검 — BOJ 11047 Coin 0
 
 ## 1. K = 1
 1원 동전 1개.

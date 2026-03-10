@@ -1,102 +1,32 @@
-# Reproducibility — BOJ 1991 (트리 순회)
+# 검증 메모 — 트리 순회
 
-## 환경
-
-- BOJ 1991 실행 시각: 2026-02-28 05:11:48
-- BOJ 1991 OS: `Darwin macbook_air 25.3.0 Darwin Kernel Version 25.3.0: Wed Jan 28 20:53:01 PST 2026; root:xnu-12377.81.4~5/RELEASE_ARM64_T8103 arm64`
-- BOJ 1991 Shell: `zsh`
-- BOJ 1991 작업 경로: `core/0B-graph-tree/silver-1991/problem`
-
-## 실행 명령
+## 기본 검증 명령
 
 ```bash
-cd core/0B-graph-tree/silver-1991/problem
-make test
+make -C problem test
 ```
 
-## Observed Output(공식 테스트)
+- 문서를 다 읽지 않았더라도, 먼저 이 명령으로 구현이 현재 fixture를 통과하는지 확인하는 편이 좋다.
 
-```text
-Test 1: PASS
-
-Results: 1/1 passed, 0 failed
-```
-
-## Observed Output(수동 케이스 1개)
-
-수동 케이스 목적: 자식이 없는 노드(.) 처리와 3가지 순회 순서 출력을 동시에 검증한다.
-
-### 입력
-
-```text
-7
-A B C
-B D.
-C E F
-E..
-F. G
-D..
-G..
-```
-
-### 실행 명령 (Python)
+## 대표 수동 실행 명령
 
 ```bash
-cd core/0B-graph-tree/silver-1991/problem
-python3 ../solve/solution/solution.py <<'EOF'
-7
-A B C
-B D.
-C E F
-E..
-F. G
-D..
-G..
-EOF
+make -C problem run-py
 ```
 
-### 실행 명령 (C++)
+## 이 문서와 05 노트의 차이
 
-```bash
-cd core/0B-graph-tree/silver-1991/problem
-g++-14 -std=c++17 -D_Alignof=alignof -O2 -Wall ../solve/solution/solution.cpp -o /tmp/clrs_0B_graph_tree__silver_1991
-/tmp/clrs_0B_graph_tree__silver_1991 <<'EOF'
-7
-A B C
-B D.
-C E F
-E..
-F. G
-D..
-G..
-EOF
-```
+- 이 문서는 실행 명령과 최근 검증 결과를 빠르게 확인하기 위한 요약본이다.
+- 전체 재현 흐름과 단계별 판단은 `../../notion/05-development-timeline.md`에서 이어서 본다.
 
-### 관측 출력 (Python)
+## 마지막 확인
 
-```text
-ABDCEFG
-DBAECFG
-DBEGFCA
-```
+- 날짜: 2026-03-10
+- 결과: 통과
+- 요약: `Results: 1/1 passed, 0 failed`
 
-### 관측 출력 (C++)
+## 독자 체크리스트
 
-```text
-ABDCEFG
-DBAECFG
-DBEGFCA
-```
-
-## 검증 메모
-
-- BOJ 1991 공식 테스트 요약: `Results: 1/1 passed, 0 failed`
-- BOJ 1991 수동 케이스 교차검증: BOJ 1991 수동 케이스에서 Python/C++ 출력이 완전히 일치한다.
-- BOJ 1991 문서에서는 공식 로그와 수동 로그를 분리 저장해 회귀 시 원인 구간을 빠르게 좁힌다.
-- 이번 수동 케이스는 "자식이 없는 노드(.) 처리와 3가지 순회 순서 출력을 동시에 검증한다." 검증에 초점을 맞췄다.
-
-## 재현 체크리스트
-
-- [ ] BOJ 1991 기준으로 `make test`를 재실행했을 때 `Results: 1/1 passed, 0 failed` 패턴이 유지되는가?
-- [ ] BOJ 1991 수동 케이스 입력을 재사용했을 때 Python/C++ 출력이 계속 일치하는가?
-- [ ] `approach.md`의 복잡도/정당성 설명이 관측 출력과 충돌하지 않는가? (점검 기준: `이진 트리 노드 맵을 구성하고 preorder/inorder/postor...`)
+- 구현을 바꿨다면 `make -C problem test`를 먼저 다시 돌렸는가?
+- 자동 검증이 통과한 뒤에 수동 실행으로 출력 형식을 다시 확인했는가?
+- 설명 문서와 실제 구현 경로가 서로 어긋나지 않는가?

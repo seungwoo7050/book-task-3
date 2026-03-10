@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 10828 Stack
+# 경계 사례 점검 — BOJ 10828 Stack
 
 ## 1. 빈 스택에서 pop
 

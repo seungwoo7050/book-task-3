@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 1753 Shortest Path
+# 경계 사례 점검 — BOJ 1753 Shortest Path
 
 ## 1. 시작점에서 도달 불가
 `INF` 출력.

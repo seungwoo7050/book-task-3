@@ -1,15 +1,18 @@
-# Reference Overview — BOJ 2252 (줄 세우기)
+# 읽기 안내 — 줄 세우기
 
-## Reading Guide
+## 추천 순서
 
-1. [approach.md](approach.md) - 핵심 접근과 정당성
-2. [edge-cases.md](../concepts/edge-cases.md)
-3. [topological-sort-concept.md](../concepts/topological-sort-concept.md)
-4. [reproducibility.md](reproducibility.md) - fixture 실행 근거
-5. [../../python/README.md](../../python/README.md) - Python 구현 실행 메모
-6. [../../cpp/README.md](../../cpp/README.md) - C++ 비교 구현 메모
+1. [../../README.md](../../README.md)에서 프로젝트 전체 구조를 먼저 본다.
+2. [approach.md](approach.md)에서 핵심 선택 기준을 읽는다.
+3. `../concepts/` 아래 문서에서 경계 사례와 개념을 보충한다.
+4. [reproducibility.md](reproducibility.md)에서 실제 실행 명령을 확인한다.
+5. [../../python/README.md](../../python/README.md)로 내려가 기본 구현을 읽는다.
+6. [../../cpp/README.md](../../cpp/README.md)에서 비교 구현을 본다.
+7. [../../notion/05-development-timeline.md](../../notion/05-development-timeline.md)에서 전체 재현 흐름을 따라간다.
+8. [../../notion/README.md](../../notion/README.md)에서 장문 노트 전체를 훑는다.
 
-## Notes
+## 메모
 
-- legacy `docs/README.md`의 역할을 새 구조에 맞게 다시 쓴 인덱스다.
-- `lab-report`와 `devlog`는 public docs에서 제외하고 `notion/`으로 옮겼다.
+- 공개 문서는 구현 판단 근거를 빠르게 훑는 용도다.
+- 빠른 실행 명령은 `reproducibility.md`에서, 전체 재현 흐름은 `../../notion/05-development-timeline.md`에서 확인한다.
+- 더 긴 노트는 `../../notion/`, 예전 버전 자료는 `../../notion-archive/`에 보관한다.

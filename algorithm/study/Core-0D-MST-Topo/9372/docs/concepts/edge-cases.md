@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 9372 Sangeun's Trip
+# 경계 사례 점검 — BOJ 9372 Sangeun's Trip
 
 ## 1. N = 2
 간선 1개만 필요. 답 = 1.

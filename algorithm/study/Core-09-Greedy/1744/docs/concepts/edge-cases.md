@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 1744 Number Bundling
+# 경계 사례 점검 — BOJ 1744 Number Bundling
 
 ## 1. 모든 수가 1
 묶지 않는 것이 최적. 1×1=1 < 1+1=2.

@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 2170 Drawing Lines
+# 경계 사례 점검 — BOJ 2170 Drawing Lines
 
 ## 1. 선분이 1개
 단순히 `y - x` 출력.

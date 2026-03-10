@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 1916 Minimum Cost
+# 경계 사례 점검 — BOJ 1916 Minimum Cost
 
 ## 1. 직행 노선이 최적
 출발→도착 직행.

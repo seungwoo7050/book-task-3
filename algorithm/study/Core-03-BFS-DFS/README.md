@@ -1,24 +1,27 @@
 # Core-03-BFS-DFS
 
-## Topic
+## 트랙 소개
 
-- BarkingDog sequence: `0x03`
-- Topic: BFS & DFS
-- CLRS reference: Ch 22.2-22.3
+정점 방문 순서, 그래프 표현, 격자 탐색을 묶어 BFS/DFS의 기본기를 고정하는 트랙이다.
 
-## Why This Track Exists
+## 왜 이 순서로 배우는가
 
-정점 방문 순서, 그래프 표현, 격자 탐색의 기본기를 고정한다.
+그래프 탐색은 이후 트리, 최단 경로, 위상 정렬의 기반이다. 방문 처리와 큐/스택 규칙을 여기서 확실히 잡아야 뒤가 편해진다.
 
-## Projects
+## 프로젝트 목록
 
-| Tier | BOJ | Title | Implementations |
-| :--- | :--- | :--- | :--- |
-| Bronze | [24479](24479/README.md) | Algorithm Class: DFS 1 | Python |
-| Gold | [7576](7576/README.md) | Tomato | Python + C++ |
-| Silver | [1260](1260/README.md) | DFS and BFS | Python |
+| 순서 | 프로젝트 | 문제명/주제 | 구현 | 읽는 포인트 |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | [1260](1260/README.md) | DFS와 BFS | Python | 그래프 표현을 고르고 방문 순서를 안정적으로 제어하는 연습 |
+| 2 | [24479](24479/README.md) | 알고리즘 수업 - 깊이 우선 탐색 1 | Python | 그래프 표현을 고르고 방문 순서를 안정적으로 제어하는 연습 |
+| 3 | [7576](7576/README.md) | 토마토 | Python + C++ | 그래프 표현을 고르고 방문 순서를 안정적으로 제어하는 연습 |
 
-## Notes
+## 먼저 읽을 문서
 
-- 모든 프로젝트는 `problem/`, `python/`, 선택적 `cpp/`, `docs/`, `notion/` 구조를 사용한다.
-- 공개 README는 스포일러를 허용하되, 문제 원문은 `problem/`에만 둔다.
+1. [../README.md](../README.md)에서 전체 학습 트리를 훑는다.
+2. [../../docs/curriculum-map.md](../../docs/curriculum-map.md)에서 이 트랙이 어디에 놓이는지 본다.
+3. 첫 번째 프로젝트 README를 읽고, `problem/` -> `docs/` -> 구현 -> `notion/05-development-timeline.md` 순서로 내려간다.
+
+## 이 트랙을 자기 포트폴리오에 옮길 때의 팁
+
+탐색 문제는 정답 코드보다도 '방문 처리 시점'을 설명하는 문장이 중요하다. 그 한 줄이 있으면 문서 품질이 크게 좋아진다.

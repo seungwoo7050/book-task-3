@@ -1,37 +1,29 @@
-# Problem: Longest Increasing Subsequence (BOJ 11053)
+# BOJ 11053 문제 자료
 
-## Problem Statement
+## 이 디렉터리의 역할
 
-Given a sequence $A$ of $N$ integers, find the length of the longest strictly increasing subsequence.
+이 디렉터리는 문제 링크, fixture, starter code, 실행 스크립트를 한곳에 모아 둔 보관함이다. 구현을 보기 전에 여기서 어떤 자료가 준비되어 있는지 먼저 확인하면 학습 동선이 안정적이다.
 
-A subsequence is obtained by deleting zero or more elements from the original sequence without changing the order of the remaining elements.
+## 프로젝트 스펙 요약
 
-## Input
+- 주제: 가장 긴 증가하는 부분 수열
+- 초점: 작은 입력을 안정적으로 읽고, 조건 분기를 코드와 문서로 함께 정리하는 감각
+- 예제 입력과 기대 출력은 `data/input*.txt`, `data/output*.txt`에 정리했다.
 
-- Line 1: An integer $N$ ($1 \le N \le 1{,}000$).
-- Line 2: $N$ integers $A_1, A_2, \dots, A_N$ ($1 \le A_i \le 1{,}000$).
+## 왜 이 자료를 남기는가
 
-## Output
+- 이 프로젝트의 핵심은 작은 입력을 안정적으로 읽고, 조건 분기를 코드와 문서로 함께 정리하는 감각이다.
+- `docs/`는 판단 근거를, 구현 디렉터리는 실제 코드를, `notion/`은 더 긴 학습 노트와 재현 타임라인을 담당한다.
 
-Print the length of the longest increasing subsequence.
+## 포함 자료
 
-## Examples
+- `data/`: 대표 입력과 기대 출력
+- `code/`: starter code 또는 문제 보조 자료
+- `script/`: 수동 실행이나 채점 보조 스크립트
+- `Makefile`: 재현 명령 진입점
 
-### Example 1
+## 먼저 실행해볼 명령
 
-**Input**
-```
-6
-10 20 10 30 20 50
-```
-
-**Output**
-```
-4
-```
-
-*Explanation*: One such LIS is $[10, 20, 30, 50]$.
-
-## Source
-
-https://www.acmicpc.net/problem/11053
+- `make test`: 현재 기본 구현이 fixture를 통과하는지 빠르게 확인한다.
+- `make run-py`: 대표 입력으로 Python 구현을 눈으로 추적할 때 사용한다.
+- `make run-cpp`: C++ 비교 구현을 함께 볼 때 사용한다.

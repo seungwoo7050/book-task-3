@@ -1,62 +1,29 @@
-# Problem: Robot Vacuum Cleaner (BOJ 14503)
+# BOJ 14503 문제 자료
 
-## Problem Statement
+## 이 디렉터리의 역할
 
-A room is an $N \times M$ grid. Each cell is either empty (0) or a wall (1). A robot starts at position $(r, c)$ facing direction $d$ (0=North, 1=East, 2=South, 3=West).
+이 디렉터리는 문제 링크, fixture, starter code, 실행 스크립트를 한곳에 모아 둔 보관함이다. 구현을 보기 전에 여기서 어떤 자료가 준비되어 있는지 먼저 확인하면 학습 동선이 안정적이다.
 
-The robot operates as follows:
+## 프로젝트 스펙 요약
 
-1. Clean the current cell.
-2. Starting from the direction to the left of the current direction, check the four directions in counter-clockwise order:
-   a. If the cell in that direction is uncleaned empty space, move forward one step in that direction and turn to face that direction. Go to step 1.
-   b. If all four directions are either walls or already cleaned:
-      - If the cell **behind** the robot (opposite of current facing) is empty (wall or cleaned doesn't matter, as long as it's not a wall), move backward one step without changing direction. Go to step 2.
-      - If the cell behind is a wall, stop.
+- 주제: 로봇 청소기
+- 초점: 복잡한 설명을 작은 상태 전이 규칙으로 나누어 구현하는 연습
+- 예제 입력과 기대 출력은 `data/input*.txt`, `data/output*.txt`에 정리했다.
 
-Print the number of cells the robot cleans.
+## 왜 이 자료를 남기는가
 
-## Input
+- 이 프로젝트의 핵심은 복잡한 설명을 작은 상태 전이 규칙으로 나누어 구현하는 연습이다.
+- `docs/`는 판단 근거를, 구현 디렉터리는 실제 코드를, `notion/`은 더 긴 학습 노트와 재현 타임라인을 담당한다.
 
-- Line 1: $N$ $M$ ($3 \le N, M \le 50$)
-- Line 2: $r$ $c$ $d$
-- Next $N$ lines: $M$ integers (0 or 1)
+## 포함 자료
 
-## Output
+- `data/`: 대표 입력과 기대 출력
+- `code/`: starter code 또는 문제 보조 자료
+- `script/`: 수동 실행이나 채점 보조 스크립트
+- `Makefile`: 재현 명령 진입점
 
-Print the number of cells cleaned.
+## 먼저 실행해볼 명령
 
-## Examples
-
-**Input**:
-```
-3 3
-1 1 0
-1 1 1
-1 0 1
-1 1 1
-```
-
-**Output**: `1`
-
-**Input**:
-```
-11 10
-7 4 0
-1 1 1 1 1 1 1 1 1 1
-1 0 0 0 0 0 0 0 0 1
-1 0 0 0 1 1 1 1 0 1
-1 0 0 1 1 0 0 0 0 1
-1 0 1 1 0 0 0 0 0 1
-1 0 0 0 0 0 0 0 0 1
-1 0 0 0 0 0 0 1 0 1
-1 0 0 0 0 0 1 1 0 1
-1 0 0 0 0 0 1 1 0 1
-1 0 0 0 0 0 0 0 0 1
-1 1 1 1 1 1 1 1 1 1
-```
-
-**Output**: `57`
-
-## Source
-
-https://www.acmicpc.net/problem/14503
+- `make test`: 현재 기본 구현이 fixture를 통과하는지 빠르게 확인한다.
+- `make run-py`: 대표 입력으로 Python 구현을 눈으로 추적할 때 사용한다.
+- `make run-cpp`: C++ 비교 구현을 함께 볼 때 사용한다.

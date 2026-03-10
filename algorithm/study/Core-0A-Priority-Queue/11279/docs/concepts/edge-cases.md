@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 11279 Max Heap
+# 경계 사례 점검 — BOJ 11279 Max Heap
 
 ## 1. 빈 힙에서 추출
 0 출력.

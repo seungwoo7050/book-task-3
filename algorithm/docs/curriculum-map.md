@@ -1,48 +1,52 @@
-# Curriculum Map
+# 커리큘럼 맵
 
-## Core Sequence
+이 문서는 레포 안의 프로젝트를 번호순이 아니라 **학습 순서**로 읽기 위한 안내서다. 문제를 나열하는 것이 아니라, 왜 이 주제가 다음 주제로 이어지는지 설명하는 데 목적이 있다.
 
-| Track | Topic | CLRS | BOJ Projects |
+## Core 트랙 순서
+
+| 트랙 | 주제 | 이 트랙에서 익히는 힘 | 대표 프로젝트 |
 | :--- | :--- | :--- | :--- |
-| Core-00-Basics | Basic Coding Skills | Ch 1-3 | 10988, 11053, 16926 |
-| Core-01-Array-List | Array & Linked List | Ch 10.2 | 10807, 5397, 1406 |
-| Core-02-Stack-Queue | Stack, Queue, Deque | Ch 10.1 | 10828, 5430, 2164 |
-| Core-03-BFS-DFS | BFS & DFS | Ch 22.2-22.3 | 24479, 7576, 1260 |
-| Core-04-Recursion-Backtracking | Recursion & Backtracking | Ch 4 | 10872, 9663, 15649 |
-| Core-05-Simulation | Simulation | Implementation discipline | 2920, 14503, 14891 |
-| Core-06-Sorting | Sorting | Ch 2, 6-8 | 2750, 2170, 1181 |
-| Core-07-Binary-Search-Hash | Binary Search & Hash | Ch 11, 12.3 | 1920, 2110, 10816 |
-| Core-08-DP | Dynamic Programming | Ch 15 | 2748, 12865, 1149 |
-| Core-09-Greedy | Greedy | Ch 16 | 11047, 1744, 1931 |
-| Core-0A-Priority-Queue | Priority Queue | Ch 6, 19 | 11279, 1715, 1927 |
-| Core-0B-Graph-Tree | Graph & Tree | Ch 22-24 | 11725, 1167, 1991 |
-| Core-0C-Shortest-Path | Shortest Path | Ch 24 | 1916, 11657, 1753 |
-| Core-0D-MST-Topo | MST & Topological Sort | Ch 23, 22.4 | 9372, 2252, 1197 |
+| Core-00-Basics | 기초 구현 | 작은 입력을 안정적으로 읽고, 조건 분기를 코드와 문서로 함께 정리하는 감각 | 10988 팰린드롬인지 확인하기, 11053 가장 긴 증가하는 부분 수열, 16926 배열 돌리기 1 |
+| Core-01-Array-List | 배열과 리스트 | 순차 자료구조를 선택하고 편집 연산의 비용 모델을 설명하는 연습 | 10807 개수 세기, 5397 키로거, 1406 에디터 |
+| Core-02-Stack-Queue | 스택과 큐 | 명령 기반 자료구조 문제를 상태 전이 규칙으로 정리하는 연습 | 10828 스택, 2164 카드2, 5430 AC |
+| Core-03-BFS-DFS | 그래프 탐색 | 그래프 표현을 고르고 방문 순서를 안정적으로 제어하는 연습 | 1260 DFS와 BFS, 24479 알고리즘 수업 - 깊이 우선 탐색 1, 7576 토마토 |
+| Core-04-Recursion-Backtracking | 재귀와 백트래킹 | 호출 구조를 추적하고 상태 복원 규칙을 설명하는 연습 | 10872 팩토리얼, 15649 N과 M (1), 9663 N-Queen |
+| Core-05-Simulation | 시뮬레이션 | 복잡한 설명을 작은 상태 전이 규칙으로 나누어 구현하는 연습 | 2920 음계, 14503 로봇 청소기, 14891 톱니바퀴 |
+| Core-06-Sorting | 정렬 | 정렬 기준을 설계하고, 정렬 이후의 후처리 로직을 분리해 설명하는 연습 | 2750 수 정렬하기, 1181 단어 정렬, 2170 선 긋기 |
+| Core-07-Binary-Search-Hash | 이분 탐색과 해시 | 탐색 대상을 재정의하고 자료구조 또는 매개변수 탐색으로 문제를 다시 보는 연습 | 1920 수 찾기, 10816 숫자 카드 2, 2110 공유기 설치 |
+| Core-08-DP | 동적 계획법 | 상태와 전이를 명시적으로 정의하고 표나 배열 의미를 끝까지 유지하는 연습 | 2748 피보나치 수 2, 1149 RGB거리, 12865 평범한 배낭 |
+| Core-09-Greedy | 그리디 | 탐욕 선택의 기준을 말로 설명하고 반례 가능성을 점검하는 연습 | 11047 동전 0, 1931 회의실 배정, 1744 수 묶기 |
+| Core-0A-Priority-Queue | 우선순위 큐 | 우선순위 큐가 필요한 상황을 식별하고 비교 기준을 일관되게 유지하는 연습 | 11279 최대 힙, 1927 최소 힙, 1715 카드 정렬하기 |
+| Core-0B-Graph-Tree | 트리와 그래프 심화 | 트리 구조의 성질을 이용해 탐색과 누적 계산을 재구성하는 연습 | 11725 트리의 부모 찾기, 1991 트리 순회, 1167 트리의 지름 |
+| Core-0C-Shortest-Path | 최단 경로 | 가중치 조건과 그래프 특성에 맞는 최단 경로 알고리즘을 선택하는 연습 | 1916 최소비용 구하기, 1753 최단경로, 11657 타임머신 |
+| Core-0D-MST-Topo | MST와 위상 정렬 | 그래프 전체 구조를 만들거나 순서를 고정하는 규칙을 설명하는 연습 | 9372 상근이의 여행, 2252 줄 세우기, 1197 최소 스패닝 트리 |
+| Core-Bridges | 브리지 프로젝트 | 다음 트랙에서 필요한 선행 개념을 별도 실습으로 고정하는 연습 | 1717 집합의 표현 |
 
-## Advanced Sequence
+## 브리지 프로젝트
 
-| Track | Topic | CLRS | Study Projects |
+- `Core-Bridges/1717`은 MST 전에 union-find를 독립적으로 익히도록 넣은 보강 프로젝트다.
+- `Core-00-Basics/11053`은 DP 트랙 전에 "상태를 누적한다"는 감각을 먼저 보여 주는 작은 다리 역할을 한다.
+- `Core-00-Basics/16926`은 기본기 트랙에 두되, 시뮬레이션 트랙을 배운 뒤 다시 읽으면 더 잘 보이는 문제로 설명한다.
+
+## Advanced-CLRS 순서
+
+Advanced 트랙은 CLRS 챕터를 그대로 옮기지 않고, 구현 가능한 작은 실험으로 다시 쪼개서 배치했다.
+
+| 슬롯 | 프로젝트 | CLRS | 비고 |
 | :--- | :--- | :--- | :--- |
-| Advanced-CLRS | Divide and Conquer | Ch 4 | 0x10-strassen-matrix |
-| Advanced-CLRS | Amortized Analysis | Ch 17 | 0x11-amortized-analysis-lab |
-| Advanced-CLRS | Balanced Search Trees | Ch 13, 18 | 0x12-red-black-tree |
-| Advanced-CLRS | Meldable Heaps | Ch 19 | 0x13-meldable-heap |
-| Advanced-CLRS | Network Flow | Ch 26 | 0x14-network-flow |
-| Advanced-CLRS | String Matching | Ch 32 | 0x15-string-matching |
-| Advanced-CLRS | Computational Geometry | Ch 33 | 0x16-computational-geometry |
-| Advanced-CLRS | Number Theory | Ch 31 | 0x17-number-theory-lab |
-| Advanced-CLRS | NP-Completeness | Ch 34 | 0x18-np-completeness-lab |
-| Advanced-CLRS | Approximation Algorithms | Ch 35 | 0x19-approximation-lab |
+| 0x10-strassen-matrix | Strassen 행렬 곱셈 | Ch 4 |
+| 0x11-amortized-analysis-lab | 상각 분석 실습 | Ch 17 |
+| 0x12-red-black-tree | 레드-블랙 트리 삽입과 검증 | Ch 13, 18 |
+| 0x13-meldable-heap | 합칠 수 있는 힙 브리지 | Ch 19 |
+| 0x14-network-flow | 네트워크 플로우 | Ch 26 |
+| 0x15-string-matching | 고급 문자열 매칭 | Ch 32 |
+| 0x16-computational-geometry | 계산 기하 실습 | Ch 33 |
+| 0x17-number-theory-lab | 정수론 실습 | Ch 31 |
+| 0x18-np-completeness-lab | NP-완전성 실습 | Ch 34 |
+| 0x19-approximation-lab | 근사 알고리즘 실습 | Ch 35 |
 
-## Bridge Decisions
+## 이 맵을 포트폴리오 설계에 쓰는 방법
 
-- `1717` is inserted in `Core-Bridges` to teach disjoint set union before Kruskal-heavy material in `Core-0D-MST-Topo`.
-- `16926` remains in `Core-00-Basics` for provenance, but it is explicitly a simulation-flavored problem and should be revisited after `Core-05-Simulation`.
-- `11053` remains in `Core-00-Basics` for provenance, but it is the first DP bridge and should be revisited before `Core-08-DP`.
-- `0x12`, `0x13`, and `0x18` are intentionally redesigned into smaller runnable labs so that the advanced track stays a study repository instead of turning into a vague reading list.
-
-## Implementation Policy
-
-- Python is mandatory for every core and advanced project.
-- C++ is retained for all gold-level legacy core projects plus BOJ `1753` and `1197`.
-- Advanced topics are active study projects now; they use repo-authored specs instead of BOJ problem statements.
+- 작은 문제 몇 개만 잘 정리해도 커리큘럼 설계 감각은 충분히 드러난다.
+- 핵심은 "문제 수"보다 "왜 이 순서인지"를 설명하는 것이다.
+- 자기 레포를 만들 때도 트랙 단위 README를 두고, 프로젝트 README가 그 설명을 다시 구체화하도록 구성하는 편이 좋다.

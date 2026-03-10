@@ -1,14 +1,17 @@
-# Reference Overview — 0x16 (Computational Geometry Lab)
+# 읽기 안내 — 계산 기하 실습
 
-## Reading Guide
+## 추천 순서
 
-1. [approach.md](approach.md)
-2. [../concepts/geometry-primitives.md](../concepts/geometry-primitives.md)
-3. [../concepts/edge-cases.md](../concepts/edge-cases.md)
-4. [reproducibility.md](reproducibility.md)
-5. [../../python/README.md](../../python/README.md)
+1. [../../README.md](../../README.md)에서 프로젝트 전체 구조를 먼저 본다.
+2. [approach.md](approach.md)에서 핵심 선택 기준을 읽는다.
+3. `../concepts/` 아래 문서에서 경계 사례와 개념을 보충한다.
+4. [reproducibility.md](reproducibility.md)에서 실제 실행 명령을 확인한다.
+5. [../../python/README.md](../../python/README.md)로 내려가 기본 구현을 읽는다.
+6. [../../notion/05-development-timeline.md](../../notion/05-development-timeline.md)에서 전체 재현 흐름을 따라간다.
+7. [../../notion/README.md](../../notion/README.md)에서 장문 노트 전체를 훑는다.
 
-## Notes
+## 메모
 
-- 이 프로젝트는 `legacy/README.md`의 advanced roadmap을 repo-authored study project로 재구성한 결과물이다.
-- proof-heavy topic은 runnable scope와 reading scope를 분리해 저장소 탐색성을 유지한다.
+- 공개 문서는 구현 판단 근거를 빠르게 훑는 용도다.
+- 빠른 실행 명령은 `reproducibility.md`에서, 전체 재현 흐름은 `../../notion/05-development-timeline.md`에서 확인한다.
+- 더 긴 노트는 `../../notion/`, 예전 버전 자료는 `../../notion-archive/`에 보관한다.

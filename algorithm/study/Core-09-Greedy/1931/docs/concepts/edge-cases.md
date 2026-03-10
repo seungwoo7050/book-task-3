@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 1931 Meeting Room
+# 경계 사례 점검 — BOJ 1931 Meeting Room
 
 ## 1. 모든 회의가 겹침
 가장 빨리 끝나는 1개만 선택.

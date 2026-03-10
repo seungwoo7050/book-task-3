@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 5430 AC
+# 경계 사례 점검 — BOJ 5430 AC
 
 ## 1. 빈 배열에 D 적용
 

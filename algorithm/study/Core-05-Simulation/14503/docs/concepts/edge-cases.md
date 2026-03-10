@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 14503 Robot Vacuum
+# 경계 사례 점검 — BOJ 14503 Robot Vacuum
 
 ## 1. 시작 위치가 벽으로 둘러싸임
 1칸만 청소 가능. 출력: 1.

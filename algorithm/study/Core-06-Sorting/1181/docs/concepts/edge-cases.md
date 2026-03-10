@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 1181 Word Sort
+# 경계 사례 점검 — BOJ 1181 Word Sort
 
 ## 1. 모든 단어가 같음
 `set`으로 중복 제거 → 1개만 출력.

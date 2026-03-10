@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 11657 Time Machine
+# 경계 사례 점검 — BOJ 11657 Time Machine
 
 ## 1. 음의 사이클
 $V$번째 반복에서 완화 발생 → `-1` 출력.

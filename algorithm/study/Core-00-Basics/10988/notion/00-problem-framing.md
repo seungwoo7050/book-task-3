@@ -1,4 +1,7 @@
-# 회문 판별 — 처음 마주한 문자열 문제
+# 문제 프레이밍
+
+> 프로젝트: 팰린드롬인지 확인하기
+> 아래 내용은 `notion-archive/00-problem-framing.md`에 남아 있던 기존 학습 기록을 현재 공개 노트 기준으로 다듬은 버전이다.
 
 ## 문제를 처음 읽었을 때
 
@@ -26,3 +29,24 @@ Core-00-Basics 트랙의 첫 번째 문제이기 때문이다.
 
 CLRS 기준으로는 Ch 1~3(알고리즘 소개, 점근적 분석)에 해당한다.
 문제 자체는 단순하지만, "왜 이 풀이가 O(n)인가?"를 설명하려면 Ch 3의 점근 표기법을 알아야 한다.
+
+## 지금 이 프로젝트에서 먼저 고정할 것
+
+- `팰린드롬인지 확인하기`에서 실제로 확인하려는 학습 목표는 `작은 입력을 안정적으로 읽고, 조건 분기를 코드와 문서로 함께 정리하는 감각`이다.
+- 문제를 읽을 때는 "정답을 맞힌다"보다 어떤 상태와 규칙을 끝까지 유지해야 하는지를 먼저 적어 두는 편이 좋다.
+- 비슷한 유형을 다시 만났을 때 바로 적용할 수 있는 작은 판단 기준을 남겨 두는 것이 핵심이었다.
+- 학습자 입장에서는 `05-development-timeline.md`를 같이 열어 두면 실제 재현 순서와 문제 해석이 어떻게 맞물리는지 더 잘 보인다.
+
+## 시작 전 성공 기준
+
+- `problem/README.md`의 입력 계약을 내 말로 다시 쓸 수 있는가?
+- `python/src/solution.py`를 읽기 전에 어떤 자료구조나 상태 정의가 필요할지 예측했는가?
+- `make -C problem test`를 돌렸을 때 어떤 fixture가 왜 필요한지 설명할 수 있는가?
+
+## 같이 다시 볼 문서
+
+- [`edge-cases.md`](../docs/concepts/edge-cases.md)
+- [`palindrome-concept.md`](../docs/concepts/palindrome-concept.md)
+- [`../docs/references/approach.md`](../docs/references/approach.md)
+- [`../docs/references/reproducibility.md`](../docs/references/reproducibility.md)
+- 다음 프로젝트: [`../../11053/README.md`](../../11053/README.md) (가장 긴 증가하는 부분 수열)

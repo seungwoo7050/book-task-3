@@ -1,39 +1,29 @@
-# Problem: Tomato (BOJ 7576)
+# BOJ 7576 문제 자료
 
-## Problem Statement
+## 이 디렉터리의 역할
 
-A warehouse contains tomatoes in an $N \times M$ grid:
-- `1`: ripe tomato
-- `0`: unripe tomato
-- `-1`: empty cell
+이 디렉터리는 문제 링크, fixture, starter code, 실행 스크립트를 한곳에 모아 둔 보관함이다. 구현을 보기 전에 여기서 어떤 자료가 준비되어 있는지 먼저 확인하면 학습 동선이 안정적이다.
 
-Each day, a ripe tomato ripens adjacent (up/down/left/right) unripe tomatoes. Find the minimum number of days until all tomatoes are ripe. If some tomatoes can never ripen, print `-1`. If all are already ripe, print `0`.
+## 프로젝트 스펙 요약
 
-## Input
+- 주제: 토마토
+- 초점: 그래프 표현을 고르고 방문 순서를 안정적으로 제어하는 연습
+- 예제 입력과 기대 출력은 `data/input*.txt`, `data/output*.txt`에 정리했다.
 
-- Line 1: $M$, $N$ ($2 \le M, N \le 1{,}000$)
-- Next $N$ lines: $M$ integers per line
+## 왜 이 자료를 남기는가
 
-## Output
+- 이 프로젝트의 핵심은 그래프 표현을 고르고 방문 순서를 안정적으로 제어하는 연습이다.
+- `docs/`는 판단 근거를, 구현 디렉터리는 실제 코드를, `notion/`은 더 긴 학습 노트와 재현 타임라인을 담당한다.
 
-Print the minimum number of days, or `-1`.
+## 포함 자료
 
-## Examples
+- `data/`: 대표 입력과 기대 출력
+- `code/`: starter code 또는 문제 보조 자료
+- `script/`: 수동 실행이나 채점 보조 스크립트
+- `Makefile`: 재현 명령 진입점
 
-**Input**
-```
-6 4
-0 0 0 0 0 0
-0 0 0 0 0 0
-0 0 0 0 0 0
-0 0 0 0 0 1
-```
+## 먼저 실행해볼 명령
 
-**Output**
-```
-8
-```
-
-## Source
-
-https://www.acmicpc.net/problem/7576
+- `make test`: 현재 기본 구현이 fixture를 통과하는지 빠르게 확인한다.
+- `make run-py`: 대표 입력으로 Python 구현을 눈으로 추적할 때 사용한다.
+- `make run-cpp`: C++ 비교 구현을 함께 볼 때 사용한다.

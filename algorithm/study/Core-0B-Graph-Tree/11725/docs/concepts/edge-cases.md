@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 11725 Tree Parent
+# 경계 사례 점검 — BOJ 11725 Tree Parent
 
 ## 1. 한쪽으로 치우친 트리 (사슬)
 BFS 큐가 $O(N)$ 크기.

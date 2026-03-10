@@ -1,24 +1,28 @@
-        # Problem: Amortized Analysis Lab (0x11)
+# 0x11 상각 분석 실습 문제 자료
 
-        ## Problem Statement
+## 이 디렉터리의 역할
 
-        Run either a stack log or a binary counter log and print the total actual cost together with the final observable state.
+이 디렉터리는 문제 링크, fixture, starter code, 실행 스크립트를 한곳에 모아 둔 보관함이다. 구현을 보기 전에 여기서 어떤 자료가 준비되어 있는지 먼저 확인하면 학습 동선이 안정적이다.
 
-        ## Input
+## 프로젝트 스펙 요약
 
-        - Mode line: STACK or COUNTER
-- Line 2: operation count q
-- Remaining lines: operations for that mode
+- 주제: 상각 분석 실습
+- 초점: 이론 중심 알고리즘을 작은 실험과 검증 가능한 입출력 문제로 재구성하는 연습
+- 예제 입력과 기대 출력은 `data/input*.txt`, `data/output*.txt`에 정리했다.
 
-        ## Output
+## 왜 이 자료를 남기는가
 
-        Print total actual cost and the final state summary.
+- 이 프로젝트의 핵심은 이론 중심 알고리즘을 작은 실험과 검증 가능한 입출력 문제로 재구성하는 연습이다.
+- `docs/`는 판단 근거를, 구현 디렉터리는 실제 코드를, `notion/`은 더 긴 학습 노트와 재현 타임라인을 담당한다.
 
-        ## Fixtures
+## 포함 자료
 
-        - `input1.txt`
-- `input2.txt`
+- `data/`: 대표 입력과 기대 출력
+- `code/`: starter code 또는 문제 보조 자료
+- `script/`: 수동 실행이나 채점 보조 스크립트
+- `Makefile`: 재현 명령 진입점
 
-        ## Source
+## 먼저 실행해볼 명령
 
-        Repo-authored study problem derived from CLRS Ch 17.
+- `make test`: 현재 기본 구현이 fixture를 통과하는지 빠르게 확인한다.
+- `make run-py`: 대표 입력으로 Python 구현을 눈으로 추적할 때 사용한다.

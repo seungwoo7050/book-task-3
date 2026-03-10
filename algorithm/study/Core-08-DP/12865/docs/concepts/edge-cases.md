@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 12865 Knapsack
+# 경계 사례 점검 — BOJ 12865 Knapsack
 
 ## 1. 모든 물건이 배낭 초과
 답 = 0.

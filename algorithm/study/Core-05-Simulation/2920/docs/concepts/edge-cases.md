@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 2920 Scale
+# 경계 사례 점검 — BOJ 2920 Scale
 
 ## 1. 완전 오름차순
 `1 2 3 4 5 6 7 8` → `ascending`

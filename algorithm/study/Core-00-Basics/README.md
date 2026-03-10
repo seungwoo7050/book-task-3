@@ -1,24 +1,27 @@
 # Core-00-Basics
 
-## Topic
+## 트랙 소개
 
-- BarkingDog sequence: `0x00`
-- Topic: Basic Coding Skills
-- CLRS reference: Ch 1-3
+입출력, 문자열, 배열, 가장 짧은 DP 브리지를 통해 이후 모든 트랙에서 필요한 기본 구현 습관을 잡는 출발점이다.
 
-## Why This Track Exists
+## 왜 이 순서로 배우는가
 
-기초 입출력, 문자열 순회, 배열 회전, LIS 입문을 통해 이후 전 트랙의 구현 기반을 만든다.
+작은 문제를 안정적으로 풀지 못하면 뒤의 자료구조나 그래프 문제에서도 실수가 반복된다. 이 트랙은 구현 실수를 줄이는 최소 단위를 먼저 연습하게 한다.
 
-## Projects
+## 프로젝트 목록
 
-| Tier | BOJ | Title | Implementations |
-| :--- | :--- | :--- | :--- |
-| Bronze | [10988](10988/README.md) | Palindrome Check | Python |
-| Gold | [11053](11053/README.md) | Longest Increasing Subsequence | Python + C++ |
-| Silver | [16926](16926/README.md) | Array Rotation 1 | Python |
+| 순서 | 프로젝트 | 문제명/주제 | 구현 | 읽는 포인트 |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | [10988](10988/README.md) | 팰린드롬인지 확인하기 | Python | 작은 입력을 안정적으로 읽고, 조건 분기를 코드와 문서로 함께 정리하는 감각 |
+| 2 | [11053](11053/README.md) | 가장 긴 증가하는 부분 수열 | Python + C++ | 작은 입력을 안정적으로 읽고, 조건 분기를 코드와 문서로 함께 정리하는 감각 |
+| 3 | [16926](16926/README.md) | 배열 돌리기 1 | Python | 작은 입력을 안정적으로 읽고, 조건 분기를 코드와 문서로 함께 정리하는 감각 |
 
-## Notes
+## 먼저 읽을 문서
 
-- 모든 프로젝트는 `problem/`, `python/`, 선택적 `cpp/`, `docs/`, `notion/` 구조를 사용한다.
-- 공개 README는 스포일러를 허용하되, 문제 원문은 `problem/`에만 둔다.
+1. [../README.md](../README.md)에서 전체 학습 트리를 훑는다.
+2. [../../docs/curriculum-map.md](../../docs/curriculum-map.md)에서 이 트랙이 어디에 놓이는지 본다.
+3. 첫 번째 프로젝트 README를 읽고, `problem/` -> `docs/` -> 구현 -> `notion/05-development-timeline.md` 순서로 내려간다.
+
+## 이 트랙을 자기 포트폴리오에 옮길 때의 팁
+
+기초 트랙을 포트폴리오에 옮길 때는 화려한 문제보다 '입력 해석, 상태 정의, 검증 명령'을 얼마나 분리해 보여 주는지가 더 중요하다.

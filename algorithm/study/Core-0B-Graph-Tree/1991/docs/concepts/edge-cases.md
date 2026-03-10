@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 1991 Tree Traversal
+# 경계 사례 점검 — BOJ 1991 Tree Traversal
 
 ## 1. N = 1
 루트만 존재. 세 순회 모두 `A`.

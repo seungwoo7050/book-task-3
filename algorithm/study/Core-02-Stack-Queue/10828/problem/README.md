@@ -1,64 +1,28 @@
-# Problem: Stack (BOJ 10828)
+# BOJ 10828 문제 자료
 
-## Problem Statement
+## 이 디렉터리의 역할
 
-Implement a stack that supports the following commands:
+이 디렉터리는 문제 링크, fixture, starter code, 실행 스크립트를 한곳에 모아 둔 보관함이다. 구현을 보기 전에 여기서 어떤 자료가 준비되어 있는지 먼저 확인하면 학습 동선이 안정적이다.
 
-| Command | Effect |
-| :--- | :--- |
-| `push X` | Push integer $X$ onto the stack |
-| `pop` | Pop and print the top element ($-1$ if empty) |
-| `size` | Print the number of elements |
-| `empty` | Print $1$ if empty, $0$ otherwise |
-| `top` | Print the top element ($-1$ if empty) |
+## 프로젝트 스펙 요약
 
-## Input
+- 주제: 스택
+- 초점: 명령 기반 자료구조 문제를 상태 전이 규칙으로 정리하는 연습
+- 예제 입력과 기대 출력은 `data/input*.txt`, `data/output*.txt`에 정리했다.
 
-- Line 1: Integer $N$ ($1 \le N \le 10{,}000$)
-- Next $N$ lines: One command each
+## 왜 이 자료를 남기는가
 
-## Output
+- 이 프로젝트의 핵심은 명령 기반 자료구조 문제를 상태 전이 규칙으로 정리하는 연습이다.
+- `docs/`는 판단 근거를, 구현 디렉터리는 실제 코드를, `notion/`은 더 긴 학습 노트와 재현 타임라인을 담당한다.
 
-For each command that produces output, print the result on a separate line.
+## 포함 자료
 
-## Examples
+- `data/`: 대표 입력과 기대 출력
+- `code/`: starter code 또는 문제 보조 자료
+- `script/`: 수동 실행이나 채점 보조 스크립트
+- `Makefile`: 재현 명령 진입점
 
-### Example 1
+## 먼저 실행해볼 명령
 
-**Input**
-```
-14
-push 1
-push 2
-top
-size
-empty
-pop
-pop
-pop
-size
-empty
-pop
-push 3
-empty
-top
-```
-
-**Output**
-```
-2
-2
-0
-2
-1
--1
-0
-1
--1
-0
-3
-```
-
-## Source
-
-https://www.acmicpc.net/problem/10828
+- `make test`: 현재 기본 구현이 fixture를 통과하는지 빠르게 확인한다.
+- `make run-py`: 대표 입력으로 Python 구현을 눈으로 추적할 때 사용한다.

@@ -1,24 +1,27 @@
 # Core-04-Recursion-Backtracking
 
-## Topic
+## 트랙 소개
 
-- BarkingDog sequence: `0x04`
-- Topic: Recursion & Backtracking
-- CLRS reference: Ch 4
+재귀 호출의 구조를 이해하고, 상태 복원과 가지치기를 작은 문제에서 큰 문제로 확장해 보는 트랙이다.
 
-## Why This Track Exists
+## 왜 이 순서로 배우는가
 
-재귀 호출 구조, 상태 복원, 탐색 가지치기를 작은 문제부터 누적한다.
+재귀는 코드 길이는 짧지만 실수 지점은 많다. 종료 조건, 선택-복구 순서를 문서와 함께 정리하는 습관이 필요하다.
 
-## Projects
+## 프로젝트 목록
 
-| Tier | BOJ | Title | Implementations |
-| :--- | :--- | :--- | :--- |
-| Bronze | [10872](10872/README.md) | Factorial | Python |
-| Gold | [9663](9663/README.md) | N-Queen | Python + C++ |
-| Silver | [15649](15649/README.md) | N and M (1) | Python |
+| 순서 | 프로젝트 | 문제명/주제 | 구현 | 읽는 포인트 |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | [10872](10872/README.md) | 팩토리얼 | Python | 호출 구조를 추적하고 상태 복원 규칙을 설명하는 연습 |
+| 2 | [15649](15649/README.md) | N과 M (1) | Python | 호출 구조를 추적하고 상태 복원 규칙을 설명하는 연습 |
+| 3 | [9663](9663/README.md) | N-Queen | Python + C++ | 호출 구조를 추적하고 상태 복원 규칙을 설명하는 연습 |
 
-## Notes
+## 먼저 읽을 문서
 
-- 모든 프로젝트는 `problem/`, `python/`, 선택적 `cpp/`, `docs/`, `notion/` 구조를 사용한다.
-- 공개 README는 스포일러를 허용하되, 문제 원문은 `problem/`에만 둔다.
+1. [../README.md](../README.md)에서 전체 학습 트리를 훑는다.
+2. [../../docs/curriculum-map.md](../../docs/curriculum-map.md)에서 이 트랙이 어디에 놓이는지 본다.
+3. 첫 번째 프로젝트 README를 읽고, `problem/` -> `docs/` -> 구현 -> `notion/05-development-timeline.md` 순서로 내려간다.
+
+## 이 트랙을 자기 포트폴리오에 옮길 때의 팁
+
+백트래킹 문제는 '선택 -> 재귀 호출 -> 복구' 흐름을 코드 옆에서 문장으로 풀어 주면 학습 레포와 포트폴리오 모두에서 강점이 된다.

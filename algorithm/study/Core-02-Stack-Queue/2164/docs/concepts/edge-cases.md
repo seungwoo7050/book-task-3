@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 2164 Card2
+# 경계 사례 점검 — BOJ 2164 Card2
 
 ## 1. N = 1
 

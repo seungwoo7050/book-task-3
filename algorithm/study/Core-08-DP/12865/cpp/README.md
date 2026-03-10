@@ -1,29 +1,28 @@
-# C++ Implementation
+# C++ 비교 구현 안내
 
-## Scope
+## 구현 범위
 
-- Full BOJ 12865 problem scope
-- Maintained as a comparison implementation under the repository C++ retention policy
+- 평범한 배낭 프로젝트의 비교 구현
+- BOJ 전체 채점 범위
 
-## Build Command
+## 왜 이 구현을 먼저 보는가
 
-- `make -C ../problem run-cpp`
+C++ 디렉터리는 정답 코드를 더 빠르게 짜기 위한 공간이 아니라, 같은 알고리즘 결정을 다른 언어에서 어떻게 표현하는지 비교하는 용도에 가깝다.
 
-## Test Command
+## 실행 명령
 
-- `make -C ../problem run-cpp`
-- `make -C ../problem run-py` 결과와 fixture 출력이 일치해야 한다.
+- `make -C ../problem run-cpp`: 비교 구현을 직접 실행하는 가장 단순한 경로다.
 
-## Current Status
+## 검증 명령
 
-- verified
+- `make -C ../problem test`: 현재 프로젝트의 기본 자동 검증 루프다. 구현을 수정한 뒤에는 이 명령부터 다시 실행하는 편이 좋다.
 
-## Known Gaps
+## 현재 상태
 
-- Dedicated C++ automated test target is not separate from the fixture runner.
-- macOS에서는 compiler override가 필요할 수 있다.
+- 이번 문서 정리 라운드에서는 별도 자동 재검증을 하지 않았다. Python 구현과 같은 fixture를 기준으로 비교용으로 읽는다.
 
-## Implementation Notes
+## 구현 메모
 
-- 이 구현은 gold 문제와 cross-check anchor(`1753`, `1197`)에만 유지한다.
-- shared fixture는 `../problem/data/`를 사용한다.
+- 공개용 판단 근거는 `../docs/`에 둔다.
+- 전체 재현 흐름은 `../notion/05-development-timeline.md`에서 먼저 확인하고, 더 긴 학습 노트는 `../notion/`에서 이어서 읽는다.
+- 이전 버전 메모나 예전 템플릿 흔적은 `../notion-archive/`에 보관한다.

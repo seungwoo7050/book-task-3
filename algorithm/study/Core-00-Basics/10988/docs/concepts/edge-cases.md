@@ -1,11 +1,11 @@
-# Edge Cases — BOJ 10988 Palindrome Check
+# 경계 사례 점검 — BOJ 10988 Palindrome Check
 
-## Problem Constraints Recap
+## 문제 조건 다시 보기
 
 - Input: a single word of lowercase English letters
 - Length: $1 \le |word| \le 100$
 
-## Edge Case Analysis
+## 경계 사례 점검
 
 ### 1. Single Character
 
@@ -55,7 +55,7 @@ Ensures the solution checks every pair, not just the first/last.
 
 A string of identical characters is always a palindrome regardless of length.
 
-## Summary
+## 요약
 
 | # | Case | Length | Expected | Tests |
 | :--- | :--- | :--- | :--- | :--- |

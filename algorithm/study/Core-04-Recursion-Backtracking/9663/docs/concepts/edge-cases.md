@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 9663 N-Queen
+# 경계 사례 점검 — BOJ 9663 N-Queen
 
 ## 1. N = 1
 → `1`. 1×1 보드에 퀸 하나.

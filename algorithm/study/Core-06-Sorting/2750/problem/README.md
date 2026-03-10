@@ -1,39 +1,28 @@
-# Problem: Sort Numbers (BOJ 2750)
+# BOJ 2750 문제 자료
 
-## Problem Statement
+## 이 디렉터리의 역할
 
-Given $N$ integers, sort them in ascending order.
+이 디렉터리는 문제 링크, fixture, starter code, 실행 스크립트를 한곳에 모아 둔 보관함이다. 구현을 보기 전에 여기서 어떤 자료가 준비되어 있는지 먼저 확인하면 학습 동선이 안정적이다.
 
-## Input
+## 프로젝트 스펙 요약
 
-- Line 1: integer $N$ ($1 \le N \le 1000$)
-- Next $N$ lines: one integer each (absolute value ≤ 1 000 000), all distinct.
+- 주제: 수 정렬하기
+- 초점: 정렬 기준을 설계하고, 정렬 이후의 후처리 로직을 분리해 설명하는 연습
+- 예제 입력과 기대 출력은 `data/input*.txt`, `data/output*.txt`에 정리했다.
 
-## Output
+## 왜 이 자료를 남기는가
 
-Print the sorted numbers, one per line.
+- 이 프로젝트의 핵심은 정렬 기준을 설계하고, 정렬 이후의 후처리 로직을 분리해 설명하는 연습이다.
+- `docs/`는 판단 근거를, 구현 디렉터리는 실제 코드를, `notion/`은 더 긴 학습 노트와 재현 타임라인을 담당한다.
 
-## Examples
+## 포함 자료
 
-**Input**:
-```
-5
-5
-2
-3
-4
-1
-```
+- `data/`: 대표 입력과 기대 출력
+- `code/`: starter code 또는 문제 보조 자료
+- `script/`: 수동 실행이나 채점 보조 스크립트
+- `Makefile`: 재현 명령 진입점
 
-**Output**:
-```
-1
-2
-3
-4
-5
-```
+## 먼저 실행해볼 명령
 
-## Source
-
-https://www.acmicpc.net/problem/2750
+- `make test`: 현재 기본 구현이 fixture를 통과하는지 빠르게 확인한다.
+- `make run-py`: 대표 입력으로 Python 구현을 눈으로 추적할 때 사용한다.

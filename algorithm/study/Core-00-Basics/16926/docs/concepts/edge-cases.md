@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 16926 Array Rotation 1
+# 경계 사례 점검 — BOJ 16926 Array Rotation 1
 
 ## Constraints Recap
 
@@ -6,7 +6,7 @@
 - $1 \le R \le 10^9$
 - $1 \le A_{i,j} \le 10^8$
 
-## Edge Case Analysis
+## 경계 사례 점검
 
 ### 1. R equals the layer perimeter (full cycle)
 
@@ -60,7 +60,7 @@ $R = 12$ → outer rotates by $12 \bmod 20 = 12$, middle rotates by $12 \bmod 12
 
 Each ring shifts by exactly one position counterclockwise. Good for verifying basic correctness.
 
-## Summary
+## 요약
 
 | # | Case | Key Test |
 | :--- | :--- | :--- |

@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 1149 RGB Street
+# 경계 사례 점검 — BOJ 1149 RGB Street
 
 ## 1. N = 2
 두 집만 → 3×3 = 9 조합 중 인접 다른 색 → 최소.

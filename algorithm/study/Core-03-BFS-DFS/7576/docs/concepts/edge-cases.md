@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 7576 Tomato
+# 경계 사례 점검 — BOJ 7576 Tomato
 
 ## 1. 이미 모두 익은 경우
 

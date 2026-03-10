@@ -1,4 +1,4 @@
-# Edge Cases — BOJ 1167 Tree Diameter
+# 경계 사례 점검 — BOJ 1167 Tree Diameter
 
 ## 1. 일직선 트리
 지름 = 전체 간선 가중치 합.
