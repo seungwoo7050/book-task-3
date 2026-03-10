@@ -1,2 +1,0 @@
-"""Control plane capstone package."""
-
