@@ -1,10 +1,9 @@
-
 # Repository Docs
 
-이 디렉터리는 저장소 수준에서만 필요한 문서를 모은다. 프로젝트별 개념 메모는 각 `study/<track>/<project>/docs/` 아래에 있다.
+이 디렉터리는 저장소 전체에 공통으로 적용되는 문서만 모아 둔 곳입니다. 개별 프로젝트의 구현 메모나 개념 문서는 각 `study/<track>/<project>/docs/` 아래에 있습니다.
 
-- [`legacy-inventory.md`](legacy-inventory.md): 레거시 트리의 구성과 노이즈 확인 결과
-- [`curriculum-map.md`](curriculum-map.md): `study/` 트랙과 프로젝트 순서 설계 이유
-- [`project-set-audit.md`](project-set-audit.md): 레거시 프로젝트 셋의 약점과 신규 보강 과제 근거
-- [`migration-template.md`](migration-template.md): 이후 프로젝트 추가 시 재사용할 구조 템플릿
-- [`verification-matrix.md`](verification-matrix.md): canonical 검증 명령과 현재 상태
+- [`curriculum-map.md`](curriculum-map.md): 어떤 순서로 공부하면 좋은지와 트랙 간 연결 고리
+- [`project-set-audit.md`](project-set-audit.md): 현재 프로젝트 집합의 강점, 의도적인 공백, 향후 확장 판단 기준
+- [`repository-inventory.md`](repository-inventory.md): 현재 저장소 루트 구조와 각 디렉터리 역할
+- [`project-template.md`](project-template.md): 새 프로젝트를 추가할 때 맞춰야 할 기본 구조와 문서 규칙
+- [`verification-matrix.md`](verification-matrix.md): `2026-03-10` 기준 canonical 검증 명령과 상태

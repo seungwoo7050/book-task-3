@@ -1,72 +1,54 @@
-# Web Server — Problem Specification
+# Web Server 문제 안내
 
-## 안내
+## 이 문서의 역할
 
-이 문서는 제공 과제 사양을 source-close하게 보존하기 위해 원문 중심으로 유지한다.
-공개용 문제 요약과 학습 맥락은 상위 `README.md`를 먼저 참고한다.
+이 문서는 `Web Server`를 시작하기 전에 읽는 현재 저장소 기준 문제 사양입니다. 구현 세부와 공개 구현 경로는 상위 프로젝트 README가 연결하는 경로를 따라가면 됩니다.
 
+## 문제 목표
 
-## Objective
+브라우저나 `curl`이 보내는 `GET` 요청을 받아 파일을 읽고, 존재하면 `200 OK`, 없으면 `404 Not Found`를 반환하는 간단한 웹 서버를 구현합니다.
 
-Implement a simple HTTP web server that can process **one HTTP request at a time**. The server listens on a specified port, accepts incoming TCP connections, and responds with the requested file or an error message.
+## 구현해야 할 동작
 
-## Requirements
+### TCP 연결 처리
 
-### Functional Requirements
+- `localhost:6789` 기본 포트에 바인딩된 TCP 서버 소켓을 만듭니다.
+- 들어오는 연결을 accept하고 요청을 처리한 뒤 연결을 닫습니다.
+- 각 연결은 별도 스레드로 처리합니다.
 
-1. **TCP Connection Handling**
-   - Create a TCP server socket bound to `localhost` on port `6789` (configurable)
-   - Listen for and accept incoming client connections
-   - Handle each connection in a separate thread
+### HTTP 요청 파싱
 
-2. **HTTP Request Parsing**
-   - Extract the requested file path from the HTTP GET request line
-   - The request line format: `GET /path/to/file HTTP/1.1\r\n`
+- 요청 라인에서 요청 파일 경로를 추출합니다.
+- `GET /path/to/file HTTP/1.1` 형식을 기준으로 최소 파싱만 수행합니다.
 
-3. **HTTP Response Generation**
-   - **200 OK**: If the requested file exists, respond with:
-     ```
-     HTTP/1.1 200 OK\r\n
-     Content-Type: <mime-type>\r\n
-     \r\n
-     <file contents>
-     ```
-   - **404 Not Found**: If the file does not exist, respond with:
-     ```
-     HTTP/1.1 404 Not Found\r\n
-     Content-Type: text/html\r\n
-     \r\n
-     <html><body><h1>404 Not Found</h1></body></html>
-     ```
+### HTTP 응답 생성
 
-4. **File Serving**
-   - Serve files relative to the server's working directory
-   - Support at least `.html` and `.htm` content types
+- 파일이 있으면 `HTTP/1.1 200 OK`와 파일 본문을 반환합니다.
+- 파일이 없으면 `HTTP/1.1 404 Not Found`와 간단한 HTML 오류 페이지를 반환합니다.
 
-### Non-Functional Requirements
+### 정적 파일 서빙
 
-- The server must remain running and accept multiple sequential connections
-- Connections must be properly closed after each response
-- The server should print a log message for each request received
+- 서버 작업 디렉터리를 기준으로 파일을 찾습니다.
+- 최소한 `.html`, `.htm`의 `Content-Type`은 구분합니다.
 
-## Constraints
+## 제공 자료와 실행 환경
 
-- Use only Python 3 standard library modules
-- Primary modules: `socket`, `threading`
-- No HTTP helper libraries (e.g., `http.server` is **not** allowed)
+- starter code: `code/server_skeleton.py`
+- 샘플 파일: `data/hello.html`
+- 검증 스크립트: `script/test_server.sh`
 
-## Input / Environment
+## 제약과 해석 기준
 
-- The starter code skeleton is in `code/server_skeleton.py`
-- A sample HTML file for testing is in `data/hello.html`
-- A test script is available at `script/test_server.sh`
+- Python 3 표준 라이브러리만 사용합니다.
+- `socket`, `threading`을 중심으로 구현합니다.
+- `http.server` 같은 HTTP helper 라이브러리는 사용하지 않습니다.
 
-## Evaluation Criteria
+## 성공 기준
 
-| Criterion | Description |
+| 항목 | 내용 |
 | :--- | :--- |
-| **Correct 200 Response** | Server returns the file with a valid `HTTP/1.1 200 OK` header |
-| **Correct 404 Response** | Server returns a `404 Not Found` page for missing files |
-| **Connection Handling** | Server properly accepts, processes, and closes connections |
-| **Multi-threading** | Each request is handled in its own thread |
-| **Code Quality** | Clean, well-commented, and idiomatic Python |
+| 정상 200 응답 | 요청한 파일이 있을 때 유효한 `HTTP/1.1 200 OK` 응답을 돌려줍니다. |
+| 정상 404 응답 | 없는 파일 요청에 `404 Not Found` 페이지를 반환합니다. |
+| 연결 처리 | 요청을 처리한 뒤 연결을 적절히 닫고 서버는 계속 살아 있습니다. |
+| 멀티스레드 처리 | 요청마다 별도 스레드로 처리합니다. |
+| 코드 품질 | 읽기 쉽고 일관된 Python 코드로 정리되어 있습니다. |

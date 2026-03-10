@@ -3,33 +3,36 @@
 | 항목 | 내용 |
 | :--- | :--- |
 | 상태 | `verified` |
-| 레거시 원본 | `legacy/Programming-Assignments/rdt-protocol + 신규 보강 프로젝트` |
+| 문제 배경 | 이 저장소에서 `Go-Back-N` 다음 단계 학습을 위해 직접 보강한 Selective Repeat 프로젝트 |
 | 정식 검증 | `make -C study/Reliable-Transport/selective-repeat/problem test` |
 
 ## 한 줄 요약
 
-GBN의 한계를 보강하기 위해 추가한 선택 재전송 프로젝트다.
+`Go-Back-N`의 한계를 보강하기 위해 추가한 선택 재전송 프로젝트입니다.
 
-## 문제 요약
+## 왜 이 프로젝트가 필요한가
 
-기존 packet/channel helper를 재사용해, 개별 ACK와 수신 버퍼를 사용하는 Selective Repeat를 구현한다.
+교재 흐름상 당연히 이어져야 할 Selective Repeat를 별도 프로젝트로 분리해, 재전송 정책과 수신 버퍼링의 차이를 코드 수준에서 비교할 수 있게 합니다.
 
-## 이 프로젝트를 여기 둔 이유
+## 이런 학습자에게 맞습니다
 
-레거시 문서가 직접 암시했지만 비어 있던 bridge project를 채워 Reliable Transport 트랙을 완성한다.
+- GBN과 SR의 차이를 구현으로 직접 비교하고 싶은 학습자
+- 개별 timer와 수신 버퍼가 왜 필요한지 체감하고 싶은 학습자
+
+## 지금 바로 읽는 순서
+
+1. `problem/README.md` - 구현 목표, 제공 자료, 성공 기준을 먼저 확인합니다.
+2. `python/README.md` - 공개 구현 범위와 정식 검증 명령을 확인합니다.
+3. `docs/README.md` - 반복해서 참고할 개념 문서를 고릅니다.
+4. `notion/README.md` - 더 깊은 작업 기록과 회고가 필요할 때 참고합니다.
 
 ## 제공 자료
 
-- `problem/code/channel.py`와 `packet.py` 재사용
-- `problem/code/selective_repeat_skeleton.py` 신규 skeleton
-- `problem/script/test_selective_repeat.sh` 신규 검증
-
-## 학습 포인트
-
-- 개별 packet timer
-- receiver buffer와 in-order delivery
-- ACKed set과 sender base 업데이트
-- GBN과 SR trade-off 비교
+- `problem/code/channel.py`: `rdt-protocol`과 공유하는 채널 helper
+- `problem/code/packet.py`: 공유 packet helper
+- `problem/code/selective_repeat_skeleton.py`: Selective Repeat skeleton
+- `problem/data/test_messages.txt`: 테스트 메시지
+- `problem/script/test_selective_repeat.sh`: 정식 검증 스크립트
 
 ## 실행과 검증
 
@@ -38,17 +41,21 @@ GBN의 한계를 보강하기 위해 추가한 선택 재전송 프로젝트다.
 - 구현 위치: `python/src/`
 - 보조 테스트: `python/tests/`
 
-## 현재 범위와 한계
+## 학습 포인트
 
-채널과 packet 포맷은 기존 RDT 과제와 같고, 차이는 sender/receiver 로직에 집중한다.
+- 패킷별 timer 관리
+- 수신 버퍼와 in-order delivery
+- ACKed 집합과 sender base 업데이트
+- GBN과 SR의 효율 차이 비교
 
-- 현재 한계: 실제 병렬 스레드 모델이 아님
-- 현재 한계: sequence wraparound 미구현
-- 현재 한계: 성능 실험 표 미작성
+## 현재 한계
 
-## Public / Private 경계
+- 실제 병렬 스레드 모델은 아닙니다.
+- sequence wraparound는 구현하지 않았습니다.
+- 성능 비교 표는 아직 정리하지 않았습니다.
 
-- `problem/`은 제공 자료와 canonical 검증 래퍼만 둔다.
-- `python/` 또는 `analysis/`는 공개 구현과 공개 답안만 둔다.
-- `docs/`는 반복해서 참고할 개념 메모만 유지한다.
-- `notion/`은 노션 업로드용 작업 노트이며 저장소 공개 구조에 의존하지 않는다.
+## 포트폴리오로 확장하기
+
+- 재전송 횟수, 평균 지연, 버퍼 점유를 GBN과 비교하면 프로젝트 완성도가 크게 올라갑니다.
+- window 시각화나 ACK 타임라인을 붙이면 설명력이 높아집니다.
+- sequence wraparound와 더 큰 window 실험을 후속 과제로 제안하면 자연스러운 확장 포인트가 됩니다.

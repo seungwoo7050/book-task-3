@@ -1,21 +1,25 @@
 # Python 구현 안내
 
-이 디렉터리는 `Web Server`의 공개 구현을 담는다.
+    이 디렉터리는 `Web Server`의 공개 구현을 담습니다. 현재 저장소의 canonical 검증을 통과하는 범위를 기준으로 코드를 읽을 수 있게 정리합니다.
 
-## 구성
+    ## 어디서부터 읽으면 좋은가
 
-- `src/web_server.py`
-- `tests/test_web_server.py`
+    1. `python/src/web_server.py` - 핵심 구현 진입점입니다.
+2. `python/tests/test_web_server.py` - 검증 의도와 보조 테스트를 확인합니다.
 
-## 기준 명령
+    ## 기준 명령
 
-- 실행: `make -C study/Application-Protocols-and-Sockets/web-server/problem run-solution`
+    - 실행: `make -C study/Application-Protocols-and-Sockets/web-server/problem run-solution`
 - 검증: `make -C study/Application-Protocols-and-Sockets/web-server/problem test`
+- 구현 위치: `python/src/`
+- 보조 테스트: `python/tests/`
 
-## 구현 메모
+    ## 현재 범위
 
-- 상태: `verified`
-- 현재 범위: GET 요청과 정적 파일 서빙 범위만 다룬다. keep-alive, path traversal 방어, 고급 라우팅은 후속 주제다.
-- 남은 약점: path traversal 방어 미구현
-- 남은 약점: 무제한 스레드 생성
-- 남은 약점: GET 외 메서드 미지원
+    TCP 소켓과 `HTTP/1.1` 응답 조합으로 정적 파일 서버를 구현하는 파일럿 과제입니다.
+
+    ## 남은 약점
+
+    - path traversal 방어는 아직 구현하지 않았습니다.
+- 스레드 수 제한이나 thread pool은 없습니다.
+- GET 외 메서드는 지원하지 않습니다.

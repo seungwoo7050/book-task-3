@@ -1,43 +1,32 @@
 # C++ 구현 안내
 
-이 디렉터리는 `Tactical Arena Server`의 공개 C++ 구현을 담는다.
+    이 디렉터리는 `Tactical Arena Server`의 공개 구현을 담습니다. 현재 저장소의 canonical 검증을 통과하는 범위를 기준으로 코드를 읽을 수 있게 정리합니다.
 
-## 구성
+    ## 어디서부터 읽으면 좋은가
 
-- `src/arena_server.cpp`
-- `src/arena_bot.cpp`
-- `src/arena_loadtest.cpp`
-- `src/protocol.cpp`
-- `src/state.cpp`
-- `src/repository.cpp`
-- `include/arena/*.hpp`
-- `tests/test_protocol.cpp`
-- `tests/test_state.cpp`
-- `tests/test_repository.cpp`
-- `CMakeLists.txt`
+    1. `cpp/src/arena_bot.cpp` - 핵심 구현 진입점입니다.
+2. `cpp/src/arena_loadtest.cpp` - 핵심 구현 진입점입니다.
+3. `cpp/src/arena_server.cpp` - 핵심 구현 진입점입니다.
+4. `cpp/src/protocol.cpp` - 핵심 구현 진입점입니다.
+5. `cpp/src/repository.cpp` - 핵심 구현 진입점입니다.
+6. `cpp/src/state.cpp` - 핵심 구현 진입점입니다.
+7. `cpp/tests/test_protocol.cpp` - 검증 의도와 보조 테스트를 확인합니다.
+8. `cpp/tests/test_repository.cpp` - 검증 의도와 보조 테스트를 확인합니다.
+9. `cpp/tests/test_state.cpp` - 검증 의도와 보조 테스트를 확인합니다.
 
-## 기준 명령
+    ## 기준 명령
 
-- configure/build: `cmake -S study/Game-Server-Capstone/tactical-arena-server/cpp -B study/Game-Server-Capstone/tactical-arena-server/cpp/build`
-- test: `make -C study/Game-Server-Capstone/tactical-arena-server/problem test`
-- bot demo: `make -C study/Game-Server-Capstone/tactical-arena-server/problem run-bot-demo`
+    - 서버 실행: `make -C study/Game-Server-Capstone/tactical-arena-server/problem run-server`
+- bot 데모: `make -C study/Game-Server-Capstone/tactical-arena-server/problem run-bot-demo`
+- load smoke: `make -C study/Game-Server-Capstone/tactical-arena-server/problem load-test`
+- 정식 검증: `make -C study/Game-Server-Capstone/tactical-arena-server/problem test`
+- 구현 위치: `cpp/src/`
+- 테스트 위치: `cpp/tests/`
 
-## 구현 메모
+    ## 현재 범위
 
-- 상태: `verified`
-- 범위: single-process authoritative session server, bot client, in-process load runner
-- 빌드: `C++20 + Boost.Asio headers + SQLite + CMake/CTest`
-- 산출물: `arena_server`, `arena_bot`, `arena_loadtest`
+    `C++20 + Boost.Asio + SQLite + CMake/CTest` 기반으로 구현한 `2~4인 authoritative tactical arena server`다.
 
-## 현재 약점
+    ## 남은 약점
 
-- UDP endpoint proof는 light-weight nonce arming 수준이다.
-- message schema는 hand-written parser라 버전 협상이나 backward compatibility 계층이 없다.
-- single-node/local-first 구조라 운영 분산 문제는 다루지 않는다.
-
-## 구현 포인트
-
-- TCP 세션 I/O는 per-session strand로 직렬화한다.
-- room/match 진행은 room strand에서만 상태를 수정한다.
-- SQLite 공유 연결은 repository 내부 mutex로 직렬화한다.
-- load smoke는 외부 프로세스 래퍼가 아니라 in-process bot worker로 구현한다.
+    - 현재 한계는 프로젝트 README를 기준으로 정리합니다.

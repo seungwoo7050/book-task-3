@@ -1,22 +1,26 @@
 # Python 구현 안내
 
-이 디렉터리는 `ICMP Pinger`의 공개 구현을 담는다.
+    이 디렉터리는 `ICMP Pinger`의 공개 구현을 담습니다. 현재 저장소의 canonical 검증을 통과하는 범위를 기준으로 코드를 읽을 수 있게 정리합니다.
 
-## 구성
+    ## 어디서부터 읽으면 좋은가
 
-- `src/icmp_pinger.py`
-- `tests/test_icmp_pinger.py`
+    1. `python/src/icmp_pinger.py` - 핵심 구현 진입점입니다.
+2. `python/tests/test_icmp_pinger.py` - 검증 의도와 보조 테스트를 확인합니다.
 
-## 기준 명령
+    ## 기준 명령
 
-- 실행: `make -C study/Network-Diagnostics-and-Routing/icmp-pinger/problem run-solution HOST=google.com`
+    - 실행: `make -C study/Network-Diagnostics-and-Routing/icmp-pinger/problem run-solution HOST=google.com`
 - 검증: `make -C study/Network-Diagnostics-and-Routing/icmp-pinger/problem test`
 - 수동 live 검증: `sudo make -C study/Network-Diagnostics-and-Routing/icmp-pinger/problem test-live HOST=google.com`
+- 구현 위치: `python/src/`
+- 보조 테스트: `python/tests/`
 
-## 구현 메모
+    ## 현재 범위
 
-- 상태: `verified`
-- 현재 범위: deterministic test가 checksum, packet build, reply parsing, RTT/statistics 출력 흐름까지 검증한다. raw socket live 실행은 수동 재현 명령으로 남긴다.
-- 남은 약점: IPv6/ICMPv6 미지원
-- 남은 약점: 시스템 ping 수준의 상세 통계 미지원
-- 남은 약점: live raw-socket 실행은 OS/방화벽 정책에 영향받음
+    Raw socket으로 `ICMP Echo Request/Reply`를 직접 구현하는 진단 도구 과제입니다.
+
+    ## 남은 약점
+
+    - IPv6/ICMPv6는 지원하지 않습니다.
+- 시스템 `ping` 수준의 상세 통계는 제공하지 않습니다.
+- live raw-socket 실행은 OS와 방화벽 정책에 영향을 받습니다.

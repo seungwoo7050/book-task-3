@@ -1,18 +1,21 @@
 # 공개 답안 안내
 
-이 디렉터리는 `DNS Packet Analysis`의 공개 답안과 근거 문서를 담는다.
+    이 디렉터리는 `DNS Packet Analysis`의 공개 답안과 근거 문서를 담습니다. packet/frame 번호, field 값, trace 범위를 직접 인용하는 문서를 우선 배치합니다.
 
-## 구성
+    ## 어디서부터 읽으면 좋은가
 
-- `src/dns-analysis.md`
+    1. `analysis/src/dns-analysis.md` - 질문별 답안과 근거를 확인합니다.
 
-## 기준 명령
+    ## 기준 명령
 
-- 검증: `make -C study/Packet-Analysis-Top-Down/dns/problem test`
-- 원문에서 영어 답안을 요구한 랩은 답안도 영어로 유지한다.
+    - 검증: `make -C study/Packet-Analysis-Top-Down/dns/problem test`
+- 공개 답안 위치: `analysis/src/`
+- 개념 노트 위치: `docs/concepts/`
 
-## 분석 원칙
+    ## 현재 범위
 
-- 관찰 가능한 trace evidence만 사용한다.
-- 관찰 불가한 항목은 명시적으로 남긴다.
-- 주장마다 packet/frame number와 field value를 연결한다.
+    DNS query/response 구조와 TTL 기반 캐시를 Wireshark로 해석하는 랩이다.
+
+    ## 남은 약점
+
+    - 현재 한계는 프로젝트 README를 기준으로 정리합니다.

@@ -1,100 +1,71 @@
-# SMTP Mail Client — Problem Specification
+# SMTP Client 문제 안내
 
-## 안내
+## 이 문서의 역할
 
-이 문서는 제공 과제 사양을 source-close하게 보존하기 위해 원문 중심으로 유지한다.
-공개용 문제 요약과 학습 맥락은 상위 `README.md`를 먼저 참고한다.
+이 문서는 `SMTP Client`를 시작하기 전에 읽는 현재 저장소 기준 문제 사양입니다. 구현 세부와 공개 구현 경로는 상위 프로젝트 README가 연결하는 경로를 따라가면 됩니다.
 
+## 문제 목표
 
-## Objective
+`smtplib` 없이 TCP 소켓 위에서 직접 SMTP 대화를 수행해 메일 한 통을 보내는 클라이언트를 구현합니다.
 
-Implement an SMTP client that sends an email by directly speaking the SMTP protocol over a TCP socket. The client must handle the full SMTP command dialogue without relying on Python's built-in `smtplib`.
+## 구현해야 할 동작
 
-## Requirements
+### TCP 연결
 
-### Functional Requirements
+- SMTP 서버에 연결합니다.
+- 서버가 먼저 보내는 `220` greeting을 읽습니다.
 
-1. **TCP Connection**
-   - Connect to an SMTP server on the appropriate port
-   - Read the server's initial `220` greeting
+### SMTP 대화 수행
 
-2. **SMTP Dialogue**
-   The client must issue the following commands in order and verify each server reply:
+- `HELO`, `MAIL FROM`, `RCPT TO`, `DATA`, 본문 전송, `QUIT` 순서로 명령을 보냅니다.
+- 각 단계마다 기대하는 응답 코드(`250`, `354`, `221`)를 확인합니다.
 
-   | Step | Client Sends | Expected Reply Code |
-   | :--- | :--- | :--- |
-   | 1 | `HELO <client_hostname>\r\n` | `250` |
-   | 2 | `MAIL FROM:<sender@example.com>\r\n` | `250` |
-   | 3 | `RCPT TO:<recipient@example.com>\r\n` | `250` |
-   | 4 | `DATA\r\n` | `354` |
-   | 5 | Message body ending with `\r\n.\r\n` | `250` |
-   | 6 | `QUIT\r\n` | `221` |
+### 메시지 형식
 
-3. **Email Message Format**
-   - The DATA section must include at minimum:
-     ```
-     From: sender@example.com\r\n
-     To: recipient@example.com\r\n
-     Subject: Test Email\r\n
-     \r\n
-     This is the body of the email.\r\n
-     .\r\n
-     ```
+- `DATA` 구간에는 `From`, `To`, `Subject` 헤더와 본문을 포함합니다.
+- 본문 끝은 `
+.
+`으로 마무리합니다.
 
-4. **Error Handling**
-   - After each command, check the reply code
-   - If an unexpected code is received, print the error and terminate gracefully
+### 오류 처리
 
-5. **Optional: TLS Support**
-   - Implement `STARTTLS` for encrypted communication
-   - Implement `AUTH LOGIN` for server authentication
+- 예상하지 못한 응답 코드가 오면 오류를 출력하고 안전하게 종료합니다.
 
-### Expected Output
+### 선택 확장
 
-```
+- 가능하다면 `STARTTLS`, `AUTH LOGIN`을 후속 실험 과제로 다룰 수 있습니다.
+
+## 제공 자료와 실행 환경
+
+- starter code: `code/smtp_client_skeleton.py`
+- 로컬 모의 서버: `script/mock_smtp_server.py`
+- 검증 스크립트: `script/test_smtp.sh`
+
+## 제약과 해석 기준
+
+- Python 3 표준 라이브러리만 사용합니다.
+- `smtplib`은 사용하지 않습니다.
+- TLS가 필요하다면 `ssl`, 인증이 필요하다면 `base64` 같은 표준 모듈만 사용합니다.
+
+## 성공 기준
+
+| 항목 | 내용 |
+| :--- | :--- |
+| 완전한 SMTP 대화 | 필수 SMTP 명령을 올바른 순서로 전송합니다. |
+| 응답 코드 검증 | 각 단계에서 응답 코드를 확인하고 다음 단계로 진행합니다. |
+| 메시지 전송 | 메일 본문이 정상적으로 전달되거나 로컬 디버그 서버에 기록됩니다. |
+| 오류 처리 | 예상치 못한 응답 코드에 적절히 반응합니다. |
+| 코드 품질 | 읽기 쉽고 흐름이 분명한 Python 코드입니다. |
+
+## 출력 예시
+
+```text
 Connecting to smtp.example.com:587 ...
 S: 220 smtp.example.com ESMTP ready
 C: HELO localhost
 S: 250 Hello localhost
-C: MAIL FROM:<alice@example.com>
-S: 250 OK
-C: RCPT TO:<bob@example.com>
-S: 250 OK
-C: DATA
-S: 354 End data with <CR><LF>.<CR><LF>
-C: (sending message body)
-S: 250 OK: queued
+...
 C: QUIT
 S: 221 Bye
 Email sent successfully!
 ```
-
-## Constraints
-
-- Python 3 standard library only
-- `smtplib` is **not** allowed
-- Primary modules: `socket`, `ssl` (for TLS), `base64` (for AUTH)
-
-## Input / Environment
-
-- Skeleton code: `code/smtp_client_skeleton.py`
-- For local testing, use Python's built-in debugging SMTP server:
-  ```bash
-  python3 -m smtpd -n -c DebuggingServer localhost:1025
-  ```
-  Or the newer `aiosmtpd`:
-  ```bash
-  pip install aiosmtpd
-  python3 -m aiosmtpd -n -l localhost:1025
-  ```
-- Test script: `script/test_smtp.sh`
-
-## Evaluation Criteria
-
-| Criterion | Description |
-| :--- | :--- |
-| **Complete SMTP Dialogue** | All required SMTP commands are sent in correct order |
-| **Reply Code Validation** | Each server reply is checked before proceeding |
-| **Message Delivery** | Email is successfully delivered (or logged by debug server) |
-| **Error Handling** | Unexpected reply codes are caught and reported |
-| **Code Quality** | Clean, well-documented code |

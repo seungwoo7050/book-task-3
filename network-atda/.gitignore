@@ -1,0 +1,17 @@
+.DS_Store
+__pycache__/
+**/__pycache__/
+.pytest_cache/
+**/.pytest_cache/
+*.py[cod]
+
+# Build and test artifacts
+build/
+**/build/
+study/**/problem/cache/
+study/**/problem/cache/**
+Testing/
+**/Testing/
+CTestTestfile.cmake
+CMakeCache.txt
+cmake_install.cmake

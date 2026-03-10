@@ -1,11 +1,30 @@
-# Notion Documents for UDP Pinger
+# UDP Pinger 노트
 
-이 폴더에는 UDP Pinger 프로젝트에 대한 두 문서를 포함합니다.
+이 디렉터리는 공개 README에서 다 담지 않은 판단 근거와 재현 메모를 보관한다. 이번 개편에서는 `05-development-timeline.md`를 가장 먼저 읽는 문서로 두고, 나머지 노트는 그 실행 흐름을 설명하는 근거 문서로 배치했다.
 
-- `essay.md`: 개발 배경과 핵심 아이디어, 구현 세부사항을 블로그 스타일로 설명합니다.
-- `timeline.md`: 환경 설정, 실행 명령, 테스트 스크립트 등을 포함한 개발 타임라인을 제공합니다.
+## 먼저 읽을 문서
+- [05-development-timeline.md](05-development-timeline.md): 처음부터 `verified`까지 따라가는 재현 가이드. 손실과 RTT를 직접 보는 데 가장 먼저 읽을 문서다.
 
-**읽기 가이드:**
+## 읽는 순서
+- [00-problem-framing.md](00-problem-framing.md): 문제 범위, 제약, 성공 기준
+- [01-approach-log.md](01-approach-log.md): 핵심 설계 선택과 버린 선택지
+- [02-debug-log.md](02-debug-log.md): 현재 코드와 테스트로 다시 확인 가능한 오류 사례
+- [03-retrospective.md](03-retrospective.md): 무엇을 배웠고 무엇이 아직 약한지
+- [04-knowledge-index.md](04-knowledge-index.md): 다시 볼 파일, 용어, 확인 명령
 
-- 설계와 개념을 탐구하려면 `essay.md`를 우선 확인합니다.
-- 단계를 따라 개발을 재현하거나 명령어를 검토하려면 `timeline.md`를 엽니다.
+## 이 프로젝트에서 특히 남긴 주제
+- UDP timeout을 손실 신호로 쓰는 이유
+- RTT 통계에서 손실 샘플을 제외하는 기준
+- UDP `ping`과 ICMP `ping`의 차이
+- 손실이 있어도 끝까지 재현하는 실행 순서
+
+## 함께 볼 공개 문서
+- [`../README.md`](../README.md)
+- [`../problem/README.md`](../problem/README.md)
+- [`../python/README.md`](../python/README.md)
+- [`../docs/README.md`](../docs/README.md)
+- [`../docs/references/README.md`](../docs/references/README.md)
+
+## 백업 노트
+- 이전 형식의 장문 기록은 [`../notion-archive/`](../notion-archive/)에 보존했다.
+- 현재 `notion/`은 재현 가이드와 판단 근거를 나눠 보관한다.

@@ -1,25 +1,65 @@
-# References
+# 참고 자료
 
-이 프로젝트는 외부 링크보다 저장소 내부의 재현 가능한 자료를 우선 참조한다.
+캡스톤 서버 문서를 정리하면서 실제로 다시 확인한 자료다. 이 프로젝트는 범위가 넓기 때문에, 어떤 파일이 프로토콜/상태/테스트의 기준이 되는지 명시적으로 남겨 두는 것이 중요했다.
 
-## 확인한 로컬 자료
+## 저장소 내부 기준
+### [문제 개요](../../problem/README.md)
+- 확인일: `2026-03-10`
+- 왜 봤나: 서버 범위와 검증 명령, 데모 스크립트 위치를 다시 확인하려고 읽었다.
+- 무엇을 확인했나: 이 프로젝트가 배포형 제품이 아니라 학습용 게임 서버라는 점을 명확히 할 수 있었다.
+- 반영 결과: README와 노트의 범위를 현실적으로 조정했다.
 
-- 확인일: `2026-03-07`
-- `problem/code/control-protocol.txt`
-  이유: TCP/UDP public interface를 프로젝트 README와 구현 설명에 맞추기 위해 확인했다.
-  반영: `docs/concepts/protocol.md`
-- `problem/data/schema.sql`
-  이유: SQLite schema와 문서 설명이 어긋나지 않게 맞추기 위해 확인했다.
-  반영: `docs/concepts/persistence.md`
-- `cpp/include/arena/protocol.hpp`
-  이유: binary packet field와 테스트 범위를 문서에 정확히 반영하기 위해 확인했다.
-  반영: `docs/concepts/protocol.md`
-- `cpp/include/arena/state.hpp`
-  이유: fixed tick, projectile, respawn, forfeit 규칙을 문서화하기 위해 확인했다.
-  반영: `docs/concepts/simulation.md`
-- `cpp/src/arena_server.cpp`
-  이유: room strand, session strand, match start 조건, reconnect 흐름을 설명하기 위해 확인했다.
-  반영: `docs/concepts/architecture.md`, `docs/concepts/simulation.md`
-- `problem/script/load_smoke_test.py`
-  이유: canonical smoke가 실제로 무엇을 검증하는지 정리하기 위해 확인했다.
-  반영: `docs/concepts/load-testing.md`
+### [제어 프로토콜 사양](../../problem/code/control-protocol.txt)
+- 확인일: `2026-03-10`
+- 왜 봤나: TCP 명령 형식과 필수 필드를 정확히 확인하려고 읽었다.
+- 무엇을 확인했나: `LOGIN`, `CREATE_ROOM`, `READY`, `RESUME` 흐름을 문서에서 추상화하지 않고 실제 규약대로 설명할 수 있었다.
+- 반영 결과: 프로토콜 설명과 발표 자료 링크를 현재 소스 기준으로 다시 정리했다.
+
+### [DB 스키마](../../problem/data/schema.sql)
+- 확인일: `2026-03-10`
+- 왜 봤나: 매치 결과와 누적 전적이 어떤 구조로 저장되는지 확인하려고 읽었다.
+- 무엇을 확인했나: persistence 설명을 추상적인 “DB 저장” 수준에서 끝내지 않고 실제 테이블 구조와 연결할 수 있었다.
+- 반영 결과: 회고와 지식 인덱스의 persistence 항목이 더 실효해졌다.
+
+### [C++ 구현 요약](../../cpp/README.md)
+- 확인일: `2026-03-10`
+- 왜 봤나: 빌드/테스트 구조와 계층 설명이 현재 상태와 맞는지 확인했다.
+- 무엇을 확인했나: CMake, executable, test binary 역할을 문서 전반에서 일관되게 설명할 수 있었다.
+- 반영 결과: 학생이 진입하기 쉬운 읽기 순서를 정하는 데 도움이 됐다.
+
+### [서버 본체](../../cpp/src/arena_server.cpp)
+- 확인일: `2026-03-10`
+- 왜 봤나: TCP/UDP 통합 흐름과 room/match 상태 관리를 확인하려고 읽었다.
+- 무엇을 확인했나: strand와 전역 상태 보호 구조를 현재 코드 기준으로 설명할 수 있었다.
+- 반영 결과: 노트의 설계 선택과 디버그 로그를 실제 소스와 맞출 수 있었다.
+
+### [통합 테스트](../../problem/script/integration_test.py)
+- 확인일: `2026-03-10`
+- 왜 봤나: reconnect, forfeit, out-of-order UDP 검증 시나리오를 확인하려고 읽었다.
+- 무엇을 확인했나: 무엇이 이 프로젝트의 고난도 검증 포인트인지 분명해졌다.
+- 반영 결과: `verified` 설명과 발표용 설명이 더 설득력 있게 정리됐다.
+
+### [아키텍처 문서](../concepts/architecture.md)
+- 확인일: `2026-03-10`
+- 왜 봤나: 전체 구조를 학생 친화적으로 다시 설명하려고 읽었다.
+- 무엇을 확인했나: 프로토콜 계층, 시뮬레이션, persistence를 한 장의 이야기로 연결할 수 있었다.
+- 반영 결과: 루트 README와 프로젝트 README의 친절함을 보강했다.
+
+### [발표 자료](../presentation/README.md)
+- 확인일: `2026-03-10`
+- 왜 봤나: 시연 흐름과 시각 자료가 현재 문서 구조와 맞는지 확인했다.
+- 무엇을 확인했나: 프로젝트를 포트폴리오로 보여 줄 때 어떤 자료를 곁들일 수 있는지 구체화할 수 있었다.
+- 반영 결과: 회고의 “포트폴리오로 확장하기” 섹션을 더 실제적으로 쓸 수 있었다.
+
+## 외부 기준
+### Computer Networking: A Top-Down Approach, transport / application / routing chapters
+- 확인일: `2026-03-10`
+- 왜 봤나: 캡스톤이 앞선 프로젝트와 어떻게 이어지는지 설명하려고 참고했다.
+- 무엇을 확인했나: TCP, UDP, 신뢰 전송, 진단 도구 지식이 한 서버에서 만난다는 구조를 문서화할 수 있었다.
+- 반영 결과: 프로젝트를 커리큘럼의 종착점으로 설명하는 근거가 됐다.
+
+### Boost.Asio design notes / strand documentation
+- 확인일: `2026-03-10`
+- 왜 봤나: 비동기 서버에서 strand를 왜 쓰는지 개념을 다시 정리하려고 참고했다.
+- 무엇을 확인했나: room 단위 직렬화 모델을 설명할 때 필요한 배경을 확보했다.
+- 반영 결과: 동시성 설명이 단순 구현 메모를 넘어 설계 이유를 담게 됐다.

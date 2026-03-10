@@ -1,81 +1,58 @@
-# Problem: TLS/SSL Analysis
+# TLS Packet Analysis 문제 안내
 
-## 안내
+## 이 문서의 역할
 
-이 문서는 제공 과제 사양을 source-close하게 보존하기 위해 원문 중심으로 유지한다.
-공개용 문제 요약과 학습 맥락은 상위 `README.md`를 먼저 참고한다.
+이 문서는 `TLS Packet Analysis`를 시작하기 전에 읽는 현재 저장소 기준 문제 사양입니다. 답안을 먼저 보기보다 trace 범위와 질문을 먼저 이해하는 데 초점을 둡니다.
 
+## 문제 목표
 
-## Trace Files
+미리 캡처된 HTTPS/TLS trace를 분석해, ClientHello부터 암호화된 Application Data까지의 흐름과 TLS 버전 차이를 이해합니다.
 
-- `tls-trace.pcap` — Pre-captured HTTPS session including full TLS handshake(s), certificate exchange, and encrypted data transfer
+## 제공 trace
 
-> Download from the textbook companion site or capture your own by visiting an HTTPS website while running Wireshark.
+| 파일 | 시나리오 | 설명 |
+| :--- | :--- | :--- |
+| `tls-trace.pcap` | TLS trace | 전체 TLS handshake, certificate 교환, 암호화된 application data가 포함된 캡처 |
 
----
+## 풀어야 할 질문
 
-## Part 1: ClientHello (Q1–Q5)
+### 파트 1. ClientHello (Q1-Q5)
 
-Examine the ClientHello message sent by the client at the start of the TLS handshake.
+1. ClientHello 메시지의 TLS record content type은 무엇입니까? record layer와 handshake layer가 가리키는 TLS version은 어떻게 다릅니까?
+2. ClientHello가 광고하는 cipher suite는 무엇입니까? 개수와 함께 최소 3개 이상 이름을 적어 보세요.
+3. ClientHello에 SNI(Server Name Indication) extension이 있습니까? 있다면 어떤 서버 이름이 들어 있습니까?
+4. 클라이언트가 지원한다고 알리는 TLS version은 무엇입니까? `supported_versions` extension이나 handshake version field를 확인해 보세요.
+5. ClientHello에 포함된 다른 notable extension을 최소 3개 찾아 목적을 간단히 설명해 보세요.
 
-**Q1.** What is the TLS record content type for the ClientHello message? What is the TLS version indicated in the record layer vs. the handshake layer?
+### 파트 2. ServerHello와 Certificate (Q6-Q11)
 
-**Q2.** What cipher suites does the client advertise in the ClientHello? List the number of cipher suites and identify at least 3 specific ones by name.
+1. ServerHello에서 서버가 선택한 cipher suite는 무엇입니까? 그 이름의 각 구성 요소는 무엇을 뜻합니까?
+2. 최종 협상된 TLS version은 무엇이며, 어디에서 확인할 수 있습니까?
+3. Certificate 메시지에는 인증서가 몇 개 들어 있으며, 각 인증서의 subject(Common Name)는 무엇입니까?
+4. 서버(leaf) 인증서의 issuer는 누구입니까? root CA 인증서도 서버가 보내는 체인에 포함되어 있습니까?
+5. 서버 인증서의 유효 기간(Not Before / Not After)과 서명 알고리즘은 무엇입니까?
+6. ServerHello 또는 이어지는 메시지에 ServerKeyExchange가 포함되어 있습니까? 있다면 어떤 key exchange parameter가 들어 있습니까?
 
-**Q3.** Does the ClientHello include a Server Name Indication (SNI) extension? If so, what server name is specified?
+### 파트 3. Handshake 완료 (Q12-Q16)
 
-**Q4.** What TLS versions does the client indicate it supports? (Examine the "supported_versions" extension if present, or the handshake version field.)
+1. ChangeCipherSpec 메시지는 몇 개이며 누가 보냅니까?
+2. ChangeCipherSpec 다음에 오는 메시지는 무엇입니까? 내용을 읽을 수 있습니까? 왜 그렇습니까?
+3. trace에 나타나는 TLS handshake 메시지 전체 순서를 frame 번호와 송신자(client/server)와 함께 적어 보세요.
+4. 첫 ClientHello부터 첫 Application Data record까지 TLS handshake에 몇 번의 round trip이 필요합니까?
+5. 이 세션이 TLS 1.3이라면 TLS 1.2와 비교했을 때 어떤 차이가 보입니까? 메시지 흐름을 근거로 설명해 보세요.
 
-**Q5.** What other notable extensions are present in the ClientHello? Identify at least 3 extensions and briefly describe their purpose.
+### 파트 4. Application Data와 Record Protocol (Q17-Q20)
 
----
+1. Application Data record를 하나 찾아 TLS record content type 값과 암호화 payload 길이를 적어 보세요.
+2. 복호화 없이도 안에 실린 애플리케이션 프로토콜(예: HTTP)을 추정할 수 있습니까? handshake 중 plaintext로 드러나는 정보가 있다면 무엇입니까?
+3. 여러 Application Data record의 길이는 일정합니까, 가변적입니까? 가장 큰 TLS record 크기는 얼마입니까?
+4. `SSLKEYLOGFILE` 같은 pre-master secret 로그가 있다면 Wireshark에서 세션을 복호화해 어떤 HTTP 요청/응답이 보이는지 확인해 보세요.
 
-## Part 2: ServerHello and Certificate (Q6–Q11)
+## 성공 기준
 
-Examine the ServerHello message and the server's certificate.
-
-**Q6.** What cipher suite did the server select in the ServerHello? What does each component of the cipher suite name mean?
-
-**Q7.** What TLS version was ultimately negotiated for this session? Where is this indicated?
-
-**Q8.** Examine the server's Certificate message. How many certificates are in the certificate chain? What is the subject (Common Name) of each certificate?
-
-**Q9.** What is the issuer of the server's (leaf) certificate? Is the root CA certificate included in the chain sent by the server?
-
-**Q10.** What is the validity period (Not Before / Not After) of the server's certificate? What signature algorithm was used to sign it?
-
-**Q11.** Does the ServerHello or subsequent messages include a ServerKeyExchange message? If so, what key exchange parameters are provided?
-
----
-
-## Part 3: Handshake Completion (Q12–Q16)
-
-Analyze the remaining handshake messages and the transition to encrypted communication.
-
-**Q12.** Identify the ChangeCipherSpec message(s) in the trace. How many are there and who sends them (client, server, or both)?
-
-**Q13.** After the ChangeCipherSpec, what is the next message sent? Can you read its contents? Why or why not?
-
-**Q14.** What is the complete sequence of TLS handshake messages exchanged? List them in order with frame numbers and the sender (client/server).
-
-**Q15.** How many TCP segments (round trips) does the TLS handshake require before application data can be sent? Count from the first ClientHello to the first Application Data record.
-
-**Q16.** If this is a TLS 1.3 session, how does the handshake differ from TLS 1.2? Identify specific differences in the message flow you observe.
-
----
-
-## Part 4: Application Data and Record Protocol (Q17–Q20)
-
-Examine TLS records carrying encrypted application data.
-
-**Q17.** Find an Application Data record. What is the TLS record content type value? What is the length of the encrypted payload?
-
-**Q18.** Can you determine what application protocol (e.g., HTTP) is being carried inside the TLS records without decryption? What information (if any) leaked in plaintext during the handshake reveals the application purpose?
-
-**Q19.** Examine the TLS record headers of several Application Data messages. Are the record lengths uniform or variable? What is the maximum TLS record size you observe?
-
-**Q20.** If you have a pre-master secret log file (SSLKEYLOGFILE), configure Wireshark to decrypt the session. What HTTP request and response are visible after decryption?
-
----
-
-## Total: 20 Questions
+| 항목 | 내용 |
+| :--- | :--- |
+| 정확성 | 정확한 packet/frame 번호와 field 값을 사용합니다. |
+| 완결성 | 모든 질문에 근거를 포함해 답합니다. |
+| 이해도 | 프로토콜 메커니즘을 이해한 설명을 제시합니다. |
+| 근거성 | Wireshark field와 trace evidence를 직접 인용합니다. |

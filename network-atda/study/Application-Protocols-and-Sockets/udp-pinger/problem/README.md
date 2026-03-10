@@ -1,73 +1,65 @@
-# UDP Pinger — Problem Specification
+# UDP Pinger 문제 안내
 
-## 안내
+## 이 문서의 역할
 
-이 문서는 제공 과제 사양을 source-close하게 보존하기 위해 원문 중심으로 유지한다.
-공개용 문제 요약과 학습 맥락은 상위 `README.md`를 먼저 참고한다.
+이 문서는 `UDP Pinger`를 시작하기 전에 읽는 현재 저장소 기준 문제 사양입니다. 구현 세부와 공개 구현 경로는 상위 프로젝트 README가 연결하는 경로를 따라가면 됩니다.
 
+## 문제 목표
 
-## Objective
+UDP ping 서버에 10개의 ping 메시지를 보내고, 응답이 돌아온 경우 RTT를 계산한 뒤 최소/평균/최대 RTT와 손실률을 출력하는 클라이언트를 구현합니다.
 
-Implement a UDP ping client that sends 10 ping messages to a UDP ping server, measures the round-trip time for each reply, and computes summary statistics. The server simulates an unreliable channel by randomly dropping ~30% of packets.
+## 구현해야 할 동작
 
-## Requirements
+### Ping 메시지 전송
 
-### Functional Requirements
+- 정확히 10개의 UDP ping 메시지를 보냅니다.
+- 각 메시지에는 시퀀스 번호와 타임스탬프를 포함합니다.
+- 형식은 `Ping <sequence_number> <timestamp>`를 기준으로 합니다.
 
-1. **Ping Messages**
-   - Send exactly **10** UDP ping messages to the server
-   - Each message must include a sequence number (1–10) and a timestamp
-   - Message format: `Ping <sequence_number> <timestamp>`
+### RTT 측정
 
-2. **RTT Measurement**
-   - Record the send time before each ping
-   - Compute RTT = (reply received time) − (send time) for each response
+- 각 ping 전송 직전에 시간을 기록합니다.
+- 응답이 오면 `응답 시각 - 전송 시각`으로 RTT를 계산합니다.
 
-3. **Timeout Handling**
-   - Set a **1-second** socket timeout for each ping
-   - If no reply is received within 1 second, print `Request timed out`
+### Timeout 처리
 
-4. **Statistics Output**
-   - After all 10 pings, print:
-     - RTT for each received reply
-     - Minimum RTT
-     - Maximum RTT
-     - Average RTT
-     - Packet loss percentage
+- 각 ping에 대해 소켓 timeout을 1초로 둡니다.
+- 1초 안에 응답이 없으면 `Request timed out`으로 처리합니다.
 
-### Expected Output Format
+### 통계 출력
 
-```
+- 응답이 온 각 ping의 RTT를 출력합니다.
+- 모든 전송이 끝나면 최소/평균/최대 RTT와 패킷 손실률을 출력합니다.
+
+## 제공 자료와 실행 환경
+
+- 제공 서버: `code/udp_pinger_server.py`
+- 클라이언트 skeleton: `code/udp_pinger_client_skeleton.py`
+- 검증 스크립트: `script/test_pinger.sh`
+
+## 제약과 해석 기준
+
+- Python 3 표준 라이브러리만 사용합니다.
+- 제공된 서버 코드는 수정하지 않습니다.
+- 클라이언트는 제공 서버와 프로토콜 변경 없이 동작해야 합니다.
+
+## 성공 기준
+
+| 항목 | 내용 |
+| :--- | :--- |
+| 정확한 메시지 전송 | 10개의 UDP ping 메시지를 형식에 맞게 전송합니다. |
+| RTT 계산 | 응답이 온 ping마다 RTT를 올바르게 계산합니다. |
+| Timeout 처리 | 1초 안에 응답이 없으면 손실로 판정합니다. |
+| 통계 출력 | 최소/평균/최대 RTT와 손실률이 올바릅니다. |
+| 코드 품질 | 간결하고 읽기 쉬운 Python 코드입니다. |
+
+## 출력 예시
+
+```text
 Ping  1: Reply from 127.0.0.1  RTT = 0.324 ms
 Ping  2: Request timed out
-Ping  3: Reply from 127.0.0.1  RTT = 0.512 ms
 ...
-Ping 10: Reply from 127.0.0.1  RTT = 0.289 ms
-
 --- Ping Statistics ---
 10 packets sent, 7 received, 30.0% loss
 RTT min/avg/max = 0.289/0.415/0.612 ms
 ```
-
-## Constraints
-
-- Python 3 standard library only
-- Primary module: `socket`
-- Do **not** modify the provided server code
-- The client must work with the provided server without any protocol changes
-
-## Input / Environment
-
-- Server code is provided in `code/udp_pinger_server.py`
-- Client skeleton is in `code/udp_pinger_client_skeleton.py`
-- Test script is in `script/test_pinger.sh`
-
-## Evaluation Criteria
-
-| Criterion | Description |
-| :--- | :--- |
-| **Correct Ping Sending** | Client sends 10 properly formatted UDP messages |
-| **RTT Calculation** | RTT is accurately measured for each received reply |
-| **Timeout Handling** | Lost packets are detected and reported after 1 second |
-| **Statistics** | Correct min/avg/max RTT and packet loss percentage |
-| **Code Quality** | Clean, well-commented Python code |

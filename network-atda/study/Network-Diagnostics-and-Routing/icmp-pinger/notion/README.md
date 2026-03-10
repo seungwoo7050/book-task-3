@@ -1,11 +1,30 @@
-# Notion Documents for ICMP Pinger
+# ICMP Pinger 노트
 
-이 폴더에는 ICMP Pinger 문제와 관련된 두 가지 문서가 있습니다.
+이 디렉터리는 공개 README에서 다 담지 않은 판단 근거와 재현 메모를 보관한다. 이번 개편에서는 `05-development-timeline.md`를 가장 먼저 읽는 문서로 두고, 나머지 노트는 그 실행 흐름을 설명하는 근거 문서로 배치했다.
 
-- `essay.md`: Raw ICMP 소켓, 체크섬 계산, 운영체제 권한 이슈 등을 다룬 블로그형 에세이.
-- `timeline.md`: sudo 권한, 테스트 토폴로지, 실행 명령어 등 개발 타임라인 기록.
+## 먼저 읽을 문서
+- [05-development-timeline.md](05-development-timeline.md): 처음부터 `verified`까지 따라가는 재현 가이드. 비권한 테스트와 live raw-socket 실행을 분리해 보여준다.
 
-**추천 읽기 순서:**
+## 읽는 순서
+- [00-problem-framing.md](00-problem-framing.md): 문제 범위, 제약, 성공 기준
+- [01-approach-log.md](01-approach-log.md): 핵심 설계 선택과 버린 선택지
+- [02-debug-log.md](02-debug-log.md): 현재 코드와 테스트로 다시 확인 가능한 오류 사례
+- [03-retrospective.md](03-retrospective.md): 무엇을 배웠고 무엇이 아직 약한지
+- [04-knowledge-index.md](04-knowledge-index.md): 다시 볼 파일, 용어, 확인 명령
 
-- 먼저 `essay.md`로 기술적 배경을 이해한 후
-- `timeline.md`로 명령어와 테스트 절차를 확인하세요.
+## 이 프로젝트에서 특히 남긴 주제
+- checksum과 raw socket의 역할
+- `IHL` 기반 응답 파싱
+- 비권한 테스트와 live 테스트 분리
+- 권한 있는 환경에서 실제 ping을 재현하는 순서
+
+## 함께 볼 공개 문서
+- [`../README.md`](../README.md)
+- [`../problem/README.md`](../problem/README.md)
+- [`../python/README.md`](../python/README.md)
+- [`../docs/README.md`](../docs/README.md)
+- [`../docs/references/README.md`](../docs/references/README.md)
+
+## 백업 노트
+- 이전 형식의 장문 기록은 [`../notion-archive/`](../notion-archive/)에 보존했다.
+- 현재 `notion/`은 재현 가이드와 판단 근거를 나눠 보관한다.

@@ -1,22 +1,26 @@
 # Python 구현 안내
 
-이 디렉터리는 `RDT Protocol`의 공개 구현을 담는다.
+    이 디렉터리는 `RDT Protocol`의 공개 구현을 담습니다. 현재 저장소의 canonical 검증을 통과하는 범위를 기준으로 코드를 읽을 수 있게 정리합니다.
 
-## 구성
+    ## 어디서부터 읽으면 좋은가
 
-- `src/gbn.py`
-- `src/rdt3.py`
-- `tests/test_rdt.py`
+    1. `python/src/gbn.py` - 핵심 구현 진입점입니다.
+2. `python/src/rdt3.py` - 핵심 구현 진입점입니다.
+3. `python/tests/test_rdt.py` - 검증 의도와 보조 테스트를 확인합니다.
 
-## 기준 명령
+    ## 기준 명령
 
-- 실행: `make -C study/Reliable-Transport/rdt-protocol/problem run-solution-rdt3`
+    - 실행: `make -C study/Reliable-Transport/rdt-protocol/problem run-solution-rdt3`
 - 검증: `make -C study/Reliable-Transport/rdt-protocol/problem test`
+- 구현 위치: `python/src/`
+- 보조 테스트: `python/tests/`
 
-## 구현 메모
+    ## 현재 범위
 
-- 상태: `verified`
-- 현재 범위: 현재 공개 구현은 rdt3.0과 GBN까지 다룬다. SR은 별도 프로젝트로 분리했다.
-- 남은 약점: 실제 네트워크가 아닌 시뮬레이션 채널
-- 남은 약점: GBN 성능 로그 자동 수집 미구현
-- 남은 약점: 동시성 대신 단일 이벤트 루프 사용
+    `rdt3.0`과 `Go-Back-N`을 같은 채널 모델 위에서 비교하는 신뢰 전송 과제입니다.
+
+    ## 남은 약점
+
+    - 실제 네트워크가 아니라 시뮬레이션 채널을 사용합니다.
+- GBN 성능 로그를 자동 수집하지 않습니다.
+- 동시성 대신 단일 이벤트 루프를 사용합니다.

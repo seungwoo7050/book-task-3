@@ -1,87 +1,73 @@
-# Web Proxy — Problem Specification
+# Web Proxy 문제 안내
 
-## 안내
+## 이 문서의 역할
 
-이 문서는 제공 과제 사양을 source-close하게 보존하기 위해 원문 중심으로 유지한다.
-공개용 문제 요약과 학습 맥락은 상위 `README.md`를 먼저 참고한다.
+이 문서는 `Web Proxy`를 시작하기 전에 읽는 현재 저장소 기준 문제 사양입니다. 구현 세부와 공개 구현 경로는 상위 프로젝트 README가 연결하는 경로를 따라가면 됩니다.
 
+## 문제 목표
 
-## Objective
+클라이언트의 HTTP GET 요청을 원 서버로 전달하고, 응답을 다시 클라이언트에 돌려주며, 같은 URL에 대해서는 캐시를 재사용하는 프록시 서버를 구현합니다.
 
-Implement an HTTP proxy server that forwards client HTTP GET requests to origin servers, returns the responses to the client, and caches responses for future requests.
+## 구현해야 할 동작
 
-## Requirements
+### 프록시 서버 수신
 
-### Functional Requirements
+- 기본 포트 `8888`(변경 가능)에서 TCP 연결을 받습니다.
+- 클라이언트 연결을 accept해 요청을 읽습니다.
 
-1. **Proxy Listening**
-   - Listen on a configurable TCP port (default: `8888`)
-   - Accept incoming client connections
+### 요청 파싱
 
-2. **Request Parsing**
-   - Parse the HTTP GET request to extract the target URL
-   - A proxy request uses an **absolute URL**:
-     ```
-     GET http://www.example.com/index.html HTTP/1.1\r\n
-     ```
-   - Extract: hostname, port (default 80), and path
+- 프록시 요청에 포함된 절대 URL을 파싱합니다.
+- 호스트 이름, 포트(기본 80), 경로를 추출합니다.
 
-3. **Forwarding**
-   - Open a TCP connection to the origin server
-   - Send a modified HTTP request (with relative path):
-     ```
-     GET /index.html HTTP/1.1\r\n
-     Host: www.example.com\r\n
-     Connection: close\r\n
-     \r\n
-     ```
-   - Receive the full response from the origin server
+### 원 서버로 전달
 
-4. **Response Relay**
-   - Forward the origin server's response back to the client
-   - Close the client connection
+- 원 서버에 TCP 연결을 열고 상대 경로 기반 HTTP 요청으로 바꿔 전달합니다.
+- `Host` 헤더와 `Connection: close`를 적절히 포함합니다.
 
-5. **Caching**
-   - After receiving a response from the origin server, cache it locally
-   - On subsequent requests for the same URL, serve from cache (no origin contact)
-   - Cache files can use a hash of the URL as the filename
-   - Print a log message indicating whether a response is served from cache or fetched fresh
+### 응답 중계
 
-6. **Concurrent Connections**
-   - Handle each client connection in a separate thread
+- 원 서버 응답 전체를 읽어 클라이언트에 그대로 전달합니다.
+- 전송 후 연결을 닫습니다.
 
-### Expected Output
+### 캐시
 
-```
-[INFO] Proxy server started on port 8888
-[FETCH] GET http://www.example.com/index.html → origin server
-[CACHE] Stored: cache/a1b2c3d4.dat
-[HIT]   GET http://www.example.com/index.html → served from cache
-```
+- 새 응답은 로컬에 저장합니다.
+- 같은 URL 요청이 다시 오면 원 서버에 가지 않고 캐시를 반환합니다.
+- URL 해시를 캐시 파일 이름으로 사용할 수 있습니다.
 
-## Constraints
+### 동시성
 
-- Python 3 standard library only
-- No HTTP libraries (`http.client`, `urllib`, `requests` are **not** allowed)
-- Handle only HTTP GET requests (not HTTPS CONNECT)
-- The proxy should handle basic HTTP/1.1 requests
+- 클라이언트 연결마다 별도 스레드로 처리합니다.
 
-## Input / Environment
+## 제공 자료와 실행 환경
 
-- Skeleton code: `code/proxy_skeleton.py`
-- Test script: `script/test_proxy.sh`
-- Configure your browser to use `localhost:8888` as HTTP proxy, or use curl:
-  ```bash
-  curl -x http://localhost:8888 http://www.example.com/
-  ```
+- starter code: `code/proxy_skeleton.py`
+- 검증 스크립트: `script/test_proxy.sh`
+- 수동 확인 예시: `curl -x http://localhost:8888 http://www.example.com/`
 
-## Evaluation Criteria
+## 제약과 해석 기준
 
-| Criterion | Description |
+- Python 3 표준 라이브러리만 사용합니다.
+- `http.client`, `urllib`, `requests` 같은 HTTP 라이브러리는 사용하지 않습니다.
+- 범위는 HTTP GET으로 제한하고 `HTTPS CONNECT`는 다루지 않습니다.
+
+## 성공 기준
+
+| 항목 | 내용 |
 | :--- | :--- |
-| **Request Forwarding** | Proxy correctly relays requests to origin servers |
-| **Response Relay** | Client receives the complete origin response |
-| **Caching** | Repeated requests are served from local cache |
-| **URL Parsing** | Hostname, port, and path are extracted correctly |
-| **Multi-threading** | Concurrent connections are handled |
-| **Code Quality** | Clean, well-documented code |
+| 요청 전달 | 프록시가 원 서버로 요청을 정확히 전달합니다. |
+| 응답 중계 | 클라이언트가 원 서버 응답을 완전하게 받습니다. |
+| 캐시 재사용 | 반복 요청을 캐시에서 처리합니다. |
+| URL 파싱 | 호스트, 포트, 경로를 올바르게 추출합니다. |
+| 동시성 | 여러 연결을 처리할 수 있습니다. |
+| 코드 품질 | 구조가 분명하고 읽기 쉬운 Python 코드입니다. |
+
+## 출력 예시
+
+```text
+[INFO] Proxy server started on port 8888
+[FETCH] GET http://www.example.com/index.html -> origin server
+[CACHE] Stored: cache/a1b2c3d4.dat
+[HIT]   GET http://www.example.com/index.html -> served from cache
+```

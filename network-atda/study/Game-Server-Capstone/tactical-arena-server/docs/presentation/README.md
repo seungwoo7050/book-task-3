@@ -13,11 +13,11 @@
 기존 과제들과 같은 수준을 만족한다. 근거는 아래 네 가지다.
 
 1. 공개 구조가 분리되어 있다.
-   `problem/`, `cpp/`, `docs/`, `notion/`의 역할이 명확하고 README가 이를 설명한다.
+   `problem/`, `cpp/`, `docs/`, `notion/`, `notion-archive/`의 역할이 명확하고 README가 이를 설명한다.
 2. canonical 검증이 있다.
    `make -C study/Game-Server-Capstone/tactical-arena-server/problem test`가 unit + integration + load smoke를 한 번에 검증한다.
-3. 공개 문서와 private notebook이 모두 있다.
-   `docs/`는 durable notes, `notion/`은 실제 문제 framing/디버그/회고를 담는다.
+3. 공개 문서와 학습 노트가 함께 있다.
+   `docs/`는 오래 남길 설명을, `notion/`은 현재 기준 문제 framing/디버그/회고를, `notion-archive/`는 이전 형식 백업을 담는다.
 4. 재현 가능한 실행 시나리오가 있다.
    `run-bot-demo`, `presentation_capture.py`, `presentation_load_capture.py`로 발표 장면을 다시 만들 수 있다.
 
@@ -127,7 +127,7 @@ python3 problem/script/presentation_load_capture.py cpp/build
 - `ROOM_UPDATE -> READY` echo loop
 - 외부 프로세스 래퍼 기반 loadtest 불안정성
 
-관련 정리는 [`../../notion/02-debug-log.md`](../../notion/02-debug-log.md)에 있다.
+현재 기준 정리는 [`../../notion/02-debug-log.md`](../../notion/02-debug-log.md)에 있고, 이전 형식 기록은 [`../../notion-archive/`](../../notion-archive/)에 남겨 두었다.
 
 ### Slide 10. 한계와 다음 단계
 
