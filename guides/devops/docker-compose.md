@@ -504,3 +504,11 @@ volumes:
 networks:
   name:
 ```
+
+---
+
+## 관련 문서
+
+- [failure-injection.md](failure-injection.md) — Compose 환경에서 재현 가능한 로컬 장애 시나리오 (DB Down, Redis Down, 리소스 제한, 네트워크 지연)
+- [observability-reliability.md](observability-reliability.md) — healthcheck와 메트릭 계측 기준
+

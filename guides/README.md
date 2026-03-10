@@ -16,14 +16,15 @@
 | 알고리즘 문제 풀이 | [Python](language/python.md) → [C++](language/cpp.md) → [Makefile](tool/makefile.md) |
 | 시스템 프로그래밍 | [C](language/c.md) → [C++](language/cpp.md) → [CMake](tool/cmake.md) → [Makefile](tool/makefile.md) |
 | 네트워크 실습 | [Python](language/python.md) → [C++](language/cpp.md) → [CMake](tool/cmake.md) → [Wireshark](tool/wireshark.md) |
-| Go 백엔드 | [Go](language/go.md) → [SQL](database/sql.md) → [gRPC](backend/grpc.md) → [Docker](devops/docker.md) → [Docker Compose](devops/docker-compose.md) → [Makefile](tool/makefile.md) |
-| Node 백엔드 | [TypeScript](language/typescript.md) → [Node.js](backend/nodejs.md) → [Express](backend/express.md) 또는 [NestJS](backend/nestjs.md) → [Drizzle ORM](database/drizzle-orm.md) → [Vitest](testing/vitest.md) |
-| Python 백엔드 | [Python](language/python.md) → [FastAPI](backend/fastapi.md) → [Pydantic](backend/pydantic.md) → [SQLAlchemy](database/sqlalchemy.md) → [Celery](backend/celery.md) → [Redis](database/redis.md) → [uv](tool/uv-py.md) → [pytest](testing/pytest.md) → [GitHub Actions](devops/github-actions.md) |
+| Go 백엔드 | [Go](language/go.md) → [SQL](database/sql.md) → [gRPC](backend/grpc.md) → [Docker](devops/docker.md) → [Docker Compose](devops/docker-compose.md) → [Observability](devops/observability-reliability.md) → [Makefile](tool/makefile.md) |
+| Node 백엔드 | [TypeScript](language/typescript.md) → [Node.js](backend/nodejs.md) → [Express](backend/express.md) 또는 [NestJS](backend/nestjs.md) → [Drizzle ORM](database/drizzle-orm.md) → [Vitest](testing/vitest.md) → [Load Testing](testing/load-testing.md) |
+| Python 백엔드 | [Python](language/python.md) → [FastAPI](backend/fastapi.md) → [Pydantic](backend/pydantic.md) → [SQLAlchemy](database/sqlalchemy.md) → [Celery](backend/celery.md) → [Redis](database/redis.md) → [uv](tool/uv-py.md) → [pytest](testing/pytest.md) → [Load Testing](testing/load-testing.md) → [Observability](devops/observability-reliability.md) → [GitHub Actions](devops/github-actions.md) |
 | 프론트엔드 | [HTML](frontend/html.md) → [CSS](frontend/css.md) → [TypeScript](language/typescript.md) → [React](frontend/react.md) → [Next.js](frontend/nextjs.md) → [Vite](frontend/vite.md) → [Vitest](testing/vitest.md) → [Playwright](testing/playwright.md) |
 | 모바일 앱 | [TypeScript](language/typescript.md) → [React](frontend/react.md) → [React Native](frontend/react-native.md) → [Kotlin](language/kotlin.md) → [Swift](language/swift.md) |
 | Spring 백엔드 | [Java](language/java.md) → [Spring Boot](backend/spring-boot.md) → [Spring Data JPA](database/spring-data-jpa.md) → [Gradle](tool/gradle.md) → [Redis](database/redis.md) → [Kafka](backend/kafka.md) → [JUnit 5](testing/junit.md) → [GitHub Actions](devops/github-actions.md) |
-| C++ 서버 | [C++](language/cpp.md) → [CMake](tool/cmake.md) → [Makefile](tool/makefile.md) → [GitHub Actions](devops/github-actions.md) |
-| 클라우드·보안 | [Python](language/python.md) → [Terraform](devops/terraform.md) → [Docker](devops/docker.md) → [Docker Compose](devops/docker-compose.md) → [Makefile](tool/makefile.md) |
+| C++ 서버 | [C++](language/cpp.md) → [CMake](tool/cmake.md) → [Makefile](tool/makefile.md) → [Load Testing](testing/load-testing.md) → [Failure Injection](devops/failure-injection.md) → [GitHub Actions](devops/github-actions.md) |
+| 클라우드·보안 | [Python](language/python.md) → [Terraform](devops/terraform.md) → [Docker](devops/docker.md) → [Docker Compose](devops/docker-compose.md) → [Observability](devops/observability-reliability.md) → [Failure Injection](devops/failure-injection.md) → [Makefile](tool/makefile.md) |
+| **캡스톤 제출 공통** | [Observability](devops/observability-reliability.md) → [Load Testing](testing/load-testing.md) → [Failure Injection](devops/failure-injection.md) → [Capstone Path](submission/root-to-three-capstones.md) → [Submission Rubric](submission/submission-readiness-rubric.md) |
 
 ---
 
@@ -89,7 +90,7 @@
 
 ### Testing
 
-단위·통합·E2E 테스트 프레임워크.
+단위·통합·E2E·성능 테스트 프레임워크.
 
 | 문서 | 한줄 요약 |
 |------|-----------|
@@ -97,10 +98,20 @@
 | [Playwright](testing/playwright.md) | 사용자 흐름 기반 E2E 테스트 도구 |
 | [pytest](testing/pytest.md) | Python 테스트 프레임워크 |
 | [JUnit 5](testing/junit.md) | Java 테스트 프레임워크 |
+| [Load Testing](testing/load-testing.md) | k6·Locust·C++ 하네스 기반 성능 측정과 SLO 검증 |
+
+### Submission
+
+캡스톤 제출 준비와 판정 기준.
+
+| 문서 | 한줄 요약 |
+|------|-----------|
+| [Capstone Path](submission/root-to-three-capstones.md) | 공통 기반에서 세 캡스톤 분기로 이어지는 제출 경로 |
+| [Submission Readiness Rubric](submission/submission-readiness-rubric.md) | 기능·재현·테스트·운영 증거·문서 기준 제출 판정 스코어카드 |
 
 ### DevOps
 
-컨테이너, 인프라, 배포.
+컨테이너, 인프라, 배포, 관측성.
 
 | 문서 | 한줄 요약 |
 |------|-----------|
@@ -108,6 +119,8 @@
 | [Docker Compose](devops/docker-compose.md) | 로컬 인프라를 선언적으로 띄우는 도구 |
 | [Terraform](devops/terraform.md) | 인프라를 코드로 선언하고 관리하는 IaC 도구 |
 | [GitHub Actions](devops/github-actions.md) | GitHub 내장 CI/CD 파이프라인 |
+| [Observability & Reliability](devops/observability-reliability.md) | SLI/SLO 모델, 로깅·메트릭·트레이싱 최소 구성, 인시던트 템플릿 |
+| [Failure Injection](devops/failure-injection.md) | 재현 가능한 로컬 장애 훈련 시나리오 |
 
 ### Tool
 
