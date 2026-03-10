@@ -1,24 +1,26 @@
-# Problem Framing
+# Problem Guide
 
-겹치는 L0 SSTable 여러 개를 읽어서 최신 값이 남도록 병합하고, 결과를 L1 SSTable 하나로 재작성한다. compaction 이후에는 manifest와 파일 집합이 서로 어긋나지 않아야 하며, deepest level일 때만 tombstone을 제거할 수 있다.
+이 문서는 05 Leveled Compaction 프로젝트에서 “무엇을 구현해야 하는가”를 현재 기준으로 다시 설명합니다. 과거 과제군에서 출발한 아이디어는 남기되, 현재 레포에 없는 로컬 경로를 전제로 설명하지는 않습니다.
 
-## Success Criteria
+## 문제 핵심
 
-- 입력 source 배열에서 newer-first 우선순위를 유지한 `k-way merge`
-- L2가 비어 있을 때만 tombstone 제거
-- 새 L1 SSTable 생성 후 manifest를 atomic write로 갱신
-- compaction이 끝나면 이전 입력 파일이 제거됨
+- 입력 source 배열에서 newer-first 우선순위를 유지한 k-way merge를 수행해야 합니다.
+- deepest level일 때만 tombstone을 제거해야 합니다.
+- 새 SSTable 생성 후 manifest를 atomic write로 갱신해야 합니다.
+- compaction이 끝나면 이전 입력 파일을 정리해야 합니다.
 
-## Source Provenance
+## 이번 범위에서 일부러 뺀 것
 
-- 원본 문제: `legacy/storage-engine/compaction/problem/README.md`
-- 원본 테스트 의미: `legacy/storage-engine/compaction/solve/test/merge.test.js`
-- 원본 테스트 의미: `legacy/storage-engine/compaction/solve/test/level-manager.test.js`
-- 원본 구현 참고: `legacy/storage-engine/compaction/solve/solution/merge.js`
-- 원본 구현 참고: `legacy/storage-engine/compaction/solve/solution/level-manager.js`
+- background compaction scheduler와 multi-level balancing 정책은 포함하지 않습니다.
+- compression과 block cache는 후속 확장 범위로 남깁니다.
 
-## Normalization Notes
+## 제공 자료
 
-- JS의 `SSTable` 의존성은 이 프로젝트 내부 Go 구현으로 치환했다.
-- 레거시의 설명을 따라 `sources[0]`을 newest로 해석하되, 실제 L0 file list는 flush 순서라서 compaction 시 reverse 처리한다.
-- manifest는 JSON 유지하되 저장 방식은 `fileio.AtomicWrite`로 정규화했다.
+- 이 프로젝트는 별도 starter artifact 없이 `problem/README.md` 자체가 요구사항 문서 역할을 합니다.
+
+## 역사적 출처와 현재 재구성
+
+- 원래 속한 학습 주제: Compaction
+- 원래 구현 형태: JavaScript 기반 storage-engine compaction 과제로, merge와 level manager가 분리돼 있었습니다.
+- 현재 프로젝트에서의 재구성: 현재 레포에서는 Go SSTable 구현을 직접 사용해 compaction과 manifest atomicity를 같은 흐름에서 설명합니다.
+- 원본 소스 트리는 현재 레포에 포함돼 있지 않으며, 이 문서는 현재 공개 레포 기준으로 다시 정리한 설명입니다.

@@ -1,19 +1,29 @@
-# 07 Buffer Pool — Notion 문서 가이드
+# 학습 노트 안내
 
-## 이 폴더는 무엇인가
+디스크 page를 메모리 frame으로 올려 재사용하는 buffer pool과, 그 위에서 eviction 순서를 정하는 LRU를 분리해 배우는 단계입니다.
 
-이 `notion/` 폴더는 Buffer Pool Manager 프로젝트를 블로그형 에세이와 타임라인으로 정리한 문서 세트다.
+## 이 노트를 읽기 전에 잡을 질문
+- 같은 page를 여러 번 읽을 때 어떤 객체를 다시 써야 하고, 어떤 조건에서만 eviction을 허용해야 안전한가?
+- 다음 단계 `08 MVCC`에 무엇을 넘기는가?
 
-## 문서 목록과 읽는 순서
+## 권장 읽기 순서
+1. `../problem/README.md`로 요구와 범위를 먼저 확인합니다.
+2. `../internal/bufferpool/buffer_pool.go`, `../internal/lrucache/lru_cache.go`, `../tests/buffer_pool_test.go`를 열어 실제 구현 표면을 먼저 잡습니다.
+3. `../tests/`에서 이 프로젝트가 무엇을 보장하는지 확인합니다. 핵심 테스트는 `TestFetchPageFromDisk`, `TestReturnCachedPage`, `TestTrackDirtyPages`, `TestEvictionAfterUnpin`입니다.
+4. 데모 경로 `../cmd/buffer-pool/main.go`를 실행해 전체 흐름을 빠르게 눈으로 확인합니다.
+5. 마지막으로 `./00-problem-framing.md`부터 `./04-knowledge-index.md`까지 읽으며 판단과 연결 지점을 정리합니다.
 
-| 순서 | 문서 | 목적 |
-|------|------|------|
-| 1 | [essay.md](essay.md) | LRU 캐시, pin/unpin, dirty write-back의 동기와 구현. |
-| 2 | [timeline.md](timeline.md) | 개발 타임라인. LRU → BufferPool → 테스트 순서. |
+## 이번 노트가 담는 것
+- `00-problem-framing.md`: 같은 page를 여러 번 읽을 때 어떤 객체를 다시 써야 하고, 어떤 조건에서만 eviction을 허용해야 안전한가?에 대한 범위와 성공 기준을 정리합니다.
+- `01-approach-log.md`: eviction 정책과 page 상태를 분리한다, pin count를 eviction 금지 신호로 쓴다 같은 실제 구현 선택을 기록합니다.
+- `02-debug-log.md`: cache hit인데 새 Page 객체를 만드는 경우, pin이 남아 있는데 eviction하는 경우처럼 다시 깨질 수 있는 지점을 모아 둡니다.
+- `03-retrospective.md`: 이 단계에서 얻은 것, 남긴 단순화, 다음 확장 방향을 정리합니다.
+- `04-knowledge-index.md`: 용어, 핵심 파일, 개념 문서, 검증 앵커를 빠르게 다시 찾는 인덱스입니다.
 
-## 목적별 바로가기
+## 검증 앵커
+- 테스트: `TestFetchPageFromDisk`, `TestReturnCachedPage`, `TestTrackDirtyPages`, `TestEvictionAfterUnpin`
+- 데모 경로: `../cmd/buffer-pool/main.go`에서 `cmd/buffer-pool/main.go`는 sample file
+- 데모가 보여 주는 장면: page 1을 읽어 prefix를 출력합니다.
+- 개념 문서: `../docs/concepts/lru-eviction.md`, `../docs/concepts/pin-and-dirty.md`
 
-- **"Buffer Pool이 왜 필요한지"** → [essay.md](essay.md) 첫 섹션
-- **"LRU 캐시 구현"** → [essay.md](essay.md) "LRU 캐시" 섹션
-- **"pin/unpin과 dirty 추적"** → [essay.md](essay.md) "페이지 관리" 섹션
-- **"처음부터 재현"** → [timeline.md](timeline.md)
+- 이전 장문 기록은 `../notion-archive/`에 보존돼 있습니다.

@@ -1,0 +1,33 @@
+# 접근 기록
+
+## 읽기 순서 제안
+1. `../problem/README.md`에서 요구와 현재 재구성 범위를 먼저 확인합니다.
+2. 구현 핵심 파일을 열어 어떤 타입과 함수가 중심인지 확인합니다.
+3. `../tests/`를 읽어 이 프로젝트가 실제로 고정한 계약을 확인합니다.
+4. 데모를 실행해 테스트가 말하는 계약이 출력으로도 드러나는지 봅니다.
+5. 마지막에 개념 문서를 읽으며 용어와 설계 판단을 정리합니다.
+
+## 코드가 택한 분해 방식
+### 읽기 우선순위를 메모리에서 디스크 순으로 고정한다
+- 관련 파일: `../internal/lsmstore/store.go`
+- 판단: 최근 write가 항상 먼저 보이도록 active memtable, immutable snapshot, newest-first SSTable 순서로 읽습니다. 이 순서가 LSM read path의 핵심 계약입니다.
+
+### flush 동안 immutable snapshot을 분리한다
+- 관련 파일: `../internal/lsmstore/store.go`
+- 판단: active memtable을 바로 비워 버리는 대신 immutable snapshot으로 떼어 놓고 파일화합니다. 이렇게 해야 flush 중에도 읽기 규칙을 설명할 수 있습니다.
+
+### 학습용 포맷은 단순하게, precedence는 엄격하게 가져간다
+- 관련 파일: `../internal/sstable/sstable.go`
+- 판단: Go 쪽은 앞 단계 SSTable 구현을 재사용하고, Python 쪽은 JSON lines 기반으로 단순화했지만 둘 다 precedence와 tombstone 규칙은 동일하게 유지합니다.
+
+## 검증 명령
+```bash
+cd go/database-internals/03-mini-lsm-store
+go test ./...
+go run ./cmd/mini-lsm-store
+```
+
+## 포트폴리오 설명으로 바꿀 때 남길 장면
+- memtable, immutable snapshot, SSTable 세 계층을 그림으로 놓고 read precedence를 설명하면 이 프로젝트의 핵심이 바로 전달됩니다.
+- flush 이후에도 같은 key lookup 결과가 유지된다는 점을 demo와 test로 같이 보여 줄 수 있습니다.
+- Python 구현은 JSON lines로 단순화했고 Go 구현은 앞 단계 binary SSTable을 재사용했다는 대비도 설명 포인트가 됩니다.

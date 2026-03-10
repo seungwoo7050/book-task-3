@@ -1,86 +1,55 @@
 # Migration Conventions
 
-## Public Directory Shape
+이 문서는 현재 레포가 따르는 공개 문서 계약과 프로젝트 표면 규칙을 정리합니다. 기준일은 2026-03-10입니다.
 
-각 언어 프로젝트는 아래 공개 표면을 가진다.
+## 프로젝트 공개 표면
 
-- `README.md`
-- `problem/`
-- `docs/`
-- 언어별 구현 표면
+각 프로젝트는 아래 다섯 층을 분리해서 보여 줍니다.
 
-루트는 `go/<track>/<project>/` 또는 `python/<track>/<project>/`다. `notion/`은 로컬 전용이며 추적하지 않는다.
+- `README.md`: 학습 목표, 읽는 순서, 검증 명령, 포트폴리오 확장 힌트
+- `problem/`: 현재 프로젝트가 해결하려는 문제와 제공 자료
+- `docs/`: 개념 메모와 설명형 참고자료 목록
+- 구현 표면: Go의 `internal/`, `cmd/`, `tests/` 또는 Python의 `src/`, `tests/`
+- `notion/`: 현재 공개용 학습 노트
 
-## Status Vocabulary
+## notion 정책
 
-- `planned`: 구조만 생성됐고 구현은 아직 없음
-- `in-progress`: 구현 중이며 공개 명령이 일부만 검증됨
-- `verified`: 문서에 적힌 빌드/테스트 명령이 실제 통과함
-- `archived`: 더 이상 정본 구현 대상으로 확장하지 않음
+- `notion/`은 공개 가능하고 추적되는 학습 노트입니다.
+- `notion-archive/`는 이전 세대 문서를 보존하는 폴더입니다.
+- 새 `notion/`은 아래 구조를 기본으로 사용합니다.
+  - `README.md`
+  - `00-problem-framing.md`
+  - `01-approach-log.md`
+  - `02-debug-log.md`
+  - `03-retrospective.md`
+  - `04-knowledge-index.md`
 
-## Go Layout
+## provenance 규칙
 
-Go 구현은 기본적으로 아래 구조를 따른다.
+- provenance는 설명형 문장으로 남깁니다.
+- 현재 레포에 없는 과거 로컬 경로를 현재 탐색 경로처럼 문서화하지 않습니다.
+- 최소한 아래 정보를 남깁니다.
+  - 어떤 역사적 학습 주제에서 왔는가
+  - 원래 어떤 구현 형태였는가
+  - 현재 프로젝트에서 무엇을 유지했고 무엇을 재구성했는가
+  - 원본 소스 트리는 현재 레포에 포함되지 않는다는 사실
 
-```text
-<project>/
-  README.md
-  problem/
-  docs/
-  go.mod
-  cmd/<project>/
-  internal/
-  tests/
-```
+## 검증 규칙
 
-원칙:
+- README에는 실제로 다시 실행할 수 있는 프로젝트 로컬 명령만 적습니다.
+- Go 프로젝트는 기본적으로 `GOWORK=off go test ./...`와 `go run ./cmd/...`를 공식 검증 명령으로 사용합니다.
+- Python 프로젝트는 기본적으로 프로젝트 로컬 `.venv` 생성, 의존성 설치, `PYTHONPATH=src python -m pytest`, 패키지 실행 명령을 함께 적습니다.
+- 루트와 트랙 문서는 프로젝트 로컬 명령으로만 안내합니다.
 
-- 표준 라이브러리를 우선 사용한다.
-- 프로젝트는 독립 모듈로 유지한다.
-- 루트 `go.work`는 개발 편의용 연결만 제공하고, 루트 빌드 인터페이스는 제공하지 않는다.
-- 문서에 적는 공식 검증 명령은 프로젝트 로컬 `GOWORK=off` 기준으로 적는다.
+## 문서 톤 규칙
 
-## Python Layout
+- 학습자에게 친절해야 하지만, 답안집처럼 보이면 안 됩니다.
+- 코드보다 문제 해석과 설계 의도를 먼저 설명합니다.
+- 한국어를 기본으로 쓰고, 필요한 기술 용어만 영어 원어를 병기합니다.
+- 각 README는 독자가 자신의 포트폴리오 레포로 확장할 수 있는 힌트를 남겨야 합니다.
 
-Python 구현은 기본적으로 아래 구조를 따른다.
+## 언어 트랙 원칙
 
-```text
-<project>/
-  README.md
-  problem/
-  docs/
-  pyproject.toml
-  src/<package>/
-  tests/
-```
-
-원칙:
-
-- stdlib 우선, 외부 프레임워크는 꼭 필요한 경우에만 도입한다.
-- 초기 웨이브에서는 capstone을 제외하고 웹 프레임워크를 쓰지 않는다.
-- 공식 검증 명령은 프로젝트 로컬 `PYTHONPATH=src python3 -m pytest`와 demo 실행을 기준으로 적는다.
-
-## Provenance Rules
-
-- `problem/README.md`에는 반드시 `Source Provenance` 섹션을 둔다.
-- 원본이 `legacy/`의 어떤 파일에서 왔는지 명시한다.
-- 번역, 분할, API 변경이 있으면 무엇이 달라졌는지 적는다.
-
-## Verification Rules
-
-- 공개 README에는 실제로 통과한 명령만 적는다.
-- 검증 범위는 최소 `build or compile`, `tests`, `demo or fixture run` 중 해당되는 것을 포함한다.
-- 루트 정본 문서는 개별 프로젝트 명령으로만 검증을 안내한다.
-
-## Private Notes
-
-- `go/**/notion/`과 `python/**/notion/`은 `.gitignore`로 제외한다.
-- tracked 파일은 `notion/` 존재를 가정하지 않는다.
-- 과정성 로그, 실패 기록, 회고는 `notion/`에서 관리한다.
-
-## Repository-Specific Overrides
-
-- Go는 전체 커리큘럼을 다루는 정본 슈퍼셋이다.
-- Python은 진입장벽을 낮춘 입문 경로이며 Go와 1:1 parity를 요구하지 않는다.
-- FastAPI는 Python capstone에서만 허용한다.
-- `legacy/`는 읽기 전용 참조로 취급한다.
+- Go는 전체 커리큘럼을 다루는 정본(superset)입니다.
+- Python은 더 낮은 진입장벽을 위해 프로젝트 수를 줄인 입문 경로입니다.
+- Python은 Go와 1:1 parity를 목표로 하지 않지만, 주요 개념 흐름은 교차 매핑이 가능해야 합니다.

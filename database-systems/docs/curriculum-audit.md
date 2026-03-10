@@ -1,88 +1,48 @@
 # Curriculum Audit
 
-## 원래 저장소가 배우려던 것
+## 이 저장소가 겨냥하는 학습 목표
 
-`legacy/README.md`와 모듈 문서를 보면 이 저장소는 두 축을 함께 배우려 했다.
+이 레포는 두 개의 큰 흐름을 한 저장소 안에서 연결해 배우도록 설계돼 있습니다.
 
-- `Database Internals`: LSM-Tree, SSTable, WAL, compaction, buffer pool
-- `Designing Data-Intensive Applications`: RPC, replication, sharding, Raft
+- `Database Internals`: memtable, SSTable, WAL, compaction, buffer pool, MVCC
+- `DDIA Distributed Systems`: RPC, replication, sharding, consensus-lite, clustered KV
 
-즉 목표는 "디스크에 쓰는 단일 노드 저장 엔진"에서 "네트워크로 묶인 분산 키값 저장소"까지의 학습 흐름을 직접 구현으로 따라가는 것이다.
+핵심 목표는 “단일 노드 저장 엔진”과 “네트워크로 연결된 분산 저장소”를 별개의 주제로 끝내지 않고, 구현 관점에서 하나의 학습 경로로 묶는 것입니다.
 
-## 레거시 프로젝트셋 평가
+## 왜 재구성이 필요했는가
 
-### 강점
+과거 과제군은 주제 자체는 좋았지만, 학습 순서와 프로젝트 크기 면에서 몇 가지 문제가 있었습니다.
 
-- 10개 모듈 모두 `problem/docs/solve/devlog`를 갖고 있어서 provenance 추적이 쉽다.
-- Node.js 테스트 스위트는 현재 기준 대부분 통과한다.
-- 스토리지, 트랜잭션, 분산 세 영역이 명시적으로 구분되어 있다.
+- 저장 엔진 초반부가 한 슬롯에 너무 많이 묶여 있어 입문자가 진입하기 어려웠습니다.
+- 분산 파트는 개별 시뮬레이션으로 끝나기 쉬워, 실제 저장 엔진과 연결되는 마지막 단계가 약했습니다.
+- 일부 설명은 과거 로컬 경로와 스크립트 존재를 전제로 쓰여 있어 현재 기준으로는 정확하지 않았습니다.
 
-### 약점
+## 현재 커리큘럼이 해결한 것
 
-- `storage-engine/lsm-tree-core`는 SkipList, SSTable, flush path를 한 슬롯에 몰아 넣어 학습 단위가 너무 크다.
-- 분산 파트는 각 모듈이 개별 시뮬레이션으로 끝나서 실제 저장 엔진과 연결되는 다리 프로젝트가 없다.
-- `legacy/package.json`의 `start:cluster`, `benchmark`는 실제 파일이 없어 루트 실행 계약이 깨져 있다.
-- `legacy/common` 의존이 여러 모듈에 퍼져 있지만, 학습 관점의 공용 라이브러리 표면은 명시돼 있지 않다.
+### Python-first 경로
 
-## Language-First 재구성이 필요한 이유
+- 프로젝트 수를 줄여 핵심 흐름을 더 빨리 잡도록 만들었습니다.
+- memtable + SSTable + mini LSM store를 하나의 시작 프로젝트로 접었습니다.
+- Raft는 제외하고, clustered KV capstone까지 이어지는 입문용 분산 경로를 제공합니다.
 
-### Go lane
+### Go-second 경로
 
-- `lsm-tree-core`는 `memtable-skiplist`, `sstable-format`, `mini-lsm-store`로 나눈다.
-- `wal-recovery`, `leveled-compaction`, `index-filter`, `buffer-pool`, `mvcc`, `rpc-framing`, `leader-follower-replication`, `shard-routing`, `raft-lite`는 유지한다.
-- `clustered-kv-capstone`을 추가해 분산 모듈과 저장 엔진을 실제 흐름으로 연결한다.
+- 저장 엔진 초반부를 더 세밀하게 쪼개어 자료구조, 파일 포맷, orchestration을 단계별로 다룹니다.
+- Raft-lite와 compaction 같은 심화 슬롯을 포함합니다.
+- 전체 커리큘럼의 정본(superset) 역할을 맡습니다.
 
-### Python lane
+## 이 커리큘럼이 학생에게 주는 장점
 
-- Python은 웹 백엔드 학습자 기준으로 낮은 진입선이 더 중요하므로 비연속 슬롯 복제 대신 새 번호를 부여한다.
-- `01-mini-lsm-store`는 Go `01-03`을 접어서 저장 엔진 기본 write/read 흐름을 빠르게 잡는다.
-- `02-wal-recovery`, `03-index-filter`, `04-buffer-pool`, `05-mvcc`는 백엔드 관점에서 중요한 저장/캐시/트랜잭션 주제를 유지한다.
-- 분산 파트는 `rpc-framing`, `leader-follower-replication`, `shard-routing`, `clustered-kv-capstone`만 남기고 `raft-lite`는 Go 심화로 보낸다.
+- 같은 주제를 Python과 Go 두 관점에서 비교할 수 있습니다.
+- 문제 문서와 개념 문서, 학습 노트가 분리되어 있어 “정답 복사”보다 “판단 근거 읽기”가 쉬워집니다.
+- 각 프로젝트 README가 포트폴리오 확장 힌트를 포함하므로, 학습 레포를 그대로 답안집으로 공개하는 대신 자신의 프로젝트로 재구성할 수 있습니다.
 
-## 현재 순서
+## 의도적으로 남겨 둔 빈칸
 
-### Go / Database Internals
+이 레포는 모든 DBMS 주제를 한 번에 다루지 않습니다. 다음 주제는 후속 확장 후보로 남깁니다.
 
-1. MemTable SkipList
-2. SSTable Format
-3. Mini LSM Store
-4. WAL Recovery
-5. Leveled Compaction
-6. Index Filter
-7. Buffer Pool
-8. MVCC
+- query executor, planner, B-Tree 같은 상위 DBMS 주제
+- dynamic membership, fault tolerance, deployment automation 같은 운영 심화 주제
+- production-grade observability, benchmarking, failure injection
 
-### Go / DDIA Distributed Systems
-
-1. RPC Framing
-2. Leader-Follower Replication
-3. Shard Routing
-4. Raft Lite
-5. Clustered KV Capstone
-
-### Python / Database Internals
-
-1. Mini LSM Store
-2. WAL Recovery
-3. Index Filter
-4. Buffer Pool
-5. MVCC
-
-### Python / DDIA Distributed Systems
-
-1. RPC Framing
-2. Leader-Follower Replication
-3. Shard Routing
-4. Clustered KV Capstone
-
-## Historical Drift
-
-- `[검증됨]` 2026-03-07 기준 `legacy/package.json`의 `start:cluster`는 `distributed-cluster/rpc-network/solve/solution/cluster-bootstrap.js`를 가리키지만 파일이 없다.
-- `[검증됨]` 같은 날짜 기준 `benchmark`는 `scripts/benchmark.js`를 가리키지만 파일이 없다.
-- 따라서 새 정본은 루트 스크립트가 아니라 프로젝트 로컬 명령만 약속한다.
-
-## Migration Outcome
-
-- 2026-03-09 기준 Go는 13개 프로젝트 전체를 `verified` 상태로 유지한다.
-- 같은 날짜 기준 Python은 9개 프로젝트를 `verified` 상태로 추가했다.
-- 루트 공개 계약은 `go/`, `python/`, `docs/` 기준으로 정리했다.
+이 빈칸은 단점이 아니라 다음 포트폴리오 주제를 설계할 여지를 남기는 장치입니다.

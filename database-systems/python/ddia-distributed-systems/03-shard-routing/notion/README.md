@@ -1,35 +1,29 @@
-# 03 Shard Routing — Notion 문서 가이드
+# 학습 노트 안내
 
-## 이 폴더의 목적
+replication 전에 먼저 “이 key는 어느 노드가 맡는가”를 설명하기 위해 consistent hashing 기반 shard routing을 분리한 단계입니다.
 
-소스코드만으로는 알 수 없는 **설계 동기, 의사결정 과정, 개발 타임라인**을 기록한다. Consistent hash ring과 virtual node를 사용하여 키를 노드에 균등 분배하고, 노드 변경 시 최소한의 키만 재배치하는 과정을 담는다.
+## 이 노트를 읽기 전에 잡을 질문
+- 노드가 추가되거나 제거되어도 전체 key 재배치를 최소화하려면 routing 계층은 어떤 ring 구조를 가져야 하는가?
+- 다음 단계 `04 Clustered KV Capstone`에 무엇을 넘기는가?
 
-## 문서 안내
+## 권장 읽기 순서
+1. `../problem/README.md`로 요구와 범위를 먼저 확인합니다.
+2. `../src/shard_routing/core.py`, `../tests/test_shard_routing.py`, `../src/shard_routing/__main__.py`를 열어 실제 구현 표면을 먼저 잡습니다.
+3. `../tests/`에서 이 프로젝트가 무엇을 보장하는지 확인합니다. 핵심 테스트는 `test_empty_and_single_node_routing`, `test_distribution_and_rebalance`, `test_batch_routing`입니다.
+4. 데모 경로 `../src/shard_routing/__main__.py`를 실행해 전체 흐름을 빠르게 눈으로 확인합니다.
+5. 마지막으로 `./00-problem-framing.md`부터 `./04-knowledge-index.md`까지 읽으며 판단과 연결 지점을 정리합니다.
 
-| 문서 | 설명 | 이런 경우에 읽으세요 |
-|------|------|---------------------|
-| [essay.md](essay.md) | 블로그 스타일 에세이 — consistent hashing이 해결하는 문제와 구현 과정 | 프로젝트의 맥락과 설계 철학을 이해하고 싶을 때 |
-| [timeline.md](timeline.md) | 개발 과정 타임라인 — CLI 명령어, 패키지 설치, 구현 순서 | 이 프로젝트를 처음부터 재현하고 싶을 때 |
+## 이번 노트가 담는 것
+- `00-problem-framing.md`: 노드가 추가되거나 제거되어도 전체 key 재배치를 최소화하려면 routing 계층은 어떤 ring 구조를 가져야 하는가?에 대한 범위와 성공 기준을 정리합니다.
+- `01-approach-log.md`: consistent hash ring을 routing 계층으로 독립시킨다, virtual node를 적극적으로 사용한다 같은 실제 구현 선택을 기록합니다.
+- `02-debug-log.md`: 빈 ring이나 단일 노드 경계 조건이 깨지는 경우, virtual node 분포가 치우치는 경우처럼 다시 깨질 수 있는 지점을 모아 둡니다.
+- `03-retrospective.md`: 이 단계에서 얻은 것, 남긴 단순화, 다음 확장 방향을 정리합니다.
+- `04-knowledge-index.md`: 용어, 핵심 파일, 개념 문서, 검증 앵커를 빠르게 다시 찾는 인덱스입니다.
 
-## 키워드
+## 검증 앵커
+- 테스트: `test_empty_and_single_node_routing`, `test_distribution_and_rebalance`, `test_batch_routing`
+- 데모 경로: `../src/shard_routing/__main__.py`
+- 데모가 보여 주는 장면: Go 데모는 `alpha`, `beta`, `gamma`가 어느 node로 가는지 출력합니다. Python 데모는 `k1`~`k4` batch routing 결과를 그대로 print합니다.
+- 개념 문서: `../docs/concepts/rebalance-accounting.md`, `../docs/concepts/virtual-nodes.md`
 
-`consistent hashing` · `hash ring` · `virtual node` · `bisect` · `shard routing` · `rebalance` · `moved keys` · `batch routing` · `SHA-256`
-
-## 프로젝트 위치
-
-```
-python/ddia-distributed-systems/03-shard-routing/
-├── src/shard_routing/
-│   ├── __init__.py      # public exports
-│   ├── __main__.py      # demo 엔트리포인트
-│   └── core.py          # hash_value, RingEntry, Ring, Router
-├── tests/
-│   └── test_shard_routing.py  # 3개 테스트 케이스
-└── problem/README.md
-```
-
-## 연관 프로젝트
-
-- **Go DDIA-03 (shard-routing)**: 동일 개념의 Go 구현. MurmurHash3 사용, shared/hash 의존.
-- **Py DDIA-02 (leader-follower-replication)**: 샤드 내의 복제 메커니즘.
-- **Py DDIA-04 (clustered-kv-capstone)**: 최종 통합에서 shard 라우팅을 키 분배에 사용.
+- 이전 장문 기록은 `../notion-archive/`에 보존돼 있습니다.

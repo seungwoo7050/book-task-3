@@ -1,37 +1,29 @@
-# 04 Clustered KV Capstone — Notion 문서 가이드
+# 학습 노트 안내
 
-## 이 폴더의 목적
+앞서 만든 routing, replication, durability를 한 시스템 안에서 묶어 “clustered key-value store”의 최소 end-to-end 흐름을 보여 주는 캡스톤입니다.
 
-소스코드만으로는 알 수 없는 **설계 동기, 의사결정 과정, 개발 타임라인**을 기록한다. Python 분산 시스템 트랙의 최종 프로젝트로서, shard routing + leader-follower replication + disk-backed store + FastAPI를 하나로 통합하는 과정을 담는다.
+## 이 노트를 읽기 전에 잡을 질문
+- key 하나의 write가 shard routing, leader 처리, follower catch-up, restart recovery를 거칠 때 어떤 경계와 책임 분리가 필요한가?
+- 이 트랙을 포트폴리오 설명으로 바꿀 때 어떤 장면을 남길 것인가?
 
-## 문서 안내
+## 권장 읽기 순서
+1. `../problem/README.md`로 요구와 범위를 먼저 확인합니다.
+2. `../src/clustered_kv/core.py`, `../src/clustered_kv/__main__.py`, `../src/clustered_kv/app.py`를 열어 실제 구현 표면을 먼저 잡습니다.
+3. `../tests/`에서 이 프로젝트가 무엇을 보장하는지 확인합니다. 핵심 테스트는 `test_write_routes_to_leader_and_replicates`, `test_follower_catch_up_and_delete`, `test_restart_node_loads_from_disk`, `test_fastapi_round_trip`입니다.
+4. 데모 경로 `../src/clustered_kv/__main__.py`, `../src/clustered_kv/app.py`를 실행해 전체 흐름을 빠르게 눈으로 확인합니다.
+5. 마지막으로 `./00-problem-framing.md`부터 `./04-knowledge-index.md`까지 읽으며 판단과 연결 지점을 정리합니다.
 
-| 문서 | 설명 | 이런 경우에 읽으세요 |
-|------|------|---------------------|
-| [essay.md](essay.md) | 블로그 스타일 에세이 — 세 개의 독립적 개념이 하나의 클러스터가 되는 과정 | 프로젝트의 맥락과 설계 철학을 이해하고 싶을 때 |
-| [timeline.md](timeline.md) | 개발 과정 타임라인 — CLI 명령어, 패키지 설치, 구현 순서 | 이 프로젝트를 처음부터 재현하고 싶을 때 |
+## 이번 노트가 담는 것
+- `00-problem-framing.md`: key 하나의 write가 shard routing, leader 처리, follower catch-up, restart recovery를 거칠 때 어떤 경계와 책임 분리가 필요한가?에 대한 범위와 성공 기준을 정리합니다.
+- `01-approach-log.md`: 정적 topology로 shard와 replica group을 먼저 고정한다, write pipeline을 leader local apply와 follower catch-up으로 나눈다 같은 실제 구현 선택을 기록합니다.
+- `02-debug-log.md`: write가 잘못된 shard나 follower 없는 leader로 가는 경우, follower catch-up이 delete를 놓치는 경우처럼 다시 깨질 수 있는 지점을 모아 둡니다.
+- `03-retrospective.md`: 이 단계에서 얻은 것, 남긴 단순화, 다음 확장 방향을 정리합니다.
+- `04-knowledge-index.md`: 용어, 핵심 파일, 개념 문서, 검증 앵커를 빠르게 다시 찾는 인덱스입니다.
 
-## 키워드
+## 검증 앵커
+- 테스트: `test_write_routes_to_leader_and_replicates`, `test_follower_catch_up_and_delete`, `test_restart_node_loads_from_disk`, `test_fastapi_round_trip`
+- 데모 경로: `../src/clustered_kv/__main__.py`, `../src/clustered_kv/app.py`
+- 데모가 보여 주는 장면: Go 데모는 `alpha` write 후 shard ID, follower ID, 읽은 value, 성공 여부를 함께 출력합니다. Python 데모는 FastAPI `PUT/GET /kv/alpha` round trip JSON을 바로 보여 줍니다.
+- 개념 문서: `../docs/concepts/replicated-write-pipeline.md`, `../docs/concepts/static-topology.md`
 
-`clustered KV` · `static topology` · `DiskStore` · `ReplicaGroup` · `ShardRing` · `Cluster` · `leader-follower` · `watermark sync` · `restart recovery` · `FastAPI` · `JSON Lines`
-
-## 프로젝트 위치
-
-```
-python/ddia-distributed-systems/04-clustered-kv-capstone/
-├── src/clustered_kv/
-│   ├── __init__.py      # public exports
-│   ├── __main__.py      # demo 엔트리포인트
-│   ├── core.py          # DiskStore, ShardRing, Cluster, ReplicaGroup
-│   └── app.py           # FastAPI 엔드포인트, create_app
-├── tests/
-│   └── test_clustered_kv.py  # 4개 테스트 케이스
-└── problem/README.md
-```
-
-## 연관 프로젝트
-
-- **Go DDIA-05 (clustered-kv-capstone)**: 동일 개념의 Go 구현. Raft 합의 포함, FastAPI 대신 Go 내장 서버.
-- **Py DDIA-02 (leader-follower-replication)**: 이 프로젝트에 통합된 복제 로직의 원본.
-- **Py DDIA-03 (shard-routing)**: 이 프로젝트에 통합된 라우팅 로직의 원본.
-- **Py DB-01 (mini-lsm-store)**: DiskStore의 JSON Lines 패턴 원본.
+- 이전 장문 기록은 `../notion-archive/`에 보존돼 있습니다.

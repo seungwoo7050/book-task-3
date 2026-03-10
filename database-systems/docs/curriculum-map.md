@@ -1,25 +1,23 @@
 # Curriculum Map
 
-| Legacy source | Go destination | Python destination | Action | Reason |
+| 역사적 학습 주제 | 현재 Go 목적지 | 현재 Python 목적지 | 현재 처리 방식 | 재구성 이유 |
 | --- | --- | --- | --- | --- |
-| `legacy/storage-engine/lsm-tree-core` | `go/database-internals/01-memtable-skiplist` | folded into `python/database-internals/01-mini-lsm-store` | split/fold | Go는 세분화, Python은 입문 난이도 조절을 위해 통합 |
-| `legacy/storage-engine/lsm-tree-core` | `go/database-internals/02-sstable-format` | folded into `python/database-internals/01-mini-lsm-store` | split/fold | 같은 이유 |
-| `legacy/storage-engine/lsm-tree-core` | `go/database-internals/03-mini-lsm-store` | `python/database-internals/01-mini-lsm-store` | keep/fold | Python 시작점을 self-contained하게 유지 |
-| `legacy/storage-engine/wal-recovery` | `go/database-internals/04-wal-recovery` | `python/database-internals/02-wal-recovery` | keep | durability와 replay 주제가 자족적 |
-| `legacy/storage-engine/compaction` | `go/database-internals/05-leveled-compaction` | none | keep | compaction은 Go 심화로 유지 |
-| `legacy/storage-engine/index-filter` | `go/database-internals/06-index-filter` | `python/database-internals/03-index-filter` | keep | read-path 최적화 주제가 일관됨 |
-| `legacy/transaction-engine/buffer-pool` | `go/database-internals/07-buffer-pool` | `python/database-internals/04-buffer-pool` | keep | page cache 주제가 백엔드 입문에 유효 |
-| `legacy/transaction-engine/mvcc` | `go/database-internals/08-mvcc` | `python/database-internals/05-mvcc` | keep | snapshot isolation 주제가 자족적 |
-| `legacy/distributed-cluster/rpc-network` | `go/ddia-distributed-systems/01-rpc-framing` | `python/ddia-distributed-systems/01-rpc-framing` | keep | framing과 request lifecycle이 분명함 |
-| `legacy/distributed-cluster/replication` | `go/ddia-distributed-systems/02-leader-follower-replication` | `python/ddia-distributed-systems/02-leader-follower-replication` | keep | log shipping과 follower apply 의미가 분명함 |
-| `legacy/distributed-cluster/sharding` | `go/ddia-distributed-systems/03-shard-routing` | `python/ddia-distributed-systems/03-shard-routing` | keep | consistent hashing 범위가 자족적 |
-| `legacy/distributed-cluster/consensus` | `go/ddia-distributed-systems/04-raft-lite` | none | keep | 합의는 Go 심화로 유지 |
-| none | `go/ddia-distributed-systems/05-clustered-kv-capstone` | `python/ddia-distributed-systems/04-clustered-kv-capstone` | add | 분산 모듈과 저장 엔진을 실제 흐름으로 연결하는 브리지 프로젝트 필요 |
+| LSM Tree Core | `01-memtable-skiplist`, `02-sstable-format`, `03-mini-lsm-store` | `01-mini-lsm-store` | Go는 분리, Python은 통합 | Go는 단계적 이해를, Python은 빠른 진입을 우선했습니다. |
+| WAL Recovery | `04-wal-recovery` | `02-wal-recovery` | 유지 | durability와 replay는 독립 주제로 학습 가치가 높습니다. |
+| Compaction | `05-leveled-compaction` | 해당 없음 | Go 심화 유지 | compaction은 입문 경로보다 심화 경로에 더 적합합니다. |
+| Index and Filter Optimization | `06-index-filter` | `03-index-filter` | 유지 | read-path 최적화 주제가 양쪽 트랙에서 모두 유효합니다. |
+| Buffer Pool | `07-buffer-pool` | `04-buffer-pool` | 유지 | page cache와 eviction 정책은 백엔드 학습자에게도 중요합니다. |
+| MVCC | `08-mvcc` | `05-mvcc` | 유지 | snapshot visibility와 conflict 규칙은 저장 엔진 마지막 단계로 적합합니다. |
+| RPC Network | `01-rpc-framing` | `01-rpc-framing` | 유지 | 분산 트랙의 공통 transport 감각을 먼저 잡습니다. |
+| Replication | `02-leader-follower-replication` | `02-leader-follower-replication` | 유지 | log shipping과 follower apply 의미가 명확합니다. |
+| Sharding | `03-shard-routing` | `03-shard-routing` | 유지 | consistent hashing과 rebalance 비용을 독립적으로 보기 좋습니다. |
+| Consensus / Raft | `04-raft-lite` | 해당 없음 | Go 심화 유지 | 합의는 입문 경로보다 Go 심화 경로에 두는 편이 학습 부담이 적습니다. |
+| 저장 엔진 + 분산 시스템 브리지 | `05-clustered-kv-capstone` | `04-clustered-kv-capstone` | 신규 추가 | routing, replication, local storage를 한 요청 흐름으로 묶는 단계가 필요했습니다. |
 
-## Shared Utilities
+## 공용 유틸리티
 
-| Legacy source | Go destination | Action |
+| 영역 | 현재 위치 | 역할 |
 | --- | --- | --- |
-| `legacy/common/serializer` | `go/shared/serializer` | re-implement |
-| `legacy/common/hash` | `go/shared/hash` | re-implement |
-| `legacy/common/file-io` | `go/shared/fileio` | re-implement |
+| serializer | `go/shared/serializer` | 단순 binary record encoding 보조 |
+| hash | `go/shared/hash` | CRC32, MurmurHash3 같은 공용 해시 기능 |
+| file I/O | `go/shared/fileio` | 원자적 쓰기와 파일 관리 보조 |

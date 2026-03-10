@@ -1,24 +1,26 @@
-# Problem Framing
+# Problem Guide
 
-SSTable 전체를 선형 스캔하지 않고도 point lookup을 빠르게 수행하도록 Bloom filter와 sparse index를 붙인다. 없는 key는 filter에서 바로 걸러내고, 있는 key는 sparse index가 가리키는 block만 읽는다.
+이 문서는 06 Index Filter 프로젝트에서 “무엇을 구현해야 하는가”를 현재 기준으로 다시 설명합니다. 과거 과제군에서 출발한 아이디어는 남기되, 현재 레포에 없는 로컬 경로를 전제로 설명하지는 않습니다.
 
-## Success Criteria
+## 문제 핵심
 
-- MurmurHash3 기반 Bloom filter 구현과 직렬화
-- 정렬된 key-offset 스트림에서 sparse index 생성
-- footer metadata를 읽어서 filter/index 위치 복원
-- lookup 시 bloom reject와 bounded block scan 통계 확인
+- Bloom filter를 직렬화·복원할 수 있어야 합니다.
+- 정렬된 key-offset 스트림에서 sparse index를 생성해야 합니다.
+- footer metadata를 읽어 filter와 index 위치를 복원해야 합니다.
+- lookup 시 bloom reject와 bounded block scan이 둘 다 드러나야 합니다.
 
-## Source Provenance
+## 이번 범위에서 일부러 뺀 것
 
-- 원본 문제: `legacy/storage-engine/index-filter/problem/README.md`
-- 원본 테스트 의미: `legacy/storage-engine/index-filter/solve/test/bloom-filter.test.js`
-- 원본 테스트 의미: `legacy/storage-engine/index-filter/solve/test/sparse-index.test.js`
-- 원본 구현 참고: `legacy/storage-engine/index-filter/solve/solution/bloom-filter.js`
-- 원본 구현 참고: `legacy/storage-engine/index-filter/solve/solution/sparse-index.js`
+- learned index와 adaptive filter는 포함하지 않습니다.
+- range query 최적화와 block cache 연동은 다음 단계 확장으로 남깁니다.
 
-## Normalization Notes
+## 제공 자료
 
-- 레거시의 Bloom filter와 sparse index를 하나의 Go SSTable open path로 통합했다.
-- serializer는 shared module을 사용하고, block scan 통계는 Go 테스트에서 직접 검증한다.
-- false positive rate 검증은 환경 의존 flake를 줄이기 위해 느슨한 upper bound만 확인한다.
+- 이 프로젝트는 별도 starter artifact 없이 `problem/README.md` 자체가 요구사항 문서 역할을 합니다.
+
+## 역사적 출처와 현재 재구성
+
+- 원래 속한 학습 주제: Index and Filter Optimization
+- 원래 구현 형태: JavaScript 기반 storage-engine 최적화 과제로, Bloom filter와 sparse index가 분리돼 있었습니다.
+- 현재 프로젝트에서의 재구성: 현재 레포에서는 둘을 하나의 SSTable open path 안으로 통합해 read-path 최적화 흐름을 더 자연스럽게 설명합니다.
+- 원본 소스 트리는 현재 레포에 포함돼 있지 않으며, 이 문서는 현재 공개 레포 기준으로 다시 정리한 설명입니다.

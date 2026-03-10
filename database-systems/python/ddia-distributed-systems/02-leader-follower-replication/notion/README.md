@@ -1,35 +1,29 @@
-# 02 Leader-Follower Replication — Notion 문서 가이드
+# 학습 노트 안내
 
-## 이 폴더의 목적
+consensus를 넣기 전 단계에서 append-only mutation log와 watermark 기반 incremental sync만으로 leader-follower replication을 보여 주는 프로젝트입니다.
 
-소스코드만으로는 알 수 없는 **설계 동기, 의사결정 과정, 개발 타임라인**을 기록한다. Leader-follower 복제 모델에서 append-only log와 watermark 기반 동기화를 구현하는 과정을 담는다.
+## 이 노트를 읽기 전에 잡을 질문
+- follower가 중간에 끊겼다가 다시 붙어도 leader log에서 필요한 부분만 안전하게 따라오게 하려면 어떤 상태를 기억해야 하는가?
+- 다음 단계 `03 Shard Routing`에 무엇을 넘기는가?
 
-## 문서 안내
+## 권장 읽기 순서
+1. `../problem/README.md`로 요구와 범위를 먼저 확인합니다.
+2. `../src/leader_follower/core.py`, `../tests/test_replication.py`, `../src/leader_follower/__main__.py`를 열어 실제 구현 표면을 먼저 잡습니다.
+3. `../tests/`에서 이 프로젝트가 무엇을 보장하는지 확인합니다. 핵심 테스트는 `test_replication_log_assigns_sequential_offsets`, `test_follower_apply_is_idempotent`, `test_replicate_once_incremental_and_deletes`입니다.
+4. 데모 경로 `../src/leader_follower/__main__.py`를 실행해 전체 흐름을 빠르게 눈으로 확인합니다.
+5. 마지막으로 `./00-problem-framing.md`부터 `./04-knowledge-index.md`까지 읽으며 판단과 연결 지점을 정리합니다.
 
-| 문서 | 설명 | 이런 경우에 읽으세요 |
-|------|------|---------------------|
-| [essay.md](essay.md) | 블로그 스타일 에세이 — 왜 복제가 필요하고 어떻게 동기화하는지 | 프로젝트의 맥락과 설계 철학을 이해하고 싶을 때 |
-| [timeline.md](timeline.md) | 개발 과정 타임라인 — CLI 명령어, 패키지 설치, 구현 순서 | 이 프로젝트를 처음부터 재현하고 싶을 때 |
+## 이번 노트가 담는 것
+- `00-problem-framing.md`: follower가 중간에 끊겼다가 다시 붙어도 leader log에서 필요한 부분만 안전하게 따라오게 하려면 어떤 상태를 기억해야 하는가?에 대한 범위와 성공 기준을 정리합니다.
+- `01-approach-log.md`: append-only log에 연속 offset을 부여한다, follower는 watermark 이전 entry를 건너뛴다 같은 실제 구현 선택을 기록합니다.
+- `02-debug-log.md`: offset가 비거나 역전되는 경우, duplicate delivery가 follower 상태를 또 바꾸는 경우처럼 다시 깨질 수 있는 지점을 모아 둡니다.
+- `03-retrospective.md`: 이 단계에서 얻은 것, 남긴 단순화, 다음 확장 방향을 정리합니다.
+- `04-knowledge-index.md`: 용어, 핵심 파일, 개념 문서, 검증 앵커를 빠르게 다시 찾는 인덱스입니다.
 
-## 키워드
+## 검증 앵커
+- 테스트: `test_replication_log_assigns_sequential_offsets`, `test_follower_apply_is_idempotent`, `test_replicate_once_incremental_and_deletes`
+- 데모 경로: `../src/leader_follower/__main__.py`
+- 데모가 보여 주는 장면: Go 데모는 `alpha` 삭제 후 follower가 가진 `beta` 값과 watermark를 출력합니다. Python 데모도 적용된 entry 수와 follower value를 dict로 보여 줍니다.
+- 개념 문서: `../docs/concepts/idempotent-follower.md`, `../docs/concepts/log-shipping.md`
 
-`leader-follower` · `append-only log` · `replication log` · `watermark` · `incremental sync` · `idempotent apply` · `replicate_once` · `offset` · `mutation log`
-
-## 프로젝트 위치
-
-```
-python/ddia-distributed-systems/02-leader-follower-replication/
-├── src/leader_follower/
-│   ├── __init__.py      # public exports
-│   ├── __main__.py      # demo 엔트리포인트
-│   └── core.py          # LogEntry, ReplicationLog, Leader, Follower, replicate_once
-├── tests/
-│   └── test_replication.py  # 3개 테스트 케이스
-└── problem/README.md
-```
-
-## 연관 프로젝트
-
-- **Go DDIA-02 (leader-follower-replication)**: 동일 개념의 Go 구현. `*string`으로 optional value 처리.
-- **Py DDIA-01 (rpc-framing)**: 네트워크 계층. 실제 분산 시스템에서는 RPC 위에 복제가 올라감.
-- **Py DDIA-04 (clustered-kv-capstone)**: 최종 통합에서 복제 메커니즘으로 사용.
+- 이전 장문 기록은 `../notion-archive/`에 보존돼 있습니다.

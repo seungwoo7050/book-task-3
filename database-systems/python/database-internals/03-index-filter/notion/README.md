@@ -1,38 +1,29 @@
-# 03 Index Filter — Notion 문서 가이드
+# 학습 노트 안내
 
-## 이 폴더의 목적
+logical semantics는 그대로 둔 채 bloom filter와 sparse index를 붙여 point lookup의 읽기 비용을 줄이는 단계입니다.
 
-소스코드만으로는 알 수 없는 **설계 동기, 의사결정 과정, 개발 타임라인**을 기록한다. Bloom filter와 sparse index를 SSTable에 결합하여 읽기 경로를 최적화하는 전체 과정을 담는다.
+## 이 노트를 읽기 전에 잡을 질문
+- 정확한 negative answer를 보장하면서도 디스크 scan 범위를 줄이려면 filter와 index를 어떤 순서로 적용해야 하는가?
+- 다음 단계 `04 Buffer Pool`에 무엇을 넘기는가?
 
-## 문서 안내
+## 권장 읽기 순서
+1. `../problem/README.md`로 요구와 범위를 먼저 확인합니다.
+2. `../src/index_filter/table.py`, `../src/index_filter/table.py`, `../src/index_filter/table.py`를 열어 실제 구현 표면을 먼저 잡습니다.
+3. `../tests/`에서 이 프로젝트가 무엇을 보장하는지 확인합니다. 핵심 테스트는 `test_bloom_filter_has_no_false_negatives`, `test_bloom_filter_false_positive_rate_is_bounded`, `test_sparse_index_finds_expected_block`, `test_sstable_bloom_reject_and_bounded_scan`입니다.
+4. 데모 경로 `../src/index_filter/__main__.py`를 실행해 전체 흐름을 빠르게 눈으로 확인합니다.
+5. 마지막으로 `./00-problem-framing.md`부터 `./04-knowledge-index.md`까지 읽으며 판단과 연결 지점을 정리합니다.
 
-| 문서 | 설명 | 이런 경우에 읽으세요 |
-|------|------|---------------------|
-| [essay.md](essay.md) | 블로그 스타일 에세이 — 왜 index filter가 필요하고 어떻게 구현했는지 | 프로젝트의 맥락과 설계 철학을 이해하고 싶을 때 |
-| [timeline.md](timeline.md) | 개발 과정 타임라인 — CLI 명령어, 패키지 설치, 구현 순서 | 이 프로젝트를 처음부터 재현하고 싶을 때 |
+## 이번 노트가 담는 것
+- `00-problem-framing.md`: 정확한 negative answer를 보장하면서도 디스크 scan 범위를 줄이려면 filter와 index를 어떤 순서로 적용해야 하는가?에 대한 범위와 성공 기준을 정리합니다.
+- `01-approach-log.md`: filter는 빠른 negative check, index는 scan 범위 축소로 역할을 나눈다, lookup 결과에 통계를 포함해 최적화 효과를 보이게 한다 같은 실제 구현 선택을 기록합니다.
+- `02-debug-log.md`: bloom filter가 false negative를 내는 경우, false positive rate가 비정상적으로 높은 경우처럼 다시 깨질 수 있는 지점을 모아 둡니다.
+- `03-retrospective.md`: 이 단계에서 얻은 것, 남긴 단순화, 다음 확장 방향을 정리합니다.
+- `04-knowledge-index.md`: 용어, 핵심 파일, 개념 문서, 검증 앵커를 빠르게 다시 찾는 인덱스입니다.
 
-## 키워드
+## 검증 앵커
+- 테스트: `test_bloom_filter_has_no_false_negatives`, `test_bloom_filter_false_positive_rate_is_bounded`, `test_sparse_index_finds_expected_block`, `test_sstable_bloom_reject_and_bounded_scan`
+- 데모 경로: `../src/index_filter/__main__.py`
+- 데모가 보여 주는 장면: Go 데모는 `durian` lookup 결과와 `bytes_read`를 같이 출력합니다. Python 데모도 동일한 정보를 dict 형태로 출력해 filter가 실제로 scan을 줄였는지 보여 줍니다.
+- 개념 문서: `../docs/concepts/bloom-filter-sizing.md`, `../docs/concepts/sparse-index-scan.md`
 
-`Bloom filter` · `sparse index` · `SSTable` · `false positive rate` · `block scan` · `double hashing` · `footer metadata` · `binary serialization` · `point lookup` · `bounded I/O`
-
-## 프로젝트 위치
-
-```
-python/database-internals/03-index-filter/
-├── src/index_filter/
-│   ├── __init__.py      # public exports
-│   ├── __main__.py      # demo 엔트리포인트
-│   └── table.py         # BloomFilter, SparseIndex, SSTable, 직렬화
-├── tests/
-│   └── test_index_filter.py  # 4개 테스트 케이스
-├── docs/concepts/
-│   ├── bloom-filter-sizing.md
-│   └── sparse-index-scan.md
-└── problem/README.md
-```
-
-## 연관 프로젝트
-
-- **Go 06-index-filter**: 동일 개념의 Go 구현. MurmurHash3 double hashing, magic "SIF1" footer.
-- **Py 01-mini-lsm-store**: 이 프로젝트가 최적화하는 대상인 기본 SSTable/LSM 구조.
-- **Py 02-wal-recovery**: 동일한 binary 직렬화 패턴(TOMBSTONE_MARKER, struct.pack)을 공유.
+- 이전 장문 기록은 `../notion-archive/`에 보존돼 있습니다.

@@ -1,47 +1,29 @@
-# Problem Framing
+# Problem Guide
 
-## Objective
+이 문서는 01 MemTable SkipList 프로젝트에서 “무엇을 구현해야 하는가”를 현재 기준으로 다시 설명합니다. 과거 과제군에서 출발한 아이디어는 남기되, 현재 레포에 없는 로컬 경로를 전제로 설명하지는 않습니다.
 
-정렬된 문자열 키-값 엔트리를 저장하는 MemTable용 SkipList를 구현한다. 이 프로젝트는 레거시 `lsm-tree-core`에서 SkipList 부분만 분리한 학습 단위다.
+## 문제 핵심
 
-## Requirements
+- `Put(key, value)`는 새 키를 삽입하거나 기존 키를 갱신하면서 key 오름차순을 유지해야 합니다.
+- `Get(key)`는 존재하는 값, tombstone, 미존재를 구분해야 합니다.
+- `Delete(key)`는 엔트리를 없애지 않고 tombstone으로 바꿔야 합니다.
+- 전체 엔트리를 key 오름차순으로 순회할 수 있어야 합니다.
+- flush threshold 판단을 위해 대략적인 byte size를 추적해야 합니다.
 
-### R1 Sorted Insert
+## 이번 범위에서 일부러 뺀 것
 
-- 키는 사전식 순서로 유지된다.
-- `Put(key, value)`는 새 키를 삽입하거나 기존 키를 갱신한다.
+- 동시성 제어와 lock-free 자료구조는 다루지 않습니다.
+- 확률적 level tuning과 고급 benchmark는 후속 확장 범위로 남깁니다.
 
-### R2 Lookup
+## 제공 자료
 
-- `Get(key)`는 세 상태를 구분해야 한다.
-- 존재하는 값
-- tombstone
-- 미존재
+- `problem/code/`: 보조 스타터 코드나 스켈레톤이 있는 경우, 요구 API를 빠르게 파악하는 용도로 읽습니다.
+- `problem/data/`: fixture나 입력 메모가 있는 경우, 테스트가 무엇을 가정하는지 먼저 확인할 때 사용합니다.
+- `problem/script/`: 검증 스크립트나 실행 메모가 있는 경우, README의 명령과 함께 보조 설명으로 읽습니다.
 
-### R3 Tombstone
+## 역사적 출처와 현재 재구성
 
-- `Delete(key)`는 엔트리를 물리 삭제하지 않고 tombstone으로 바꾼다.
-- tombstone은 iteration과 size accounting에 남아 있어야 한다.
-
-### R4 Ordered Iteration
-
-- 전체 엔트리를 key 오름차순으로 순회할 수 있어야 한다.
-- 이후 SSTable flush가 이 순서에 의존한다.
-
-### R5 Byte Size Tracking
-
-- MemTable이 flush threshold를 넘는지 판단할 수 있도록 대략적 byte size를 추적한다.
-
-## Constraints
-
-- 키와 값은 UTF-8 문자열이다.
-- 동시성 제어는 요구하지 않는다.
-- 외부 라이브러리는 사용하지 않는다.
-
-## Source Provenance
-
-- 원본 문제: `legacy/storage-engine/lsm-tree-core/problem/README.md`
-- 원본 starter code: `legacy/storage-engine/lsm-tree-core/problem/code/skiplist.skeleton.js`
-- 이 프로젝트는 레거시 문제의 `R1 — MemTable`에 해당하는 부분만 분리했다.
-- 새 `problem/code/skiplist.skeleton.go`는 원본 JS skeleton의 학습 범위를 Go API로 옮긴 보조 스타터다. 원본 파일 자체의 복제본은 아니다.
-
+- 원래 속한 학습 주제: LSM Tree Core
+- 원래 구현 형태: JavaScript 기반 저장 엔진 과제 안에 SkipList와 상위 orchestration이 함께 들어 있던 형태였습니다.
+- 현재 프로젝트에서의 재구성: 현재 레포에서는 MemTable을 별도 프로젝트로 분리해, 정렬 쓰기 경로를 SSTable 이전에 독립적으로 검증합니다.
+- 원본 소스 트리는 현재 레포에 포함돼 있지 않으며, 이 문서는 현재 공개 레포 기준으로 다시 정리한 설명입니다.

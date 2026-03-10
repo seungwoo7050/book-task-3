@@ -1,16 +1,26 @@
-# Problem Framing
+# Problem Guide
 
-leader는 write를 local store에 적용하면서 append-only log에 기록하고, follower는 자신이 마지막으로 적용한 offset 이후의 log entry만 받아 local state를 따라간다.
+이 문서는 02 Leader-Follower Replication 프로젝트에서 “무엇을 구현해야 하는가”를 현재 기준으로 다시 설명합니다. 과거 과제군에서 출발한 아이디어는 남기되, 현재 레포에 없는 로컬 경로를 전제로 설명하지는 않습니다.
 
-## Success Criteria
+## 문제 핵심
 
-- 순차 offset을 갖는 mutation log
-- `put` / `delete` 복제
-- follower watermark 기반 incremental sync
-- replay된 entry를 다시 받아도 결과가 깨지지 않는 idempotent apply
+- 순차 offset을 갖는 mutation log를 유지해야 합니다.
+- `put`과 `delete`가 복제돼야 합니다.
+- follower watermark 기반 incremental sync가 필요합니다.
+- 같은 entry를 다시 받아도 결과가 깨지지 않는 idempotent apply가 필요합니다.
 
-## Source Provenance
+## 이번 범위에서 일부러 뺀 것
 
-- 원본 문제: `legacy/distributed-cluster/replication/problem/README.md`
-- 원본 테스트 의미: `legacy/distributed-cluster/replication/solve/test/replication.test.js`
-- 원본 구현 참고: `legacy/distributed-cluster/replication/solve/solution/replication.js`
+- automatic leader election과 consensus는 포함하지 않습니다.
+- quorum write나 multi-leader replication은 다루지 않습니다.
+
+## 제공 자료
+
+- 이 프로젝트는 별도 starter artifact 없이 `problem/README.md` 자체가 요구사항 문서 역할을 합니다.
+
+## 역사적 출처와 현재 재구성
+
+- 원래 속한 학습 주제: Replication
+- 원래 구현 형태: JavaScript 기반 distributed-cluster 과제로, leader/follower state sync를 작은 시뮬레이션으로 다루던 형태였습니다.
+- 현재 프로젝트에서의 재구성: Python 트랙에서는 분산 쓰기 경로의 가장 작은 복제 단위를 이해하는 데 집중하도록 설명을 정리했습니다.
+- 원본 소스 트리는 현재 레포에 포함돼 있지 않으며, 이 문서는 현재 공개 레포 기준으로 다시 정리한 설명입니다.

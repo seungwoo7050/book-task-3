@@ -1,20 +1,29 @@
-# 03 Mini LSM Store — Notion 문서 가이드
+# 학습 노트 안내
 
-## 이 폴더는 무엇인가
+memtable, immutable snapshot, SSTable을 한 프로젝트 안에서 묶어 최소 LSM read/write path가 어떻게 이어지는지 확인하는 단계입니다.
 
-이 `notion/` 폴더는 Mini LSM Store 프로젝트를 블로그형 에세이와 재현 가능한 타임라인으로 정리한 문서 세트다.
-01(SkipList)와 02(SSTable)에서 만든 부품을 조립하는 프로젝트이므로, 그 두 프로젝트를 먼저 읽고 오면 이해가 수월하다.
+## 이 노트를 읽기 전에 잡을 질문
+- 최근 write와 delete가 여러 저장 계층에 흩어져 있을 때, 어떤 우선순위로 읽어야 최신 논리 상태를 얻을 수 있는가?
+- 다음 단계 `04 WAL Recovery`에 무엇을 넘기는가?
 
-## 문서 목록과 읽는 순서
+## 권장 읽기 순서
+1. `../problem/README.md`로 요구와 범위를 먼저 확인합니다.
+2. `../internal/lsmstore/store.go`, `../internal/skiplist/skiplist.go`, `../internal/sstable/sstable.go`를 열어 실제 구현 표면을 먼저 잡습니다.
+3. `../tests/`에서 이 프로젝트가 무엇을 보장하는지 확인합니다. 핵심 테스트는 `TestPutAndGet`, `TestMissingKey`, `TestUpdate`, `TestDelete`입니다.
+4. 데모 경로 `../cmd/mini-lsm-store/main.go`를 실행해 전체 흐름을 빠르게 눈으로 확인합니다.
+5. 마지막으로 `./00-problem-framing.md`부터 `./04-knowledge-index.md`까지 읽으며 판단과 연결 지점을 정리합니다.
 
-| 순서 | 문서 | 목적 |
-|------|------|------|
-| 1 | [essay.md](essay.md) | MemTable과 SSTable을 연결해 LSM Store를 만드는 과정의 에세이. |
-| 2 | [timeline.md](timeline.md) | 개발 타임라인. 내부 패키지 복사, CLI, 테스트 순서가 담겨 있다. |
+## 이번 노트가 담는 것
+- `00-problem-framing.md`: 최근 write와 delete가 여러 저장 계층에 흩어져 있을 때, 어떤 우선순위로 읽어야 최신 논리 상태를 얻을 수 있는가?에 대한 범위와 성공 기준을 정리합니다.
+- `01-approach-log.md`: 읽기 우선순위를 메모리에서 디스크 순으로 고정한다, flush 동안 immutable snapshot을 분리한다 같은 실제 구현 선택을 기록합니다.
+- `02-debug-log.md`: flush handoff가 잘못돼 최신 값이 사라지는 경우, read precedence가 뒤집히는 경우처럼 다시 깨질 수 있는 지점을 모아 둡니다.
+- `03-retrospective.md`: 이 단계에서 얻은 것, 남긴 단순화, 다음 확장 방향을 정리합니다.
+- `04-knowledge-index.md`: 용어, 핵심 파일, 개념 문서, 검증 앵커를 빠르게 다시 찾는 인덱스입니다.
 
-## 목적별 바로가기
+## 검증 앵커
+- 테스트: `TestPutAndGet`, `TestMissingKey`, `TestUpdate`, `TestDelete`
+- 데모 경로: `../cmd/mini-lsm-store/main.go`
+- 데모가 보여 주는 장면: flush 후 `banana` 갱신과 `apple` 삭제가 어떤 precedence로 보이는지 출력합니다.
+- 개념 문서: `../docs/concepts/flush-lifecycle.md`, `../docs/concepts/read-path.md`
 
-- **"LSM Store가 뭔지 빠르게 알고 싶다"** → [essay.md](essay.md) 첫 두 섹션
-- **"flush가 어떻게 동작하는지"** → [essay.md](essay.md) "flush" 섹션
-- **"read path의 우선순위가 궁금하다"** → [essay.md](essay.md) "읽기 경로" 섹션
-- **"코드를 따라 재현하고 싶다"** → [timeline.md](timeline.md)
+- 이전 장문 기록은 `../notion-archive/`에 보존돼 있습니다.

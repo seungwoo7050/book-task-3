@@ -1,20 +1,29 @@
-# 01 MemTable SkipList — Notion 문서 가이드
+# 학습 노트 안내
 
-## 이 폴더는 무엇인가
+LSM write path의 출발점인 active memtable을 독립된 SkipList로 구현해, 정렬된 삽입과 tombstone semantics를 먼저 고정하는 단계입니다.
 
-이 `notion/` 폴더는 프로젝트를 **처음 보는 사람이 맥락을 따라갈 수 있도록** 구성된 블로그형 문서 세트다.
-코드를 열기 전에 여기서부터 읽으면, 왜 이 프로젝트가 존재하고 어떤 과정을 거쳐 완성되었는지 파악할 수 있다.
+## 이 노트를 읽기 전에 잡을 질문
+- 정렬된 삽입 구조 안에서 갱신, tombstone, 대략적 byte size를 동시에 유지하려면 어떤 상태 표현이 필요한가?
+- 다음 단계 `02 SSTable Format`에 무엇을 넘기는가?
 
-## 문서 목록과 읽는 순서
+## 권장 읽기 순서
+1. `../problem/README.md`로 요구와 범위를 먼저 확인합니다.
+2. `../internal/skiplist/skiplist.go`, `../tests/skiplist_test.go`, `../cmd/skiplist-demo/main.go`를 열어 실제 구현 표면을 먼저 잡습니다.
+3. `../tests/`에서 이 프로젝트가 무엇을 보장하는지 확인합니다. 핵심 테스트는 `TestPutAndGet`, `TestMissingKey`, `TestUpdateKeepsLogicalSize`, `TestManyInserts`입니다.
+4. 데모 경로 `../cmd/skiplist-demo/main.go`를 실행해 전체 흐름을 빠르게 눈으로 확인합니다.
+5. 마지막으로 `./00-problem-framing.md`부터 `./04-knowledge-index.md`까지 읽으며 판단과 연결 지점을 정리합니다.
 
-| 순서 | 문서 | 목적 |
-|------|------|------|
-| 1 | [essay.md](essay.md) | 프로젝트의 동기, 설계 판단, 구현 과정을 서사적으로 풀어낸 에세이. **처음 읽을 문서.** |
-| 2 | [timeline.md](timeline.md) | 개발 전 과정을 시간순으로 복원한 타임라인. 어떤 파일을 만들었고, 어떤 CLI를 실행했는지가 담겨 있다. |
+## 이번 노트가 담는 것
+- `00-problem-framing.md`: 정렬된 삽입 구조 안에서 갱신, tombstone, 대략적 byte size를 동시에 유지하려면 어떤 상태 표현이 필요한가?에 대한 범위와 성공 기준을 정리합니다.
+- `01-approach-log.md`: 값 상태를 분리해 tombstone을 명시한다, 학습용 테스트를 위해 level 선택을 결정적으로 만든다 같은 실제 구현 선택을 기록합니다.
+- `02-debug-log.md`: overwrite에서 byte size가 이중 집계되는 경우, delete가 physical remove로 처리되는 경우처럼 다시 깨질 수 있는 지점을 모아 둡니다.
+- `03-retrospective.md`: 이 단계에서 얻은 것, 남긴 단순화, 다음 확장 방향을 정리합니다.
+- `04-knowledge-index.md`: 용어, 핵심 파일, 개념 문서, 검증 앵커를 빠르게 다시 찾는 인덱스입니다.
 
-## 목적별 바로가기
+## 검증 앵커
+- 테스트: `TestPutAndGet`, `TestMissingKey`, `TestUpdateKeepsLogicalSize`, `TestManyInserts`
+- 데모 경로: `../cmd/skiplist-demo/main.go`
+- 데모가 보여 주는 장면: `banana`, `apple`, `carrot`를 넣고 `banana`를 tombstone으로 바꾼 뒤 ordered entries와 `size`/`byteSize`를 같이 출력합니다.
+- 개념 문서: `../docs/concepts/skiplist-invariants.md`
 
-- **"이 프로젝트가 뭔지 빠르게 알고 싶다"** → [essay.md](essay.md)의 첫 두 섹션
-- **"코드를 직접 따라 치면서 재현하고 싶다"** → [timeline.md](timeline.md)를 처음부터 따라간다
-- **"개념적 배경이 궁금하다"** → [essay.md](essay.md) 전체 + `docs/concepts/skiplist-invariants.md`
-- **"테스트만 돌려보고 싶다"** → [timeline.md](timeline.md)의 "검증" 섹션
+- 이전 장문 기록은 `../notion-archive/`에 보존돼 있습니다.

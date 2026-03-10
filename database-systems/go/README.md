@@ -1,14 +1,23 @@
 # Go Track
 
-Go는 이 저장소의 정본 슈퍼셋이다. `Database Internals`와 `DDIA` 흐름을 모두 다루며, Python 트랙에 없는 `01-memtable-skiplist`, `02-sstable-format`, `05-leveled-compaction`, `04-raft-lite`까지 포함한다.
+Go 트랙은 이 레포의 정본(superset)입니다. 저장 엔진과 분산 시스템을 더 세분화된 단계로 나눠 보기 때문에, “개념을 놓치지 않고 끝까지 따라가고 싶다”는 학습자에게 가장 적합합니다.
 
-## Current State
+## 이 트랙이 잘 맞는 사람
 
-- `database-internals` 8개 프로젝트: 모두 `verified`
-- `ddia-distributed-systems` 5개 프로젝트: 모두 `verified`
-- [shared/README.md](shared/README.md): storage/distributed 공용 serializer, hash, fileio
+- 자료구조, 파일 포맷, 오케스트레이션을 분리해서 보고 싶은 사람
+- compaction, Raft-lite 같은 심화 슬롯까지 포함한 전체 경로를 보고 싶은 사람
+- 나중에 공개용 포트폴리오를 더 시스템 지향적으로 확장하고 싶은 사람
 
-## Tracks
+## 포함 트랙
 
-- [database-internals/README.md](database-internals/README.md)
-- [ddia-distributed-systems/README.md](ddia-distributed-systems/README.md)
+| 트랙 | 시작점 | 특징 |
+| --- | --- | --- |
+| [database-internals/README.md](database-internals/README.md) | `01-memtable-skiplist` | 자료구조부터 MVCC까지 저장 엔진 흐름을 세밀하게 나눠 봅니다. |
+| [ddia-distributed-systems/README.md](ddia-distributed-systems/README.md) | `01-rpc-framing` | RPC부터 Raft-lite, clustered KV capstone까지 포함합니다. |
+| [shared/README.md](shared/README.md) | `go/shared` | 여러 프로젝트가 재사용하는 공용 utility를 정리합니다. |
+
+## 읽는 방법
+
+1. 저장 엔진을 먼저 읽고, 분산 트랙으로 넘어가면 capstone이 더 잘 보입니다.
+2. 각 프로젝트에서는 `problem → docs → implementation → notion` 순서를 유지하세요.
+3. Python 트랙을 먼저 끝냈다면 [docs/language-crosswalk.md](../docs/language-crosswalk.md)를 함께 열어 두면 비교가 쉬워집니다.

@@ -1,19 +1,29 @@
-# 04 WAL Recovery — Notion 문서 가이드
+# 학습 노트 안내
 
-## 이 폴더는 무엇인가
+flush 이전의 memtable 상태를 WAL에 먼저 기록하고, crash 이후 replay로 복원하는 durability 기본기를 익히는 단계입니다.
 
-이 `notion/` 폴더는 WAL(Write-Ahead Log) 구현과 crash recovery 프로젝트를 블로그형 에세이 + 재현 타임라인으로 정리한 문서 세트다.
+## 이 노트를 읽기 전에 잡을 질문
+- 메모리 상태가 사라진 뒤에도 마지막 정상 record까지 재구성하려면 WAL은 어떤 순서와 어떤 검증 규칙을 가져야 하는가?
+- 다음 단계 `05 Leveled Compaction`에 무엇을 넘기는가?
 
-## 문서 목록과 읽는 순서
+## 권장 읽기 순서
+1. `../problem/README.md`로 요구와 범위를 먼저 확인합니다.
+2. `../internal/store/store.go`, `../internal/wal/wal.go`, `../tests/wal_test.go`를 열어 실제 구현 표면을 먼저 잡습니다.
+3. `../tests/`에서 이 프로젝트가 무엇을 보장하는지 확인합니다. 핵심 테스트는 `TestRecoverPutRecords`, `TestRecoverDeleteRecords`, `TestRecoverManyRecords`, `TestStopAtCorruptedRecord`입니다.
+4. 데모 경로 `../cmd/wal-recovery/main.go`를 실행해 전체 흐름을 빠르게 눈으로 확인합니다.
+5. 마지막으로 `./00-problem-framing.md`부터 `./04-knowledge-index.md`까지 읽으며 판단과 연결 지점을 정리합니다.
 
-| 순서 | 문서 | 목적 |
-|------|------|------|
-| 1 | [essay.md](essay.md) | WAL의 필요성, 레코드 포맷, recovery 정책, flush 후 rotation을 서사적으로 설명. |
-| 2 | [timeline.md](timeline.md) | 개발 타임라인. WAL 구현 → DurableStore 통합 → 테스트 순서. |
+## 이번 노트가 담는 것
+- `00-problem-framing.md`: 메모리 상태가 사라진 뒤에도 마지막 정상 record까지 재구성하려면 WAL은 어떤 순서와 어떤 검증 규칙을 가져야 하는가?에 대한 범위와 성공 기준을 정리합니다.
+- `01-approach-log.md`: append-ahead 규칙을 먼저 세운다, checksum이 어긋나는 지점에서 replay를 멈춘다 같은 실제 구현 선택을 기록합니다.
+- `02-debug-log.md`: 손상된 trailing record를 끝까지 읽는 경우, delete replay가 live value 삭제와 tombstone 기록을 혼동하는 경우처럼 다시 깨질 수 있는 지점을 모아 둡니다.
+- `03-retrospective.md`: 이 단계에서 얻은 것, 남긴 단순화, 다음 확장 방향을 정리합니다.
+- `04-knowledge-index.md`: 용어, 핵심 파일, 개념 문서, 검증 앵커를 빠르게 다시 찾는 인덱스입니다.
 
-## 목적별 바로가기
+## 검증 앵커
+- 테스트: `TestRecoverPutRecords`, `TestRecoverDeleteRecords`, `TestRecoverManyRecords`, `TestStopAtCorruptedRecord`
+- 데모 경로: `../cmd/wal-recovery/main.go`
+- 데모가 보여 주는 장면: 값을 쓴 뒤 store를 다시 열어 recovery 결과를 출력합니다.
+- 개념 문서: `../docs/concepts/recovery-policy.md`, `../docs/concepts/wal-record-format.md`
 
-- **"왜 WAL이 필요한지"** → [essay.md](essay.md) 첫 섹션
-- **"레코드 포맷 상세"** → [essay.md](essay.md) "레코드 포맷" 섹션 + `docs/concepts/wal-record-format.md`
-- **"recovery가 어떤 정책을 쓰는지"** → [essay.md](essay.md) "복구" 섹션
-- **"처음부터 재현하고 싶다"** → [timeline.md](timeline.md)
+- 이전 장문 기록은 `../notion-archive/`에 보존돼 있습니다.
