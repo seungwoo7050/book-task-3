@@ -1,34 +1,27 @@
-# Debug Log
+# Debug Log — 보안 기능의 "이름"과 "실제 구현 깊이" 사이의 간극
 
-## Current recorded issue
+## 마주한 문제
 
-이 랩에서 가장 중요한 디버깅 포인트는 “security 기능 이름”과 “실제 구현 깊이”를 혼동하지 않게 만드는 것이다.
+이 랩에서 겪은 가장 핵심적인 디버깅 포인트는 코드 버그가 아니라 **인식의 문제**였다.
 
-- failing command or request:
-  - none recorded as a blocking runtime defect in the current pass
-- exact symptom:
-  - Google, TOTP, throttling 같은 단어가 들어가면 저장소가 실제 hardening을 모두 끝낸 것처럼 읽히기 쉽다
-- first incorrect assumption:
-  - 용어만 맞으면 scaffold도 충분히 오해 없이 읽힐 것이라고 생각하기 쉽다
-- evidence collected:
-  - docs는 Google integration이 mocked contract이고 throttling이 documented concern에 가깝다고 분명히 적는다
+"Google OAuth2", "TOTP", "throttling" 같은 단어가 문서에 들어가면, 저장소가 이 모든 것을 실제로 구현한 것처럼 읽히기 쉽다. 실제로는 Google integration은 mocked contract이고, TOTP 코드 생성은 단순화했으며, throttling은 문서화된 관심사 수준이다. blocking runtime defect는 없었지만, 문서가 구현 범위를 과장하면 독자가 이것을 reference implementation으로 오해한다.
 
-## Root cause
+## 근본 원인
 
-보안 랩은 특히 과장되기 쉽다. simulated flow와 real integration을 구분하지 않으면 학습 저장소가 reference implementation처럼 오해된다.
+보안 관련 용어는 그 자체로 무게감이 있다. simulated flow와 real integration을 문서에서 구분하지 않으면, 독자는 자연스럽게 "진짜 되는 거겠지"라고 가정한다.
 
-## Fix and verification
+## 어떻게 해결했는가
 
-- code or config change made:
-  - README와 notes에 simplification을 명시했다
-- why that change addresses the cause:
-  - 독자가 현재 scaffold가 보여 주는 범위와 남은 작업을 구분할 수 있다
-- command, test, or log line that proved the fix:
-  - `make lint`
-  - `make test`
+README와 notes에서 simplification을 명시했다. "Implemented now"와 "Important simplifications" 섹션을 분리하고, 각 기능의 현재 구현 수준을 명시적으로 기록했다.
 
-## Follow-up debt
+```bash
+make lint   # Spotless + Checkstyle 통과
+make test   # Google callback, TOTP, audit 흐름 확인
+```
 
-- Redis-backed throttling enforcement와 persisted audit trail은 더 강화할 수 있다
-- real provider callback validation은 후속 과제다
+## 남아 있는 기술 부채
+
+- Redis-backed throttling enforcement가 아직 구현되지 않았다
+- audit event가 인메모리 ArrayList에 저장되어 서버 재시작 시 사라진다
+- real provider callback validation (authorization code → token 교환) 은 후속 과제다
 

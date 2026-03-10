@@ -1,35 +1,31 @@
-# Debug Log
+# Debug Log — "완성된 커머스 백엔드"처럼 보이는 문제
 
-## Current recorded issue
+## 장애 상황: feature surface가 넓으면 완성도가 높아 보인다
 
-이 baseline capstone의 가장 큰 문제는 개별 기능 bug보다 “통합 스캐폴드”라는 성격을 얼마나 정직하게 드러내느냐였다.
+이 baseline 캡스톤에는 런타임 버그가 없었다. `make test`를 실행하면 `CommerceApiTest`가 통과하고, 로그인 → 상품 등록 → 카탈로그 조회 → 장바구니 추가 → checkout → 주문 확인이라는 전체 흐름이 동작한다.
 
-- failing command or request:
-  - none recorded as a blocking defect beyond standard validation
-- exact symptom:
-  - auth, catalog, cart, order가 모두 보이면 완성된 커머스 백엔드처럼 읽히기 쉽다
-- first incorrect assumption:
-  - feature surface가 넓으면 capstone의 완성도도 충분히 높아 보일 것이라고 생각하기 쉽다
-- evidence collected:
-  - README와 docs는 `verified scaffold`, payment omission, partial auth depth를 분명히 적는다
+문제는 이 테스트가 통과한다는 사실이 암시하는 것이다. 실제로는 인증이 stub이고, 결제가 없고, 이벤트 발행/소비가 없고, 주문 상태 전이가 없다.
+## 잘못된 첫 번째 가정
 
-## Root cause
+"feature surface가 넓으면 포트폴리오로 충분하다"는 생각이 위험하다. 면접관은 엔드포인트 수가 아니라 각 엔드포인트의 **구현 깊이**를 본다. 인증이 stub이고 결제가 없다면, 엔드포인트가 7개여도 깊이는 얕다.
 
-통합 캡스톤은 범위가 넓어서 구현 깊이가 쉽게 과대평가된다. baseline과 portfolio-grade capstone을 구분해 두지 않으면 학습 이력이 흐려진다.
+## 근본 원인
 
-## Fix and verification
+통합 캡스톤은 범위가 넓어질수록 각 축의 구현 깊이가 얕아지는 경향이 있다. baseline의 역할은 방향을 보여주는 것이지 완성도를 증명하는 것이 아니다. 완성도 증명은 v2의 역할이다.
 
-- code or config change made:
-  - baseline capstone 설명과 v2 승격판 설명을 분리했다
-- why that change addresses the cause:
-  - 독자가 baseline과 upgraded version의 역할 차이를 이해할 수 있다
-- command, test, or log line that proved the fix:
-  - `make lint`
-  - `make test`
-  - `make smoke`
+## 해결 과정
 
-## Follow-up debt
+코드 변경이 아닌 구조적 분리로 대응했다. `commerce-backend`를 "verified scaffold"로, `commerce-backend-v2`를 "portfolio-grade capstone"으로 분리하고 역할 차이를 문서화했다.
 
-- baseline capstone 자체는 여전히 shallow integration이 남아 있다
-- `commerce-backend-v2`와의 diff 문서를 따로 만들 수 있다
+```bash
+make test    # 전체 테스트 통과
+make lint    # Spotless + Checkstyle 통과
+make smoke   # health check 통과
+```
+
+## 남은 부채
+
+- baseline과 v2의 구체적인 diff 문서 작성
+- authentication stub → JWT 교체 과정 기록
+- checkout에 outbox pattern 이벤트 발행 추가 과정 기록
 
