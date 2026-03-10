@@ -2,448 +2,248 @@
 
 ## Mission
 
-This repository is a study-first project, not a deployable product and not an answer book.
-When you work on a legacy-style tree here, your job is to turn it into a clean learning
-archive with runnable code, explicit reasoning, and stable navigation.
+This workspace is a study-first archive. It is not a single deployable product, and it is not
+an answer book.
 
-This file is intended to be self-sufficient.
-If a file like `docs/legacy-study-rebuild-plan.md` exists, treat it as supplemental context,
-not as a required dependency for understanding how to work.
+When you work here, optimize for:
 
-## Working Assumptions
+- runnable learning artifacts
+- explicit reasoning and provenance
+- stable navigation across many tracks
+- curriculum quality, not just code quantity
 
-- In this repository, `legacy/` is the old source tree and must be treated as read-only
-  reference material.
-- `study/` is the active migration workspace. New structure and content should be created
-  there.
-- Both `legacy/` and `study/` are intended to live at the repository root and be uploaded to
-  GitHub.
-- Do not assume existing metadata is trustworthy. Validate references, commands, and
-  repository state.
-- Keep the repository understandable without private notes.
-- Preserve original problem material separately from your own solutions and commentary.
+## Workspace Reality
 
-## Repository Layout
+The root of `/Users/woopinbell/work/book-task-3` is a multi-track workspace, not a single
+repository with one universal layout.
 
-Use this root-level meaning consistently:
+Top-level directories currently include separate study repositories or track groups such as:
 
-- `legacy/`: frozen reference tree
-- `study/`: active migration and study tree
-- `docs/`: repository-wide migration rules and shared guidance
+- `cs-core`
+- `algorithm`
+- `network-atda`
+- `database-systems`
+- `backend-fastapi`
+- `backend-spring`
+- `bithumb`
+- `front-react`
+- `mobile`
+- `cpp-server`
+- `infobank`
+- `guides`
 
-Do not repurpose `legacy/` into the new structure. The point is to preserve the old tree as a
-reference artifact while building the new one separately.
+Do not assume a root-level `legacy/` plus `study/` layout for the whole workspace.
+Work at the target sub-repository level and follow that sub-repository's current conventions.
 
-## Core Goals
+## Source Of Truth
 
-For every migrated project, make these boundaries obvious:
+This file is a workspace-level guide. It is intentionally lower priority than the actual
+structure and documentation already established in mature directories.
+
+When this file conflicts with the current shape of a completed area, prefer the completed area.
+
+Good directories to compare before inventing new structure:
+
+- `cs-core`
+- `algorithm`
+- `network-atda`
+- `database-systems`
+- `backend-fastapi`
+- `front-react`
+
+In practice, the nearest mature sibling project is a better template than an old generic rule.
+
+## Common Current Patterns
+
+There is no single required project shape for the whole workspace. Several patterns are already
+valid and should be preserved where they fit.
+
+| Pattern | Typical location | Current shape |
+| --- | --- | --- |
+| Track under `study/` | `cs-core`, `algorithm`, `network-atda`, `front-react`, `mobile` | `study/<track>/<project>/...` |
+| Lab plus capstone repo | `backend-fastapi`, `backend-spring` | `labs/<lab>/...` and `capstone/<project>/...` |
+| Language-split curriculum repo | `database-systems` | `go/...` and `python/...` with shared `docs/` |
+| Numbered security/project sequence | `bithumb`, parts of `infobank` | ordered project directories plus roadmap docs |
+
+Mirror the local pattern that already exists in the target area. Do not force one repo's layout
+onto another repo just because both are study-oriented.
+
+## Public Project Surface
+
+Even though shapes differ, every good project here should still make these boundaries obvious:
 
 - what the problem is
-- what files were provided
-- what code is your solution
-- how to build and test it
+- what material was provided
+- what implementation or analysis is user-authored
+- how to build, run, and test it
 - what was learned
-- which notes are private and local-only
+- what is current, archived, or intentionally omitted
 
-At the repository level, also make these things explicit:
+At minimum, preserve or create the nearest equivalent of:
 
-- what the original `legacy/` tree was trying to study
-- whether the existing project set is sufficient for that learning goal
-- which projects are missing, redundant, too narrow, or poorly sequenced
-- why the `study/` project list is the right curriculum shape
+- project-level `README.md`
+- `problem/README.md` when there is an explicit problem statement or fixture set
+- one or more implementation or analysis directories such as `python/`, `go/`, `c/`, `cpp/`,
+  `react/`, `spring/`, `fastapi/`, or `analysis/`
+- `docs/README.md` for durable tracked notes
 
-## Good Study Repository Test
+## Language And Documentation Tone
 
-A good study repository should let another reader answer these questions quickly:
+Across the mature repositories in this workspace, the current default is:
 
-1. What was the problem?
-2. How were the constraints interpreted?
-3. What approaches were tried and rejected?
-4. What code currently works?
-5. How do I rebuild and retest it?
-6. What concept was actually learned?
+- write explanatory prose in Korean
+- keep commands, file paths, tool names, protocol names, code identifiers, and other technical
+  tokens in their original English form
+- prefer short, index-like public READMEs over long essay-style front matter
 
-If the repository instead feels like an answer booklet, a raw file dump, or a pile of
-personal scraps, the structure is wrong.
+When adding or revising docs, match the tone of the target repository first.
+Do not translate established technical identifiers just to make the prose more uniform.
 
-## Curriculum Interpretation
+## Documentation Depth By Layer
 
-Do not treat `legacy/` as a perfect project plan.
+Keep the current layer separation clear:
 
-Before migrating a family of projects, infer the intended learning program from:
+- `README.md`: fast public index, scope, status, reading order, verification entrypoint
+- `problem/README.md`: problem framing, provided material, constraints, canonical validation
+- `docs/`: durable concept notes, references, curriculum context, and explanation that should
+  remain useful after implementation details change
+- `notion/`: longer public learning notes, decision rationale, debugging evidence, and rebuild
+  guidance
 
-- referenced books or courses
-- project names and ordering
-- existing docs and roadmaps
-- recurring concepts in the notes and solutions
-- missing but obviously implied topics
+Public READMEs should stay concise. Long explanations belong in `docs/` or `notion/`.
+Do not let project READMEs collapse into answer dumps or raw work logs.
 
-Write or preserve enough summary so that another agent can answer:
+## Notion Convention
 
-- what subjects this repository is trying to learn
-- what the main reference materials are
-- which concepts each project is supposed to teach
-- what order makes pedagogical sense
+The old rule that `notion/` must always be local-only is no longer accurate for this workspace.
 
-## Project-Set Audit
+Current reality:
 
-For each track or book-driven cluster, evaluate whether the project list is actually good
-enough for project-led learning.
+- many mature repositories in this workspace track `notion/`
+- many also keep `notion-archive/` alongside the current `notion/`
+- some projects use `05-development-timeline.md` as a reproducible rebuild log
 
-Check for:
+Therefore:
 
-- coverage gaps
-- duplicated projects with little added learning value
-- projects that are too small to justify their own slot
-- projects that are too broad and should be split
-- poor ordering dependencies
-- missing bridge projects between theory-heavy and implementation-heavy topics
+- if a target repository already tracks `notion/`, keep following that repository's convention
+- if a target repository already uses `notion-archive/`, preserve the two-tier pattern
+- do not "clean this up" into a different policy unless the user explicitly asks for a
+  workspace-wide normalization pass
 
-If the legacy project set is weak, say so plainly and improve it in `study/`.
+Current common pattern in mature repos:
 
-## Authority To Redesign
+- `notion/` is the current public learning-note set
+- `notion-archive/` preserves older long-form notes, earlier templates, or superseded drafts
+- `notion/05-development-timeline.md` is often the primary rebuild and re-verification guide
 
-`legacy/` is a reference source, not a design constraint.
-
-You may do any of the following in `study/` when it improves the learning program:
-
-- add a brand new project not present in `legacy/`
-- split one legacy project into multiple clearer projects
-- merge several weak legacy projects into one stronger project
-- reorder projects
-- rename projects for clarity
-- replace a poor project with a better one that teaches the same target concepts
-
-Do this only when you can explain the pedagogical reason clearly.
-
-When adding a new project, document:
-
-- which gap it fills
-- which concepts or chapters it covers
-- why the legacy set was insufficient without it
-- where it belongs in the learning sequence
-
-## Required Project Shape
-
-Unless the user explicitly asks for a different structure, use this layout:
-
-```text
-study/
-  <track>/
-    <project>/
-      README.md
-      problem/
-        README.md
-        code/
-        data/
-        script/
-      <implementation-1>/
-        README.md
-        src/
-        include/
-        tests/
-      <implementation-2>/
-        README.md
-        src/
-        include/
-        tests/
-      docs/
-        README.md
-        concepts/
-        references/
-      notion/
-        00-problem-framing.md
-        01-approach-log.md
-        02-debug-log.md
-        03-retrospective.md
-        04-knowledge-index.md
-```
-
-Interpretation:
-
-- `README.md`: concise public index
-- `problem/`: provided specification, fixtures, scripts, starter code
-- `<implementation-*>/`: one or more language- or stack-specific solution directories
-- `docs/`: durable tracked notes and references
-- `notion/`: private upload-ready Markdown, ignored by git
-
-Directory roles:
-
-- `problem/`: original statement, provided starter code, fixtures, grading scripts
-- `<implementation-*>/`: active implementation paths such as `c/`, `cpp/`, `python/`,
-  `java/`, `go/`, `rust/`, `node/`, `react/`, or other topic-appropriate stacks
-- `docs/`: short, durable, repository-native knowledge
-- `notion/`: private, process-heavy, upload-ready technical writing
-
-If the source material belongs to another stack or language family, preserve the same
-separation of concerns even if directory names differ.
-
-## Public vs Private Content
-
-Tracked files should contain:
-
-- short project summary
-- constraints and scope
-- build and test commands
-- implementation status
-- compact concept notes that remain useful in-repo
-
-Private `notion/` files should contain:
-
-- process logs
-- failed attempts
-- retrospective writing
-- reusable knowledge summaries
-- personal confusion notes
-
-Do not make tracked files depend on `notion/` existing.
-
-Tracked files should feel like a stable index.
-Private `notion/` files should feel like a technical notebook.
-
-## Language And Stack Policy
-
-Do not assume C/C++ by default across all legacy trees.
-
-Choose implementation language or stack based on:
-
-- the learning goal
-- the subject domain
-- the reference books or courses
-- the kind of project being built
-- explicit user preference
-
-Rules:
-
-- use one or more implementation directories named after the chosen language or stack
-- if multiple implementations exist, they should target the same problem scope unless
-  intentionally documented otherwise
-- if one implementation is incomplete, mark status explicitly
-- document build and test commands per implementation
-- keep shared fixtures in neutral locations
-- explain intentional design differences between implementations
-
-Repository-specific override is allowed.
-For example, a systems repository may prefer `c/` and `cpp/`, while an algorithms repository
-may prefer `python/` plus `cpp/`, and a frontend repository may use `ts/` or `react/`.
-
-Minimum per-implementation README contents:
-
-- problem scope covered
-- build command
-- test command
-- current status
-- known gaps
-- implementation notes
-
-## Notion Rules
-
-The `notion/` folder is local-only and should be directly usable in Notion.
-
-Minimum expected files:
+When creating a new project inside a repository that already uses the expanded note set,
+prefer the current neighboring convention:
 
 - `00-problem-framing.md`
 - `01-approach-log.md`
 - `02-debug-log.md`
 - `03-retrospective.md`
 - `04-knowledge-index.md`
+- `05-development-timeline.md`
 
-Quality requirements:
+The expected depth is not "dump every scratch note." The goal is a compressed, reusable current
+edition:
 
-- complete technical sentences
-- explicit evidence and uncertainty
-- no fake git metadata
-- useful after the implementation details are forgotten
+- enough detail that another learner can rerun the build, test, or analysis flow
+- enough debugging evidence that failure modes and fixes are understandable
+- enough decision history that major tradeoffs are recoverable
+- no meaningless chronological spam or copied terminal transcripts without commentary
 
-Expected content categories:
+When adding a new project inside an existing repository, match the neighboring project's
+`notion/` pattern.
 
-- problem framing
-- approach and decision log
-- debugging and failed cases
-- retrospective
-- reusable knowledge index
+## Guides Rule
 
-Recommended meaning of each file:
+`guides/` is a shared primer and cross-track reference area. It is not limited to migration
+rules.
 
-- `00-problem-framing.md`: problem statement, constraints, success criteria, prerequisites
-- `01-approach-log.md`: options considered, chosen direction, decision reasons
-- `02-debug-log.md`: failures, root causes, fixes, verification
-- `03-retrospective.md`: what improved, what remains weak, what to revisit
-- `04-knowledge-index.md`: reusable concepts, glossary, annotated reference links
+Use `guides/` for:
 
-When saving reference links in `notion/`, record at least:
+- shared language, framework, tooling, systems, or security primers
+- cross-track preparation material
+- cross-track submission or readiness guidance
 
-- title
-- URL or local path
-- checked date
-- why it was consulted
-- what was learned
-- how it affected the current project
+Do not use `guides/` for:
 
-Avoid these `notion/` anti-patterns:
+- repo-specific curriculum audit details that belong in the target repo
+- per-project implementation notes
+- duplicate copies of README content that already lives next to the project
 
-- full code dumps without commentary
-- meaningless chronological logs
-- bare link collections
-- copied AI output without verification
-- fabricated branch, commit, or environment metadata
+When new projects introduce concepts that `guides/` does not yet cover:
 
-## Migration Workflow
+1. add or extend the relevant guide documents
+2. update `guides/README.md`
+3. add cross-links from the affected repo README or roadmap where useful
 
-Follow this order:
+Repo-specific curriculum maps, audits, and roadmaps should usually live in the affected
+repository's own `docs/` directory or root README.
 
-1. inspect `legacy/` and identify the source project or topic cluster
-2. infer what the cluster was meant to teach
-3. audit whether the current project set is sufficient
-4. classify files as `problem`, `solution`, `docs`, `notes`, `generated`, or `unknown`
-5. remove or ignore generated noise before expanding the structure
-6. create or update the target project under `study/`
-7. add, split, merge, or reorder projects when the curriculum needs it
-8. migrate one pilot project end to end
-9. reuse the pilot pattern for the rest of the tree
-10. verify links, commands, and tests after each migration
+## Legacy And Migration Work
 
-Do not rewrite every project at once without a pilot.
+Some sub-repositories still contain legacy-style trees or historical source material.
 
-Default pilot order for this repository:
+Rules:
 
-1. `study/Foundations-CSAPP/datalab`
-2. `study/Foundations-CSAPP/bomblab`
-3. `study/Foundations-CSAPP/attacklab`
-4. `study/Foundations-CSAPP/archlab`
-5. `study/Foundations-CSAPP/perflab`
-6. `study/Systems-Programming/shlab`
-7. `study/Systems-Programming/malloclab`
-8. `study/Systems-Programming/proxylab`
+- treat any `legacy/` directory inside the target repository as read-only unless the user
+  explicitly asks otherwise
+- infer the intended curriculum from the current repository docs, roadmaps, and completed
+  sibling projects, not from stale notes alone
+- before scaling a large migration or expansion, shape one pilot inside the target repository
+- do not apply a root-level fixed pilot order across the entire workspace
 
-Recommended execution phases:
+## Curriculum Design Standard
 
-1. Freeze and audit
-2. Establish templates
-3. Migrate one pilot project
-4. Roll out by family
-5. Clean and normalize
+When you add or reshape study projects, evaluate:
 
-Phase goals:
+- coverage gaps
+- duplicates with low incremental learning value
+- projects that are too small to deserve their own slot
+- projects that are too broad and should be split
+- missing bridge projects between theory-heavy and implementation-heavy areas
+- whether the current ordering teaches the material in a defensible sequence
 
-- Freeze and audit:
-  - inventory projects and classify files
-  - record broken links and duplicates
-  - infer the learning goals of each track
-  - audit project sufficiency
-- Establish templates:
-  - lock the per-project layout
-  - lock the `notion/` file set
-  - lock per-language README expectations
-  - add ignore rules early
-- Migrate one pilot project:
-  - copy only required source material from `legacy/`
-  - create the normalized `study/` project
-  - verify builds and tests
-- Roll out by family:
-  - reuse the pilot pattern
-  - redesign the project set where needed
-- Clean and normalize:
-  - remove stale generated files
-  - fix references
-  - unify README tone
-  - make missing parity explicit
-
-Recommended first move in a new repository:
-
-1. add ignore rules
-2. define the project template
-3. migrate one pilot project
-4. review the template after one full migration
-5. scale to the rest of the tree
-
-## Planning Checklist
-
-Before migrating a project, confirm these decisions:
-
-- naming rules and casing
-- completion states such as `planned`, `in-progress`, `verified`, `archived`
-- provenance rules for original vs user-authored content
-- verification scope: compile, tests, benchmark, sanitizer, debugger
-- spoiler policy for public tracked files
-- ignore rules for private notes and build artifacts
-- definition of done for the migrated project
-
-Before migrating a track, also confirm:
-
-- main books, papers, or courses being learned
-- concept-to-project mapping
-- whether the existing sequence teaches the material in the right order
-- which missing projects should be added to `study/`
-- which legacy projects should not be carried forward as-is
+You may add, split, merge, rename, reorder, or replace projects when it improves the learning
+program, but the pedagogical reason must be documented in the affected repo's root README,
+roadmap, or curriculum docs.
 
 ## Evidence Standard
 
 When you keep or write technical claims:
 
-- tie commands to real files in the repository
-- prefer reproducible commands over narrative claims
+- tie commands to real files in the target repository
+- prefer runnable commands over narrative claims
 - flag unknowns instead of inventing them
 - remove or fix broken links
 - do not reference files that do not exist
+- preserve current status markers such as `verified`, dates, or scope tables when the target
+  repository already uses them
 
-## Noise To Remove Or Ignore
+## Working Style
 
-Treat these as noise unless there is a strong reason to vendor them:
+Keep changes scoped to the repository you are actively editing.
 
-- object files and compiled binaries
-- debug symbol bundles
-- editor files
-- local scratch notes
-- generated test outputs
-- temporary benchmark artifacts
+Do not:
 
-If they must remain locally, keep them ignored and out of the conceptual structure.
+- mass-normalize unrelated top-level repositories in one sweep
+- rewrite neighboring repos just because they use a different valid convention
+- modify generated artifacts unless the task requires it
+- modify `legacy/` material unless the user asked for it
 
-## Non-Goals
+If the workspace is dirty, treat existing unrelated changes as user-owned unless proven
+otherwise.
 
-Do not optimize for:
+## Good Study Repository Test
 
-- portfolio presentation first
-- exposing final answers as the primary interface
-- long duplicate explanations across many files
-- invented commit history or fabricated workflow metadata
+A good study repository should let another reader answer these questions quickly:
 
-## Done Criteria
-
-A migrated project is complete when:
-
-- `README.md` is enough to understand the project
-- `problem/` is clearly separated from user-authored work
-- implementation directories are present or explicitly staged
-- validation commands are documented
-- `docs/` is concise and durable
-- `notion/` is created locally and ignored
-- generated artifacts are no longer treated as source content
-
-A migrated track is complete when:
-
-- the intended learning goals are explicit
-- the project set has been audited for sufficiency
-- missing projects have been added where necessary
-- redundant or weak projects have been removed, merged, or reframed
-- the sequence of projects now supports the reference materials well
-
-## If You Apply This To Another Legacy Tree
-
-Keep the same workflow, but parameterize these items per repository:
-
-- target languages or stacks
-- reference books or courses
-- project naming rules
-- spoiler policy
-- verification tools
-- privacy rules for local notes
-- curriculum design standards for project selection
-
-Do not assume the content domain is the same as CS:APP. Reuse the structure, not the topic.
-
-## Repository-Specific Constraint
-
-In this repository, do not modify files under `legacy/` unless the user explicitly asks for
-changes there. Use it only as a source to reference, compare, or copy from.
+1. What was the problem?
+2. What constraints mattered?
+3. What currently works?
+4. How do I rerun the verification?
+5. What concept does this project teach?
+6. Why is this project in this curriculum at all?

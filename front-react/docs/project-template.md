@@ -120,6 +120,21 @@
 - 현재 상태
 - 다음 프로젝트로 이어지는 한계
 
+## 제출 준비 기준
+
+캡스톤 또는 포트폴리오 제출 전 아래 루브릭으로 self-check 하고 결과를 README에 첨부한다.
+
+→ [guides/submission/submission-readiness-rubric.md](../../guides/submission/submission-readiness-rubric.md)
+
+최소 확인 항목:
+
+```
+[ ] 빌드·기동 한 줄 명령 동작
+[ ] 단위 테스트 전체 통과
+[ ] baseline 로드 테스트 결과 첨부 (해당 프로젝트에 서버 있는 경우)
+[ ] Evidence Package (변경 전후 측정값) README 포함
+```
+
 ## tracked 문서 원칙
 
 - README는 문제, 범위, 명령, 상태, 학습 포인트를 빠르게 파악할 수 있어야 한다.
