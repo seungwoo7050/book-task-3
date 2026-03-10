@@ -1,55 +1,30 @@
-# Capstone: 일곱 개의 랩을 하나의 서비스로 재조립하기
+# 문제 프레이밍
 
-## 왜 이 프로젝트가 필요한가
+## 학습 목표
 
-A부터 G까지의 랩은 각각 하나의 백엔드 역량에 집중한다.
-인증, 외부 로그인, 권한, CRUD, 비동기 처리, 실시간 통신, 운영성.
-이것들은 개별적으로 의미가 있지만, 실제 서비스에서는 한 코드베이스 안에서 만난다.
+개별 랩으로 나눠 배운 인증, 인가, 데이터 API, 비동기 작업, 실시간 전달, 운영성을 하나의 협업형 SaaS 백엔드 안에서 다시 조합하는 것이 목표다.
 
-workspace-backend는 "SaaS 협업 도구의 백엔드"라는 하나의 도메인 안에서
-이 모든 역량을 재조합하는 capstone 프로젝트다.
-랩 코드를 import하는 것이 아니라, 같은 개념을 통합된 설계 안에서 다시 만든다.
+## 왜 중요한가
 
-## 어떤 서비스인가
+- 랩은 개념을 분리해 배우기 좋지만, 실제 서비스는 여러 경계가 한 코드베이스에서 만난다.
+- capstone은 "작은 예제를 통합 구조로 다시 설계할 수 있는가"를 보여 주는 가장 좋은 자리다.
 
-| 기능 | 대응 랩 | capstone에서의 위치 |
-|------|---------|---------------------|
-| 회원가입 + 로그인 | A-auth-lab | local auth (email/password + email verification) |
-| Google 로그인 | B-federation-security-lab | ExternalIdentity 연동 |
-| 워크스페이스 + 멤버 초대 | C-authorization-lab | workspace RBAC (owner → invite → member) |
-| 프로젝트/태스크/코멘트 | D-data-api-lab | workspace 경계 안의 CRUD |
-| 알림 큐잉 | E-async-jobs-lab | Notification table + drain |
-| WebSocket 실시간 전달 | F-realtime-lab | ConnectionManager + PresenceTracker |
-| JSON 로깅, health check | G-ops-lab | /health/live, /health/ready, structured logging |
+## 선수 지식
 
-## 핵심 흐름
+- `labs/A`부터 `labs/G`까지의 핵심 개념
+- FastAPI, SQLAlchemy, Redis, WebSocket의 기본
+- 경계를 통합할 때 생기는 설정/모델 충돌 감각
 
-```
-사용자 회원가입 → 이메일 인증 → 로그인 (local 또는 Google)
-→ 워크스페이스 생성 → 멤버 초대 → 초대 수락
-→ 프로젝트 생성 → 태스크 생성 → 코멘트 작성
-→ 코멘트 시 멤버에게 알림 큐잉
-→ drain → WebSocket으로 실시간 전달
-```
+## 성공 기준
 
-이 흐름이 테스트 하나에 전부 들어간다 (`test_capstone.py`).
+- 로컬 로그인과 외부 로그인, RBAC, 협업 데이터 API가 같은 사용자/워크스페이스 모델 안에서 설명 가능해야 한다.
+- 댓글이나 활동이 queued notification과 realtime delivery로 이어지는 흐름이 보여야 한다.
+- capstone이 단순 복붙이 아니라 재구성이라는 점이 문서로 드러나야 한다.
 
-## 제약과 경계
+## 제외 범위
 
-| 항목 | 선택 |
-|------|------|
-| 프레임워크 | FastAPI |
-| DB | PostgreSQL 16 (compose), SQLite (test) |
-| Redis | compose에 포함, rate limiter에서 사용 |
-| WebSocket | Starlette 네이티브, 인메모리 ConnectionManager |
-| 인증 | PyJWT access token + cookie + CSRF |
-| schema init | lifespan에서 `Base.metadata.create_all()` |
-| 프론트엔드 | 없음 |
-| 클라우드 배포 | 없음 |
+- 프런트엔드 렌더링
+- 실제 클라우드 배포 자동화
+- 랩 코드를 공용 패키지로 추출하는 리팩터링
 
-## 불확실한 것
-
-- 모든 concern을 한 서비스에 넣으면 각 랩의 단순함이 사라진다.
-  하지만 capstone의 목적은 "통합 설계를 보여주는 것"이다.
-- worker 프로세스 분리 없이 drain + WebSocket을 같은 프로세스에서 처리한다.
-- 프론트엔드와 클라우드 배포는 범위 밖이다.
+이 capstone의 핵심은 기능을 많이 붙이는 데 있지 않고, 앞선 랩의 경계를 한 제품형 도메인 안에서 다시 설명하는 데 있다.

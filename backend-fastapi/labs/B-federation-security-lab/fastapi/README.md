@@ -1,19 +1,33 @@
 # B-federation-security-lab FastAPI
 
-- Status: `verified`
-- Problem scope covered: Google OIDC login, identity linking, rotating refresh tokens, CSRF, TOTP 2FA, recovery codes, auth audit logs, health endpoints
-- Build command:
+## 이 구현이 다루는 범위
+
+- Google OIDC 로그인
+- 외부 계정 연결
+- TOTP 2FA
+- recovery code
+- auth audit log
+- `/api/v1/health/live`, `/api/v1/health/ready`
+
+## 빠른 시작
+
+가장 빠른 로컬 확인:
 
 ```bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install -U pip
-python -m pip install -e ".[dev]"
-cp .env.example .env
+make install
 make run
 ```
 
-- Commands:
+Compose 전체 확인:
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+## 검증 명령
 
 ```bash
 make lint
@@ -22,7 +36,21 @@ make smoke
 docker compose up --build
 ```
 
-- Compose note: the API container applies `alembic upgrade head` before starting FastAPI
-- Known gaps:
-  - Google provider behavior is mocked in tests
-  - this lab focuses on auth security, not broader product domain modeling
+## Compose 구성
+
+- `api`: 호스트 `8000` 포트로 노출됩니다.
+- `db`: PostgreSQL 16, 데이터베이스 이름은 `b_federation_security_lab`입니다.
+- `redis`: Redis 7을 사용합니다.
+
+## 이 워크스페이스에서 확인할 점
+
+- `make run`과 Compose의 `api` 명령 모두 `alembic upgrade head`를 먼저 실행합니다.
+- `make run`은 기본 SQLite 설정으로도 시작할 수 있습니다.
+- `.env.example`은 PostgreSQL, Redis, 실제 Google OIDC 설정을 담은 Compose 기준 값입니다.
+- 외부 공급자 동작은 로컬 학습용 흐름과 테스트 더블을 기준으로 정리되어 있습니다.
+
+## 함께 읽을 문서
+
+- [상위 README](../README.md)
+- [문제 정의](../problem/README.md)
+- [문서 지도](../docs/README.md)

@@ -1,232 +1,92 @@
-# 개발 타임라인: Capstone workspace-backend
+# 개발 타임라인
 
-이 문서는 소스 코드에서 드러나지 않는 개발 과정—설계 의사결정, 패키지 선택,
-모델 통합, Docker 구성, 테스트 전략—을 시간순으로 기록한다.
+## 이 문서의 목적
 
----
+- A~G 랩에서 배운 것을 이 capstone에서 어떤 순서로 다시 묶어야 하는지 재현 가능한 흐름으로 적는다.
+- 가장 확실한 통합 재현은 자동 테스트라는 점을 분명히 하고, Compose 기반 shape 확인은 보조 경로로 둔다.
 
-## Phase 1: 프로젝트 초기화
-
-```bash
-mkdir -p capstone/workspace-backend/fastapi && cd capstone/workspace-backend/fastapi
-
-# pyproject.toml 생성 (name: workspace-backend-fastapi)
-# 핵심 의존성: fastapi, sqlalchemy, pydantic-settings, argon2-cffi,
-#              PyJWT[crypto], email-validator, psycopg[binary], redis, httpx, uvicorn[standard]
-# dev 의존성: pytest, ruff
-
-python3 -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
-```
-
-capstone이므로 모든 lab의 의존성이 한 곳에 모인다:
-- `argon2-cffi`: 패스워드 해싱 (A-auth-lab)
-- `PyJWT[crypto]`: JWT access token (A-auth-lab, B-federation-security-lab)
-- `email-validator`: 이메일 형식 검증
-- `psycopg[binary]`: PostgreSQL 연결 (compose 환경)
-- `redis`: rate limiter + compose
-
-## Phase 2: core/ — 설정, 보안, 로깅, 에러
-
-```python
-# app/core/config.py — Settings 클래스
-#   DB, Redis, JWT, cookie, CSRF 관련 설정 30+ fields
-#   presence_ttl_seconds = 10 (F-realtime-lab에서 가져옴)
-#   access_token_ttl_seconds = 900 (15분)
-#   refresh_token_ttl_seconds = 14일
-
-# app/core/security.py — 보안 함수 모음
-#   password_hasher (argon2), hash_secret (hmac-sha256)
-#   build_access_token, decode_access_token (PyJWT)
-#   validate_csrf, set_*_cookie, clear_auth_cookies
-
-# app/core/logging.py — JsonFormatter + configure_logging
-# app/core/errors.py — AppError + register_exception_handlers
-# app/core/rate_limit.py — RateLimiter (Redis/in-memory dual backend)
-```
-
-security.py에 7개 랩에서 배운 보안 패턴이 집중된다:
-- Argon2 패스워드 해싱 (A)
-- JWT 발행/검증 (A+B)
-- HMAC으로 refresh token hash (A)
-- Cookie 설정 (httpOnly, SameSite) (capstone 고유)
-- CSRF double-submit 검증 (capstone 고유)
-
-## Phase 3: DB 모델 통합
-
-```python
-# app/db/models/auth.py — 4 테이블
-#   User (handle, email, password_hash, email_verified_at)
-#   ExternalIdentity (user_id FK, provider, provider_subject)
-#   RefreshToken (family_id, parent_token_id, token_hash, revoked_at)
-#   EmailToken (kind, token_hash, expires_at, used_at)
-
-# app/db/models/platform.py — 7 테이블
-#   Workspace (name, owner_user_id FK)
-#   Membership (user_id, workspace_id, role)
-#   Invite (workspace_id, email, token, status)
-#   Project (workspace_id, title)
-#   Task (project_id, title)
-#   Comment (task_id, author_user_id, body)
-#   Notification (recipient_user_id, message, status)
-```
-
-총 11개 테이블. 모델 파일을 auth/platform으로 분리하되,
-`bootstrap.py`에서 모두 explicit import해야 `create_all()`이 전부 생성한다.
-
-## Phase 4: runtime.py — 실시간 상태
-
-```python
-# app/runtime.py
-#   ConnectionManager: dict[str, set[WebSocket]] + connect/disconnect/send_notification
-#   PresenceTracker: dict[str, float] + heartbeat/is_online
-
-# app/main.py에서:
-#   app.state.mailbox = []  # 이메일 큐 (인메모리)
-#   app.state.connection_manager = ConnectionManager()
-#   app.state.presence_tracker = PresenceTracker(ttl_seconds=settings.presence_ttl_seconds)
-```
-
-F-realtime-lab의 구조를 거의 그대로 가져왔지만,
-`send_notification` 메서드가 `send_to_user` 대신 사용되어
-notification 도메인에 맞는 이름으로 변경되었다.
-
-## Phase 5: 서비스 레이어
-
-```python
-# app/domain/services/auth.py — AuthService
-#   register: handle/email/password → User + EmailToken + mailbox append
-#   verify_email: token lookup → email_verified_at 설정
-#   login_local: email/password → User (이메일 인증 확인)
-#   login_google: subject/email/display_name → User + ExternalIdentity
-#   issue_session: User → (access_token, refresh_token, csrf_token)
-#   rotate_refresh: raw_token → revoke old + issue new (reuse detection)
-#   revoke_refresh: logout 시 호출
-
-# app/domain/services/platform.py — PlatformService
-#   create_workspace, invite_member, accept_invite
-#   create_project, create_task, create_comment
-#   drain_notifications: queued → WebSocket send → sent
-#   heartbeat, is_online
-```
-
-코멘트 생성 시 같은 워크스페이스의 다른 멤버에게 Notification을 자동 생성한다.
-이것은 E-async-jobs-lab의 "outbox에 기록" 패턴을 간소화한 것이다.
-
-## Phase 6: API 라우트
-
-```python
-# app/api/v1/routes/auth.py
-#   POST /register, /verify-email, /login, /google/login
-#   GET /me
-#   POST /token/refresh (requires CSRF), /logout (requires CSRF)
-
-# app/api/v1/routes/platform.py
-#   POST /workspaces, /workspaces/{id}/invites, /invites/{token}/accept
-#   POST /workspaces/{id}/projects, /projects/{id}/tasks, /tasks/{id}/comments
-#   POST /notifications/drain
-#   POST /presence/heartbeat, GET /presence/{user_id}
-#   WS /ws/notifications?access_token=
-
-# app/api/v1/routes/health.py
-#   GET /health/live, /health/ready
-```
-
-## Phase 7: Docker Compose 구성
-
-```yaml
-# compose.yaml — 3개 서비스
-services:
-  api:       # FastAPI, 포트 8010:8000
-             # depends_on: db (healthy), redis (healthy)
-             # healthcheck: python urllib → /health/live
-  db:        # PostgreSQL 16, 포트 5440:5432
-             # DB name: workspace_backend
-  redis:     # Redis 7, 포트 6390:6379
-```
-
-capstone의 compose는 worker 서비스 없이 api + db + redis 3개로 구성된다.
-drain이 API 프로세스 안에서 실행되므로 별도 worker가 필요 없다.
+## 1. 시작 위치를 고정한다
 
 ```bash
+cd capstone/workspace-backend/fastapi
+python3 -m venv .venv
+source .venv/bin/activate
+make install
+```
+
+- `app/core/config.py` 기본값은 SQLite와 빈 Redis를 사용하므로 `.env` 없이도 로컬 서버는 뜬다.
+- `.env.example`을 복사하면 PostgreSQL + Redis Compose 경로로 전환된다.
+
+## 2. 가장 빠른 자동 재현 경로
+
+```bash
+pytest tests/integration/test_capstone.py -q
+make smoke
+```
+
+- 이 테스트 하나가 local auth, 이메일 검증, Google 스타일 로그인, workspace invite, project/task/comment API, notification drain, websocket 수신까지 끝까지 이어 준다.
+- `make smoke`는 앱 부팅과 `/api/v1/health/live`만 확인한다.
+- 이 capstone의 완전 재현 기준은 수동 클릭이 아니라 위 테스트다.
+
+## 3. 로컬 편집 루프를 연다
+
+```bash
+make run
+```
+
+다른 터미널에서:
+
+```bash
+curl http://127.0.0.1:8000/api/v1/health/live
+curl http://127.0.0.1:8000/api/v1/health/ready
+```
+
+- 로컬 루프는 도메인 경계를 읽거나 route shape를 빠르게 확인할 때 유용하다.
+- 다만 owner의 이메일 검증 토큰은 테스트에서 `app.state.mailbox`로 꺼내기 때문에, 브라우저만으로 완전한 엔드투엔드 재현을 하기는 어렵다.
+
+## 4. Compose로 통합 shape를 확인한다
+
+```bash
+cp .env.example .env
 docker compose up --build -d
-docker compose logs -f api     # 로그 확인
+docker compose ps
+curl http://127.0.0.1:8010/api/v1/health/live
+curl http://127.0.0.1:8010/api/v1/health/ready
 ```
 
-## Phase 8: 테스트
+- Compose에서는 API가 `8010`, PostgreSQL이 `5440`, Redis가 `6390` 포트로 노출된다.
+- 정리할 때는 `docker compose down -v`를 쓴다.
 
-```python
-# tests/conftest.py
-#   app_env fixture:
-#     - tmp_path에 SQLite DB
-#     - SECRET_KEY, TOKEN_ISSUER monkeypatch
-#     - get_settings.cache_clear() → configure_engine() → create_all()
-#   app_client fixture:
-#     - create_app() → TestClient
+## 5. 통합 재현의 기준 시나리오
 
-# tests/integration/test_capstone.py
-#   test_local_auth_workspace_flow_and_google_member_notification:
-#     1. owner 회원가입 → 이메일 인증 → 로그인
-#     2. collaborator Google 로그인
-#     3. workspace 생성 → invite → accept
-#     4. WebSocket 연결 (access_token query param)
-#     5. project → task → comment → drain → WS receive
-#     6. /me 확인
-```
+`tests/integration/test_capstone.py`를 읽을 때 순서를 아래처럼 따라가면 된다.
 
-하나의 통합 테스트가 7개 랩의 핵심 개념을 모두 관통한다.
-이 테스트의 통과가 capstone의 가장 중요한 검증 포인트다.
+1. owner가 `/api/v1/auth/register`로 가입한다.
+2. 테스트 helper가 mailbox에서 검증 토큰을 꺼내 `/api/v1/auth/verify-email`을 호출한다.
+3. owner가 `/api/v1/auth/login`으로 로그인한다.
+4. collaborator가 `/api/v1/auth/google/login`으로 즉시 세션을 만든다.
+5. owner가 `/api/v1/platform/workspaces`와 `/invites`를 만들고, collaborator가 invite를 수락한다.
+6. collaborator가 `/api/v1/platform/ws/notifications?access_token=<token>`에 WebSocket으로 붙는다.
+7. owner가 project, task, comment를 만들고 `/api/v1/platform/notifications/drain`을 호출한다.
+8. collaborator socket이 `New comment on task`로 시작하는 메시지를 받으면 통합이 끝까지 이어진 것이다.
+
+## 6. 수동으로 확인할 수 있는 부분만 따로 본다
+
+Google 스타일 로그인 shape는 수동으로도 바로 볼 수 있다.
 
 ```bash
-pytest -q    # 통합 테스트 실행
+curl -c collaborator.cookies -b collaborator.cookies -X POST http://127.0.0.1:8000/api/v1/auth/google/login \
+  -H 'Content-Type: application/json' \
+  -d '{"subject":"google-123","email":"collab@example.com","display_name":"Collab"}'
 ```
 
-## Phase 9: 검증
+- 위 요청 뒤 `collaborator.cookies`에 `access_token`이 생긴다.
+- 이 세션은 workspace 초대 수락이나 `/api/v1/auth/me` 확인에 바로 쓸 수 있다.
 
-```bash
-make install  # pip install -e ".[dev]"
-make lint     # ruff check app tests
-make test     # pytest
-make smoke    # smoke test
+반면 owner의 local auth 전체 흐름은 검증 토큰이 외부 UI로 노출되지 않으므로 테스트 경로가 기준이다.
 
-# Compose 검증
-docker compose up --build -d
-curl http://localhost:8010/api/v1/health/live
-curl http://localhost:8010/api/v1/health/ready
+## 7. 막히면 먼저 확인할 것
 
-# 수동 통합 테스트
-# 1. 회원가입
-curl http://localhost:8010/api/v1/auth/register -X POST \
-  -H "Content-Type: application/json" \
-  -d '{"handle":"demo","email":"demo@example.com","password":"pass1234"}'
-
-# 2. 로그인 (이메일 인증 후)
-curl http://localhost:8010/api/v1/auth/login -X POST \
-  -H "Content-Type: application/json" \
-  -d '{"email":"demo@example.com","password":"pass1234"}' \
-  -c cookies.txt
-
-# 3. 워크스페이스 생성
-curl http://localhost:8010/api/v1/platform/workspaces -X POST \
-  -H "Content-Type: application/json" \
-  -b cookies.txt \
-  -d '{"name":"Demo Workspace"}'
-
-docker compose down
-```
-
----
-
-## 타임라인 요약
-
-| 단계 | 핵심 산출물 |
-|------|-------------|
-| 초기화 | pyproject.toml (전체 의존성 통합) |
-| core | config, security, logging, errors, rate_limit |
-| 모델 | auth 4 테이블 + platform 7 테이블 = 11 테이블 |
-| runtime | ConnectionManager, PresenceTracker |
-| 서비스 | AuthService, PlatformService |
-| API | auth 라우트, platform 라우트, health, WebSocket |
-| Compose | api + postgres + redis (3 서비스) |
-| 테스트 | 전체 흐름 통합 테스트 1개 |
-| 검증 | lint, test, smoke, Compose curl |
+- capstone에서 가장 흔한 문제는 기능 하나가 아니라 경계 합치기 순서가 어긋나는 것이다.
+- websocket만 안 되면 auth보다 먼저 `access_token` 전달 방식과 `/notifications/drain` 호출 여부를 확인한다.
+- owner 검증 흐름이 재현되지 않으면 테스트를 먼저 돌리고, 그 다음에 route shape를 수동으로 보는 편이 빠르다.

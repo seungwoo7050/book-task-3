@@ -1,40 +1,31 @@
-# 운영성은 기능이다: Health, Logging, Metrics를 독립 랩으로 만든 이유
+# 문제 프레이밍
 
-## 왜 이 문제를 만들었는가
+## 학습 목표
 
-기능을 다 만들어 놓고 "배포는 나중에"라고 미루면,
-서비스가 살아있는지, 요청을 처리하고 있는지, 어디서 에러가 나는지
-확인할 수단이 없는 상태로 운영에 들어가게 된다.
+운영성을 "기능이 다 끝난 뒤 붙이는 부가 요소"가 아니라 독립된 백엔드 주제로 이해하는 것이 목표다. health check, metrics, 구조화 로그, CI, 배포 문서를 최소 단위로 다룬다.
 
-G-ops-lab은 운영성(operability)을 product feature와 같은 무게로 다루는 연습이다.
-health check, structured logging, request metrics, CI Compose probe라는
-네 가지 축을 최소 구현하면서,
-"이 서비스를 어떻게 신뢰하고 관찰할 것인가"에 코드로 답한다.
+## 왜 중요한가
 
-## 어떤 상황을 기대하는가
+- 서비스가 살아 있는지, 준비되었는지, 어디서 실패하는지 모르면 기능만으로는 운영할 수 없다.
+- 운영 문서 역시 코드처럼 공개 레포에서 설명 가치가 큰 자산이다.
 
-- `/health/live`는 프로세스가 살아있으면 무조건 200을 돌려준다.
-- `/health/ready`는 DB와 Redis까지 확인하고, 문제가 있으면 503을 반환한다.
-- `/ops/ready`는 설정 수준의 readiness — URL이 존재하는지만 확인한다.
-- `/ops/metrics`는 Prometheus text format으로 요청 카운트를 노출한다.
-- 모든 로그는 JSON 형식으로 출력된다.
-- Compose의 healthcheck가 `live` 엔드포인트를 주기적으로 probe한다.
+## 선수 지식
 
-## 제약과 경계
+- FastAPI 애플리케이션 수명주기
+- Docker Compose 기본
+- health check와 readiness 개념
 
-| 항목 | 선택 |
-|------|------|
-| 프레임워크 | FastAPI |
-| DB | SQLite (기본), PostgreSQL (compose) |
-| Redis | 선택적 — config에 URL이 있을 때만 검사 |
-| Metrics | 자체 카운터 (MetricsRegistry), Prometheus client 미사용 |
-| Logging | Python logging + 커스텀 JsonFormatter |
-| IaC | 없음 — documentation-first AWS 노트 |
-| CI | lint + test + smoke + Compose health probe |
+## 성공 기준
 
-## 불확실한 것
+- live / ready endpoint를 구분해 설명할 수 있어야 한다.
+- 최소 metrics surface와 구조화 로그를 노출해야 한다.
+- CI와 Compose probe가 어떤 수준까지 검증하는지 분명해야 한다.
+- AWS 문서는 target shape일 뿐 실제 배포 완료가 아님을 명확히 적어야 한다.
 
-- 이 랩만으로 실제 운영 경험을 주장하기는 어렵다.
-  하지만 junior backend 면접에서 "기본 운영 감각"을 설명하기에는 충분하다.
-- Prometheus/Grafana 전체 stack은 이 랩의 범위를 넘긴다.
-- AWS 배포는 문서 수준이며 live verification이 없다.
+## 제외 범위
+
+- full observability stack
+- IaC 기반 실제 배포 자동화
+- 장시간 부하와 장애 주입 실험
+
+이 랩은 "운영성도 기능이다"라는 관점을 만드는 데 초점이 있다. 그래서 실제 배포 자동화보다 health, metrics, 문서화된 가정이 먼저 등장한다.

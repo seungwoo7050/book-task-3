@@ -1,17 +1,24 @@
-# C-authorization-lab Notion Documents
+# C-authorization-lab 학습 노트
 
-문서를 어떻게 활용할지 미리 알고 싶은 독자를 위해 짧은 안내를 제공한다.
+이 폴더는 현재 공개용 학습 노트입니다. 권한 모델과 실패 사례를 이 노트 세트만으로 이해할 수 있게 정리했습니다.
 
-순차적 읽기 (전체 맥락 이해):
-1. `00-problem-framing.md` – 문제와 성공 기준.
-2. `01-approach-log.md` – 설계 선택지를 분석.
-3. `02-debug-log.md` – 버그와 해결 과정을 검토.
-4. `03-retrospective.md` – 회고 및 학습 포인트.
-5. `04-knowledge-index.md` – 용어, 개념, 참조 목록.
-6. `05-development-timeline.md` – 개발/환경 구축 히스토리.
+## 먼저 볼 문서
 
-빠른 접근 팁:
-- 설계 토론만 원하면 `00`~`01` 조합.
-- 구현 이슈가 궁금하면 `02`.
-- 재사용 가능한 지식이나 개념은 `04`.
-- 환경 세팅/명령어는 `05`를 본다.
+- 바로 손을 움직여 재현하고 싶다면 [05-development-timeline.md](05-development-timeline.md)부터 읽습니다.
+- 왜 이런 구조로 만들었는지부터 이해하고 싶다면 `00`, `01`부터 읽습니다.
+
+## 추천 읽기 순서
+
+1. [00-problem-framing.md](00-problem-framing.md)
+2. [01-approach-log.md](01-approach-log.md)
+3. [02-debug-log.md](02-debug-log.md)
+4. [03-retrospective.md](03-retrospective.md)
+5. [04-knowledge-index.md](04-knowledge-index.md)
+6. [05-development-timeline.md](05-development-timeline.md)
+
+## 어떻게 쓰면 좋은가
+
+- 실행 재현이 최우선이면 `05`를 먼저 보고, 역할 설계 배경은 `00`, `01`에서 다시 읽습니다.
+- 역할과 소유권의 차이를 먼저 이해하려면 `00`, `01`을 읽습니다.
+- 권한 버그가 어떻게 드러나는지 보고 싶다면 `02`를 먼저 봐도 됩니다.
+- 포트폴리오용 권한 설계 메모는 `03`, `04`를 참고하면 됩니다.

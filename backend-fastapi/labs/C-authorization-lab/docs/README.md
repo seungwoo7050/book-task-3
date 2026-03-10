@@ -1,6 +1,21 @@
-# C-authorization-lab Docs
+# C-authorization-lab 문서 지도
 
-- owner, admin, member, and viewer roles
-- invitation lifecycle boundaries
-- authorization checks at service boundaries
-- ownership versus membership
+이 문서는 역할과 소유권을 "엔드포인트 if문"이 아니라 서비스 규칙으로 설명하려 할 때 참고하는 개념 지도입니다.
+
+## 먼저 보면 좋은 질문
+
+- 역할과 소유권은 무엇이 다른가
+- 초대 흐름에서 누가 상태를 바꿀 수 있는가
+- 인가 규칙을 테스트하기 좋은 경계는 어디인가
+
+## 읽고 나면 설명할 수 있어야 하는 것
+
+- 워크스페이스 역할 표
+- invitation lifecycle
+- 리소스 접근 제어를 서비스 계층에서 다루는 이유
+
+## 함께 보면 좋은 문서
+
+- [문제 정의](../problem/README.md)
+- [FastAPI 실행 문서](../fastapi/README.md)
+- [현재 학습 노트](../notion/README.md)

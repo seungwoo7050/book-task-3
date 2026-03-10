@@ -1,160 +1,125 @@
-# Development Timeline
+# 개발 타임라인
 
-## Phase 1: 프로젝트 초기 세팅
+## 이 문서의 목적
 
-포트 충돌을 피하기 위해 A(8000), B(8000)와 다른 포트를 사용한다. 이 랩은 외부 API 포트 8001, PostgreSQL 5433.
+- 이 랩을 다시 볼 때 권한표와 HTTP 흐름을 한 번에 재현할 수 있게 순서를 고정한다.
+- 자동 테스트 경로와 수동 API 확인 경로를 함께 적어, “권한이 정말 이렇게 막히는가”를 바로 확인하게 만든다.
+
+## 1. 시작 위치를 고정한다
 
 ```bash
-mkdir -p labs/C-authorization-lab/fastapi
 cd labs/C-authorization-lab/fastapi
-
-# pyproject.toml 작성 후 설치
-python3 -m pip install -e ".[dev]"
+python3 -m venv .venv
+source .venv/bin/activate
+make install
 ```
 
-이 랩의 의존성은 A/B보다 가볍다. `pyotp`, `itsdangerous`, `PyJWT[crypto]`가 없다—인증 관련 기능을 완전히 생략했기 때문이다. 핵심 의존성: FastAPI, SQLAlchemy, Alembic, psycopg, uvicorn, pydantic-settings.
+- `app/core/config.py` 기본값은 SQLite를 사용하므로 `.env` 없이도 로컬 편집 루프를 열 수 있다.
+- `.env.example`을 복사하면 PostgreSQL이 있는 Compose 경로로 전환된다.
 
-패키지 구조:
-```
-app/
-  api/
-    v1/routes/
-      authorization.py
-      health.py
-    deps.py
-  core/
-    config.py, errors.py, logging.py
-  db/
-    models/authorization.py
-    base.py, session.py
-  domain/services/
-    authorization.py
-  repositories/
-    authorization_repository.py
-  schemas/
-    authorization.py, common.py
-  bootstrap.py
-  main.py
-```
-
-## Phase 2: 데이터 모델 설계
-
-5개 테이블: users, workspaces, memberships, invites, documents.
-
-핵심 설계 결정:
-- User는 email과 name만. 인증 필드가 없다.
-- Workspace의 `owner_user_id`는 FK로 소유자 참조.
-- Membership에 `(user_id, workspace_id)` 유니크 제약.
-- Invite에 unique token (secrets.token_urlsafe(18)) + status (pending/accepted/declined).
-- Document에 `owner_user_id`와 `workspace_id` 두 FK.
-
-## Phase 3: Authorization Service 핵심 로직
-
-ROLE_ORDER 딕셔너리로 역할 서열을 정의:
-```python
-ROLE_ORDER = {"viewer": 1, "member": 2, "admin": 3, "owner": 4}
-```
-
-`_require_role` 메서드: membership 조회 후 역할 수준 비교. 미달이면 403.
-
-주요 서비스 메서드:
-- `create_workspace`: Workspace + owner Membership을 한 트랜잭션으로 생성
-- `create_invite`: admin 이상만 호출 가능, pending Invite 생성
-- `accept_invite`: email 일치 확인 → Membership 생성 → status="accepted"
-- `decline_invite`: email 일치 확인 → status="declined"
-- `change_role`: owner만 가능, 이중 검증
-- `create_document`: member 이상만 가능
-- `get_document`: viewer 이상만 가능
-
-## Phase 4: API 라우트와 Header-Based Actor
-
-`deps.py`에 actor 주입 dependency:
-```python
-def get_actor_id(x_user_id: Annotated[str, Header(alias="X-User-Id")]) -> str:
-    return x_user_id
-```
-
-엔드포인트:
-- `POST /api/v1/authorization/users` — 사용자 생성 (actor 불필요)
-- `POST /api/v1/authorization/workspaces` — workspace 생성 (actor 필요)
-- `POST /api/v1/authorization/workspaces/{id}/invites` — 초대 발행 (admin+)
-- `POST /api/v1/authorization/invites/{token}/accept` — 초대 수락
-- `POST /api/v1/authorization/invites/{token}/decline` — 초대 거절
-- `PATCH /api/v1/authorization/workspaces/{id}/members/{user_id}` — 역할 변경 (owner)
-- `POST /api/v1/authorization/workspaces/{id}/documents` — 문서 생성 (member+)
-- `GET /api/v1/authorization/documents/{id}` — 문서 읽기 (viewer+)
-
-## Phase 5: Bootstrap과 Schema 자동 생성
-
-```python
-# app/bootstrap.py
-def initialize_schema() -> None:
-    Base.metadata.create_all(bind=get_engine())
-```
-
-main.py startup에서 호출되어 SQLite/PostgreSQL 모두에서 테이블 자동 생성.
-
-## Phase 6: Docker Compose 구성
-
-```yaml
-# compose.yaml
-services:
-  api:    # port 8001:8000, uvicorn reload
-  db:     # PostgreSQL 16, POSTGRES_DB=c_authorization_lab, port 5433:5432
-```
-
-Redis가 없다—이 랩에는 rate limiting이나 세션 저장이 필요 없기 때문.
+## 2. 가장 빠른 자동 재현 경로
 
 ```bash
+pytest tests/integration/test_authorization_flows.py -q
+make smoke
+```
+
+- 위 테스트는 owner, viewer, outsider를 만들고, workspace 생성, invite accept, 문서 생성 차단, 역할 승격, decline, outsider read 금지까지 확인한다.
+- `make smoke`는 앱 부팅과 `/api/v1/health/live`만 확인한다.
+
+## 3. 로컬 편집 루프를 연다
+
+```bash
+make run
+```
+
+다른 터미널에서:
+
+```bash
+curl http://127.0.0.1:8000/api/v1/health/live
+curl http://127.0.0.1:8000/api/v1/health/ready
+```
+
+- 이 모드에서는 DB가 `c_authorization_lab.db`로 만들어진다.
+- 역할 비교 로직과 서비스 계층 흐름을 빠르게 손볼 때 가장 편하다.
+
+## 4. Compose로 PostgreSQL 경로까지 확인한다
+
+```bash
+cp .env.example .env
 docker compose up --build -d
 docker compose ps
-curl -s http://localhost:8001/api/v1/health/live
+curl http://127.0.0.1:8001/api/v1/health/live
+curl http://127.0.0.1:8001/api/v1/health/ready
 ```
 
-## Phase 7: Alembic 마이그레이션
+- Compose에서는 API가 `8001`, PostgreSQL이 `5433` 포트로 노출된다.
+- 정리할 때는 `docker compose down -v`를 쓴다.
+
+## 5. 수동 권한 흐름을 재현한다
+
+먼저 사용자 두 명을 만든다.
 
 ```bash
-alembic init alembic
-# alembic.ini와 env.py 설정
+curl -X POST http://127.0.0.1:8000/api/v1/authorization/users \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"owner@example.com","name":"Owner"}'
 
-alembic revision -m "initial authorization schema"
-alembic upgrade head
+curl -X POST http://127.0.0.1:8000/api/v1/authorization/users \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"viewer@example.com","name":"Viewer"}'
 ```
 
-5개 테이블 생성: users, workspaces, memberships, invites, documents.
+- 응답에서 `owner_id`, `viewer_id`를 복사해 다음 명령에 넣는다.
+
+워크스페이스를 만들고 viewer를 초대한다.
 
 ```bash
-# PostgreSQL에서 확인
-docker compose exec db psql -U postgres -d c_authorization_lab -c "\dt"
+curl -X POST http://127.0.0.1:8000/api/v1/authorization/workspaces \
+  -H 'Content-Type: application/json' \
+  -H 'X-User-Id: <OWNER_ID>' \
+  -d '{"name":"Platform"}'
+
+curl -X POST http://127.0.0.1:8000/api/v1/authorization/workspaces/<WORKSPACE_ID>/invites \
+  -H 'Content-Type: application/json' \
+  -H 'X-User-Id: <OWNER_ID>' \
+  -d '{"email":"viewer@example.com","role":"viewer"}'
 ```
 
-## Phase 8: 테스트 작성
+- 응답에서 `workspace_id`, `invite_token`을 복사한다.
 
-conftest: SQLite tmp_path 기반, 테스트마다 스키마 재생성.
-
-두 개의 통합 테스트:
-
-1. **invite-accept-promote-document**: owner 생성 → workspace 생성 → viewer 초대 → viewer가 accept → viewer가 문서 생성 시도 (403) → owner가 viewer를 member로 승격 → 문서 생성 성공 (200)
-
-2. **invite-decline-outsider-forbidden**: owner 생성 → workspace + document 생성 → invitee 초대 → invitee가 decline → outsider가 document 읽기 시도 (403)
+viewer가 초대를 수락한 뒤, 문서 생성이 막히는지 본다.
 
 ```bash
-make test    # pytest
-make lint    # ruff check
-make smoke   # smoke test
+curl -X POST http://127.0.0.1:8000/api/v1/authorization/invites/<INVITE_TOKEN>/accept \
+  -H 'X-User-Id: <VIEWER_ID>'
+
+curl -X POST http://127.0.0.1:8000/api/v1/authorization/workspaces/<WORKSPACE_ID>/documents \
+  -H 'Content-Type: application/json' \
+  -H 'X-User-Id: <VIEWER_ID>' \
+  -d '{"title":"Spec"}'
 ```
 
-## Phase 9: 최종 검증
+- 두 번째 응답은 `403`이어야 정상이다.
+
+owner가 viewer를 member로 승격한 뒤 다시 문서를 만든다.
 
 ```bash
-# 전체 검증 순서
-make install
-make lint
-make test
-make smoke
+curl -X PATCH http://127.0.0.1:8000/api/v1/authorization/workspaces/<WORKSPACE_ID>/members/<VIEWER_ID> \
+  -H 'Content-Type: application/json' \
+  -H 'X-User-Id: <OWNER_ID>' \
+  -d '{"role":"member"}'
 
-# Compose 검증
-docker compose up --build -d
-curl -sf http://localhost:8001/api/v1/health/live
-docker compose down
+curl -X POST http://127.0.0.1:8000/api/v1/authorization/workspaces/<WORKSPACE_ID>/documents \
+  -H 'Content-Type: application/json' \
+  -H 'X-User-Id: <VIEWER_ID>' \
+  -d '{"title":"Spec"}'
 ```
+
+- 마지막 응답은 `200`이어야 한다.
+
+## 6. 막히면 먼저 확인할 것
+
+- 거의 모든 차단은 `X-User-Id` 누락이나 잘못된 actor 선택에서 나온다.
+- viewer가 바로 문서를 만들 수 있으면 역할 비교 순서가 깨졌을 가능성이 높다.
+- invite 관련 흐름이 이상하면 accept와 decline이 같은 토큰 상태를 어떻게 바꾸는지 테스트를 다시 보는 편이 빠르다.

@@ -1,13 +1,17 @@
-# Retrospective
+# 회고
 
-## What improved
+## 이번 랩에서 얻은 것
 
-Describe the strongest part of the current solution.
+현재 구현에서 가장 설득력 있는 부분을 적습니다.
 
-## What is still weak
+## 아직 약한 부분
 
-Call out the remaining design or implementation debt.
+구조적 부채나 설명이 부족한 지점을 적습니다.
 
-## What to revisit
+## 다시 보면 좋을 주제
 
-List the follow-up topics worth returning to after a break.
+시간이 지난 뒤 재학습할 만한 포인트를 적습니다.
+
+## 포트폴리오 확장 아이디어
+
+이 랩을 개인 프로젝트로 발전시킨다면 무엇을 추가할지 적습니다.

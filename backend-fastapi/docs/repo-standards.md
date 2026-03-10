@@ -1,17 +1,19 @@
-# Repository Standards
+# 저장소 기준 문서
 
-## Public structure
+## 문서 구조
 
-Each lab and the capstone should expose this tracked structure:
+각 lab과 capstone은 아래 공개 구조를 유지합니다.
 
 ```text
 README.md
 problem/
 fastapi/
 docs/
+notion/
+notion-archive/   # 이전 노트를 보관할 때만 존재
 ```
 
-Each `fastapi/` workspace should expose:
+각 `fastapi/` 워크스페이스는 아래 항목을 기준으로 설명합니다.
 
 ```text
 app/
@@ -22,47 +24,57 @@ pyproject.toml
 Dockerfile
 compose.yaml
 Makefile
+README.md
 ```
 
-## Runtime conventions
+## 런타임 공통 규칙
 
-- HTTP routes live under `/api/v1`.
-- Health endpoints are `/health/live` and `/health/ready`.
-- Errors use the envelope `{ "error": { "code": "...", "message": "...", "details": ... } }`.
-- Logs should be machine-readable JSON.
-- FastAPI should generate OpenAPI from code.
+- HTTP 라우트는 `/api/v1` 아래에 마운트합니다.
+- health endpoint는 `/health/live`, `/health/ready`를 기준으로 설명합니다.
+- 에러 응답은 문서에서 일관된 envelope가 있다는 점을 분명히 적습니다.
+- OpenAPI는 코드에서 생성되는 것을 전제로 설명합니다.
+- 로그는 기계가 읽기 쉬운 구조화 로그를 지향합니다.
 
-## Verification expectations
+## 실행과 검증 문서 규칙
 
-Every workspace should document these commands:
+- 각 워크스페이스는 최소한 `make install`, `make run`, `make lint`, `make test`, `make smoke`, `docker compose up --build`를 문서에 포함합니다.
+- 문서에 적는 명령은 실제 `Makefile`, `.env.example`, `compose.yaml`에 근거해야 합니다.
+- 새 검증을 다시 돌리지 않았다면, 이전 검증 결과를 최신 결과처럼 쓰지 않습니다.
+- 검증 보고서는 "확인된 사실"과 "아직 문서 수준인 가정"을 분리해서 적습니다.
 
-- `make run`
-- `make lint`
-- `make test`
-- `make smoke`
+## 공개 문서 톤
 
-The documented commands should work from the corresponding `fastapi/` directory.
+- 한글 우선으로 작성하고, 필요한 기술 용어만 영어를 병기합니다.
+- 독자를 초중급 학습자로 가정합니다.
+- 기능 나열보다 "왜 이 랩이 분리되어 있는지", "어디까지 단순화했는지", "포트폴리오로 어떻게 확장할 수 있는지"를 먼저 설명합니다.
+- 학습용 저장소라는 이유로 설명을 생략하지 않습니다. 다만 운영 준비가 끝난 제품처럼 과장해서도 안 됩니다.
 
-Each workspace should be installed into its own virtual environment. These labs intentionally reuse the top-level package name `app/`, so sharing one interpreter across multiple editable installs will create import collisions.
+## 노트 정책
 
-Compose validation should also be possible from the corresponding `fastapi/` directory with:
+- `notion/`은 현재 공개용 학습 노트 세트입니다.
+- `notion-archive/`는 이전 버전 노트의 백업 보관소입니다.
+- 새 노트를 다시 작성할 때는 기존 노트를 삭제하지 말고 `notion-archive/`로 옮긴 뒤 새 `notion/`을 만듭니다.
+- 각 `notion/`은 아래 여섯 파일을 기본 세트로 유지합니다.
 
-```bash
-docker compose up --build
+```text
+00-problem-framing.md
+01-approach-log.md
+02-debug-log.md
+03-retrospective.md
+04-knowledge-index.md
+05-development-timeline.md
+README.md
 ```
 
-Repository-level automation may use [tools/compose_probe.sh](/Users/woopinbell/work/web-pong/tools/compose_probe.sh#L1) to verify `/api/v1/health/live` and `/api/v1/health/ready` after boot.
+## 저장소 정리 규칙
 
-## Publication standard
+- `.env`, 로컬 DB, 캐시, `*.egg-info/` 같은 개발 산출물은 추적하지 않습니다.
+- workflow와 문서는 현재 존재하는 경로만 가리켜야 합니다.
+- 복붙으로 생긴 잘못된 프로젝트 이름, 오래된 절대 경로, 존재하지 않는 트랙 설명은 남겨두지 않습니다.
 
-Before treating the repository as publicly presentable, these conditions should be true:
+## 공개 가능 상태의 기준
 
-- root and per-lab READMEs explain scope, validation, and intentional simplifications
-- commands shown in tracked docs have been rerun recently
-- generated local artifacts such as `.env`, caches, and notebooks stay ignored
-- tracked docs do not depend on uncommitted `notion/` content
-- verification reports distinguish between tested behavior and untested assumptions
-
-## Local note policy
-
-Per-project `notion/` directories are intentionally excluded from version control. When a local notebook is needed, create it next to the project using the templates under `docs/templates/`.
+- 루트 README와 각 랩 README만 읽어도 학습 목표와 실행 경로를 이해할 수 있어야 합니다.
+- `problem/`, `fastapi/`, `docs/`, `notion/`의 역할이 문서에서 분명해야 합니다.
+- 검증 보고서가 마지막 실제 실행 시점을 숨기지 않아야 합니다.
+- 학생이 이 레포를 참고해 자기만의 구조를 설계할 수 있을 정도로 의도와 한계가 설명되어 있어야 합니다.

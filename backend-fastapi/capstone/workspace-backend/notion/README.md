@@ -1,18 +1,24 @@
-# Capstone Notion Documents
+# workspace-backend 학습 노트
 
-이 폴더는 전체 capstone 프로젝트의 블로그형 노트들을 포함한다.
-각 파일의 목적과 읽기 순서를 아래에 정리했다.
+이 폴더는 현재 공개용 capstone 학습 노트입니다. 통합 설계의 핵심 경계를 이 노트 세트만으로 따라갈 수 있게 정리했습니다.
 
-읽기 순서 (프로젝트 전체 이해):
-1. `00-problem-framing.md` – 통합 서비스의 목표와 제약을 이해.
-2. `01-approach-log.md` – 설계 결정과 선택한 방향 분석.
-3. `02-debug-log.md` – 통합 과정에서 발생한 문제와 해결책 기록.
-4. `03-retrospective.md` – 후속 학습 포인트와 회고.
-5. `04-knowledge-index.md` – 통합 설계 관련 개념 및 용어집.
-6. `05-development-timeline.md` – 개발 단계별 기록과 명령어.
+## 먼저 볼 문서
 
-특정 목적별:
-- "왜 capstone을 이렇게 설계했나"는 `00`·`01`.
-- 통합 시 충돌이나 버그는 `02`.
-- 면접 대비 정리는 `03`과 `04`.
-- 환경 및 명령어는 `05`.
+- 바로 손을 움직여 재현하고 싶다면 [05-development-timeline.md](05-development-timeline.md)부터 읽습니다.
+- 왜 이 capstone이 여러 랩을 어떻게 합쳤는지 이해하고 싶다면 `00`, `01`부터 읽습니다.
+
+## 추천 읽기 순서
+
+1. [00-problem-framing.md](00-problem-framing.md)
+2. [01-approach-log.md](01-approach-log.md)
+3. [02-debug-log.md](02-debug-log.md)
+4. [03-retrospective.md](03-retrospective.md)
+5. [04-knowledge-index.md](04-knowledge-index.md)
+6. [05-development-timeline.md](05-development-timeline.md)
+
+## 어떻게 쓰면 좋은가
+
+- 실행 재현이 최우선이면 `05`를 먼저 보고, 경계 통합 의도는 `00`, `01`로 돌아가서 읽습니다.
+- capstone이 무엇을 통합했는지 보려면 `00`, `01`부터 읽습니다.
+- 통합 과정에서 생긴 충돌과 순서 문제는 `02`가 가장 빠릅니다.
+- 자기 포트폴리오 capstone으로 옮길 아이디어는 `03`, `04`에서 얻을 수 있습니다.

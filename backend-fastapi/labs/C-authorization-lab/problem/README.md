@@ -1,13 +1,18 @@
-# Problem
+# 문제 정의
 
-Build a backend that makes authorization rules explicit.
+## 문제
 
-The lab should cover:
+워크스페이스 기반 협업 서비스에서 "누가 무엇을 할 수 있는가"를 명확히 해야 합니다. 초대, 역할 변경, 소유권, 읽기/쓰기 가능 범위를 코드로 표현하고, 인증 자체와는 분리해서 설명 가능한 구조를 만들어야 합니다.
 
-- workspace creation
-- invitations with accept and decline flows
-- role changes
-- permission checks for resource creation
-- ownership-aware reads
+## 성공 기준
 
-Authentication is intentionally simplified to a test-friendly actor header so that the lab stays focused on authorization decisions.
+- 워크스페이스 생성과 초대 흐름이 분리된 규칙으로 정리되어야 합니다.
+- 역할별로 가능한 작업이 문서와 코드에서 일관되게 드러나야 합니다.
+- owner와 일반 member의 차이가 실제 리소스 접근에 반영되어야 합니다.
+- 인가 규칙을 서비스 계층에서 테스트할 수 있어야 합니다.
+
+## 제외 범위
+
+- 실제 로그인 시스템과 세션 관리
+- 정책 엔진 같은 고급 외부 권한 시스템
+- 조직 간 멀티테넌시 전체 설계

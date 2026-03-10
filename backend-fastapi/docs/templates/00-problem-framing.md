@@ -1,17 +1,25 @@
-# Problem Framing
+# 문제 프레이밍
 
-## Goal
+## 이 랩이 가르치려는 것
 
-Describe the backend concern this lab is trying to teach in one paragraph.
+한 문단으로 이 랩의 핵심 학습 목표를 설명합니다.
 
-## Constraints
+## 왜 중요한가
 
-- Runtime and language versions
-- External services involved
-- Security or correctness requirements
+- 어떤 실무 상황에서 이 문제가 반복되는가
+- 앞선 랩과 어떤 식으로 연결되는가
 
-## Success criteria
+## 선수 지식
 
-- Which flows must work
-- Which tests or commands prove it
-- Which topics are intentionally out of scope
+- 프레임워크나 언어 전제
+- 알아두면 좋은 개념
+
+## 성공 기준
+
+- 반드시 동작해야 하는 흐름
+- 어떤 테스트나 명령으로 확인하는지
+
+## 제외 범위
+
+- 이번 랩에서 일부러 빼 둔 기능
+- 다음 랩이나 후속 과제로 넘긴 주제

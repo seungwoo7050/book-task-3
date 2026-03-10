@@ -1,14 +1,18 @@
-# Problem
+# 문제 정의
 
-Build a backend-only authentication service that focuses on local credentials rather than OAuth.
+## 문제
 
-The lab should make these concerns explicit:
+로컬 계정 기반 인증 백엔드를 만든다고 가정합니다. 사용자는 회원가입하고, 이메일을 검증하고, 로그인하고, 필요하면 비밀번호를 재설정할 수 있어야 합니다. 이때 세션 유지와 상태 변경 요청 보호까지 함께 고려해야 합니다.
 
-- password hashing and credential verification
-- email verification before privileged login
-- reset-token issuance and consumption
-- session issuance using short-lived access tokens and rotating refresh tokens
-- CSRF protection for state-changing cookie-authenticated requests
-- predictable local developer experience for email testing
+## 성공 기준
 
-This lab intentionally excludes external identity providers and two-factor authentication. Those move to `B-federation-security-lab`.
+- 회원가입과 로그인 흐름이 분리되어 설명 가능해야 합니다.
+- 이메일 검증과 비밀번호 재설정 토큰 발급/소비가 동작해야 합니다.
+- refresh token rotation이 왜 필요한지 코드와 문서로 설명할 수 있어야 합니다.
+- cookie 인증 요청에 CSRF 방어가 함께 붙어야 합니다.
+
+## 제외 범위
+
+- Google OAuth 같은 외부 로그인
+- TOTP 2FA와 recovery code
+- 운영용 메일 인프라와 실제 외부 SMTP 검증

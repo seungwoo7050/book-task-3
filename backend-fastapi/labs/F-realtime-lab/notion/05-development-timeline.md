@@ -1,174 +1,112 @@
-# 개발 타임라인: F-realtime-lab
+# 개발 타임라인
 
-이 문서는 소스 코드에서 드러나지 않는 개발 과정—환경 설정, 패키지 선택,
-Docker 구성, 테스트 전략—을 시간순으로 기록한다.
+## 이 문서의 목적
 
----
+- 실시간 랩을 다시 볼 때 HTTP와 WebSocket이 어떻게 짝을 이루는지 재현 가능한 순서로 적는다.
+- 가장 확실한 자동 검증 경로와, 선택적으로 눈으로 볼 수 있는 수동 WebSocket 경로를 함께 적는다.
 
-## Phase 1: 프로젝트 초기화 — DB 없는 FastAPI
+## 1. 시작 위치를 고정한다
 
 ```bash
-mkdir -p labs/F-realtime-lab/fastapi && cd labs/F-realtime-lab/fastapi
-
-# pyproject.toml 생성 (name: f-realtime-lab-fastapi)
-# 핵심 의존성: fastapi, httpx, pydantic-settings, redis, uvicorn[standard]
-# ⚠️ sqlalchemy, alembic, psycopg 없음 — 의도적
-
-python3 -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+cd labs/F-realtime-lab/fastapi
+python3 -m venv .venv
+source .venv/bin/activate
+make install
+cp .env.example .env
 ```
 
-이 랩은 의도적으로 PostgreSQL과 Alembic을 제외했다.
-모든 상태가 인메모리에 있으므로 마이그레이션 파일도 없다.
-pyproject.toml의 의존성 목록이 다른 lab보다 가벼운 이유다.
+- 이 랩은 `.env.example`을 복사해도 Compose 전용 host 이름으로 바뀌지 않는다.
+- 기본 설정은 SQLite와 optional Redis를 사용하고, `PRESENCE_TTL_SECONDS=1`이 핵심이다.
 
-`uvicorn[standard]`를 설치해야 WebSocket 지원(websockets 패키지)이 포함된다.
-`uvicorn`만 설치하면 WebSocket handshake에서 실패할 수 있다.
+## 2. 가장 빠른 자동 재현 경로
 
-## Phase 2: runtime.py — 인메모리 상태 컨테이너
-
-```python
-# app/runtime.py에 두 클래스를 정의:
-#   ConnectionManager: dict[str, set[WebSocket]]
-#   PresenceTracker: dict[str, float] + ttl
-
-# app/main.py에서:
-#   app.state.connections = ConnectionManager()
-#   app.state.presence = PresenceTracker(ttl=settings.presence_ttl_seconds)
+```bash
+pytest tests/integration/test_realtime.py -q
+make smoke
 ```
 
-`app.state`에 저장하는 이유: FastAPI/Starlette의 `Request` 객체에서
-`request.app.state`로 접근할 수 있다.
-전역 변수 대신 app 인스턴스에 바인딩하면
-테스트에서 앱을 새로 만들 때 상태가 격리된다.
+- 테스트는 WebSocket 연결, heartbeat 이후 presence가 `online=true`로 보이는지, HTTP notification이 socket으로 fan-out 되는지, 잘못된 token이 즉시 disconnect 되는지, TTL 만료 뒤 offline으로 내려가는지 확인한다.
+- `make smoke`는 앱 부팅과 `/api/v1/health/live`만 확인한다.
 
-## Phase 3: WebSocket 라우트 구현
+## 3. 로컬 편집 루프를 연다
 
-```python
-# app/api/v1/routes/realtime.py
-
-# WS /ws/notifications/{user_id}?token=
-#   1. token != user_id → close(1008)
-#   2. manager.connect(user_id, ws)
-#   3. while True: await ws.receive_text()  # keep-alive loop
-#   4. except WebSocketDisconnect: manager.disconnect(user_id, ws)
+```bash
+make run
 ```
 
-`receive_text()`를 무한 루프로 호출하는 것이 WebSocket 서버의 기본 패턴이다.
-클라이언트가 close frame을 보내면 `WebSocketDisconnect`가 발생하고,
-finally 블록에서 정리한다.
+다른 터미널에서:
 
-## Phase 4: HTTP 알림 + Presence 엔드포인트
-
-```python
-# POST /notifications
-#   body: {user_id, message}
-#   → manager.send_to_user(user_id, {type: "notification", ...})
-
-# POST /presence/heartbeat
-#   body: {user_id}
-#   → tracker.heartbeat(user_id)
-
-# GET /presence/{user_id}
-#   → {user_id, online: tracker.is_online(user_id)}
+```bash
+curl http://127.0.0.1:8000/api/v1/health/live
+curl http://127.0.0.1:8000/api/v1/health/ready
 ```
 
-HTTP POST로 메시지를 받아서 WebSocket으로 fan-out하는 구조.
-이것은 "쓰기는 REST, 읽기는 WebSocket"이라는 실무 패턴의 축소판이다.
+- 이 루프는 connection manager나 presence 계산 로직을 수정할 때 가장 빠르다.
+- Redis 없이도 핵심 동작은 재현된다.
 
-## Phase 5: Docker Compose 구성
-
-```yaml
-# compose.yaml — 2개 서비스
-services:
-  api:       # FastAPI, 포트 8004:8000, uvicorn --reload
-  redis:     # Redis 7, 포트 6381:6379
-# ⚠️ PostgreSQL 서비스 없음 — 의도적
-```
-
-다른 lab들은 최소 3개 서비스(api + postgres + redis)인데,
-이 랩은 api + redis 2개뿐이다.
-Redis도 현재 코드에서는 직접 사용하지 않지만,
-향후 pub/sub 확장을 위해 compose에 포함해 두었다.
+## 4. Compose로 Redis까지 포함한 shape를 본다
 
 ```bash
 docker compose up --build -d
-# WebSocket 테스트는 wscat 또는 websocat으로:
-# wscat -c "ws://localhost:8004/api/v1/ws/notifications/user1?token=user1"
+docker compose ps
+curl http://127.0.0.1:8004/api/v1/health/live
+curl http://127.0.0.1:8004/api/v1/health/ready
 ```
 
-## Phase 6: 테스트 작성
+- Compose에서는 API가 `8004`, Redis가 `6381` 포트로 노출된다.
+- 정리할 때는 `docker compose down -v`를 쓴다.
+
+## 5. 수동 실시간 흐름을 재현한다
+
+가장 안정적인 재현은 테스트다. 눈으로 직접 보고 싶다면 `wscat` 같은 WebSocket 클라이언트를 하나 준비한다.
 
 ```bash
-# tests/integration/test_realtime.py
-
-# test 1: WebSocket 연결 + HTTP POST → WebSocket 수신 + presence 확인
-#   1. TestClient(app)로 WebSocket 연결
-#   2. HTTP POST /notifications → 메시지 전송
-#   3. ws.receive_json() → 내용 확인
-#   4. POST /presence/heartbeat → 상태 갱신
-#   5. GET /presence/{user_id} → online 확인
-
-# test 2: 잘못된 token → disconnect + presence TTL 만료
-#   1. 잘못된 token으로 WebSocket 연결 → 1008 close
-#   2. heartbeat → sleep(1.1) → presence 확인 → offline
+npx wscat -c "ws://127.0.0.1:8004/api/v1/realtime/ws/notifications/alice?token=alice"
 ```
 
-WebSocket 테스트의 까다로운 점:
-- Starlette `TestClient`의 WebSocket 지원은 context manager 기반이다
-- close code 검증이 HTTP status code보다 불안정하다
-- `time.sleep`이 필요한 시간 기반 테스트는 경계값을 피해야 한다
-
-## Phase 7: Config와 Settings
-
-```python
-# app/core/config.py
-# presence_ttl_seconds: int = 1  ← 테스트 편의를 위한 1초
-# redis_url: str | None = None   ← 현재 직접 사용하지 않음
-```
-
-`presence_ttl_seconds`를 Settings에 넣어서 환경별로 조정 가능하게 했다.
-프로덕션에서는 30~60초로 올려야 한다.
-
-## Phase 8: 검증
+다른 터미널에서 presence를 올리고 조회한다.
 
 ```bash
-make lint     # ruff check app tests
-make test     # pytest -q
-
-# Compose 검증
-docker compose up --build -d
-
-# HTTP 알림 → WebSocket 수신 확인 (두 터미널 필요)
-# Terminal 1: WebSocket 연결
-wscat -c "ws://localhost:8004/api/v1/ws/notifications/alice?token=alice"
-
-# Terminal 2: HTTP POST
-curl http://localhost:8004/api/v1/notifications -X POST \
-  -H "Content-Type: application/json" \
-  -d '{"user_id":"alice","message":"hello realtime"}'
-
-# Terminal 1에서 메시지 수신 확인
-
-# Presence 확인
-curl http://localhost:8004/api/v1/presence/heartbeat -X POST \
-  -H "Content-Type: application/json" \
+curl -X POST http://127.0.0.1:8004/api/v1/realtime/presence/heartbeat \
+  -H 'Content-Type: application/json' \
   -d '{"user_id":"alice"}'
-curl http://localhost:8004/api/v1/presence/alice
 
-docker compose down
+curl http://127.0.0.1:8004/api/v1/realtime/presence/alice
 ```
 
----
+- 두 번째 응답의 `online`이 `true`여야 한다.
 
-## 타임라인 요약
+이제 HTTP notification을 넣어서 socket으로 전달되는지 본다.
 
-| 단계 | 핵심 산출물 |
-|------|-------------|
-| 초기화 | pyproject.toml (DB 없는 경량 구성) |
-| runtime | ConnectionManager, PresenceTracker |
-| WebSocket | /ws/notifications/{user_id} 라우트 |
-| HTTP | POST /notifications, heartbeat, presence |
-| Compose | api + redis (PostgreSQL 없음, 2 서비스) |
-| 테스트 | WebSocket 수신 검증, close code, TTL 만료 |
-| 검증 | lint, test, wscat 수동 검증 |
+```bash
+curl -X POST http://127.0.0.1:8004/api/v1/realtime/notifications \
+  -H 'Content-Type: application/json' \
+  -d '{"user_id":"alice","message":"build complete"}'
+```
+
+- `wscat` 화면에 `{"message":"build complete"}`가 도착해야 한다.
+
+잘못된 token은 즉시 끊겨야 한다.
+
+```bash
+npx wscat -c "ws://127.0.0.1:8004/api/v1/realtime/ws/notifications/bob?token=wrong"
+```
+
+presence TTL도 확인한다.
+
+```bash
+curl -X POST http://127.0.0.1:8004/api/v1/realtime/presence/heartbeat \
+  -H 'Content-Type: application/json' \
+  -d '{"user_id":"carol"}'
+
+sleep 2
+curl http://127.0.0.1:8004/api/v1/realtime/presence/carol
+```
+
+- 마지막 응답의 `online`은 `false`여야 한다.
+
+## 6. 막히면 먼저 확인할 것
+
+- WebSocket이 붙지 않으면 URL path보다 query string의 `token`부터 다시 본다.
+- presence가 안 내려가면 `.env`의 `PRESENCE_TTL_SECONDS`가 1인지 확인한다.
+- 수동 WebSocket 클라이언트 준비가 번거롭다면 다시 `pytest tests/integration/test_realtime.py -q`로 돌아가는 것이 가장 빠르다.

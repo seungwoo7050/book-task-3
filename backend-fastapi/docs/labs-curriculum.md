@@ -1,112 +1,79 @@
-# FastAPI Backend Labs Curriculum
+# FastAPI 백엔드 랩 커리큘럼
 
-## Intent
+## 왜 이런 순서인가
 
-This repository is organized like a lab course rather than a step-by-step migration. Each lab isolates a backend concern that shows up repeatedly in production FastAPI work. The capstone integrates those concerns into one SaaS-style collaboration backend.
+이 저장소는 하나의 긴 튜토리얼이 아니라, 실무 FastAPI 백엔드에서 반복해서 만나는 문제를 단계별 랩으로 쪼개 놓은 코스입니다. 순서를 정한 기준은 "앞 랩의 개념이 다음 랩의 전제지식이 되느냐"와 "학생이 자신의 포트폴리오로 옮겨 갈 때 어떤 설명 흐름이 자연스러우냐"입니다.
 
-`legacy/` is still useful as historical context, but it is not the active project plan and it does not constrain the lab sequence.
+## 추천 학습 순서
 
-## Why labs instead of one long project
+1. [A-auth-lab](../labs/A-auth-lab/README.md)
+2. [B-federation-security-lab](../labs/B-federation-security-lab/README.md)
+3. [C-authorization-lab](../labs/C-authorization-lab/README.md)
+4. [D-data-api-lab](../labs/D-data-api-lab/README.md)
+5. [E-async-jobs-lab](../labs/E-async-jobs-lab/README.md)
+6. [F-realtime-lab](../labs/F-realtime-lab/README.md)
+7. [G-ops-lab](../labs/G-ops-lab/README.md)
+8. [capstone/workspace-backend](../capstone/workspace-backend/README.md)
 
-- Backend hiring signals are usually attached to specific concerns such as authentication, authorization, data modeling, background work, realtime delivery, and operations.
-- Smaller labs are easier to rerun, debug, and rewrite without carrying accidental complexity from earlier experiments.
-- The capstone stays meaningful because it recomposes the ideas instead of merely extending a single starter codebase.
-
-## Lab order
-
-1. `A-auth-lab`
-2. `B-federation-security-lab`
-3. `C-authorization-lab`
-4. `D-data-api-lab`
-5. `E-async-jobs-lab`
-6. `F-realtime-lab`
-7. `G-ops-lab`
-8. `capstone/workspace-backend`
-
-## Concept map
+## 랩별 학습 포인트
 
 ### A-auth-lab
 
-- Local signup and login
-- Argon2 password hashing
-- Email verification
-- Password reset
-- Refresh-token rotation
-- Secure cookie auth
-- CSRF validation
-- Local email testing with Mailpit
+- 로컬 회원가입, 로그인, 이메일 검증, 비밀번호 재설정
+- Argon2 해시, refresh token rotation, cookie + CSRF 조합
+- "사용자 인증 흐름을 어떻게 끊김 없이 설명할 것인가"를 배우는 시작점
 
 ### B-federation-security-lab
 
-- Google OAuth
-- External identity linking
-- TOTP 2FA
-- Recovery codes
-- Login throttling
-- Auth audit events
+- Google OIDC 로그인, 외부 계정 연결
+- TOTP 기반 2FA, recovery code, 로그인 throttling, 감사 로그
+- 로컬 인증 이후 어떤 보안 강화를 붙여야 하는지 보여 주는 랩
 
 ### C-authorization-lab
 
-- Workspace membership
-- Invitations
-- RBAC
-- Ownership rules
-- Permission boundaries
+- 워크스페이스 생성, 초대, 역할 변경
+- owner/admin/member/viewer 경계와 소유권 규칙
+- 인증과 인가를 분리해 설명하는 훈련에 적합한 랩
 
 ### D-data-api-lab
 
-- SQLAlchemy models and service boundaries
-- CRUD for projects, tasks, and comments
-- Filtering and sorting
-- Pagination
-- Soft delete
-- Optimistic locking
+- 프로젝트, 태스크, 댓글 CRUD
+- 필터링, 정렬, 페이지네이션, 소프트 삭제
+- 낙관적 락과 서비스 계층 경계처럼 데이터 중심 설계의 기본기를 다룸
 
 ### E-async-jobs-lab
 
-- Celery task execution
-- Redis-backed queue configuration
-- Retry policy
-- Idempotency keys
-- Outbox handoff
+- Redis + Celery 기반 비동기 작업 실행
+- outbox handoff, retry 상태 전이, idempotency key
+- "요청은 빨리 끝내고, 실제 처리는 안전하게 뒤로 미루는" 설계를 배우는 랩
 
 ### F-realtime-lab
 
-- WebSocket authentication
-- Presence heartbeat
-- Notification fan-out
-- Reconnect behavior
-- Redis-backed pub/sub integration points
+- WebSocket 인증
+- presence heartbeat와 TTL
+- 여러 활성 소켓으로 fan-out 하는 기본 모델
+- 실시간 통신을 데이터 저장소나 권한 문제와 섞지 않고 따로 이해하게 돕는 랩
 
 ### G-ops-lab
 
-- Docker multi-stage images
-- Compose-based local stacks
-- Health and readiness checks
-- Structured logs
-- Metrics endpoint
-- CI workflow expectations
-- AWS deployment shape
+- liveness/readiness 구분
+- 구조화 로그와 최소 metrics surface
+- CI 기대치와 AWS target shape 문서
+- 운영성을 "인프라 자동화"가 아니라 "설명 가능한 실행 기준"으로 정리하는 랩
 
 ### Capstone
 
-- Local auth plus Google OAuth
-- Workspace RBAC
-- Projects, tasks, and comments
-- Async notification delivery
-- Realtime notifications and presence
-- Production-oriented container and CI layout
+- 인증, 인가, 데이터 API, 알림 큐, 실시간 전달을 하나의 협업형 백엔드로 통합
+- 앞선 랩의 코드를 재사용하는 대신, 개념을 다시 조합해 제품형 구조를 만든다
 
-## Repository rules
+## 이 커리큘럼이 학생에게 주는 이점
 
-- `legacy/` stays untouched unless the user explicitly asks to modify it.
-- Labs are self-contained on purpose, even when that repeats boilerplate.
-- `notion/` content is local-only and should not be committed. Use the templates in `docs/templates/`.
-- Every lab should be understandable from tracked files alone. Local notebooks are optional, never required.
+- 작은 범위에서 실패하고 다시 고치기 쉽습니다.
+- 특정 주제를 면접이나 README에서 따로 설명하기 좋습니다.
+- capstone에 들어가기 전에 "무엇을 왜 붙이는지"를 단계별로 정리할 수 있습니다.
 
-## Verification philosophy
+## 포트폴리오로 확장할 때의 권장 방식
 
-- `make lint`, `make test`, and `make smoke` verify the code path without Docker.
-- `docker compose up --build` plus health probes verify that the documented local stack can boot with its declared dependencies.
-- Compose validation is intentionally limited to liveness and readiness. These labs are not pretending to be production-ready systems.
-- The capstone is the only place where multiple concerns are intentionally composed into one backend.
+- A~G 랩 중 자신이 약한 주제를 하나 골라 별도 실험 랩으로 다시 만들어 봅니다.
+- capstone에는 기능을 무작정 늘리기보다, 인증 모델, 데이터 경계, 비동기 경계, 운영 기준을 명시적으로 문서화합니다.
+- 각 프로젝트에서 "학습용 단순화"와 "실서비스로 가려면 필요한 추가 작업"을 분리해서 적습니다.

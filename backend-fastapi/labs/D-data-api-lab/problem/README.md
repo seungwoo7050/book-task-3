@@ -1,12 +1,18 @@
-# Problem
+# 문제 정의
 
-Build a data-centric backend for projects, tasks, and comments.
+## 문제
 
-The lab should demonstrate:
+프로젝트, 태스크, 댓글을 다루는 데이터 중심 API를 만든다고 가정합니다. 단순 CRUD를 넘어서, 목록 조회 조건, 삭제 정책, 동시 수정 충돌 같은 현실적인 데이터 API 문제를 같이 다뤄야 합니다.
 
-- CRUD operations
-- pagination
-- filtering and sorting
-- soft delete behavior
-- optimistic locking
-- transaction-aware service methods
+## 성공 기준
+
+- 세 가지 핵심 엔터티의 생성, 조회, 수정, 삭제가 가능해야 합니다.
+- 필터링, 정렬, 페이지네이션이 일관된 형태로 노출되어야 합니다.
+- 소프트 삭제가 목록 조회에 반영되어야 합니다.
+- 낙관적 락으로 충돌을 감지하는 경로가 있어야 합니다.
+
+## 제외 범위
+
+- 인증과 인가
+- 전문 검색이나 대규모 인덱싱
+- 복잡한 이벤트 소싱이나 CQRS

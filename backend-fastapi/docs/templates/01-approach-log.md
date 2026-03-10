@@ -1,13 +1,19 @@
-# Approach Log
+# 접근 로그
 
-## Options considered
+## 고려한 선택지
 
-List the main implementation approaches and why they were considered.
+구현 전에 비교한 설계 방향을 적습니다.
 
-## Chosen direction
+## 채택한 방향
 
-Explain the selected design and the tradeoffs you accepted.
+- 무엇을 선택했는가
+- 왜 그 선택이 현재 학습 목표에 맞는가
 
-## Rejected ideas
+## 버린 대안
 
-Record the approaches you explicitly decided not to use and why.
+- 왜 지금은 채택하지 않았는가
+- 실서비스나 후속 실험에서는 언제 다시 검토할 만한가
+
+## 트레이드오프
+
+선택으로 인해 얻은 단순함과 잃은 현실성을 함께 기록합니다.

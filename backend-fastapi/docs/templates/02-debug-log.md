@@ -1,13 +1,18 @@
-# Debug Log
+# 디버그 로그
 
-## Failure
+## 실패 사례
 
-Describe the failing case, the observable symptoms, and the evidence.
+재현 가능한 증상과 관찰한 사실을 적습니다.
 
-## Root cause
+## 원인
 
-Write the narrowest explanation that fits the evidence.
+증거와 가장 잘 맞는 좁은 설명을 씁니다.
 
-## Fix and verification
+## 수정
 
-State the change that fixed the issue and the command or test that verified it.
+무엇을 어떻게 바꿨는지 적습니다.
+
+## 검증 근거
+
+- 어떤 테스트나 명령이 다시 통과했는가
+- 아직 남아 있는 위험은 무엇인가

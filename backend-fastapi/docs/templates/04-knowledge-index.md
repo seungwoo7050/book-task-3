@@ -1,19 +1,20 @@
-# Knowledge Index
+# 지식 인덱스
 
-## Reusable concepts
+## 재사용 가능한 개념
 
-Summarize the ideas from this lab that will transfer to later work.
+다른 프로젝트로 옮겨 갈 수 있는 핵심 아이디어를 정리합니다.
 
-## Glossary
+## 용어집
 
-Define the non-obvious terms used in the lab.
+처음 보면 헷갈릴 수 있는 용어를 짧게 풀이합니다.
 
-## References
+## 참고 자료
 
-For each reference include:
+각 참고 자료에는 아래를 함께 기록합니다.
 
-- title
-- URL or local path
-- checked date
-- why it was consulted
-- what changed because of it
+- 제목
+- URL 또는 로컬 경로
+- 확인 날짜
+- 왜 참고했는가
+- 무엇을 배웠는가
+- 현재 구현이나 문서에 무엇이 반영되었는가

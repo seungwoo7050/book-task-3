@@ -1,11 +1,18 @@
-# Problem
+# 문제 정의
 
-Build a backend slice that accepts notification jobs, stores them safely, and hands them off to background execution.
+## 문제
 
-The lab should demonstrate:
+알림이나 후처리처럼 요청-응답 경로에서 바로 끝내기 어려운 작업을 안전하게 뒤로 넘겨야 합니다. 이때 중복 요청, 재시도, 작업 유실을 어떻게 다룰지 명시적인 경계가 필요합니다.
 
-- idempotency keys on write endpoints
-- outbox persistence before dispatch
-- Celery task invocation
-- retry-aware status transitions
-- local Redis-backed configuration
+## 성공 기준
+
+- 작업 enqueue 요청이 idempotency key를 받아야 합니다.
+- outbox를 통해 저장과 전달 사이의 경계가 설명 가능해야 합니다.
+- worker가 재시도 가능한 작업을 처리할 수 있어야 합니다.
+- 작업 상태가 성공, 재시도, 실패를 구분할 수 있어야 합니다.
+
+## 제외 범위
+
+- 대규모 메시징 시스템 비교
+- 고급 스케줄링과 운영 대시보드
+- 실서비스 수준의 분산 장애 복구 실험

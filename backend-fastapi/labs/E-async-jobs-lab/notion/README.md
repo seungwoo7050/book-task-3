@@ -1,17 +1,24 @@
-# E-async-jobs-lab Notion Documents
+# E-async-jobs-lab 학습 노트
 
-비동기 작업과 outbox 패턴을 다룬 이 랩의 노트는 내용별로 읽기 쉽게 정리되어 있다.
+이 폴더는 현재 공개용 학습 노트입니다. 비동기 handoff와 worker 흐름을 이 노트 세트만으로 따라갈 수 있게 정리했습니다.
 
-권장 순서:
-1. `00-problem-framing.md` - 왜 outbox와 Celery를 도입했는지 배경 이해.
-2. `01-approach-log.md` - 설계 선택지와 결정 이유.
-3. `02-debug-log.md` - 주요 디버깅 기록.
-4. `03-retrospective.md` - 회고 및 학습 포인트.
-5. `04-knowledge-index.md` - 관련 개념과 용어 목록.
-6. `05-development-timeline.md` - 개발/빌드/테스트 과정 설명.
+## 먼저 볼 문서
 
-목적에 따른 안내:
-- "왜 아키텍처를 이렇게 설계했나" 궁금할 때는 `00`·`01`.
-- 특정 버그 또는 테스트 실패를 보고 싶다면 `02`.
-- 나중에 이 랩의 핵심 개념을 복습하려면 `04`.
-- 작업 환경과 커맨드를 확인하려면 `05`.
+- 바로 손을 움직여 재현하고 싶다면 [05-development-timeline.md](05-development-timeline.md)부터 읽습니다.
+- 왜 이런 구조로 만들었는지부터 이해하고 싶다면 `00`, `01`부터 읽습니다.
+
+## 추천 읽기 순서
+
+1. [00-problem-framing.md](00-problem-framing.md)
+2. [01-approach-log.md](01-approach-log.md)
+3. [02-debug-log.md](02-debug-log.md)
+4. [03-retrospective.md](03-retrospective.md)
+5. [04-knowledge-index.md](04-knowledge-index.md)
+6. [05-development-timeline.md](05-development-timeline.md)
+
+## 어떻게 쓰면 좋은가
+
+- 실행 재현이 최우선이면 `05`를 먼저 보고, enqueue와 outbox 경계의 의도는 `01`에서 다시 읽습니다.
+- outbox와 idempotency 개념을 먼저 잡으려면 `00`, `01`을 읽습니다.
+- eager mode나 retry 상태 문제를 보고 싶다면 `02`가 가장 빠릅니다.
+- 자기 포트폴리오의 비동기 경계를 설계할 때는 `03`, `04`를 참고하면 됩니다.

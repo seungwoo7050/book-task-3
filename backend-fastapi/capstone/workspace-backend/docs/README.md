@@ -1,7 +1,21 @@
-# workspace-backend Docs
+# workspace-backend 문서 지도
 
-- local and federated identity in one user model
-- RBAC at the workspace boundary
-- comment-driven notification fan-out
-- queued delivery plus WebSocket delivery
-- backend-only capstone scope
+이 문서는 개별 랩에서 배운 개념이 capstone에서 어떻게 다시 묶였는지 추적하는 개념 지도입니다.
+
+## 먼저 보면 좋은 질문
+
+- 인증, 인가, 데이터 API, 알림 전달이 어디서 만나고 어디서 분리되는가
+- 랩 코드를 재사용하지 않고 다시 구현한 이유는 무엇인가
+- 협업형 도메인에서 큐와 실시간 전달을 어떤 순서로 결합했는가
+
+## 읽고 나면 설명할 수 있어야 하는 것
+
+- 통합 사용자 모델과 워크스페이스 경계
+- 댓글/알림/실시간 전달의 연결 구조
+- capstone이 랩들의 단순 합이 아닌 이유
+
+## 함께 보면 좋은 문서
+
+- [문제 정의](../problem/README.md)
+- [FastAPI 실행 문서](../fastapi/README.md)
+- [현재 학습 노트](../notion/README.md)

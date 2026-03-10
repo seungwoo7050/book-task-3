@@ -1,269 +1,104 @@
-# Development Timeline
+# 개발 타임라인
 
-## Phase 1: 프로젝트 초기 세팅
+## 이 문서의 목적
 
-A-auth-lab의 구조를 참고하되, 완전히 새로운 프로젝트로 시작한다.
+- 외부 로그인과 2FA가 섞인 랩을 어떤 순서로 재현해야 덜 헷갈리는지 적는다.
+- 실제 Google 계정 없이도 재현 가능한 경로와, Compose에서 shape만 확인하는 경로를 분리한다.
+
+## 1. 시작 위치를 고정한다
 
 ```bash
-mkdir -p labs/B-federation-security-lab/fastapi
 cd labs/B-federation-security-lab/fastapi
-
-# pyproject.toml 작성 후 개발 모드 설치
-python3 -m pip install -e ".[dev]"
+python3 -m venv .venv
+source .venv/bin/activate
+make install
 ```
 
-핵심 의존성은 A-auth-lab과 겹치지만 두 가지가 추가된다:
-- `pyotp` — TOTP 코드 생성 및 검증용
-- `itsdangerous` — OAuth state를 서명된 쿠키에 저장하기 위해
-- `httpx` — Google 토큰/유저인포 엔드포인트 호출용 (테스트에서는 mock)
-- `redis` — rate limiting 백엔드
+- `app/core/config.py` 기본값은 SQLite와 빈 Redis를 사용하므로, `.env`가 없어도 앱 자체는 뜬다.
+- `.env.example`은 Compose 기준 값과 실제 Google OIDC endpoint를 담고 있다.
+- `make run`으로 코드 구조를 빨리 읽고 싶다면 `.env` 없이 시작하고, PostgreSQL + Redis + Alembic까지 포함한 경로를 보고 싶다면 Compose를 쓴다.
+
+## 2. 가장 빠른 자동 재현 경로
 
 ```bash
-# 전체 의존성 확인
-pip list | grep -E "pyotp|itsdangerous|httpx|redis"
+pytest tests/integration/test_google_callback.py tests/integration/test_two_factor.py -q
+make smoke
 ```
 
-패키지 구조를 잡는다:
-```
-app/
-  api/
-    v1/
-      routes/
-        auth.py
-        health.py
-      router.py
-    deps.py
-  core/
-    config.py
-    errors.py
-    logging.py
-    rate_limit.py
-    security.py
-  db/
-    base.py
-    models/
-      user.py
-      auth.py
-    session.py
-  domain/
-    services/
-      auth.py
-      google_oidc.py
-      two_factor.py
-  repositories/
-    auth_repository.py
-    user_repository.py
-  schemas/
-    auth.py
-    common.py
-  main.py
-```
+- 이 경로가 가장 재현성이 높다. 테스트 안에서 `GoogleOIDCService`를 monkeypatch해서 `google/login`, `google/callback`, 2FA setup, TOTP confirm, recovery code verify까지 외부 의존성 없이 끝까지 확인한다.
+- `make smoke`는 앱 부팅과 `/api/v1/health/live`만 확인한다.
 
-## Phase 2: 데이터 모델 설계
-
-User 모델은 A-auth-lab보다 확장된다. `password_hash`가 사라지고 대신 2FA 관련 필드가 추가된다:
-
-```python
-# app/db/models/user.py
-class User(TimestampMixin, Base):
-    # ... 기본 필드 (id, handle, email, display_name, avatar_url, is_active)
-    two_factor_enabled: Mapped[bool]
-    two_factor_secret: Mapped[str | None]
-    pending_two_factor_secret: Mapped[str | None]
-```
-
-`ExternalIdentity` 모델을 새로 추가한다. 핵심은 `(provider, provider_subject)` 유니크 제약이다:
-
-```python
-class ExternalIdentity(TimestampMixin, Base):
-    __table_args__ = (
-        UniqueConstraint("provider", "provider_subject",
-                        name="uq_external_identity_provider_subject"),
-    )
-    provider: Mapped[str]          # "google"
-    provider_subject: Mapped[str]  # Google의 sub claim
-    profile: Mapped[dict]          # JSON으로 원본 프로필 저장
-```
-
-RefreshToken은 A-auth-lab과 동일한 family 구조, TwoFactorRecoveryCode와 AuthAuditLog가 새로 추가된다.
-
-## Phase 3: Google OIDC 서비스 구현
-
-`GoogleOIDCService` 클래스를 만든다. 실제 Google API를 호출하는 세 메서드:
-
-1. `build_authorization_request()` — state, nonce, code_verifier 생성, authorization URL 조립
-2. `exchange_code_for_tokens(code, code_verifier)` — httpx.post로 토큰 교환
-3. `validate_id_token(id_token, nonce)` — PyJWT + JWKS로 서명 검증
-4. `fetch_userinfo(access_token)` — userinfo endpoint에서 아바타 등 추가 정보
-
-PKCE 관련 유틸리티를 `security.py`에 추가:
-
-```python
-def generate_pkce_verifier() -> str:
-    return secrets.token_urlsafe(64)
-
-def build_pkce_challenge(verifier: str) -> str:
-    digest = hashlib.sha256(verifier.encode()).digest()
-    return base64.urlsafe_b64encode(digest).decode().rstrip("=")
-```
-
-OAuth state 서명/복원도 같은 파일에:
-
-```python
-def sign_oauth_state(payload: dict, settings: Settings) -> str:
-    serializer = URLSafeSerializer(settings.secret_key, salt="google-oidc-state")
-    return serializer.dumps(payload)
-```
-
-## Phase 4: Auth 서비스 — Federation + Session 발급
-
-`AuthService`에 `sync_google_user` 메서드를 구현한다. external identity 검색 → 이메일 매칭 → 신규 생성의 3단계 흐름.
-
-세션 발급 흐름에 2FA 분기를 추가한다:
-
-```
-callback 도착
-  → sync_google_user
-  → user.two_factor_enabled?
-    → True:  start_pending_second_factor → pending_auth_token 반환
-    → False: issue_session → access + refresh + csrf 반환
-```
-
-pending_auth_token은 type이 `"pending_2fa"`인 JWT이고 TTL 300초.
-
-## Phase 5: 2FA 서비스 구현
-
-`TwoFactorService` 클래스:
-
-```python
-# pyotp를 사용한 TOTP 구현
-secret = pyotp.random_base32()
-uri = pyotp.TOTP(secret).provisioning_uri(email, issuer_name="b-federation-security-lab")
-is_valid = pyotp.TOTP(secret).verify(code, valid_window=1)
-```
-
-Recovery code 생성: `secrets.choice`로 `XXXX-XXXX` 형태 8개 생성, HMAC-SHA256 해시로 DB 저장.
-
-## Phase 6: API 라우트 구현
-
-엔드포인트 목록:
-- `GET  /auth/google/login` — authorization URL 반환 + state 쿠키 설정
-- `GET  /auth/google/callback` — 코드 교환 + identity linking + 세션/pending 발급
-- `GET  /auth/me` — access_token 쿠키 검증 + 사용자 정보 반환
-- `POST /auth/token/refresh` — refresh token rotation (CSRF 필수)
-- `POST /auth/logout` — refresh token revoke + 쿠키 제거 (CSRF 필수)
-- `POST /auth/2fa/setup` — pending secret 생성 (인증 필수, CSRF 필수)
-- `POST /auth/2fa/confirm` — TOTP 검증 + 2FA 활성화 + recovery codes 반환
-- `POST /auth/2fa/verify` — pending_auth → TOTP/recovery 검증 → 세션 발급
-- `POST /auth/2fa/recovery-codes/regenerate` — recovery code 재생성
-- `POST /auth/2fa/disable` — 2FA 비활성화
-
-Rate limiter를 `Depends`로 해당 엔드포인트에 적용:
-
-```python
-@router.get("/google/login",
-    dependencies=[Depends(RateLimiter(limit=10, window_seconds=60, prefix="auth:google-login"))])
-```
-
-## Phase 7: Docker Compose 구성
-
-```yaml
-# compose.yaml - 서비스 3개
-services:
-  api:     # FastAPI + Alembic migration
-  db:      # PostgreSQL 16's POSTGRES_DB=b_federation_security_lab
-  redis:   # Redis 7 — rate limiting 백엔드
-```
+## 3. 로컬 편집 루프를 연다
 
 ```bash
+make run
+```
+
+다른 터미널에서:
+
+```bash
+curl http://127.0.0.1:8000/api/v1/health/live
+curl http://127.0.0.1:8000/api/v1/auth/google/login
+```
+
+- 두 번째 응답의 핵심은 `authorization_url`이 정상 생성되는지다.
+- 이 단계에서는 redirect URL 모양, `state` 발급, 쿠키 생성처럼 외부 provider 앞단의 shape만 빠르게 볼 수 있다.
+
+## 4. Compose로 PostgreSQL, Redis, Alembic까지 같이 올린다
+
+```bash
+cp .env.example .env
 docker compose up --build -d
 docker compose ps
-docker compose logs api --tail 30
-
-# health check
-curl -s http://localhost:8000/api/v1/health/live
+curl http://127.0.0.1:8000/api/v1/health/live
+curl http://127.0.0.1:8000/api/v1/health/ready
 ```
 
-A-auth-lab과 달리 Redis가 추가되었고, 포트는 기본 8000/5432/6379.
+- `api` 컨테이너는 시작할 때 `alembic upgrade head`를 먼저 수행한다.
+- `db`와 `redis`가 모두 healthy 상태인지 확인한 뒤에 로그인 흐름을 본다.
+- 정리할 때는 `docker compose down -v`를 쓴다.
 
-## Phase 8: Alembic 마이그레이션
+## 5. 완전 재현은 테스트를 기준으로 본다
+
+이 랩에서 완전 재현의 기준은 수동 브라우저 클릭보다 아래 순서의 테스트다.
+
+1. `GET /api/v1/auth/google/login`으로 `authorization_url`과 `state`를 만든다.
+2. monkeypatch된 provider를 통해 `GET /api/v1/auth/google/callback?code=sample-code&state=<state>`를 호출한다.
+3. `GET /api/v1/auth/me`로 세션이 살아 있는지 확인한다.
+4. `POST /api/v1/auth/2fa/setup`으로 secret을 발급받는다.
+5. `POST /api/v1/auth/2fa/confirm`으로 TOTP를 등록하고 recovery code 8개를 받는다.
+6. 다시 Google 로그인 후 `POST /api/v1/auth/2fa/verify`로 recovery code를 제출해 최종 인증을 완료한다.
+
+## 6. 실제 Google 자격 증명으로 보고 싶을 때
+
+- `.env`의 `GOOGLE_OIDC_CLIENT_ID`, `GOOGLE_OIDC_CLIENT_SECRET`, redirect URI를 실제 값으로 교체한다.
+- Google Console에 `http://localhost:8000/api/v1/auth/google/callback`을 등록한다.
+- 이후에는 아래 흐름으로 본다.
 
 ```bash
-cd labs/B-federation-security-lab/fastapi
-
-# 마이그레이션 파일 생성
-alembic revision -m "initial schema"
-# → alembic/versions/20260308_0001_initial.py 생성
+curl -c cookies.txt http://127.0.0.1:8000/api/v1/auth/google/login
 ```
 
-마이그레이션이 생성하는 테이블 5개:
-1. `users` — handle, email, two_factor 관련 필드
-2. `external_identities` — provider + provider_subject 유니크 제약
-3. `refresh_tokens` — family_id 기반 토큰 체인
-4. `two_factor_recovery_codes` — 해시 기반 recovery code
-5. `auth_audit_logs` — event_type + details JSON
+- 브라우저에서 `authorization_url`로 이동해 callback을 완료한다.
+- callback 뒤 `cookies.txt`에 세션 쿠키가 생기면 2FA를 이어서 확인한다.
 
 ```bash
-# 마이그레이션 적용
-alembic upgrade head
+csrf=$(grep csrf_token cookies.txt | tail -n 1 | awk '{print $7}')
 
-# 테이블 확인 (Docker Compose PostgreSQL)
-docker compose exec db psql -U postgres -d b_federation_security_lab -c "\dt"
+curl -c cookies.txt -b cookies.txt -X POST http://127.0.0.1:8000/api/v1/auth/2fa/setup \
+  -H "X-CSRF-Token: ${csrf}"
 ```
 
-## Phase 9: 테스트 작성 및 실행
-
-conftest 설정의 핵심:
-- SQLite in-memory로 테스트 격리
-- `RateLimiter._memory_store.clear()` — 테스트 간 rate limit 상태 초기화
-- `get_settings.cache_clear()` — 환경변수 오염 방지
-
-Google OIDC mock 패턴:
-
-```python
-# monkeypatch로 GoogleOIDCService의 세 메서드를 대체
-monkeypatch.setattr(GoogleOIDCService, "exchange_code_for_tokens", fake_exchange)
-monkeypatch.setattr(GoogleOIDCService, "validate_id_token", fake_validate)
-monkeypatch.setattr(GoogleOIDCService, "fetch_userinfo", fake_userinfo)
-```
-
-테스트 시나리오:
-1. Google callback → 사용자 생성 + 세션 발급 → `/me` 확인
-2. 2FA setup → confirm → recovery code 수령
-3. 2FA 사용자 Google 로그인 → pending 상태 → `/me` 401 → recovery code로 verify → `/me` 200
+- 위 응답의 `secret`으로 TOTP 코드를 만든다.
 
 ```bash
-make test
-make lint
-make smoke
-
-# Docker Compose 상태에서의 통합 검증
-docker compose exec api pytest
+python -c 'import pyotp; print(pyotp.TOTP("<SECRET>").now())'
 ```
 
-## Phase 10: Rate Limiter 검증
+- 생성된 코드로 confirm을 호출하고, 응답의 recovery code를 저장한다.
 
-```bash
-# 로컬에서 rate limit 동작 확인 (11번 연속 요청)
-for i in $(seq 1 11); do
-  curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8000/api/v1/auth/google/login
-done
-# 11번째부터 429 반환
+## 7. 막히면 먼저 확인할 것
 
-# Redis 키 확인
-docker compose exec redis redis-cli KEYS "auth:*"
-```
-
-## Phase 11: 최종 검증
-
-```bash
-make lint    # ruff check
-make test    # pytest
-make smoke   # smoke test 스크립트
-
-# Compose probe
-docker compose up --build -d
-curl -sf http://localhost:8000/api/v1/health/live
-curl -sf http://localhost:8000/api/v1/health/ready
-docker compose down
-```
+- callback이 막히면 먼저 `state` 쿠키와 query string의 `state`가 일치하는지 확인한다.
+- 두 번째 로그인 뒤 `/api/v1/auth/me`가 `401`이면 2FA pending 상태일 가능성이 크다. 이 경우 `2fa/verify`를 먼저 마쳐야 한다.
+- 수동 브라우저 경로가 불안정하면 다시 테스트 경로로 돌아가는 것이 가장 빠르다.

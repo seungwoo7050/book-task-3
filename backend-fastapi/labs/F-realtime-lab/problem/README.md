@@ -1,10 +1,18 @@
-# Problem
+# 문제 정의
 
-Build a realtime backend slice that can:
+## 문제
 
-- authenticate a WebSocket connection
-- maintain short-lived presence state
-- fan out notifications to connected clients
-- expose reconnect-friendly HTTP surfaces for presence and event publication
+클라이언트와 서버가 장시간 연결을 유지하면서 presence와 알림을 주고받는다고 가정합니다. HTTP 요청만으로는 표현하기 어려운 연결 상태, heartbeat, fan-out을 별도 모델로 다뤄야 합니다.
 
-The lab uses in-memory runtime state during tests, while the local stack still exposes Redis as the natural scaling boundary.
+## 성공 기준
+
+- WebSocket 연결이 인증된 사용자와 연결되어야 합니다.
+- presence heartbeat가 TTL 기반으로 갱신되어야 합니다.
+- 한 사용자에게 여러 활성 연결이 있어도 fan-out이 가능해야 합니다.
+- 재연결 보조용 HTTP surface가 있어야 합니다.
+
+## 제외 범위
+
+- 완전한 broker 기반 수평 확장 구현
+- 메시지 replay 보장
+- 대규모 채팅 제품 수준의 방/채널 모델

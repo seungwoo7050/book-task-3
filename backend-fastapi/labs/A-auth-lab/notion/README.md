@@ -1,18 +1,25 @@
-# A-auth-lab Notion Documents
+# A-auth-lab 학습 노트
 
-각 문서는 서로 이어지는 글이지만, 독자가 어떤 목적으로 읽을지에 따라
-선택적으로 접근할 수 있도록 정리되어 있다.
+이 폴더는 현재 공개용 학습 노트입니다. 이 노트만 읽어도 랩의 목표, 설계, 실패 사례, 재현 순서를 이해할 수 있게 정리했습니다.
 
-문서 순서 (추천):
-1. `00-problem-framing.md` - 프로젝트가 풀려고 하는 문제를 전체 맥락에서 이해한다.
-2. `01-approach-log.md` - 어떤 선택지를 고민했고 어떤 방향을 취했는지 살핀다.
-3. `02-debug-log.md` - 개발 중에 마주한 버그와 그 해결 과정을 확인한다.
-4. `03-retrospective.md` - 프로젝트 완료 이후의 회고와 학습 포인트를 읽는다.
-5. `04-knowledge-index.md` - 재사용 가능한 개념, 용어, 참고자료를 빠르게 찾아본다.
-6. `05-development-timeline.md` - 실제 개발/빌드/테스트 과정을 알고 싶을 때 참고한다.
+## 먼저 볼 문서
 
-목적별 접근:
-- 개요만 빠르게 알고 싶다면 `00-problem-framing.md`와 `01-approach-log.md`.
-- 디버깅 노트나 회고가 필요하면 `02-debug-log.md`와 `03-retrospective.md`.
-- 코드를 재사용하거나 개념 정리가 필요하면 `04-knowledge-index.md`.
-- 환경 구축이나 복제 스텝을 확인하려면 `05-development-timeline.md`.
+- 바로 손을 움직여 재현하고 싶다면 [05-development-timeline.md](05-development-timeline.md)부터 읽습니다.
+- 왜 이런 구조로 만들었는지부터 이해하고 싶다면 `00`, `01`부터 읽습니다.
+
+## 추천 읽기 순서
+
+1. [00-problem-framing.md](00-problem-framing.md)
+2. [01-approach-log.md](01-approach-log.md)
+3. [02-debug-log.md](02-debug-log.md)
+4. [03-retrospective.md](03-retrospective.md)
+5. [04-knowledge-index.md](04-knowledge-index.md)
+6. [05-development-timeline.md](05-development-timeline.md)
+
+## 어떻게 쓰면 좋은가
+
+- 실행 재현이 최우선이면 `05`를 먼저 보고, 막힌 이유를 찾을 때 `02`로 돌아옵니다.
+- 전체 맥락을 잡고 싶다면 `00`과 `01`부터 읽습니다.
+- 실제로 막혔던 문제를 보고 싶다면 `02`를 봅니다.
+- 자기 포트폴리오로 옮길 아이디어가 필요하면 `03`과 `04`를 읽습니다.
+- 처음부터 다시 따라 할 순서가 필요하면 `05`를 봅니다.

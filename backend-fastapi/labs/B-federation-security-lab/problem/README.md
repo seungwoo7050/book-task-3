@@ -1,12 +1,18 @@
-# Problem
+# 문제 정의
 
-Build a federation-focused authentication backend that covers:
+## 문제
 
-- Google OAuth login
-- external identity linking
-- TOTP-based second factor
-- recovery codes
-- login throttling
-- auth audit events
+이미 로컬 인증이 있는 서비스에 외부 로그인과 보안 강화 기능을 붙여야 한다고 가정합니다. 사용자는 Google 스타일 로그인으로 진입할 수 있어야 하고, 필요하면 2단계 인증과 recovery code를 사용할 수 있어야 합니다. 동시에 로그인 시도는 남용에 대비해 제한하고, 중요한 인증 이벤트는 기록해야 합니다.
 
-The lab assumes local credential auth already exists from `A-auth-lab` and focuses on federation and higher-assurance session flows.
+## 성공 기준
+
+- 외부 인증 공급자와 내부 사용자 계정의 연결 관계가 설명 가능해야 합니다.
+- TOTP 등록과 검증 흐름이 독립된 단계로 구현되어야 합니다.
+- recovery code 재생성 및 소진 규칙이 있어야 합니다.
+- 로그인 throttling과 audit log가 최소 수준으로라도 동작해야 합니다.
+
+## 제외 범위
+
+- 실제 Google 서비스와의 end-to-end 통신 검증
+- 제품 도메인별 권한과 리소스 모델
+- 복수 공급자에 대한 공통 추상화 완성

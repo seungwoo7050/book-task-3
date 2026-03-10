@@ -1,0 +1,13 @@
+.env
+*.db
+*.sqlite3
+*.sqlite
+*.egg-info/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+*/fastapi/.env
+*/fastapi/*.db
+*/fastapi/*.egg-info/

@@ -1,14 +1,18 @@
-# Problem
+# 문제 정의
 
-Build a generic SaaS collaboration backend in FastAPI that integrates the earlier labs.
+## 문제
 
-Minimum scope:
+개별 랩으로 연습한 인증, 인가, 데이터 API, 비동기 알림, 실시간 전달을 하나의 협업형 SaaS 백엔드로 다시 조합합니다. 목표는 기능을 많이 붙이는 것이 아니라, 여러 경계를 함께 설명할 수 있는 통합 구조를 만드는 것입니다.
 
-- local signup and login
-- Google-style login flow for federated accounts
-- workspace membership and invitations
-- project, task, and comment APIs
-- queued notification dispatch
-- realtime notification delivery
+## 성공 기준
 
-The capstone is intentionally backend-only.
+- 로컬 로그인과 외부 로그인 흐름이 같은 사용자 모델 안에서 설명 가능해야 합니다.
+- 워크스페이스 멤버십과 역할이 프로젝트/태스크/댓글 API와 연결되어야 합니다.
+- 알림 생성이 큐와 실시간 전달로 이어지는 흐름이 보여야 합니다.
+- 개별 랩의 개념이 capstone에서 어떻게 다시 조합되었는지 문서로 설명할 수 있어야 합니다.
+
+## 제외 범위
+
+- 프런트엔드 렌더링과 정적 자산 제공
+- 실제 클라우드 배포 자동화
+- 랩 코드를 공용 패키지로 묶는 리팩터링

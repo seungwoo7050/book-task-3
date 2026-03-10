@@ -1,163 +1,110 @@
-# 개발 타임라인: E-async-jobs-lab
+# 개발 타임라인
 
-이 문서는 소스 코드에서 드러나지 않는 개발 과정—환경 설정, 패키지 설치,
-Docker 구성, 마이그레이션, 디버깅 명령—을 시간순으로 기록한다.
+## 이 문서의 목적
 
----
+- 비동기 랩을 다시 볼 때 enqueue, outbox, worker, retry가 어느 순서로 움직이는지 재현 가능한 경로로 정리한다.
+- API만 띄우는 빠른 확인과 worker까지 포함한 전체 경로를 분리해서 적는다.
 
-## Phase 1: 프로젝트 초기화
-
-```bash
-mkdir -p labs/E-async-jobs-lab/fastapi && cd labs/E-async-jobs-lab/fastapi
-
-# pyproject.toml 생성 (name: e-async-jobs-lab-fastapi)
-# 핵심 의존성: fastapi, sqlalchemy, pydantic-settings, celery>=5.4, redis
-# dev 의존성: pytest, pytest-asyncio, httpx, ruff
-
-python3 -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
-```
-
-Celery 5.4를 명시적으로 의존성에 추가해야 했다.
-기존 A~D lab에는 없던 패키지이므로, pyproject.toml에 별도 항목으로 넣었다.
-
-## Phase 2: Celery + Redis 설정
+## 1. 시작 위치를 고정한다
 
 ```bash
-# app/core/config.py에 추가한 설정 필드:
-#   celery_broker_url = "memory://"
-#   celery_result_backend = "cache+memory://"
-#   celery_task_always_eager = False
+cd labs/E-async-jobs-lab/fastapi
+python3 -m venv .venv
+source .venv/bin/activate
+make install
 ```
 
-기본값을 `memory://`로 두어 `.env` 없이도 테스트가 돌아가게 했다.
-Redis URL은 compose 환경의 `.env`에서 override된다.
+- 기본 설정은 SQLite와 메모리 broker/backend를 사용한다.
+- 다만 `celery_task_always_eager` 기본값이 `false`라서, 실제 `/api/v1/jobs/outbox/drain` 성공 경로는 worker가 있는 Compose에서 보는 편이 안전하다.
+- `.env.example`을 복사하면 PostgreSQL + Redis 경로로 전환된다.
+
+## 2. 가장 빠른 자동 재현 경로
 
 ```bash
-# app/celery_app.py: Celery 인스턴스 생성
-# app/tasks.py: deliver_notification 태스크 정의
+pytest tests/integration/test_async_jobs.py -q
+make smoke
 ```
 
-## Phase 3: 모델과 마이그레이션
+- 테스트는 `Idempotency-Key` 중복 요청이 같은 job id를 재사용하는지, 첫 drain에서 `retrying`, 두 번째 drain에서 `sent`로 바뀌는지 확인한다.
+- `make smoke`는 앱 부팅과 `/api/v1/health/live`만 확인한다.
+
+## 3. 로컬 편집 루프를 연다
 
 ```bash
-# SQLAlchemy 모델 정의
-#   NotificationJob: id, idempotency_key(unique), recipient, subject, body, status, attempt_count
-#   OutboxEvent: id, job_id(FK), event_type, status, created_at
-
-# Alembic 초기화
-alembic init alembic
-# alembic.ini의 sqlalchemy.url을 env.py에서 Settings로 대체
-
-alembic revision --autogenerate -m "add notification_job and outbox_event tables"
-alembic upgrade head
+make run
 ```
 
-`idempotency_key`에 unique constraint를 걸어야 멱등성이 DB 수준에서 보장된다.
-인덱스를 빠뜨리면 동시 요청 시 duplicate가 발생한다.
-
-## Phase 4: 서비스 레이어 구현
-
-핵심 로직 순서:
-1. `enqueue_notification`: idempotency_key로 기존 job lookup
-   - 있으면 → 기존 job 반환
-   - 없으면 → NotificationJob + OutboxEvent를 같은 session에서 생성, commit
-2. `process_event`: pending outbox event를 꺼내서
-   - recipient이 `retry@`로 시작하면 job.status = `retrying`, attempt_count += 1
-   - 그 외에는 job.status = `sent`, attempt_count += 1
-   - event.status = `done`
-
-```python
-# 핵심: job과 event가 같은 트랜잭션에 들어가야 outbox 패턴이 성립한다
-session.add(job)
-session.add(outbox_event)
-session.commit()
-```
-
-## Phase 5: API 라우트
+다른 터미널에서:
 
 ```bash
-# POST /api/v1/notifications
-#   - Header: Idempotency-Key (필수)
-#   - Body: recipient, subject, body
-#   - 201 Created + job 정보
-
-# POST /api/v1/outbox/drain
-#   - pending event 전체 처리
-#   - 200 OK + 처리 결과
-
-# GET /api/v1/notifications/{id}
-#   - job 조회
+curl http://127.0.0.1:8000/api/v1/health/live
+curl http://127.0.0.1:8000/api/v1/health/ready
 ```
 
-## Phase 6: Docker Compose 구성
+- 이 루프는 route shape와 service 계층 구조를 빠르게 읽을 때 좋다.
+- drain까지 로컬에서 한 번에 보고 싶다면 셸에서 `export CELERY_TASK_ALWAYS_EAGER=true`를 한 뒤 `make run`을 다시 시작한다.
 
-```yaml
-# compose.yaml — 4개 서비스
-services:
-  api:       # FastAPI, 포트 8003:8000
-  worker:    # Celery worker, 같은 이미지
-  postgres:  # PostgreSQL 16, 포트 5435:5432
-  redis:     # Redis 7, 포트 6380:6379
-```
-
-worker 서비스가 추가된 것이 이전 lab들과의 차이점이다.
-같은 Docker image를 쓰되, CMD만 `celery -A app.celery_app worker`로 바꾼다.
+## 4. Compose로 worker까지 같이 띄운다
 
 ```bash
+cp .env.example .env
 docker compose up --build -d
-docker compose logs -f worker   # 워커 로그 확인
+docker compose ps
+docker compose logs worker --tail=50
+curl http://127.0.0.1:8003/api/v1/health/live
+curl http://127.0.0.1:8003/api/v1/health/ready
 ```
 
-## Phase 7: 테스트 작성
+- Compose에서는 API가 `8003`, PostgreSQL이 `5435`, Redis가 `6380` 포트로 노출된다.
+- 이 랩은 `api`, `worker`, `db`, `redis` 네 서비스가 모두 떠야 “비동기 전달”이라는 이름에 맞는 그림이 나온다.
+- 정리할 때는 `docker compose down -v`를 쓴다.
+
+## 5. 수동 비동기 흐름을 재현한다
+
+첫 번째 job은 중복 요청이 같은 id를 재사용하는지 본다.
 
 ```bash
-# conftest.py
-#   - monkeypatch로 DATABASE_URL을 SQLite로 override
-#   - celery_app.conf.task_always_eager = True 설정
-#   - memory:// broker/backend로 override
+curl -X POST http://127.0.0.1:8003/api/v1/jobs/notifications \
+  -H 'Content-Type: application/json' \
+  -H 'Idempotency-Key: job-1' \
+  -d '{"recipient":"team@example.com","subject":"Deploy finished"}'
 
-# test_jobs.py
-#   test_idempotent_enqueue: 같은 key로 2번 POST → 같은 job_id 반환
-#   test_retrying_job: retry@prefix → 첫 drain 후 retrying → 두 번째 drain 후 sent
-
-pytest -q
+curl -X POST http://127.0.0.1:8003/api/v1/jobs/notifications \
+  -H 'Content-Type: application/json' \
+  -H 'Idempotency-Key: job-1' \
+  -d '{"recipient":"team@example.com","subject":"Deploy finished"}'
 ```
 
-eager 모드에서 `task_always_eager=True`로 설정하면
-worker 프로세스 없이 같은 프로세스에서 태스크가 실행된다.
-CI에서 Redis 없이 테스트할 수 있는 핵심 설정이다.
+- 두 응답의 `id`가 같아야 한다.
 
-## Phase 8: 검증
+이제 outbox를 drain하고 상태를 본다.
 
 ```bash
-make lint     # ruff check app tests
-make test     # pytest -q
-make smoke    # smoke test (선택)
-
-# Compose 검증
-docker compose up --build -d
-curl http://localhost:8003/api/v1/notifications -X POST \
-  -H "Content-Type: application/json" \
-  -H "Idempotency-Key: test-key-001" \
-  -d '{"recipient":"user@example.com","subject":"hello","body":"world"}'
-
-curl http://localhost:8003/api/v1/outbox/drain -X POST
-curl http://localhost:8003/api/v1/notifications/1
-docker compose down
+curl -X POST http://127.0.0.1:8003/api/v1/jobs/outbox/drain
+curl http://127.0.0.1:8003/api/v1/jobs/notifications/<JOB_ID>
 ```
 
----
+- 첫 번째 job의 상태는 `sent`여야 한다.
 
-## 타임라인 요약
+retry 경로는 의도적으로 한 번 실패하게 만든다.
 
-| 단계 | 핵심 산출물 |
-|------|-------------|
-| 초기화 | pyproject.toml + celery 의존성 |
-| Celery 설정 | celery_app.py, tasks.py, config 필드 |
-| 모델 | NotificationJob, OutboxEvent, Alembic migration |
-| 서비스 | enqueue_notification, process_event |
-| API | POST /notifications, POST /outbox/drain, GET /notifications/{id} |
-| Compose | api + worker + postgres + redis (4 서비스) |
-| 테스트 | idempotent enqueue, retry 상태 전이 |
-| 검증 | lint, test, compose curl 검증 |
+```bash
+curl -X POST http://127.0.0.1:8003/api/v1/jobs/notifications \
+  -H 'Content-Type: application/json' \
+  -H 'Idempotency-Key: job-2' \
+  -d '{"recipient":"retry@example.com","subject":"Retry me"}'
+
+curl -X POST http://127.0.0.1:8003/api/v1/jobs/outbox/drain
+curl http://127.0.0.1:8003/api/v1/jobs/notifications/<RETRY_JOB_ID>
+
+curl -X POST http://127.0.0.1:8003/api/v1/jobs/outbox/drain
+curl http://127.0.0.1:8003/api/v1/jobs/notifications/<RETRY_JOB_ID>
+```
+
+- 첫 번째 조회는 `retrying`, 두 번째 조회는 `sent`와 `attempt_count = 2`여야 한다.
+
+## 6. 막히면 먼저 확인할 것
+
+- 두 번 enqueue했는데 id가 다르면 `Idempotency-Key` 헤더가 빠졌는지 먼저 본다.
+- drain이 멈추면 `docker compose logs worker`에서 Celery worker가 살아 있는지 확인한다.
+- retry 경로가 바로 `sent`가 되면 테스트에서 쓰는 `retry@example.com` 패턴을 그대로 사용했는지 확인한다.

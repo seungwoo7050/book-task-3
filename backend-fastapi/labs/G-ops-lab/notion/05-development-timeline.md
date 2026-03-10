@@ -1,181 +1,76 @@
-# 개발 타임라인: G-ops-lab
+# 개발 타임라인
 
-이 문서는 소스 코드에서 드러나지 않는 개발 과정—환경 설정, 인프라 결정,
-Docker 구성, CI 파이프라인, 검증 단계—을 시간순으로 기록한다.
+## 이 문서의 목적
 
----
+- 운영성 랩을 다시 열었을 때 “무슨 기능이 있나”보다 “무슨 운영 질문에 답하나”를 기준으로 재현 순서를 잡는다.
+- health, readiness, metrics, Compose probe가 실제로 맞물리는지 빠르게 확인하는 절차를 남긴다.
 
-## Phase 1: 프로젝트 초기화
-
-```bash
-mkdir -p labs/G-ops-lab/fastapi && cd labs/G-ops-lab/fastapi
-
-# pyproject.toml 생성 (name: g-ops-lab-fastapi)
-# 핵심 의존성: fastapi, httpx, pydantic-settings, redis, sqlalchemy, uvicorn[standard]
-# dev 의존성: pytest, ruff
-# ⚠️ psycopg/asyncpg 없음 — SQLite 기본
-
-python3 -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
-```
-
-이 랩은 product domain이 없다. 모델도, 마이그레이션도 없다.
-순수하게 운영 표면(health, logging, metrics)만 존재한다.
-pyproject.toml에 `psycopg`가 없는 것이 의도적이다.
-
-## Phase 2: core/ — 설정, 로깅, 에러 처리
-
-```python
-# app/core/config.py
-#   Settings: app_name, environment, api_v1_prefix, database_url, redis_url, allowed_origins
-#   @lru_cache get_settings()
-
-# app/core/logging.py
-#   JsonFormatter(logging.Formatter) — JSON 로그 출력
-#   configure_logging() — root logger 핸들러 교체
-
-# app/core/errors.py
-#   AppError exception class
-#   register_exception_handlers() — AppError, ValidationError, Exception 전부 포착
-```
-
-`configure_logging()`은 `create_app()` 최초 호출 시 실행된다.
-이후 모든 `logging.getLogger()` 호출은 JsonFormatter를 사용한다.
-
-Settings의 `database_url` 기본값은 `sqlite+pysqlite:///./g_ops_lab.db`이다.
-Compose에서는 `.env`를 통해 PostgreSQL URL로 override한다.
-
-## Phase 3: runtime.py — MetricsRegistry
-
-```python
-# app/runtime.py
-class MetricsRegistry:
-    request_count: int = 0
-    def increment(self): self.request_count += 1
-```
-
-Prometheus client library 없이 직접 만든 최소 카운터.
-`app.state.metrics`에 저장되어 미들웨어와 `/ops/metrics` 라우트에서 공유된다.
-
-```python
-# app/main.py 미들웨어
-@app.middleware("http")
-async def count_requests(request, call_next):
-    app.state.metrics.increment()
-    return await call_next(request)
-```
-
-## Phase 4: Health와 Ops 라우트
-
-```python
-# app/api/v1/routes/health.py
-#   GET /health/live  → 무조건 {status: "ok"}
-#   GET /health/ready → DB SELECT 1 + Redis ping → 성공이면 200, 실패면 503
-
-# app/api/v1/routes/ops.py
-#   GET /ops/ready   → Settings 기반 readiness (URL 존재 여부만 검사)
-#   GET /ops/metrics → Prometheus text format으로 request_count 노출
-```
-
-health와 ops 라우트를 분리한 이유:
-- health는 인프라(K8s/Docker) 수준의 probe 대상
-- ops는 애플리케이션 관리자가 보는 운영 정보
-
-## Phase 5: DB 세션과 deps
-
-```python
-# app/db/session.py
-#   configure_engine(): create_engine + sessionmaker 설정
-#   get_db(): Session generator (Depends용)
-
-# app/api/deps.py
-#   get_metrics_registry(): request.app.state.metrics 반환
-```
-
-DB 세션은 health/ready에서만 사용된다 (SELECT 1 검증용).
-product 테이블이 없으므로 모델 파일이나 Alembic migration이 존재하지 않는다.
-
-## Phase 6: Docker Compose 구성
-
-```yaml
-# compose.yaml — 1개 서비스
-services:
-  api:       # FastAPI, 포트 8005:8000, uvicorn --reload
-             # healthcheck: python urllib으로 /health/live probe
-             #   interval: 10s, timeout: 5s, retries: 5, start_period: 15s
-```
-
-이 랩의 compose는 API 서비스 하나뿐이다.
-PostgreSQL과 Redis가 없다 — 기본 SQLite로 동작한다.
-다른 lab(A~F)과 비교하면 가장 가벼운 구성이다.
-
-healthcheck command를 `python -c "import urllib.request; ..."`로 구현해서
-curl이 없는 `python:3.12-slim` 이미지에서도 동작한다.
-
-## Phase 7: Dockerfile
-
-```dockerfile
-FROM python:3.12-slim
-# build-essential, curl 설치
-# pyproject.toml + app/ + alembic 복사
-# pip install .
-# CMD uvicorn app.main:app --host 0.0.0.0 --port 8000
-```
-
-`alembic.ini`와 `alembic/`을 COPY하는 이유:
-다른 lab과 Dockerfile 구조를 통일하기 위함이며,
-실제로 마이그레이션할 테이블은 없다.
-
-## Phase 8: 테스트와 Smoke
+## 1. 시작 위치를 고정한다
 
 ```bash
-# tests/conftest.py
-#   monkeypatch로 DATABASE_URL → SQLite override
-#   get_settings.cache_clear() — lru_cache 초기화
-
-# tests/integration/test_ops.py
-#   test_live_ready_and_metrics:
-#     GET /health/live → 200
-#     GET /ops/ready → 200, status=ok
-#     GET /ops/metrics → "app_requests_total" 포함
-
-# tests/smoke.py
-#   make smoke으로 실행
-#   tmpdir에 SQLite DB 생성 → /health/live 호출 → raise_for_status
+cd labs/G-ops-lab/fastapi
+python3 -m venv .venv
+source .venv/bin/activate
+make install
+cp .env.example .env
 ```
 
-smoke test의 목적: compose 없이 "앱이 뜨는가"를 가장 빠르게 확인한다.
-CI에서 compose probe 전에 precheck로 실행한다.
+- 이 랩은 기본적으로 SQLite를 쓰고 Redis 의존성도 없다.
+- `.env.example`을 복사해도 로컬 실행과 Compose 실행이 크게 갈라지지 않는다.
 
-## Phase 9: Makefile과 검증
+## 2. 가장 빠른 자동 재현 경로
 
 ```bash
-make install  # pip install -e ".[dev]"
-make lint     # ruff check app tests
-make test     # pytest
-make smoke    # python -m tests.smoke
-make run      # uvicorn --reload
+pytest tests/integration/test_ops.py -q
+make smoke
 ```
 
-CI workflow(`labs-fastapi.yml`)에서는:
-1. `make lint`
-2. `make test`
-3. `make smoke`
-4. `docker compose up --build` → healthcheck passing → `compose_probe.sh`
+- 테스트는 `/api/v1/health/live`, `/api/v1/ops/ready`, `/api/v1/ops/metrics` 세 엔드포인트가 기대 shape를 반환하는지 확인한다.
+- `make smoke`는 앱 부팅과 `/api/v1/health/live`를 다시 한 번 확인한다.
 
-`tools/compose_probe.sh`가 health endpoint를 HTTP로 확인한다.
+## 3. 로컬 편집 루프를 연다
 
----
+```bash
+make run
+```
 
-## 타임라인 요약
+다른 터미널에서:
 
-| 단계 | 핵심 산출물 |
-|------|-------------|
-| 초기화 | pyproject.toml (product domain 없음) |
-| core | config.py, logging.py, errors.py |
-| runtime | MetricsRegistry (자체 카운터) |
-| 라우트 | /health/live, /health/ready, /ops/ready, /ops/metrics |
-| DB 세션 | get_db (health ready 전용) |
-| Compose | api 1개 서비스 + healthcheck |
-| 테스트 | live, ready, metrics 통합 테스트 + smoke |
-| 검증 | lint, test, smoke, Compose probe |
+```bash
+curl http://127.0.0.1:8000/api/v1/health/live
+curl http://127.0.0.1:8000/api/v1/ops/ready
+curl http://127.0.0.1:8000/api/v1/ops/metrics
+```
+
+- 세 번째 응답 본문에 `app_requests_total`이 포함되면 metrics surface가 살아 있는 것이다.
+- 로컬 기본 DB는 `g_ops_lab.db`다.
+
+## 4. Compose probe 경로를 확인한다
+
+```bash
+docker compose up --build -d
+docker compose ps
+curl http://127.0.0.1:8005/api/v1/health/live
+curl http://127.0.0.1:8005/api/v1/ops/ready
+curl http://127.0.0.1:8005/api/v1/ops/metrics
+```
+
+- Compose에서는 API가 `8005` 포트로 노출된다.
+- `docker compose ps`에서 health 상태가 `healthy`로 올라오는지 확인한다.
+- 정리할 때는 `docker compose down -v`를 쓴다.
+
+## 5. 운영성 확인 순서를 고정한다
+
+재현 순서는 항상 아래처럼 가져간다.
+
+1. `live`로 프로세스가 살아 있는지 본다.
+2. `ready`로 애플리케이션이 요청을 받을 준비가 되었는지 본다.
+3. `metrics`로 관측 표면이 실제로 열려 있는지 본다.
+4. Compose healthcheck가 위 세 엔드포인트 중 무엇을 기준으로 삼는지 다시 확인한다.
+5. 마지막으로 [../docs/aws-deployment.md](../docs/aws-deployment.md)를 읽고, 이 랩이 실제 배포 검증이 아니라 문서 수준 target shape라는 점을 다시 확인한다.
+
+## 6. 막히면 먼저 확인할 것
+
+- `ready`만 실패하면 보통 애플리케이션 초기화나 의존성 확인이 readiness에만 묶여 있는지 본다.
+- metrics 본문이 비어 보이면 `app_requests_total` 문자열이 있는지부터 확인한다.
+- 운영성 랩은 기능 추가보다 검증 관점이 중요하므로, 새 endpoint를 더 만들기 전에 기존 probe가 어떤 질문에 답하는지 먼저 적는 편이 낫다.
