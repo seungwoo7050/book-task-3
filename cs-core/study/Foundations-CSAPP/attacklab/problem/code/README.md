@@ -1,5 +1,41 @@
-This tracked directory intentionally excludes the runnable official target files.
+# Attack Lab 문제 코드 경계
 
-Run `make restore-official` from `problem/` to download the public `target1` self-study handout
-into the ignored local directory `../official/target1/`, which contains `cookie.txt`, `ctarget`,
-`rtarget`, and `hex2raw`.
+## 이 디렉터리가 가르치는 것
+
+이 디렉터리는 공개 가능한 참고 코드와 로컬에서만 복원해야 하는 타깃 자산의 경계를 설명합니다.
+
+## 누구를 위한 문서인가
+
+- 어떤 파일이 버전 관리 대상인지 빠르게 확인하고 싶은 사람
+- `farm.c`는 공개하고 실행 바이너리는 공개하지 않는 이유를 알고 싶은 사람
+
+## 먼저 읽을 곳
+
+1. [`../README.md`](../README.md)
+2. [`farm.c`](farm.c)
+
+## 디렉터리 구조
+
+```text
+code/
+  README.md
+  farm.c
+```
+
+## 검증 방법
+
+```bash
+cd ..
+make restore-official
+```
+
+복원 후 로컬 `../official/target1/` 아래에 `cookie.txt`, `ctarget`, `rtarget`, `hex2raw`가 생깁니다.
+
+## 스포일러 경계
+
+- 실행 가능한 공식 타깃 파일은 이 디렉터리에 커밋하지 않습니다.
+- 공개 README는 자산 경계만 설명합니다.
+
+## 포트폴리오로 확장하는 힌트
+
+- 민감 자산을 README로만 설명하는 방식은 다른 보안 프로젝트에도 그대로 적용할 수 있습니다.

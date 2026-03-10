@@ -1,44 +1,54 @@
-# Performance Lab - Problem Contract
+# Performance Lab 문제 경계
 
-## Summary
+## 이 디렉터리가 가르치는 것
 
-The original Performance Lab has two parts:
+이 디렉터리는 Performance Lab의 공식 starter boundary를 self-written 형태로 유지합니다.
+Part A는 trace-driven cache simulator, Part B는 cache-friendly transpose가 핵심입니다.
 
-- Part A: build a cache simulator that replays memory traces
-- Part B: optimize matrix transpose to reduce cache misses
+## 누구를 위한 문서인가
 
-This `problem/` directory preserves that official starter boundary while leaving active
-implementation work to `c/` and `cpp/`.
+- 구현 전에 문제 계약과 제공 파일을 먼저 보고 싶은 학습자
+- 공식 자산 없이도 공개 가능한 starter boundary를 만들고 싶은 사람
+- sample trace와 driver의 역할을 알고 싶은 사람
 
-## What Is Included
+## 먼저 읽을 곳
 
-| Path | Purpose |
-|---|---|
-| `README.md` | problem contract and local starter notes |
-| `Makefile` | starter compile checks |
-| `code/csim.c` | Part A starter |
-| `code/trans.c` | Part B starter |
-| `code/cachelab.h` | helper declarations |
-| `code/cachelab.c` | helper implementation |
-| `data/traces/study.trace` | study-owned sample trace asset |
-| `script/driver.py` | self-written simplified grading helper |
+1. [`../README.md`](../README.md)
+2. [`data/traces/README.md`](data/traces/README.md)
+3. [`../docs/README.md`](../docs/README.md)
 
-## What Is Not Included
+## 디렉터리 구조
 
-- the compiled legacy `csim` binary
-- platform-specific debug bundles such as `.dSYM`
-- missing official test drivers referenced in some readmes
+```text
+problem/
+  README.md
+  Makefile
+  code/
+    csim.c
+    trans.c
+    cachelab.h
+    cachelab.c
+  data/
+    traces/
+      README.md
+      study.trace
+  script/
+    driver.py
+```
 
-## Public-Release Note
+## 검증 방법
 
-The sample trace shipped here is study-owned and exists only to keep the cache simulator example
-verifiable without redistributing course trace assets.
+```bash
+cd problem
+make status
+make compile
+```
 
-## Official Learning Goal
+## 스포일러 경계
 
-Performance Lab is about:
+- 공개 트리에는 self-written starter와 sample trace만 둡니다.
+- 공식 course trace 자산은 그대로 복사하지 않습니다.
 
-- decomposing addresses into cache fields
-- implementing LRU replacement correctly
-- understanding locality and conflict misses
-- using matrix-specific access patterns to reduce misses on a fixed cache
+## 포트폴리오로 확장하는 힌트
+
+- 성능 과제는 starter boundary와 실구현 경계를 분리해 두면 읽는 사람이 구조를 빨리 이해합니다.

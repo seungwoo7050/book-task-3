@@ -1,66 +1,61 @@
-# Verification
+# Malloc Lab 검증 기록
 
-## Problem Starter
-
-Commands:
+## starter boundary 확인
 
 ```bash
 cd problem
 make clean && make
 ```
 
-Current result:
+2026-03-10 기준 기록:
 
-- the starter allocator contract compiles
-- active functional verification happens in the C and C++ tracks
+- starter allocator contract가 컴파일된다
+- 실제 기능 검증은 C/C++ 구현 트랙에서 수행한다
 
-## Shared Driver
+## shared driver가 확인하는 것
 
-The legacy driver was too weak because it did not iterate traces meaningfully or check payload
-preservation.
-
-The `study/` driver now checks:
+이 저장소의 driver는 다음 항목을 본다.
 
 - 16-byte alignment
-- no overlap between live payload ranges
-- payload preservation across `realloc`
-- aggregate utilization and throughput summaries across all traces
+- live payload overlap 여부
+- `realloc` prefix 데이터 보존
+- trace별 오류 수
+- 요약 utilization과 throughput
 
-## C Track
+즉, 단순 crash test보다 강한 검증을 수행합니다.
 
-Commands:
+## C 구현 검증
 
 ```bash
 cd c
 make clean && make test
 ```
 
-Validation coverage:
+trace 구성:
 
-- `basic.rep` for allocation/free baseline behavior
-- `coalesce.rep` for split and merge pressure
-- `realloc.rep` for `realloc(NULL, size)`, growth, shrink, and `realloc(ptr, 0)`
-- `mixed.rep` for interleaved allocator behavior
+- `basic.rep`
+- `coalesce.rep`
+- `realloc.rep`
+- `mixed.rep`
 
-Current result:
+기록:
 
-- `make test` passes
-- `basic.rep`, `coalesce.rep`, `mixed.rep`, `realloc.rep` all finish with `errors=0`
+- 네 trace 모두 `errors=0`
 - summary: `avg_util=0.077`, `throughput=4691933 ops/s`
 
-## C++ Track
-
-Commands:
+## C++ 구현 검증
 
 ```bash
 cd cpp
 make clean && make test
 ```
 
-Validation coverage matches the C track.
+기록:
 
-Current result:
-
-- `make test` passes
-- the same four traces finish with `errors=0`
+- 네 trace 모두 `errors=0`
 - summary: `avg_util=0.077`, `throughput=5033165 ops/s`
+
+## 현재 판단
+
+이 저장소는 allocator를 "돌아간다" 수준이 아니라,
+정렬과 `realloc` 의미까지 검증 가능한 수준으로 유지하고 있습니다.

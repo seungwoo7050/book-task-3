@@ -1,50 +1,54 @@
-# Malloc Lab Problem Boundary
+# Malloc Lab 문제 경계
 
-## Overview
+## 이 디렉터리가 가르치는 것
 
-Implement a dynamic memory allocator that exposes:
+이 디렉터리는 `mm_init`, `mm_malloc`, `mm_free`, `mm_realloc` 계약과 trace driver를 보존합니다.
+핵심은 `memlib.c`가 제공하는 simulated heap만 사용해 allocator를 구현하는 것입니다.
 
-- `mm_init`
-- `mm_malloc`
-- `mm_free`
-- `mm_realloc`
+## 누구를 위한 문서인가
 
-The allocator must use the simulated heap from `memlib.c`.
+- allocator API 계약을 먼저 확인하고 싶은 학습자
+- trace 형식과 driver 역할을 이해하고 싶은 사람
+- 구현 디렉터리와 문제 경계를 분리하고 싶은 사람
 
-## Rules
+## 먼저 읽을 곳
 
-- Do not call the system allocator from the implementation path.
-- All returned payload pointers must be 16-byte aligned.
-- `realloc(NULL, size)` must behave like `malloc(size)`.
-- `realloc(ptr, 0)` must free the block and return `NULL`.
-- The `study/` solution tracks may use only `mem_sbrk()` to extend the heap.
+1. [`../README.md`](../README.md)
+2. [`../docs/README.md`](../docs/README.md)
+3. `code/mm.h`
+4. `data/traces/`
 
-## What Lives Here
-
-This folder is the shared problem contract.
-
-It contains:
-
-- a starter allocator file with TODOs
-- shared `memlib` heap emulation
-- a publishable trace format and trace set
-- a stronger trace driver than the one found in `legacy/`
-
-The actual completed allocators live in `../c` and `../cpp`.
-
-## Trace Format
-
-Each trace begins with:
+## 디렉터리 구조
 
 ```text
-<num_ids> <num_ops>
+problem/
+  README.md
+  code/
+    mm.c
+    mm.h
+    memlib.c
+    memlib.h
+  data/
+    traces/
+  script/
+    mdriver.c
+  Makefile
 ```
 
-Operations are:
+## 검증 방법
 
-- `a <id> <size>`: allocate `size` bytes
-- `f <id>`: free block `id`
-- `r <id> <size>`: reallocate block `id` to `size` bytes
+```bash
+cd problem
+make clean && make
+```
 
-The driver writes and validates deterministic payload patterns so that `realloc` correctness
-is checked without embedding answer code in the traces themselves.
+구현 검증은 [`../c/README.md`](../c/README.md)와 [`../cpp/README.md`](../cpp/README.md)를 따릅니다.
+
+## 스포일러 경계
+
+- README는 API 계약, trace 형식, driver 역할만 설명합니다.
+- 구체 allocator 정책은 구현 디렉터리와 `docs/`에 둡니다.
+
+## 포트폴리오로 확장하는 힌트
+
+- 문제 경계 README에 trace 형식을 남겨 두면 구현이 바뀌어도 저장소가 오래 살아남습니다.

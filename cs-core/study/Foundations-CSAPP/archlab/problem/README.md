@@ -1,26 +1,36 @@
-# Architecture Lab - Problem Contract
+# Architecture Lab 문제 경계
 
-## Summary
+## 이 디렉터리가 가르치는 것
 
-The original Architecture Lab has three parts:
+이 디렉터리는 Architecture Lab의 세 파트를 공식 문제 경계로 보존합니다.
+Part A는 Y86-64 어셈블리, Part B는 `iaddq` 제어 로직, Part C는 `ncopy` 성능 최적화에 해당합니다.
 
-- Part A: write Y86-64 assembly programs
-- Part B: add `iaddq` to the SEQ processor in HCL
-- Part C: optimize `ncopy` for the PIPE processor
+## 누구를 위한 문서인가
 
-This `problem/` directory preserves the public handout boundary while restoring the official
-self-study handout locally on demand under `official/`.
+- 공식 self-study handout 복원 경로가 필요한 학습자
+- `y86/` hand-in 산출물과 복원 toolchain의 관계를 알고 싶은 사람
+- 공개 가능한 파일과 로컬 전용 자산을 구분하고 싶은 사람
 
-## What Is Included
+## 먼저 읽을 곳
 
-| Path | Purpose |
-|---|---|
-| `README.md` | problem boundary and official restore notes |
-| `Makefile` | restore, sync, and official verification helpers |
-| `code/README.md` | notes about the tracked study-owned hand-in files living in `../y86/` |
-| `script/README.md` | notes about the official simulator workflow |
+1. [`../README.md`](../README.md)
+2. [`code/README.md`](code/README.md)
+3. [`script/README.md`](script/README.md)
+4. [`../y86/README.md`](../y86/README.md)
 
-## Local Official Restore
+## 디렉터리 구조
+
+```text
+problem/
+  README.md
+  Makefile
+  code/
+    README.md
+  script/
+    README.md
+```
+
+## 검증 방법
 
 ```bash
 cd problem
@@ -28,15 +38,11 @@ make restore-official
 make verify-official
 ```
 
-The restore target downloads the public Architecture Lab self-study handout from the official
-CS:APP site into the ignored local directory `problem/official/`. The official verification target
-then copies the study-owned `../y86/` hand-in files into that restored toolchain and runs the
-official Part A/B/C checks in Docker.
+## 스포일러 경계
 
-## Official Learning Goal
+- 공식 toolchain과 템플릿은 `problem/official/` 아래 로컬에서만 복원합니다.
+- 공개 트리에는 학습자가 직접 작성한 hand-in 산출물과 경계 설명만 남깁니다.
 
-Architecture Lab is about:
+## 포트폴리오로 확장하는 힌트
 
-- mapping C-like logic to Y86-64
-- understanding which control signals implement a new instruction
-- reasoning about pipeline hazards and throughput, not just correctness
+- multi-part 프로젝트는 파트별 산출물과 검증 경로를 분리해 적을수록 이해하기 쉽습니다.

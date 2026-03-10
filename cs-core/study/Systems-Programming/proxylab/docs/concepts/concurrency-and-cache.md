@@ -1,56 +1,54 @@
-# Concurrency And Cache
+# concurrency와 cache를 함께 다뤄야 하는 이유
 
-The proxylab migration is organized around three milestones:
+## 이 프로젝트의 세 마일스톤
+
+`proxylab`은 보통 다음 순서로 이해하는 편이 좋습니다.
 
 1. sequential forwarding
-2. detached per-connection threading
-3. caching
+2. detached thread 기반 concurrent handling
+3. in-memory cache
 
-The finished `study/` implementation reaches all three.
+이 저장소의 구현은 세 단계 모두를 포함합니다.
 
-## Threading Model
+## threading model
 
-Each accepted client connection is handed to a detached thread.
+기본 루프는 다음처럼 단순합니다.
 
-That keeps the main accept loop simple:
+1. `accept`
+2. connected fd를 heap에 저장
+3. detached thread 생성
+4. 곧바로 다음 `accept`
 
-- accept
-- heap-allocate the connected fd
-- create a detached thread
-- continue accepting immediately
+이 구조의 장점은 accept loop가 단순하고, concurrent test가 분명해진다는 점입니다.
 
-The concurrency test in this project intentionally uses two slow origin requests to make sure the
-proxy is not accidentally still sequential.
+## cache 설계
 
-## Cache Design
+cache는 process-wide shared state입니다.
+각 entry는 보통 다음 정보를 가집니다.
 
-The cache is process-wide and stores complete HTTP response bytes.
-
-Each entry stores:
-
-- the request URI as the key
-- a heap copy of the response bytes
+- request URI
+- response byte copy
 - response size
-- previous and next pointers for LRU ordering
+- LRU 연결을 위한 prev/next
 
-The policy is:
+정책은 다음 둘로 요약됩니다.
 
-- cache only objects up to `MAX_OBJECT_SIZE`
-- evict from the tail while total size exceeds `MAX_CACHE_SIZE`
-- promote on hit
+- `MAX_OBJECT_SIZE` 이하만 cache
+- 총 크기가 `MAX_CACHE_SIZE`를 넘으면 tail부터 eviction
 
-## Locking Discipline
+## locking discipline
 
-The cache uses one mutex.
+이 저장소는 cache 전체에 하나의 mutex를 씁니다.
+더 세밀한 locking도 가능하지만, 학습 목표는 다음이기 때문입니다.
 
-That is intentionally conservative.
-The pedagogical target here is not lock-free or fine-grained caching.
-It is:
+- shared state를 안전하게 다루는 법
+- LRU mutation이 깨지지 않게 하는 법
+- cache hit path와 client I/O를 분리하는 법
 
-- understanding shared state
-- keeping LRU mutation correct
-- avoiding data races between concurrent handlers
+실제로는 hit 시 객체를 lock 안에서 복사하고, client write는 unlock 뒤에 수행합니다.
+그래야 네트워크 I/O 때문에 cache lock을 오래 잡지 않게 됩니다.
 
-On cache hit, the proxy copies the object out while holding the lock and writes the copy after
-unlocking.
-That avoids holding the cache lock across client I/O.
+## 이 프로젝트가 보여 주는 것
+
+프록시에서는 네트워크와 동시성이 분리된 문제가 아닙니다.
+request 처리 흐름과 shared cache 정책이 항상 같이 움직입니다.

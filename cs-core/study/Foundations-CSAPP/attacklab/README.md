@@ -1,43 +1,25 @@
 # Attack Lab
 
-## Purpose
+## 이 프로젝트가 가르치는 것
 
-This is the active study-first migration of CS:APP Attack Lab.
+`attacklab`은 스택 레이아웃, 제어 흐름 탈취, 코드 주입, ROP, 상대 주소 계산을 단계적으로 익히게 하는 프로젝트입니다.
+동시에 공개 가능한 학습 기록과 민감한 exploit 정보의 경계를 어떻게 유지할지도 함께 배우게 합니다.
 
-The frozen reference tree lives in [`/Users/woopinbell/work/cs-core/legacy/Foundations-CSAPP/attacklab`](/Users/woopinbell/work/cs-core/legacy/Foundations-CSAPP/attacklab).
-This directory separates:
+## 누구를 위한 문서인가
 
-- the official problem contract in `problem/`
-- fresh study-owned companion verifiers in `c/` and `cpp/`
-- durable public explanations in `docs/`
+- 버퍼 오버플로와 ROP를 구조적으로 이해하고 싶은 학습자
+- 공식 타깃 복원 절차와 companion verifier의 역할을 구분해서 보고 싶은 사람
+- 보안 주제를 공개 저장소에서 안전하게 다루는 문서 구조가 필요한 사람
 
-## Status
+## 먼저 읽을 곳
 
-| Area | Status | Notes |
-|---|---|---|
-| `problem/` | verified | public self-study target set is restored locally on demand and all five official phases pass in Docker |
-| `c/` | verified | fresh payload-layout verifier implemented and tested |
-| `cpp/` | verified | same companion contract implemented and tested |
-| `docs/` | complete | disclosure policy, attack models, and verification notes written |
-| `notion/` | complete | upload-ready local notes written for the migrated project |
+1. [`problem/README.md`](problem/README.md)
+2. [`docs/README.md`](docs/README.md)
+3. [`c/README.md`](c/README.md)
+4. [`cpp/README.md`](cpp/README.md)
+5. [`notion/README.md`](notion/README.md)
 
-## Project Strategy
-
-The original lab depends on external binaries (`ctarget`, `rtarget`, `hex2raw`) that are not
-present in `legacy/` and should not be blindly redistributed here.
-
-So this migration uses two layers:
-
-- `problem/` keeps the official contract and the external-asset boundary.
-- `c/` and `cpp/` implement a companion verifier that checks hex payloads against concept-preserving
-  models for:
-  - return-address overwrite
-  - code injection layout
-  - cookie-string placement
-  - simple ROP chain construction
-  - runtime-relative string addressing
-
-## Structure
+## 디렉터리 구조
 
 ```text
 attacklab/
@@ -47,11 +29,14 @@ attacklab/
   cpp/
   docs/
   notion/
+  notion-archive/
 ```
 
-## Verification Path
+## 검증 방법
 
-For the official problem track:
+2026-03-10 문서 정비 기준으로 유지하는 검증 경로는 다음과 같습니다.
+
+공식 self-study target 검증:
 
 ```bash
 cd problem
@@ -59,18 +44,27 @@ make restore-official
 make verify-official
 ```
 
-For the C companion track:
+C companion 검증:
 
 ```bash
 cd c
 make clean && make test
 ```
 
-For the C++ companion track:
+C++ companion 검증:
 
 ```bash
 cd cpp
 make clean && make test
 ```
 
-The restored official targets live under the ignored local directory `problem/official/`.
+## 스포일러 경계
+
+- 공개 문서는 payload 사고법과 방어 기법 차이를 설명합니다.
+- 비공개 course target에 바로 적용 가능한 raw exploit 정보는 늘리지 않습니다.
+- `problem/official/` 아래 복원되는 타깃과 쿠키 파일은 로컬 전용 자산입니다.
+
+## 포트폴리오로 확장하는 힌트
+
+- 이 프로젝트는 "어떤 제약이 공격 표면을 바꾸는가"를 설명하기 좋습니다.
+- 개인 저장소에서는 phase별로 바이트 배열을 어떻게 해석했는지 도식으로 정리하면 전달력이 커집니다.

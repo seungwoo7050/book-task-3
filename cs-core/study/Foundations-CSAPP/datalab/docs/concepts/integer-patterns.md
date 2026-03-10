@@ -1,51 +1,64 @@
-# Integer Puzzle Patterns
+# 정수 퍼즐에서 반복되는 사고 패턴
 
-## Why The Integer Set Matters
+## 왜 이 문서를 따로 두는가
 
-Puzzles 1~10 force the same habit repeatedly: stop thinking in source-level intent and start
-thinking in bit patterns, sign propagation, and operator substitution.
+`datalab`의 정수 퍼즐은 10개로 보이지만, 실제로는 몇 가지 사고 패턴이 반복됩니다.
+이 패턴을 먼저 잡아 두면 각 함수를 따로 외우지 않아도 풀이를 재구성할 수 있습니다.
 
-## Repeated Patterns
+## 1. 불리언 값을 전체 마스크로 바꾸기
 
-### 1. Boolean To Mask
+- 대표 형태: `mask = (!!x << 31) >> 31`
+- 의미: 참이면 `0xFFFFFFFF`, 거짓이면 `0x00000000` 만들기
+- 주로 쓰는 곳: `conditional`
 
-- pattern: `(!!x << 31) >> 31`
-- use: branchless selection
-- appears in: `conditional`
+조건문을 못 쓰는 퍼즐에서는 "값을 고르는 것"을 마스크 연산으로 바꿔야 합니다.
+이 패턴을 이해하면 `x ? y : z` 같은 선택도 비트 연산으로 표현할 수 있습니다.
 
-### 2. Subtraction By Two's Complement
+## 2. 뺄셈을 2의 보수 덧셈으로 바꾸기
 
-- pattern: `x + (~y + 1)`
-- use: range checks and comparisons without `-`
-- appears in: `isAsciiDigit`, `isLessOrEqual`
+- 대표 형태: `x + (~y + 1)`
+- 의미: `x - y`
+- 주로 쓰는 곳: `isAsciiDigit`, `isLessOrEqual`
 
-### 3. Sign-Bit Reasoning
+정수 퍼즐에서는 `-`를 직접 쓸 수 없는 경우가 많습니다.
+그래서 범위 비교를 할 때도 결국 덧셈과 부호 비트 해석으로 돌아오게 됩니다.
 
-- pattern: `x >> 31`
-- use: distinguish negative from non-negative values
-- appears in: `isAsciiDigit`, `isLessOrEqual`, `howManyBits`
+## 3. 부호 비트로 경우를 나누기
 
-### 4. Dense Mask Construction
+- 대표 형태: `sign = x >> 31`
+- 의미: 음수면 `0xFFFFFFFF`, 아니면 `0x00000000`
+- 주로 쓰는 곳: `isAsciiDigit`, `isLessOrEqual`, `howManyBits`
 
-- pattern: build `0xAAAAAAAA` from `0xAA`
-- use: satisfy the small-constant rule while still testing full-width bit structure
-- appears in: `allOddBits`
+정수 퍼즐은 "값의 크기"보다 "부호가 다른가"가 더 중요할 때가 많습니다.
+특히 `isLessOrEqual`은 같은 부호인지, 다른 부호인지에 따라 비교 전략이 달라집니다.
 
-### 5. MSB Search By Binary Splitting
+## 4. 작은 상수로 큰 마스크 만들기
 
-- pattern: probe `16 -> 8 -> 4 -> 2 -> 1`
-- use: find representation width without loops in the integer puzzle subset
-- appears in: `howManyBits`
+`allOddBits` 같은 함수에서는 `0xAAAAAAAA` 같은 값을 바로 쓸 수 없습니다.
+그래서 `0xAA`를 여러 번 이동하고 더해 전체 너비 마스크를 직접 만들어야 합니다.
 
-## Boundary Cases Worth Remembering
+이 제약은 불편해 보이지만, 실제로는 "원하는 비트 패턴을 어떻게 조립할 것인가"를 훈련하게 만듭니다.
 
-- `0`: often the only value with a missing high bit effect
-- `-1`: common false positive in maximum-value checks
-- `INT_MIN`: exposes asymmetric two's-complement behavior
-- `INT_MAX`: validates positive-edge comparisons
+## 5. 최상위 1비트를 이진 탐색처럼 찾기
 
-## Verification Focus
+`howManyBits`는 루프 없이 최상위 1비트 위치를 찾아야 합니다.
+보통 다음 순서로 너비를 좁혀 갑니다.
 
-- range checks: test just below and above the allowed boundary
-- comparison logic: test same-sign and different-sign inputs
-- representation-width logic: test `0`, `-1`, `INT_MIN`, `INT_MAX`
+1. 상위 16비트에 1이 있는가
+2. 있으면 그쪽으로 범위를 줄이고, 없으면 하위 쪽으로 줄이기
+3. 같은 방식으로 `8 -> 4 -> 2 -> 1`까지 좁히기
+
+이 패턴은 루프가 금지된 상황에서 "탐색"을 구현하는 대표적인 예시입니다.
+
+## 꼭 다시 확인할 경계값
+
+- `0`: 비트가 하나도 서 있지 않은 특수 케이스
+- `-1`: 모든 비트가 1인 값이라 최대값 판별에서 자주 함정이 된다
+- `INT_MIN`: 2의 보수 표현의 비대칭성이 드러나는 값
+- `INT_MAX`: 양수 경계 비교를 확인하기 좋은 값
+
+## 읽고 나서 바로 연결할 곳
+
+- 구현 관점: [`../../c/README.md`](../../c/README.md)
+- 부동소수점 관점: [`float-boundaries.md`](float-boundaries.md)
+- 실제 검증 명령: [`../references/verification.md`](../references/verification.md)

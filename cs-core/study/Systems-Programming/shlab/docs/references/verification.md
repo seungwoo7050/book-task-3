@@ -1,55 +1,51 @@
-# Verification
+# Shell Lab 검증 기록
 
-## Problem Boundary
-
-Commands:
+## 문제 경계 확인
 
 ```bash
 cd problem
 make status
 ```
 
-Current result:
+2026-03-10 기준 기록:
 
-- `problem/` reports the contract-only public-release boundary
-- copied starter shell sources, official traces, and the bundled Perl driver are intentionally absent
-- active functional verification happens in the C and C++ tracks plus the shared direct harness
+- `problem/`은 계약 설명만 남긴 public boundary다
+- 공식 starter shell, trace, Perl driver는 공개 트리에 없다
+- 실제 검증은 C/C++ 구현과 shared direct harness에서 수행한다
 
-## C Track
-
-Commands:
+## C 구현 검증
 
 ```bash
 cd c
 make clean && make test
 ```
 
-Validation coverage:
+검증 범위:
 
-- direct shell launch and command execution via FIFO control
-- direct FIFO-based harness for background-job state and `jobs`
-- direct FIFO-based harness that sends `SIGINT` to the actual shell PID and checks `terminated by signal`
-- direct FIFO-based harness that stops a foreground job, resumes it with `fg`, then interrupts it
+- FIFO 기반 direct shell launch
+- background job 상태와 `jobs` 출력 확인
+- 실제 shell PID에 `SIGINT` 전달 후 `terminated by signal` 확인
+- stopped foreground job을 `fg`로 되살린 뒤 다시 interrupt
 
-Current result:
+기록:
 
-- `make test` passes
-- the background-job harness observes `Running /bin/sleep 1 &`
-- the signal harness observes `terminated by signal 2`
-- the stop/resume harness observes both `stopped by signal 18` and later termination
+- `C shlab tests passed`
+- background job harness에서 `Running /bin/sleep 1 &` 확인
+- signal harness에서 `terminated by signal 2` 확인
+- stop/resume harness에서 `stopped by signal 18` 이후 종료 확인
 
-## C++ Track
-
-Commands:
+## C++ 구현 검증
 
 ```bash
 cd cpp
 make clean && make test
 ```
 
-Validation coverage matches the C track.
+기록:
 
-Current result:
+- C track과 같은 direct signal/stop-resume 검증 통과
 
-- `make test` passes
-- the same direct signal and stop/resume assertions pass in the C++ implementation
+## 현재 판단
+
+이 프로젝트는 단순 compile 수준이 아니라,
+job control과 signal forwarding의 실제 의미를 검증하는 수준까지 도달해 있습니다.

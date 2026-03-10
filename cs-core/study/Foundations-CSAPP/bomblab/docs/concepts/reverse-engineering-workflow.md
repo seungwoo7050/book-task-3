@@ -1,56 +1,73 @@
-# Reverse-Engineering Workflow
+# Bomb Lab 기본 역공학 워크플로
 
-## Goal
+## 왜 워크플로를 먼저 문서화하는가
 
-Bomb Lab is solved by reducing an unknown binary into a sequence of smaller claims:
+Bomb Lab은 답을 맞히는 프로젝트처럼 보이지만, 실제 학습 포인트는 "모르는 바이너리를 어떻게 해석할 것인가"입니다.
+그래서 phase별 답보다 먼저, 관찰 순서를 고정하는 것이 중요합니다.
 
-1. how input is parsed
-2. what values are compared
-3. what control-flow shape appears
-4. what data structure is being traversed
-5. what final invariant must hold
+## 추천 순서
 
-## Default Loop
+1. `explode_bomb`에 먼저 브레이크포인트를 건다
+2. 입력 파싱 형태부터 확인한다
+3. 제어 흐름 패턴을 분류한다
+4. 짧은 의사코드로 옮긴다
+5. 작은 가설 단위로 다시 검증한다
 
-### 1. Install a safety brake
+## 1. 먼저 안전장치를 둔다
 
-- Set `break explode_bomb` first.
-- If the bomb is hostile to repeated explosions, also keep an answers file for already solved phases.
+처음에는 해답을 추측하기보다, 폭발 직전 상태를 보는 환경부터 만드는 편이 낫습니다.
 
-### 2. Confirm the input contract
+- `break explode_bomb`
+- 이미 푼 phase는 answers 파일로 재사용
+- 필요하면 `run < answers.txt` 형태로 반복 실행
 
-Before reverse-engineering the phase body, determine:
+이 습관만 있어도 무의미한 반복 폭발을 크게 줄일 수 있습니다.
 
-- how many arguments are read
-- whether they are integers or strings
-- whether range checks happen before the core logic
+## 2. 입력 계약부터 확인한다
 
-This avoids building the wrong mental model around the wrong input shape.
+phase 본문보다 먼저 확인할 것:
 
-### 3. Classify the control-flow pattern
+- 정수인가 문자열인가
+- 몇 개의 값을 읽는가
+- 범위 체크가 먼저 있는가
 
-Common patterns:
+입력 계약을 잘못 보면, 뒤 제어 흐름을 맞게 읽어도 전체 가설이 틀립니다.
 
-- direct string compare
-- counted loop or recurrence
-- jump table or switch
-- recursion over a numeric interval
-- lookup table indexed by masked bytes
-- pointer chasing through a linked structure
+## 3. 패턴을 먼저 분류한다
 
-### 4. Translate to pseudocode
+Bomb Lab의 phase는 완전히 제각각이 아니라 몇 가지 반복 패턴으로 모입니다.
 
-The important artifact is not the raw assembly dump. The important artifact is a small pseudocode
-model that preserves the branch conditions and invariants.
+- 직접 문자열 비교
+- 루프 기반 수열 제약
+- jump table
+- 재귀 기반 경로 인코딩
+- nibble lookup table
+- 연결 리스트 재배열
+- secret phase의 BST 경로
 
-### 5. Verify with one phase-sized claim at a time
+패턴 이름을 먼저 붙이면 분석 속도가 훨씬 빨라집니다.
 
-- validate the parsing claim
-- validate the next comparison or branch target
-- only then write the candidate answer
+## 4. raw disassembly보다 의사코드를 남긴다
 
-## Why The Companion Mini-Bomb Exists
+좋은 산출물은 긴 어셈블리 덤프가 아니라,
+"어떤 조건에서 어떤 값을 비교하는가"를 남긴 짧은 의사코드입니다.
 
-The official bomb binary is an external course asset. This study migration therefore uses a second
-deliverable: a fresh C/C++ companion bomb that mirrors the same phase families and keeps the
-repository executable, testable, and publishable.
+공개 저장소에서도 이 단계의 산출물이 가장 유용합니다.
+
+## 5. phase 하나를 다시 작은 주장으로 나눈다
+
+예를 들어 연결 리스트 phase라면 다음처럼 분리합니다.
+
+- 입력 숫자 범위가 맞는가
+- 중복이 없는가
+- 인덱스 변환이 있는가
+- 재연결 후 최종 정렬 조건이 있는가
+
+한 번에 모든 답을 맞히려 하기보다, 주장 단위로 검증하는 편이 훨씬 안정적입니다.
+
+## companion mini-bomb가 필요한 이유
+
+공식 bomb 바이너리는 외부 자산입니다.
+그래서 이 저장소는 phase 패턴을 다시 실행 가능한 C/C++ 코드로 옮긴 companion 구현을 함께 둡니다.
+
+이 방식은 공개 범위를 지키면서도 학습 결과를 검증 가능하게 남길 수 있다는 장점이 있습니다.

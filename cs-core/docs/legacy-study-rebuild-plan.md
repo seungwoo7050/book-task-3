@@ -1,101 +1,43 @@
-# Legacy Study Repository Rebuild Plan
+# Legacy Study Rebuild Plan
 
-## Purpose
+## 목적
 
-This document defines how to turn a legacy-style lab archive into a study-first repository.
-The goal is not to publish an answer book. The goal is to preserve problem context, record
-decisions, keep runnable code, and make future review easier.
+이 문서는 `legacy/`를 읽기 전용 참고 트리로 남겨 두고,
+`study/`를 현재 기준의 학습 저장소로 다시 정리할 때 지키는 운영 기준을 모아 둔 문서입니다.
 
-## Current Diagnosis
+## 현재 기준 정리
 
-The current tree under `legacy/` already contains useful material, but the boundary between
-"problem", "reference", "solution", "journal", and "build noise" is weak.
+- 공개 문서는 한국어 우선으로 정리한다.
+- 루트와 트랙 README만 읽어도 저장소 전체 학습 순서를 이해할 수 있어야 한다.
+- 프로젝트마다 `problem/`, 구현 디렉터리, `docs/`, `notion/`의 역할을 분리한다.
+- 기존 장문 기록은 `notion-archive/`로 보존하고, 현재 `notion/`은 다시 실행 가능한 압축판으로 유지한다.
+- 공개 README는 짧고 탐색 가능해야 하며, 긴 로그와 재현 기록은 `notion/` 또는 `notion-archive/`로 보낸다.
 
-The repository now also has a new root-level `study/` directory. That is the active
-migration workspace. `legacy/` remains a read-only reference tree and should not be edited
-during routine migration work.
+## 루트 구조
 
-Observed issues in the current repository:
+```text
+legacy/
+study/
+docs/
+README.md
+```
 
-- The legacy reference tree originally had the typo `regacy/` and has been renamed to
-  `legacy/`.
-- Build artifacts and binaries are mixed into the study tree, such as `*.o`, `*.dSYM`,
-  `btest`, `tsh`, `proxy`, `mdriver`, and `csim`.
-- Some files behave like a workbook or answer sheet rather than a learning archive.
-- Some references are broken or unverifiable, such as links to `RULEBOOK.md` that do not
-  exist in this repository.
-- Some devlogs include environment metadata that is not trustworthy in the current tree
-  (for example branch and commit-range fields in a directory that is not currently a git
-  repository).
+- `legacy/`: 이전 학습 흔적을 보존하는 읽기 전용 참고 트리
+- `study/`: 현재 기준으로 다시 짠 학습 트리
+- `docs/`: 저장소 전체 규칙과 마이그레이션 메모
 
-## What A Good Study Repository Looks Like
+## 트랙 구조
 
-A study repository should optimize for these questions:
+현재 `study/`는 두 트랙으로 나뉩니다.
 
-1. What was the problem?
-2. How did I interpret the constraints?
-3. What did I try, and why did I reject some paths?
-4. What code currently works?
-5. How do I rebuild and retest it?
-6. What concept did I actually learn from this work?
+- `Foundations-CSAPP`: `datalab` -> `bomblab` -> `attacklab` -> `archlab` -> `perflab`
+- `Systems-Programming`: `shlab` -> `malloclab` -> `proxylab`
 
-That means the repository should feel like a technical notebook with runnable code, not like
-an exam-prep booklet or a polished answer dump.
+이 순서는 "비트/표현 이해 -> 기계 수준 분석 -> 시스템 구현" 흐름을 분명하게 만들기 위한 현재 기준입니다.
 
-## Design Principles
+## 프로젝트 템플릿
 
-- Keep one project per problem or lab.
-- Separate original problem material from your own work.
-- Separate public tracked files from private local notes.
-- Keep implementation directories aligned with the chosen language or stack strategy.
-- Prefer concise indexes in tracked files and deeper reflection in `notion/`.
-- Keep every claim reproducible through commands, tests, or cited source files.
-- Remove generated files from the source tree unless they are intentionally vendored.
-- Treat the legacy tree as a reference, not as a fixed curriculum.
-- Improve the project set when the legacy design is not good enough for learning goals.
-
-## Curriculum-First Rule
-
-In project-led learning, the hardest and most important design choice is the project set
-itself.
-
-Before migrating a track, answer these questions:
-
-1. What is the track trying to learn?
-2. Which books, courses, or references define that scope?
-3. Which concepts must be learned through implementation, not just reading?
-4. Does the existing legacy project list actually cover those concepts well?
-5. Are there missing, redundant, or badly sequenced projects?
-
-The `study/` tree should represent the best learning curriculum you can justify, not a
-mechanical copy of `legacy/`.
-
-## Allowed Redesign Moves
-
-When the legacy project plan is weak, these moves are allowed in `study/`:
-
-- add a new project
-- remove a weak or redundant project
-- split a project
-- merge projects
-- rename projects
-- reorder projects
-
-Each redesign should be justified by:
-
-- concept coverage
-- dependency order
-- project size and coherence
-- implementation value relative to the reference books
-
-## Target Structure
-
-The active target root is `study/`.
-
-Keep `legacy/` untouched as the source reference. Build the normalized structure under
-`study/`.
-
-Recommended per-project layout:
+새 프로젝트를 정리할 때는 아래 구조를 기본으로 씁니다.
 
 ```text
 study/
@@ -107,237 +49,66 @@ study/
         code/
         data/
         script/
-      <implementation-1>/
+      c/
         README.md
         src/
-        include/
         tests/
-      <implementation-2>/
+      cpp/
         README.md
         src/
-        include/
         tests/
       docs/
         README.md
         concepts/
         references/
       notion/
+        README.md
         00-problem-framing.md
         01-approach-log.md
         02-debug-log.md
         03-retrospective.md
         04-knowledge-index.md
+        05-development-timeline.md
+      notion-archive/
 ```
 
-### Directory Roles
+## README 템플릿 규칙
 
-- `README.md`: public entry point; short and stable.
-- `problem/`: original statement, provided code, fixtures, scripts, grading tools.
-- `<implementation-*>/`: your language- or stack-specific solutions and tests.
-- `docs/`: concise tracked notes that remain useful in the repository itself.
-- `notion/`: local, private, upload-ready writing for Notion. This directory should be
-  git-ignored.
+공개 README는 가능한 한 같은 순서를 유지합니다.
 
-## Public vs Private Writing
+1. 이 프로젝트 또는 디렉터리가 가르치는 것
+2. 누구를 위한 문서인가
+3. 먼저 읽을 곳
+4. 디렉터리 구조
+5. 검증 방법
+6. 스포일러 경계
+7. 포트폴리오로 확장하는 힌트
 
-Use this split consistently:
+이 순서를 쓰는 이유는 학습자가 무엇을 읽고 왜 읽는지 빠르게 판단하게 하기 위해서입니다.
 
-- Public tracked files:
-  - project summary
-  - build/test instructions
-  - minimal concept map
-  - solution status
-  - important constraints
-- Private `notion/` files:
-  - day-by-day logs
-  - failed approaches
-  - long retrospectives
-  - personal confusion notes
-  - interview-style concept summaries
+## `notion/` 운영 규칙
 
-The repository should still make sense without opening `notion/`.
+- `notion/`은 현재 업로드용 문서다.
+- 현재 표준 파일 세트는 `00`~`05`다.
+- `05-development-timeline.md`는 재현 순서, 검증 명령, 성공 신호를 압축해서 보존하는 문서다.
+- `notion-archive/`는 이전 장문 기록을 보존하는 백업 폴더다.
+- 새로 작성할 때는 기존 `notion-archive/`를 삭제하지 않는다.
+- 공개 README는 `notion/`을 열지 않아도 프로젝트 구조를 이해할 수 있어야 한다.
 
-## Language And Stack Policy
+## 커리큘럼 설계 규칙
 
-Every project should define the expected implementation strategy.
+- `legacy/`의 프로젝트 순서를 그대로 따를 의무는 없다.
+- 누락된 연결 프로젝트가 있으면 `study/`에 새로 추가할 수 있다.
+- 너무 약한 프로젝트는 합치거나 이름을 바꿀 수 있다.
+- 프로젝트를 추가하거나 바꿀 때는 어떤 개념 공백을 메우는지 README에 남긴다.
 
-Recommended rules:
+## 검증과 공개 범위
 
-- Choose language or stack based on the topic, reference materials, and learning goal.
-- If multiple implementations exist, they should solve the same problem scope unless the
-  difference is intentionally documented.
-- If only one implementation is complete, mark the others as `planned` or `in-progress`.
-- Tests should verify behavior, not just compilation.
-- Shared fixtures belong under `problem/` or a neutral test-data location.
-- Implementation-specific rationale goes into each implementation README.
-- If different implementations intentionally differ in design, explain the trade-off explicitly.
+- 명령은 실제 존재하는 파일과 타깃만 가리켜야 한다.
+- 검증 경로가 바뀌면 프로젝트 README와 `study/PUBLISHABILITY_REVIEW.md`를 함께 갱신한다.
+- 외부 course 자산은 복원 명령만 남기고, 자산 자체는 커밋하지 않는다.
 
-Minimum per-implementation README contents:
+## 포트폴리오로 확장하는 힌트
 
-- problem scope covered
-- build command
-- test command
-- current status
-- known gaps
-- implementation notes
-
-## Notion Folder Standard
-
-Each project should have a local `notion/` directory with Markdown that can be pasted or
-uploaded to Notion with minimal cleanup.
-
-Recommended file set:
-
-- `00-problem-framing.md`
-  - what the problem asks
-  - constraints
-  - success criteria
-  - prerequisites
-- `01-approach-log.md`
-  - hypotheses
-  - design options
-  - chosen plan
-  - why alternatives were rejected
-- `02-debug-log.md`
-  - failing cases
-  - command outputs worth preserving
-  - root cause notes
-  - fix verification
-- `03-retrospective.md`
-  - what became easier after solving
-  - what still feels weak
-  - what to revisit later
-- `04-knowledge-index.md`
-  - reusable concepts
-  - glossary
-  - cross-links to later projects
-
-Quality bar for `notion/` documents:
-
-- good enough to upload as-is
-- written in complete technical sentences
-- explicit about evidence and uncertainty
-- useful even after the code is forgotten
-
-## What You Were Missing
-
-These items should be decided before migration starts:
-
-1. Naming policy
-   - `legacy/` remains reference-only
-   - `study/` is the active workspace
-   - directory casing
-   - project slug format
-2. Completion states
-   - `planned`, `in-progress`, `verified`, `archived`
-3. Provenance policy
-   - what is copied from the original lab
-   - what is your own writing
-4. Verification policy
-   - compile only
-   - tests
-   - benchmark
-   - sanitizer or debugger checks
-5. Spoiler policy
-   - how much of the final answer should be exposed in public tracked files
-6. Ignore policy
-   - `notion/`, binaries, object files, debug artifacts, local notes
-7. Definition of done
-   - what must exist before a project is considered migrated
-8. Curriculum adequacy
-   - whether the project set is sufficient for the intended learning goals
-   - which new projects must be added to `study/`
-
-## Migration Plan
-
-### Phase 0: Freeze and Audit
-
-- Inventory all projects and classify each file as `problem`, `solution`, `note`, `report`,
-  `generated`, or `unknown`.
-- Record broken links and duplicate documents.
-- Confirm `legacy/` remains frozen and all new work happens in `study/`.
-- Infer what each track was originally trying to study.
-- Audit whether the current projects are sufficient for project-led learning.
-
-### Phase 1: Establish Templates
-
-- Create one canonical project template.
-- Create one canonical `notion/` file set.
-- Create one canonical per-language README template.
-- Add ignore rules before local private folders spread.
-- Create a curriculum-audit template for deciding whether projects should be added or changed.
-
-### Phase 2: Pilot One Project
-
-Use `datalab` first. It is small, conceptually dense, and already has both study notes and
-verification hooks.
-
-Pilot goals:
-
-- copy only the required source material from `legacy/`
-- rewrite project README into a study-first index
-- move the first implementation into its own implementation directory
-- scaffold additional implementations if the curriculum calls for them
-- compress tracked docs so they are navigational, not bloated
-- move reflective writing into local `notion/`
-- verify build and tests
-
-### Phase 3: Roll Out By Family
-
-Suggested order:
-
-1. `Foundations-CSAPP/datalab`
-2. `Foundations-CSAPP/bomblab`
-3. `Foundations-CSAPP/attacklab`
-4. `Foundations-CSAPP/archlab`
-5. `Foundations-CSAPP/perflab`
-6. `Systems-Programming/shlab`
-7. `Systems-Programming/malloclab`
-8. `Systems-Programming/proxylab`
-
-This order is a default, not a prison. Change it if the dependency graph or learning value
-demands it.
-
-### Phase 4: Clean and Normalize
-
-- remove stale binaries and object files
-- fix broken links
-- unify README tone
-- mark missing implementation parity explicitly
-- make sure every project has the same top-level rhythm
-
-## Definition Of Done
-
-A migrated project is done when:
-
-- its purpose is understandable from `README.md` alone
-- `problem/` contains only source material and provided assets
-- implementation directory roles are explicit
-- tests or validation commands are documented and runnable
-- `docs/` contains only durable tracked knowledge
-- `notion/` exists locally and is ignored by git
-- no generated artifacts are tracked by mistake
-- broken references have been removed or replaced
-
-A migrated track is done when:
-
-- the intended learning targets are explicit
-- the project set has been audited
-- missing projects have been added when needed
-- weak legacy projects have been reframed or dropped where appropriate
-- the resulting sequence supports the reference materials better than the original tree
-
-## Recommended First Move
-
-Do not start by rewriting every file.
-
-Start with this sequence:
-
-1. add `.gitignore`
-2. define the project template
-3. migrate `datalab` as the pilot
-4. review the template after one full migration
-5. scale the pattern to the remaining labs
-
-This keeps the redesign grounded in one real example instead of spreading guesswork across the
-entire tree.
+- 이 운영 기준은 다른 학습 저장소에도 거의 그대로 재사용할 수 있습니다.
+- 특히 공개 저장소를 만들 때는 "문제 경계 문서 + 실행 가능한 본인 코드 + 검증 방법 + 회고 + 재현 타임라인" 구조가 가장 안정적입니다.

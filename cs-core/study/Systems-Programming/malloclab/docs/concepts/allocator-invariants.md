@@ -1,56 +1,48 @@
-# Allocator Invariants
+# allocator 불변식을 먼저 잡아야 하는 이유
 
-The study allocators keep a deliberately small set of invariants.
+## 이 프로젝트가 코드보다 규칙이 먼저인 이유
 
-## Block Layout
+`malloclab`은 함수 수가 적지만, 내부 상태가 조금만 틀어져도 전체가 무너집니다.
+그래서 구현 세부보다 먼저 "무엇이 항상 참이어야 하는가"를 세우는 편이 좋습니다.
 
-Every block has:
+## 블록 레이아웃 불변식
 
-- an 8-byte header
-- an 8-byte footer
-- a payload region
+이 저장소의 allocator는 다음 구조를 가정합니다.
 
-Free blocks use the first 16 payload bytes as:
+- 8바이트 header
+- 8바이트 footer
+- payload
 
-- next-free pointer
-- previous-free pointer
+free block은 payload 앞부분 16바이트를 free-list 링크로 씁니다.
+그래서 최소 block 크기는 32바이트가 됩니다.
 
-That forces a 32-byte minimum block size:
+## 정렬 불변식
 
-- 8 bytes header
-- 16 bytes free-list links
-- 8 bytes footer
+반환되는 payload pointer는 항상 16바이트 정렬이어야 합니다.
+이 규칙은 다음 세 곳에서 동시에 지켜야 합니다.
 
-## Alignment
+- block size round-up
+- prologue/epilogue 초기화
+- split 후 새 block 배치
 
-Payload pointers are returned at 16-byte boundaries.
+한 곳만 어긋나도 trace에서 바로 깨집니다.
 
-The implementation enforces that by:
+## free list 불변식
 
-- keeping block sizes aligned to 16
-- using a 16-byte prologue arrangement
-- rounding requested payload sizes up after adding header/footer overhead
+- free list에 있는 block은 모두 free 상태여야 한다
+- allocated block이 free list에 남아 있으면 안 된다
+- 인접 free block이 coalescing 없이 따로 남아 있으면 안 된다
+- remove/insert 시 양쪽 링크가 모두 맞아야 한다
 
-## Free-List Invariants
+이 불변식을 문장으로 말할 수 있어야 디버깅도 빨라집니다.
 
-The explicit free list must satisfy:
+## driver가 실제로 확인하는 것
 
-- every block in the list is marked free
-- no allocated block appears in the list
-- coalesced neighbours do not remain as separate list nodes
-- removing and re-inserting a block updates both neighbour pointers
+이 저장소의 trace driver는 단순히 crash 여부만 보지 않습니다.
 
-The project intentionally uses one free list instead of segregated classes because that is a good
-midpoint for learning:
+- payload pointer 정렬
+- live block 간 overlap 없음
+- `realloc` 전 prefix 데이터 보존
+- trace 종료 시 logical error 없음
 
-- more realistic than a bump allocator or implicit-only baseline
-- still small enough to reason about by hand
-
-## Correctness Checks
-
-The trace driver checks external invariants, not just crashes:
-
-- allocated payload pointers are 16-byte aligned
-- live payload ranges do not overlap
-- data written before `realloc` survives in the preserved prefix
-- all traces finish with zero logical errors
+그래서 "일단 돌아간다" 수준보다 한 단계 더 강한 검증이 가능합니다.

@@ -1,8 +1,6 @@
-# Verification
+# Architecture Lab 검증 기록
 
-## Official Problem Track
-
-Commands:
+## 공식 self-study toolchain 검증
 
 ```bash
 cd problem
@@ -10,44 +8,40 @@ make restore-official
 make verify-official
 ```
 
-Current result:
+2026-03-10 기준 기록:
 
-- Part A Y86-64 programs assemble and produce the expected `0xcba` results
-- Part B SEQ `iaddq` changes pass the official regression tests
-- Part C PIPE `iaddq` regression, `ncopy` correctness, and benchmark all run in Docker
-- latest official Part C benchmark: `Average CPE 9.16`, `Score 26.8/60.0`
-- the restored simulator stack remains local-only under the ignored `problem/official/` tree
+- Part A Y86 프로그램이 기대 결과 `0xcba`를 만든다
+- Part B SEQ `iaddq` 변경이 공식 회귀 테스트를 통과한다
+- Part C PIPE `iaddq` 회귀, `ncopy` 정합성, benchmark가 Docker에서 실행된다
+- 최근 Part C 결과는 `Average CPE 9.16`, `Score 26.8/60.0`이다
 
-## C Companion Track
+복원 toolchain은 `problem/official/` 아래 로컬 전용으로만 유지합니다.
 
-Commands:
+## C companion 검증
 
 ```bash
 cd c
 make clean && make test
 ```
 
-Actual result:
+기록:
 
-- companion sample run succeeds
-- unit tests pass
-- optimized pseudo-CPE beats baseline while preserving correctness
+- Part A/B/C 의미 모델 테스트 통과
+- optimized pseudo-CPE가 baseline보다 낮다
+- companion sample run이 정상 동작한다
 
-## C++ Companion Track
-
-Commands:
+## C++ companion 검증
 
 ```bash
 cd cpp
 make clean && make test
 ```
 
-Actual result:
+기록:
 
-- companion sample run succeeds
-- unit tests pass
-- optimized pseudo-CPE beats baseline while preserving correctness
+- C track과 같은 의미 모델 테스트 통과
+- optimized pseudo-CPE가 baseline보다 낮다
 
-## Current Judgment
+## 현재 판단
 
-The project is verifiable at both the restored official-toolchain and companion-track levels.
+공식 hand-in 검증과 공개 companion model 검증이 모두 살아 있는 상태입니다.

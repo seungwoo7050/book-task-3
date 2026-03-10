@@ -1,69 +1,60 @@
-# Data Lab — Problem Specification
+# Data Lab 문제 경계
 
-## Summary
+## 이 디렉터리가 가르치는 것
 
-Implement 13 programming puzzles in `code/bits.c`. Each puzzle is a C function whose body
-must use **only** the operators and constants listed in its comment header, within the
-stated maximum operator count.
+이 디렉터리는 `datalab`의 공식 문제 계약과 검증 경계를 보존합니다.
+핵심은 `code/bits.c`의 13개 함수를 제약된 연산자 집합 안에서 구현하는 것입니다.
 
-## Puzzle Table
+## 누구를 위한 문서인가
 
-| # | Function | Description | Rating | Max Ops | Allowed Ops |
-|---|----------|-------------|--------|---------|-------------|
-| 1 | `bitXor(x,y)` | Compute `x ^ y` using only `~` and `&` | 1 | 14 | `~ &` |
-| 2 | `tmin()` | Return the minimum two's complement integer | 1 | 4 | `! ~ & ^ \| + << >>` |
-| 3 | `isTmax(x)` | Return 1 if `x` is the maximum two's complement integer | 1 | 10 | `! ~ & ^ \| +` |
-| 4 | `allOddBits(x)` | Return 1 if all odd-numbered bits in `x` are set to 1 | 2 | 12 | `! ~ & ^ \| + << >>` |
-| 5 | `negate(x)` | Return `-x` | 2 | 5 | `! ~ & ^ \| + << >>` |
-| 6 | `isAsciiDigit(x)` | Return 1 if `0x30 <= x <= 0x39` | 3 | 15 | `! ~ & ^ \| + << >>` |
-| 7 | `conditional(x,y,z)` | Same as `x ? y : z` | 3 | 16 | `! ~ & ^ \| + << >>` |
-| 8 | `isLessOrEqual(x,y)` | Return 1 if `x <= y` | 3 | 24 | `! ~ & ^ \| + << >>` |
-| 9 | `logicalNeg(x)` | Implement `!x` without using `!` | 4 | 12 | `~ & ^ \| + << >>` |
-| 10 | `howManyBits(x)` | Return minimum bits needed to represent `x` in two's complement | 4 | 90 | `! ~ & ^ \| + << >>` |
-| 11 | `floatScale2(uf)` | Return bit-level equivalent of `2*f` for float `f` | 4 | 30 | Any integer/unsigned ops; `\|\|`, `&&`, `if`, `while` |
-| 12 | `floatFloat2Int(uf)` | Return bit-level equivalent of `(int)f` | 4 | 30 | Any integer/unsigned ops; `\|\|`, `&&`, `if`, `while` |
-| 13 | `floatPower2(x)` | Return bit-level equivalent of `2.0^x` | 4 | 30 | Any integer/unsigned ops; `\|\|`, `&&`, `if`, `while` |
+- 구현에 들어가기 전에 과제 계약을 먼저 확인하고 싶은 학습자
+- 공식 self-study handout 복원 경로가 필요한 사람
+- 구현 디렉터리와 starter boundary를 분리해서 보고 싶은 사람
 
-## Constraints (All Integer Puzzles, #1–#10)
+## 먼저 읽을 곳
 
-* **Allowed types**: `int` only. No `unsigned`, `long`, casts, arrays, structs, unions.
-* **Allowed operations**: Only those listed per puzzle.
-* **Constants**: Only `0x00` through `0xFF` (0–255).
-* **No control flow**: No `if`, `while`, `for`, `do-while`, `switch`, `?:`, `||`, `&&`.
-* **No function calls** and no macros other than those already in the template.
+1. [`../README.md`](../README.md)
+2. [`code/bits.c`](code/bits.c)
+3. [`../c/README.md`](../c/README.md)
+4. [`../cpp/README.md`](../cpp/README.md)
 
-## Constraints (Floating-Point Puzzles, #11–#13)
+## 디렉터리 구조
 
-* The argument and return type are `unsigned` (bit-level representation of `float`).
-* Conditionals and loops **are** allowed.
-* Both `int` and `unsigned` types may be used.
-* No floating-point types, operations, or constants.
+```text
+problem/
+  README.md
+  code/
+    bits.c
+    btest.c
+    decl.c
+    tests.c
+  script/
+    grade.sh
+  Makefile
+```
 
-## Input Data
-
-No external input files are needed. The `btest` harness generates exhaustive or random test
-vectors internally.
-
-## Official Self-Study Verification
+## 검증 방법
 
 ```bash
 make restore-official
 make verify-official
 ```
 
-This restores the public CMU self-study handout under `official/datalab-handout/`, copies the
-active C solution into the restored handout, and runs the official `dlc` plus `btest -T 20` in a
-Linux/amd64 Docker image. The longer timeout is needed because the public handout is exercised
-through amd64 emulation on the local Apple Silicon host.
+`verify-official`은 로컬에 복원한 self-study handout 안에서 `dlc`와 `btest -T 20`을 실행합니다.
 
-## Files
+## 스포일러 경계
 
-| Path | Description |
-|------|-------------|
-| `code/bits.c` | Skeleton file — implement your solutions here. |
-| `code/btest.c` | Test harness source. |
-| `code/decl.c` | Auto-generated declarations (do not edit). |
-| `code/tests.c` | Reference functions used by `btest` (do not edit). |
-| `official/datalab-handout/` | restored public self-study handout with the official `dlc` and `btest` |
-| `script/grade.sh` | Runs `dlc` + `btest` and prints a score summary. |
-| `Makefile` | Builds `btest` from source. |
+- 이 문서는 문제 계약과 검증 방법만 설명합니다.
+- 함수별 완성 코드는 구현 디렉터리와 tests를 통해 확인합니다.
+- 공식 handout은 `official/` 아래 로컬에서만 복원합니다.
+
+## 포트폴리오로 확장하는 힌트
+
+- 문제 README에는 전체 퍼즐 목록보다 "어떤 제약이 핵심인가"를 먼저 적는 편이 읽기 쉽습니다.
+
+## 핵심 제약
+
+- 정수 퍼즐은 `int`만 사용하고, 문제별 허용 연산자만 사용할 수 있습니다.
+- 상수는 `0x00`부터 `0xFF`까지만 사용할 수 있습니다.
+- 정수 퍼즐에서는 `if`, `while`, `for`, `switch`, `?:`, `&&`, `||`를 사용할 수 없습니다.
+- 부동소수점 퍼즐은 `unsigned` 비트 표현을 다루며, 조건문과 반복문을 사용할 수 있습니다.

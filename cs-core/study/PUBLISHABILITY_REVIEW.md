@@ -1,139 +1,72 @@
-# Study Publishability Review
+# Study 공개 범위 검토
 
-## Purpose
+## 이 문서가 다루는 것
 
-This document records the repository-wide publication review for `study/`.
+이 문서는 `study/` 트리에서 무엇을 공개 저장소에 남기고, 무엇을 로컬에서만 복원해야 하는지 정리합니다.
+2026-03-10 문서 정비 기준으로 다시 정리한 정책입니다.
 
-It separates:
+## 저장소 전체 원칙
 
-- repository-owned implementations, docs, tests, and Notion-ready writing that are safe to publish
-- public `problem/` boundaries that were rewritten or reduced to study-owned starter assets
-- official binaries or toolchains that must remain local-only
+- 공개 가능:
+  - `c/`, `cpp/`, `y86/`, `docs/`, `tests/`, `notion/`, `notion-archive/`
+  - 스터디용으로 직접 작성한 `problem/` 경계 문서와 보조 스크립트
+- 로컬 전용:
+  - 공식 핸드아웃 원본
+  - 공식 바이너리와 복원 툴체인
+  - 쿠키 파일, course-instance 전용 정답, 타깃별 민감 자산
 
-## Executive Summary
+`notion/`은 더 이상 "git에 올리지 않는 임시 노트"가 아닙니다.
+Notion 업로드용 문서이면서 저장소 안에 백업으로 유지하는 추적 대상입니다.
 
-The `study/` migration is complete as a learning workspace, the strict public-release cleanup is
-complete, and the official self-study verification paths are now reproducible locally.
-
-Current publication rule:
-
-- `c/`, `cpp/`, `docs/`, `tests/`, and the contents of `notion/` are study-owned and publishable
-- `problem/` directories now contain either self-written contract summaries or study-owned starter assets
-- official supplied binaries and missing course toolchains remain outside committed Git history
-
-## Project Review
+## 프로젝트별 판단
 
 ### `Foundations-CSAPP/datalab`
 
-- publishable material:
-  - self-written `problem/` specification and starter files
-  - fresh C/C++ tracks, docs, and Notion notes
-- local-only gap:
-  - the restored official handout is placed under ignored `problem/official/`
-- judgment:
-  - publishable in its current repository form and locally verifiable with official `dlc`
+- 공개 가능: 자체 작성한 문제 경계, C/C++ 구현, `docs/`, `notion/`
+- 로컬 전용: `problem/official/`에 복원되는 공식 self-study handout과 `dlc`
 
 ### `Foundations-CSAPP/bomblab`
 
-- publishable material:
-  - self-written contract summary, mini-bomb skeleton, solution template, and helper script
-  - fresh companion implementations, docs, and Notion notes
-- local-only gap:
-  - the restored public self-study bomb is kept under ignored `problem/official/`
-- judgment:
-  - publishable in its current repository form and locally verifiable against the public self-study bomb
+- 공개 가능: 문제 계약 설명, companion 구현, 워크플로 문서, 공개 self-study bomb용 검증 파일
+- 로컬 전용: 복원한 공식 bomb 바이너리와 외부 course-instance 전용 답안
 
 ### `Foundations-CSAPP/attacklab`
 
-- publishable material:
-  - self-written problem contract
-  - study-owned companion verifier implementations and payload samples
-  - public gadget-farm boundary without any committed target-specific cookie file
-- local-only gap:
-  - the restored public self-study target set is kept under ignored `problem/official/`
-- judgment:
-  - publishable in its current repository form and locally verifiable against the public self-study target set
+- 공개 가능: 문제 계약 설명, companion verifier, 공개 self-study target용 샘플, 방어 모델 설명
+- 로컬 전용: 복원한 `ctarget`, `rtarget`, `hex2raw`, 타깃별 쿠키
 
 ### `Foundations-CSAPP/archlab`
 
-- publishable material:
-  - self-written contract-only `problem/` boundary
-  - fresh companion models, docs, and Notion notes
-- local-only gap:
-  - the restored official Y86/HCL toolchain is kept under ignored `problem/official/`
-- judgment:
-  - publishable in its current repository form and locally verifiable against the official self-study toolchain
+- 공개 가능: 문제 경계 문서, `y86/` 학습 산출물, companion 구현, 문서와 노트
+- 로컬 전용: 복원한 simulator/HCL toolchain
 
 ### `Foundations-CSAPP/perflab`
 
-- publishable material:
-  - self-written starter boundary
-  - study-owned `study.trace`
-  - fresh implementations, docs, and Notion notes
-- local-only gap:
-  - none required for repository publication
-- judgment:
-  - publishable in its current repository form
+- 공개 가능: 문제 경계, sample trace, C/C++ 구현, 문서와 노트
+- 로컬 전용: 없음
 
 ### `Systems-Programming/shlab`
 
-- publishable material:
-  - self-written contract-only `problem/` boundary
-  - fresh shells, direct signal harness, docs, and Notion notes
-- local-only gap:
-  - none required for repository publication
-- judgment:
-  - publishable in its current repository form
+- 공개 가능: self-written 문제 계약, 자체 테스트, C/C++ 구현, 문서와 노트
+- 로컬 전용: 공식 starter shell과 공식 traces가 필요한 경우 직접 복원한 사본
 
 ### `Systems-Programming/malloclab`
 
-- publishable material:
-  - self-written allocator contract, `memlib`, traces, and trace driver
-  - fresh allocators, docs, and Notion notes
-- local-only gap:
-  - none required for repository publication
-- judgment:
-  - publishable in its current repository form
+- 공개 가능: allocator contract, `memlib`, traces, driver, C/C++ 구현, 문서와 노트
+- 로컬 전용: 없음
 
 ### `Systems-Programming/proxylab`
 
-- publishable material:
-  - self-written proxy starter boundary and shared socket helpers
-  - fresh proxies, local origin harness, docs, tests, and Notion notes
-- local-only gap:
-  - none required for repository publication
-- judgment:
-  - publishable in its current repository form
+- 공개 가능: proxy starter boundary, socket helpers, tests, origin harness, C/C++ 구현, 문서와 노트
+- 로컬 전용: 없음
 
-## Repository-Level Decision
+## 공개 저장소에서 지킬 선
 
-For this repository, the publication rule is now:
+- README와 `docs/`는 학습 가이드 역할을 해야 하며, 외부 제공 자산의 무단 재배포 수단이 되어서는 안 됩니다.
+- `bomblab`, `attacklab`은 풀이 사고법을 설명하되, 외부 비공개 타깃에 바로 적용 가능한 정보는 공개하지 않습니다.
+- 공식 자산 복원이 필요한 프로젝트는 `problem/README.md`에 복원 절차만 기록하고, 자산 자체는 커밋하지 않습니다.
 
-1. Publish all study-owned implementations, docs, tests, and Notion-derived writing freely.
-2. Keep official supplied binaries and missing course toolchains local-only.
-3. Restore official self-study assets only into ignored local directories.
+## 포트폴리오로 확장하는 힌트
 
-## Safest Public Shape
-
-The current remote-safe shape is:
-
-- keep:
-  - `problem/` only when it is a self-written contract summary or study-owned starter boundary
-  - `c/`
-  - `cpp/`
-  - `docs/`
-  - `tests/`
-  - `notion/` content for local upload workflows
-  - project and study-level `README.md`
-- continue to exclude:
-  - official supplied binaries
-  - target-specific local cookies
-  - restored local simulator/toolchain assets
-
-## Current Conclusion
-
-The `study/` tree is complete as a project-led learning workspace and publishable as a remote
-repository in its current form.
-
-Official self-study validation is now complete for the current CS:APP projects, while the restored
-handouts and binaries remain outside committed history under ignored local paths.
+- 개인 저장소에서도 이 정책을 그대로 재사용하면 공개 가능 여부 판단이 훨씬 쉬워집니다.
+- 특히 외부 과제 기반 프로젝트는 "문제 계약 요약 + 복원 절차 + 본인 구현" 구조가 가장 안전합니다.

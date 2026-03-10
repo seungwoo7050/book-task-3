@@ -1,25 +1,42 @@
-# ROP And Relative Addressing
+# ROP와 상대 주소 계산을 어떻게 이해할까
 
-## Code Injection vs ROP
+## code injection과 ROP의 차이
 
-The main conceptual split in Attack Lab is this:
+Attack Lab은 두 가지 다른 상황을 보여 줍니다.
 
-- On `ctarget`, the stack is executable, so the attacker can redirect control into injected bytes.
-- On `rtarget`, the stack is not executable and the stack address changes, so the attacker must
-  reuse existing code snippets and compute addresses relative to the current stack.
+- `ctarget`: 스택이 실행 가능하므로 주입한 바이트로 직접 흐름을 바꿀 수 있다
+- `rtarget`: 스택이 실행 불가능하고 주소도 고정되지 않으므로, 기존 gadget을 조합해야 한다
 
-## Why Phase 5 Is Different
+이 차이를 이해하지 못하면 phase 4와 phase 5가 왜 어려워지는지 설명할 수 없습니다.
 
-Phase 5 is harder because it combines two constraints:
+## phase 5가 특히 어려운 이유
 
-- the cookie string still has to exist somewhere in the payload
-- its absolute stack address is not stable
+phase 5는 단순히 함수를 호출하는 수준이 아닙니다.
 
-So the payload has to:
+동시에 만족해야 하는 조건:
 
-1. capture a live stack pointer
-2. add a known offset to reach the string
-3. move the computed address into the first argument register
-4. return into the target function
+- cookie 문자열이 payload 어딘가에 있어야 한다
+- 그 문자열의 절대 주소는 실행 전 고정돼 있지 않다
+- 그래서 현재 스택 포인터에서 상대적으로 주소를 계산해야 한다
 
-That "address as data" transition is the core lesson of the final phase.
+즉, "주소를 코드로 쓰는 것"이 아니라 "주소를 데이터처럼 계산하는 것"으로 사고가 바뀌어야 합니다.
+
+## 실제로 필요한 단계
+
+1. 현재 `%rsp` 근처의 기준점을 잡는다
+2. 문자열까지의 오프셋을 더한다
+3. 계산된 주소를 첫 번째 인자 레지스터로 옮긴다
+4. 최종 target 함수로 흐름을 넘긴다
+
+이 순서를 이해하면 gadget 체인을 외우지 않아도 구조를 다시 만들 수 있습니다.
+
+## 공개 저장소에서 남길 수 있는 수준
+
+- ROP가 필요한 이유
+- 상대 주소 계산이 필요한 이유
+- gadget 체인에 어떤 역할이 필요한지
+
+남기지 않는 편이 좋은 것:
+
+- 특정 비공개 타깃에 맞춘 raw 체인 값
+- 그대로 재사용 가능한 exploit 문자열

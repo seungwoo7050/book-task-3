@@ -1,39 +1,28 @@
-# Publication Policy
+# Bomb Lab 공개 정책
 
-## Purpose
+## 왜 정책 문서가 필요한가
 
-Bomb Lab sits close to two boundaries:
+Bomb Lab은 학습 가치가 크지만, 동시에 외부 자산 재배포와 스포일러 공개 위험이 큽니다.
+그래서 공개 가능한 것과 공개하지 않을 것을 먼저 고정해야 합니다.
 
-- course-asset redistribution
-- turning a study repository into a spoiler dump
+## 공개 가능한 것
 
-This project uses the following rules.
+- 문제 계약 요약과 로컬 복원 절차
+- `gdb`, `objdump`, `strings`, `nm` 기반 워크플로 메모
+- phase 패턴 설명
+- 저장소가 직접 작성한 companion 구현과 테스트
+- 공개 self-study bomb에 대한 최소한의 검증 기록
 
-## Allowed In Public
+## 공개하지 않는 것
 
-- the official problem contract without the actual binary
-- helper scripts that operate on a locally supplied binary
-- workflow notes for `gdb`, `objdump`, `strings`, and `nm`
-- generic explanations of phase families
-- the verified answer file for the public CMU self-study bomb
-- fresh companion implementations written for this repository
-- tests and verification logs for the companion implementations
+- 공식 `bomb` 실행 파일
+- 비공개 course-instance 전용 정답 문자열
+- 외부 bomb에서 뽑은 대량 raw dump
+- 사실상 답안집 역할만 하는 문서
 
-## Not Allowed In Public
+## `notion/`도 예외는 아니다
 
-- the official `code/bomb` executable
-- raw solution strings for a supplied private or course-specific bomb
-- large disassembly dumps copied into public docs
-- writeups that are only answer keys and not learning artifacts
+`notion/`은 저장소에 남겨 두는 문서지만,
+그래도 특정 외부 bomb의 정답 dump처럼 보이는 내용은 넣지 않는 편이 좋습니다.
 
-## Local-Only Material
-
-If the user later obtains a private or course-issued bomb locally, the following should stay
-outside public Git history:
-
-- the binary itself
-- exact answers for that binary
-- raw dumps generated directly from that binary unless there is a clear rights basis
-
-The `notion/` tree may discuss workflow and reasoning, but it should still avoid becoming a public
-answer key for a specific externally supplied bomb.
+긴 시행착오 기록은 남기되, 공개 저장소에서 넘지 말아야 할 선은 그대로 유지합니다.

@@ -1,60 +1,55 @@
-# Verification
+# Proxy Lab 검증 기록
 
-## Problem Starter
-
-Commands:
+## starter boundary 확인
 
 ```bash
 cd problem
 make clean && make
 ```
 
-Current result:
+2026-03-10 기준 기록:
 
-- the starter proxy contract compiles
-- active functional verification happens in the C and C++ tracks
+- starter proxy contract가 컴파일된다
+- 실제 기능 검증은 C/C++ 구현과 shared harness에서 수행한다
 
-## Shared Harness
+## shared harness가 확인하는 것
 
-The `study/` project uses a local threaded origin server and a reusable shell harness.
+이 저장소의 local origin server와 shell harness는 다음을 본다.
 
-The harness checks:
+- 기본 local GET forwarding
+- required header rewriting
+- 작은 응답의 cache hit
+- oversized object 비캐시 처리
+- 두 slow request의 동시 처리
+- upstream failure 뒤에도 계속 동작하는지
 
-- basic proxying of a local request
-- required outbound header rewriting
-- cache hits for small responses
-- no caching for oversized responses
-- concurrent servicing of two slow requests
-- continued operation after a failed upstream connection
-
-## C Track
-
-Commands:
+## C 구현 검증
 
 ```bash
 cd c
 make clean && make test
 ```
 
-Current result:
+기록:
 
-- `make test` passes
-- basic local GET through the proxy passes
-- required `Host`, `User-Agent`, `Connection`, and `Proxy-Connection` rewriting is observed
-- a small object is served from cache on the second request
-- an oversized object is fetched again on the second request
-- the proxy remains usable after a failed upstream connection
+- `make test` 통과
+- 기본 forwarding과 header rewrite 확인
+- 두 번째 요청에서 small object cache hit 확인
+- oversized object는 다시 가져오는 것 확인
+- failed upstream 이후에도 proxy가 계속 사용 가능함
 
-## C++ Track
-
-Commands:
+## C++ 구현 검증
 
 ```bash
 cd cpp
 make clean && make test
 ```
 
-Current result:
+기록:
 
-- `make test` passes
-- the same forwarding, header, cache, concurrency, and failure-recovery checks all pass
+- C track과 같은 forwarding, header, cache, concurrency, failure recovery 검증 통과
+
+## 현재 판단
+
+이 저장소는 공식 grading server 없이도,
+프록시의 핵심 기능과 동시성 정책을 충분히 설명 가능한 수준으로 검증하고 있습니다.

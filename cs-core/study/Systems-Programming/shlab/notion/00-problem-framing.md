@@ -1,40 +1,22 @@
-# Shell Lab — 문제 프레이밍
+# 00. 문제 정의
 
-## 이 랩은 무엇을 묻는가
+## 문제를 어떻게 이해했는가
 
-Shell Lab은 Unix 쉘의 핵심 기능을 직접 구현하는 과제다. 단순한 명령어 실행기가 아니라, 잡 컨트롤이 가능한 쉘을 만들어야 한다.
+`shlab`은 "작은 셸 만들기"보다 "job control과 signal의 순서를 맞추는 프로젝트"라고 이해했다.
+공식 starter shell과 traces를 공개 트리에 그대로 둘 수 없었기 때문에,
+문제 계약과 self-owned 검증 경로를 분리하는 구조가 필요했다.
 
-구체적으로 요구되는 기능은 다음과 같다:
+## 저장소 기준 성공 조건
 
-- **전경/배경 잡 실행**: 명령어 끝에 `&`가 있으면 배경 실행, 없으면 전경 실행
-- **내장 명령 4개**: `quit`(쉘 종료), `jobs`(잡 테이블 표시), `bg`(정지된 잡을 배경에서 재개), `fg`(잡을 전경으로 가져와서 대기)
-- **시그널 전달**: Ctrl-C(`SIGINT`)와 Ctrl-Z(`SIGTSTP`)를 전경 잡의 프로세스 그룹에 전달
-- **자식 회수**: `SIGCHLD` 핸들러에서 종료/정지된 자식 프로세스를 올바르게 회수
-- **레이스 컨디션 방지**: `fork`와 `addjob` 사이에 `SIGCHLD`가 먼저 도착하는 경쟁 상태를 차단
+- foreground/background job이 구분된다
+- `quit`, `jobs`, `bg`, `fg` built-in이 동작한다
+- interactive signal이 foreground process group으로 전달된다
+- `SIGCHLD` race를 막는 흐름이 설명 가능하다
+- 공식 starter 없이도 self-owned 테스트로 기능을 재확인할 수 있다
 
-이 과제의 진짜 교훈은 "쉘을 만드는 것"이 아니라 "시그널과 동시성이 만나는 지점에서 올바르게 동작하는 코드를 작성하는 것"이다.
+## 선수 지식
 
-## 왜 이 랩이 까다로운가
-
-첫 번째 난관은 시그널 핸들러의 비동기성이다. `SIGCHLD`는 어느 시점에든 들어올 수 있다. 자식 프로세스를 `fork`한 직후, `addjob`을 호출하기 전에 자식이 이미 종료할 수 있다. 이때 핸들러가 잡 테이블에서 해당 잡을 삭제하려 하면, 아직 추가되지 않은 잡을 삭제하려는 모순이 발생한다.
-
-두 번째 난관은 시그널 안전 함수(async-signal-safe)의 제약이다. 시그널 핸들러 안에서는 `printf`를 쓸 수 없다. `write()` 시스템 콜로 직접 출력해야 한다. 이것이 `sio_puts()`와 `sio_putl()` 같은 헬퍼 함수가 필요한 이유다.
-
-세 번째 난관은 전경 잡 대기의 올바른 구현이다. `waitpid(pid, ...)`으로 직접 대기하면 `SIGCHLD` 핸들러와 겹치는 이중 회수 문제가 생긴다. 대신 `sigsuspend()`로 잡 상태 변화를 기다리고, 핸들러가 잡 테이블을 갱신하면 전경 대기 루프가 자연스럽게 종료되는 설계가 필요하다.
-
-## 선행 지식
-
-- Unix 프로세스 모델: `fork`, `execvp`, `waitpid`, `setpgid`
-- 시그널: `SIGINT`, `SIGTSTP`, `SIGCHLD`, `SIGCONT`
-- 시그널 마스킹: `sigprocmask`, `sigsuspend`
-- 프로세스 그룹: 전경 잡과 터미널 시그널의 관계
-- async-signal-safe 함수 목록
-
-## 이 프로젝트의 전략
-
-공식 핸드아웃의 starter shell, trace 파일, Perl 드라이버는 재배포하지 않는다. 대신:
-
-1. `problem/` — 계약만 남긴 공개 경계
-2. `c/`와 `cpp/` — 처음부터 작성한 tiny shell 구현
-3. `tests/` — FIFO 기반 직접 테스트 하네스 (시그널 전송, 잡 상태 확인)
-4. 공식 trace/driver 없이도 핵심 시나리오를 검증하는 구조
+- process group
+- signal mask와 `sigprocmask`
+- `waitpid`와 상태 플래그
+- race condition 기본 개념

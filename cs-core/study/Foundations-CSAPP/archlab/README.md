@@ -1,49 +1,26 @@
 # Architecture Lab
 
-## Purpose
+## 이 프로젝트가 가르치는 것
 
-This is the active study-first migration of CS:APP Architecture Lab.
+`archlab`은 Y86-64 어셈블리, HCL 제어 로직, 파이프라인 성능 최적화를 한 프로젝트 안에서 연결해 보여 줍니다.
+같은 과제 안에서 "명령어를 쓰는 법", "명령어를 구현하는 법", "명령어를 빠르게 돌리는 법"이 어떻게 이어지는지 배우게 합니다.
 
-The frozen reference tree lives in [`/Users/woopinbell/work/cs-core/legacy/Foundations-CSAPP/archlab`](/Users/woopinbell/work/cs-core/legacy/Foundations-CSAPP/archlab).
-This directory separates:
+## 누구를 위한 문서인가
 
-- the official multi-part problem contract in `problem/`
-- the study-owned official hand-in track in `y86/`
-- fresh study-owned companion models in `c/` and `cpp/`
-- durable public explanations in `docs/`
+- 아키텍처 실습이 여러 파트로 나뉘어 있어 전체 그림을 먼저 보고 싶은 학습자
+- 공식 hand-in 파일과 companion 모델의 관계를 이해하고 싶은 사람
+- 공개 가능한 산출물과 로컬 복원 툴체인을 함께 관리하고 싶은 사람
 
-## Status
+## 먼저 읽을 곳
 
-| Area | Status | Notes |
-|---|---|---|
-| `problem/` | verified | official self-study handout is restorable locally and the simulator stack is exercised in Docker, including the Part C benchmark |
-| `y86/` | verified | study-owned Part A and Part C hand-in files plus HCL patch logic pass the official Part A/B/C checks; latest Part C benchmark is `Average CPE 9.16`, `Score 26.8/60.0` |
-| `c/` | verified | fresh companion model for Parts A, B, and C implemented and tested |
-| `cpp/` | verified | same companion contract implemented and tested in C++ |
-| `docs/` | complete | part split, control-signal reasoning, and verification notes written |
-| `notion/` | complete | upload-ready local notes written for the migrated project |
+1. [`problem/README.md`](problem/README.md)
+2. [`y86/README.md`](y86/README.md)
+3. [`c/README.md`](c/README.md)
+4. [`cpp/README.md`](cpp/README.md)
+5. [`docs/README.md`](docs/README.md)
+6. [`notion/README.md`](notion/README.md)
 
-## Project Strategy
-
-The original lab has three different deliverable types:
-
-- Y86-64 assembly programs
-- HCL control-logic modifications
-- pipeline-oriented performance optimization
-
-The legacy tree keeps only partial starter material, and the simulator/HCL submission files are
-not present. So this migration now uses three layers:
-
-- `problem/` restores the public self-study handout locally when verification is needed.
-- `y86/` holds the study-owned Part A assembly, Part C `ncopy`, and the HCL patch logic applied to
-  the restored official templates.
-- `c/` and `cpp/` implement a companion model that keeps the three core lessons executable:
-  - Part A: iterative sum, recursive sum, and copy-with-XOR semantics
-  - Part B: `iaddq` stage semantics, destination write-back, and condition-code updates
-  - Part C: correctness-preserving `ncopy` plus a simple pipeline-cost estimator that shows why
-    an optimized schedule lowers pseudo-CPE
-
-## Structure
+## 디렉터리 구조
 
 ```text
 archlab/
@@ -54,11 +31,14 @@ archlab/
   cpp/
   docs/
   notion/
+  notion-archive/
 ```
 
-## Verification Path
+## 검증 방법
 
-For the official problem track:
+2026-03-10 문서 정비 기준으로 유지하는 검증 경로는 다음과 같습니다.
+
+공식 self-study handout 검증:
 
 ```bash
 cd problem
@@ -66,19 +46,27 @@ make restore-official
 make verify-official
 ```
 
-For the C companion track:
+C companion 검증:
 
 ```bash
 cd c
 make clean && make test
 ```
 
-For the C++ companion track:
+C++ companion 검증:
 
 ```bash
 cd cpp
 make clean && make test
 ```
 
-The restored official toolchain lives under the ignored local directory `problem/official/`.
-The latest official Part C run completed with `Average CPE 9.16` and `Score 26.8/60.0`.
+## 스포일러 경계
+
+- 공개 문서는 파트 분해, 제어 신호 사고법, 성능 모델을 설명합니다.
+- 공식 simulator/HCL toolchain은 `problem/official/` 아래 로컬에서만 복원합니다.
+- README는 학습 구조를 설명하고, 세부 구현 근거는 `docs/`와 `notion/`으로 분리합니다.
+
+## 포트폴리오로 확장하는 힌트
+
+- 이 프로젝트는 "한 문제를 여러 추상화 계층에서 다뤘다"는 점을 보여 주기 좋습니다.
+- 개인 저장소에서는 Part A/B/C를 각기 다른 산출물로 나누어 캡처와 성능 비교를 붙이면 훨씬 읽기 쉬워집니다.
