@@ -14,6 +14,11 @@
 6. [F-realtime-lab](../labs/F-realtime-lab/README.md)
 7. [G-ops-lab](../labs/G-ops-lab/README.md)
 8. [capstone/workspace-backend](../capstone/workspace-backend/README.md)
+9. [H-service-boundary-lab](../labs/H-service-boundary-lab/README.md)
+10. [I-event-integration-lab](../labs/I-event-integration-lab/README.md)
+11. [J-edge-gateway-lab](../labs/J-edge-gateway-lab/README.md)
+12. [K-distributed-ops-lab](../labs/K-distributed-ops-lab/README.md)
+13. [capstone/workspace-backend-v2-msa](../capstone/workspace-backend-v2-msa/README.md)
 
 ## 랩별 학습 포인트
 
@@ -66,14 +71,45 @@
 - 인증, 인가, 데이터 API, 알림 큐, 실시간 전달을 하나의 협업형 백엔드로 통합
 - 앞선 랩의 코드를 재사용하는 대신, 개념을 다시 조합해 제품형 구조를 만든다
 
+### H-service-boundary-lab
+
+- `identity-service`와 `workspace-service` 분리
+- 서비스별 DB ownership과 bearer claims 기반 사용자 전달
+- "같은 도메인을 어디서 쪼개는가"를 처음으로 설명하는 랩
+
+### I-event-integration-lab
+
+- `workspace-service` outbox와 `notification-service` consumer
+- Redis Streams와 idempotent consumer
+- 동기 API와 비동기 전달을 서비스 간 통합으로 확장
+
+### J-edge-gateway-lab
+
+- public API를 gateway에 유지하고 내부 서비스로 fan-out
+- cookie + CSRF는 edge에만 두고 내부는 bearer only
+- request id를 생성해 내부 호출 전체로 전달
+
+### K-distributed-ops-lab
+
+- 서비스별 live / ready 구분
+- JSON 로그와 request id, 최소 metrics
+- Compose health matrix와 AWS target shape 문서
+
+### Capstone V2
+
+- 같은 협업형 도메인을 `gateway + identity-service + workspace-service + notification-service`로 재편
+- 단일 백엔드 기준선과 MSA 재편을 같은 문제 정의 안에서 비교
+
 ## 이 커리큘럼이 학생에게 주는 이점
 
 - 작은 범위에서 실패하고 다시 고치기 쉽습니다.
 - 특정 주제를 면접이나 README에서 따로 설명하기 좋습니다.
 - capstone에 들어가기 전에 "무엇을 왜 붙이는지"를 단계별로 정리할 수 있습니다.
+- 이후 H~K 랩을 통해 단일 백엔드에서 MSA로 넘어갈 때 어떤 복잡성이 추가되는지도 별도로 설명할 수 있습니다.
 
 ## 포트폴리오로 확장할 때의 권장 방식
 
 - A~G 랩 중 자신이 약한 주제를 하나 골라 별도 실험 랩으로 다시 만들어 봅니다.
 - capstone에는 기능을 무작정 늘리기보다, 인증 모델, 데이터 경계, 비동기 경계, 운영 기준을 명시적으로 문서화합니다.
+- MSA로 확장할 때는 분해 이유, 이벤트 계약, request id 전파, 서비스별 운영 기준을 별도로 적습니다.
 - 각 프로젝트에서 "학습용 단순화"와 "실서비스로 가려면 필요한 추가 작업"을 분리해서 적습니다.

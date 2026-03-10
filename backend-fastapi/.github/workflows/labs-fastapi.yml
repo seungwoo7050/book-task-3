@@ -27,6 +27,16 @@ jobs:
             port: "8005"
           - workspace: capstone/workspace-backend/fastapi
             port: "8010"
+          - workspace: labs/H-service-boundary-lab/fastapi
+            port: "8011"
+          - workspace: labs/I-event-integration-lab/fastapi
+            port: "8012"
+          - workspace: labs/J-edge-gateway-lab/fastapi
+            port: "8013"
+          - workspace: labs/K-distributed-ops-lab/fastapi
+            port: "8014"
+          - workspace: capstone/workspace-backend-v2-msa/fastapi
+            port: "8015"
 
     steps:
       - uses: actions/checkout@v4
@@ -37,9 +47,7 @@ jobs:
 
       - name: Install workspace
         working-directory: ${{ matrix.workspace }}
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -e ".[dev]"
+        run: make install
 
       - name: Lint
         working-directory: ${{ matrix.workspace }}

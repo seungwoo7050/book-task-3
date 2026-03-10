@@ -27,6 +27,15 @@ Makefile
 README.md
 ```
 
+## MSA 예외 규칙
+
+- 기본 공개 구조 `README / problem / fastapi / docs / notion`는 유지합니다.
+- 다만 MSA 프로젝트의 `fastapi/`는 단일 앱이 아니라 오케스트레이션 루트로 설명할 수 있습니다.
+- MSA 프로젝트의 `fastapi/` 아래에는 최소한 `gateway/`, `services/<service-name>/`, `contracts/`, `scripts/`, `compose.yaml`, `Makefile`, `.env.example`, `README.md`를 둡니다.
+- 각 서비스 디렉터리는 자체 `app/`, `tests/`, `alembic/`, `pyproject.toml`, `Dockerfile`, `README.md`를 가집니다.
+- 비교 학습을 위해 v1과 v2 사이에 공용 패키지를 새로 만들지 않습니다.
+- 문서에는 서비스 경계, 데이터 ownership, 이벤트 계약, request id 전파 규칙을 먼저 적습니다.
+
 ## 런타임 공통 규칙
 
 - HTTP 라우트는 `/api/v1` 아래에 마운트합니다.
@@ -38,6 +47,7 @@ README.md
 ## 실행과 검증 문서 규칙
 
 - 각 워크스페이스는 최소한 `make install`, `make run`, `make lint`, `make test`, `make smoke`, `docker compose up --build`를 문서에 포함합니다.
+- MSA 오케스트레이션 루트의 `make install`, `make lint`, `make test`, `make smoke`는 내부 서비스와 시스템 검증을 함께 호출해도 됩니다.
 - 문서에 적는 명령은 실제 `Makefile`, `.env.example`, `compose.yaml`에 근거해야 합니다.
 - 새 검증을 다시 돌리지 않았다면, 이전 검증 결과를 최신 결과처럼 쓰지 않습니다.
 - 검증 보고서는 "확인된 사실"과 "아직 문서 수준인 가정"을 분리해서 적습니다.

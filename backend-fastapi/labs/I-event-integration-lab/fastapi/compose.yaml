@@ -1,0 +1,77 @@
+services:
+  workspace-service:
+    build:
+      context: ./services/workspace-service
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${WORKSPACE_DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      REDIS_STREAM_NAME: ${REDIS_STREAM_NAME}
+      SECRET_KEY: ${SECRET_KEY}
+      TOKEN_ISSUER: ${TOKEN_ISSUER}
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "8012:8000"
+    command: >
+      sh -c "python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    volumes:
+      - ./services/workspace-service:/app
+      - workspace_data:/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health/live')\"",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  notification-service:
+    build:
+      context: ./services/notification-service
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${NOTIFICATION_DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      REDIS_STREAM_NAME: ${REDIS_STREAM_NAME}
+      REDIS_PUBSUB_CHANNEL: ${REDIS_PUBSUB_CHANNEL}
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "8112:8000"
+    command: >
+      sh -c "python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    volumes:
+      - ./services/notification-service:/app
+      - notification_data:/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health/live')\"",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  redis:
+    image: redis:7-bookworm
+    ports:
+      - "6392:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  workspace_data:
+  notification_data:
