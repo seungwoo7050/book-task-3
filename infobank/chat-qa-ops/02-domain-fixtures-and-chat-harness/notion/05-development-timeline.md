@@ -1,113 +1,51 @@
-# Domain Fixtures — 개발 타임라인
+# 02-domain-fixtures-and-chat-harness 재현 타임라인
 
-이 문서는 stage 02를 처음부터 끝까지 재현하기 위해 필요한 모든 단계를 시간순으로 기록합니다.
+## 이 문서의 역할
 
----
+이 문서는 과거의 시간순 일지를 복원하는 대신, 지금 저장소 기준으로 같은 결과를 다시 확인하는 순서를 남긴다. 학습자는 이 순서를 따라가며 어떤 파일을 먼저 읽고, 어떤 명령을 실행하고, 어떤 결과를 근거로 삼아야 하는지 바로 파악할 수 있어야 한다.
 
-## Phase 1: 프로젝트 구조 생성
+## 재현 전에 준비할 것
 
-### 1-1. 디렉터리 생성
+- 평가기가 답변 품질만 보지 않고 어떤 지식을 인용했는지도 확인해야 한다.
 
-```bash
-mkdir -p 02-domain-fixtures-and-chat-harness/python/src/stage02
-mkdir -p 02-domain-fixtures-and-chat-harness/python/tests
-mkdir -p 02-domain-fixtures-and-chat-harness/python/data/knowledge_base
-touch 02-domain-fixtures-and-chat-harness/python/src/stage02/__init__.py
-```
+## 재현 순서
 
-### 1-2. pyproject.toml 작성
+1. stage `README.md`, `problem/README.md`, `docs/README.md`를 먼저 읽어 문제 해석과 완료 기준을 고정한다.
+2. 아래 핵심 경로를 위에서 아래 순서로 열어 구현과 문서가 같은 뜻을 가리키는지 확인한다.
 
-- `name = "study2-stage02"`
-- `requires-python = ">=3.12,<3.13"`
-- `dependencies = []` — json과 pathlib은 stdlib
-- dev: `pytest>=9.0.0`
+- `python/data/knowledge_base/`
+- `python/data/replay_sessions.json`
+- `python/src/stage02/harness.py`
 
-### 1-3. 환경 설정
+3. 아래 검증 명령을 그대로 실행해 현재 저장소 상태가 문서 설명과 맞는지 확인한다.
 
 ```bash
-cd 02-domain-fixtures-and-chat-harness/python
-uv sync --extra dev
+cd python
+UV_PYTHON=python3.12 uv sync
+UV_PYTHON=python3.12 uv run pytest -q
 ```
 
----
+4. 테스트나 실행 결과를 아래 증거와 대조한다.
 
-## Phase 2: Seeded Knowledge Base 작성
+- `python/tests/test_harness.py`가 fixture loading과 replay 결과를 검증한다.
+- fixture 파일은 markdown과 JSON으로 분리되어 사람이 직접 검토하기 쉽다.
 
-### 2-1. refund_policy.md 작성
+5. 결과가 다르면 `02-debug-log.md`와 `notion-archive/`를 함께 열어 어떤 가정이 바뀌었는지 추적한다.
 
-`data/knowledge_base/refund_policy.md`에 환불 정책 내용을 한국어로 작성했다.
-핵심 키워드: 환불, 본인확인, 접수
+## 재현 체크포인트
 
-### 2-2. identity_verification.md 작성
+- 같은 replay 입력에 대해 항상 같은 retrieved doc order가 나온다.
+- fixture 파일과 harness 코드가 분리되어 수정 범위가 명확하다.
+- 후속 golden set과 version compare 입력으로 이어질 수 있다.
 
-`data/knowledge_base/identity_verification.md`에 본인확인 절차를 작성했다.
-핵심 키워드: 본인확인, 인증, 상담원
+## 막히면 먼저 볼 것
 
-### 2-3. cancellation_policy.md 작성
+- 짧은 한국어 질의가 content token만으로는 원하는 문서에 닿지 않을 수 있었다. -> 확인 기준: `test_replay_harness_reproduces_expected_docs`가 `refund_policy.md`를 top-1로 요구한다.
 
-`data/knowledge_base/cancellation_policy.md`에 해지 정책을 작성했다.
-핵심 키워드: 해지, 위약금, 잔여 기간
+## 자기 포트폴리오 레포로 옮길 때
 
----
-
-## Phase 3: Replay Session Fixture 작성
-
-### 3-1. replay_sessions.json 작성
-
-`data/replay_sessions.json`에 두 개의 세션을 작성했다:
-- `"환불은 몇일 걸려요?"` → 기대 문서: `refund_policy.md`
-- `"해지 신청은 본인확인 없이 가능해요?"` → 기대 문서: `identity_verification.md`
-
-이 파일은 stage 06의 golden cases와 세트로 사용된다.
-
----
-
-## Phase 4: Harness 구현
-
-### 4-1. seed_knowledge_base() 함수 작성
-
-`python/src/stage02/harness.py`에 KB 로딩 함수를 작성했다.
-`Path.glob('*.md')`로 knowledge_base 디렉터리의 모든 Markdown을 읽어 `{filename: content}` dict로 반환한다.
-
-### 4-2. retrieve() 함수 작성
-
-질의어를 공백으로 split한 뒤, 각 term이 문서 본문이나 doc_id에 포함되는지 확인하는 keyword matching.
-점수가 높은 순서로 정렬해서 문서 목록을 반환한다.
-매칭이 하나도 없으면 KB의 첫 번째 문서를 기본값으로 반환한다.
-
-### 4-3. run_replay() 함수 작성
-
-replay_sessions.json을 읽고, 각 세션의 `user_message`에 대해 `retrieve()`를 호출해서 결과를 모은다.
-반환값: `{session_count, items: [{user_message, retrieved_doc_ids}]}`
-
----
-
-## Phase 5: 테스트 작성 및 검증
-
-### 5-1. 두 가지 테스트 작성
-
-| 테스트 | 검증 대상 |
-|--------|-----------|
-| `test_seeded_kb_reproducible` | KB 파일 세 개가 정확히 로드되는지 |
-| `test_replay_harness_reproduces_expected_docs` | 첫 번째 replay의 top-1이 `refund_policy.md`인지 |
-
-### 5-2. 테스트 실행
-
-```bash
-cd 02-domain-fixtures-and-chat-harness/python
-uv run pytest -q
-```
-
-기대 결과: `2 passed`
-
----
-
-## 이 단계에서 사용한 도구 요약
-
-| 도구 | 용도 |
-|------|------|
-| `uv` | Python 패키지 관리 및 가상환경 |
-| `pytest` | 테스트 실행 |
-| Python 3.12 | 런타임 |
-| `json` (stdlib) | replay session 파싱 |
-| `pathlib` (stdlib) | 파일 경로 처리 |
+- 이 문서의 순서를 그대로 유지하되, 경로만 내 저장소 구조에 맞게 바꾼다.
+- `README.md`에는 문제 해석, 현재 상태, 실행 명령만 남기고 더 긴 판단 과정은 `notion/`으로 보낸다.
+- `docs/README.md`에는 검증 기준, proof artifact, 오래 남길 개념만 남긴다.
+- 새 노트를 다시 쓰고 싶다면 기존 `notion/`을 `notion-archive/`로 옮겨 예전 판단을 보존한다.
+- 발표나 제출용 README를 만들 때는 이 문서의 체크포인트를 그대로 acceptance checklist로 재사용한다.

@@ -1,61 +1,21 @@
-# Monitoring Dashboard — 디버그 기록
+# 07-monitoring-dashboard-and-review-console 디버그 기록
 
-## version compare 드롭다운 초기값 문제
+## 검증 메모
 
-### 상황
+- Python pack은 snapshot endpoint contract를 테스트한다.
+- React pack은 mocked Vitest로 overview, failures, session review, eval runner, compare UI를 검증한다.
 
-Overview 페이지에서 version compare 섹션을 구현할 때,
-baseline과 candidate를 드롭다운으로 선택하게 했다.
+## 실패 사례와 수정 내용
 
-초기값을 useState로 "v1.0"/"v1.1"로 하드코딩했는데,
-overview API에서 `run_labels` 배열이 내려오면 그걸 기반으로 초기값을 설정해야 했다.
+### 사례 1
+- 증상: 문서 생성이 너무 얇으면 stage07이 단순 UI 복사본처럼 보였다.
+- 원인: overview, failures, session review, compare가 각각 어떤 운영 질문에 답하는지 서술이 없었다.
+- 수정: problem/docs/notion에 화면별 책임과 trace surface를 명시적으로 추가했다.
+- 확인: 재생성된 stage07 문서가 API/React pack과 version compare 목적을 구분해 설명한다.
 
-문제: useEffect에서 overview 데이터를 받아온 뒤 setBaseline/setCandidate를 호출하면,
-이미 사용자가 드롭다운을 변경한 경우 값이 덮어씌워진다.
+## 재발 방지 체크리스트
 
-### 해결
-
-setState에 함수형 업데이트를 사용했다:
-
-```typescript
-setBaseline((current) => current || overview.run_labels[0] || "v1.0");
-```
-
-`current`가 이미 있으면(사용자가 변경했으면) 유지하고,
-없을 때만 API에서 받은 값으로 채운다.
-
-## CORS 처리
-
-### 상황
-
-React 개발 서버(localhost:5173)에서 FastAPI 서버(localhost:8000)로 요청을 보내면 CORS 에러가 발생한다.
-
-### 해결
-
-Vite의 proxy 설정으로 처리했다:
-
-```typescript
-// vite.config.ts
-server: {
-  proxy: {
-    '/api': 'http://localhost:8000'
-  }
-}
-```
-
-프로덕션에서는 같은 도메인에서 서빙하므로 CORS 문제가 없다.
-
-## 테스트에서 API 모킹
-
-### 상황
-
-Overview.test.tsx에서 실제 API를 호출할 수 없으므로,
-apiGet/apiPost를 모킹해야 한다.
-
-### 해결
-
-`testUtils.ts`에 공통 모킹 유틸리티를 만들고,
-각 테스트에서 `vi.mock('../api/client')`로 모듈 단위 모킹을 적용했다.
-
-SNAPSHOT 데이터를 그대로 모킹 반환값으로 사용하면,
-프론트엔드가 실제 API 응답을 정확히 렌더링하는지 검증할 수 있다.
+- `python/src/stage07/app.py`
+- `python/tests/test_api.py`
+- `react/src/pages/Overview.tsx`
+- `react/src/pages/SessionReview.tsx`

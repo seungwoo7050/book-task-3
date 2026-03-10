@@ -1,6 +1,6 @@
-# Runbook
+# 실행 안내서
 
-## Demo Scenario
+## 데모 시나리오
 
 역할:
 
@@ -12,7 +12,7 @@
 
 한 팀이 `release-check-bot@1.5.0`을 self-hosted 환경에서 운영하고 있다. owner가 팀 접근을 정리하고, operator가 compare/release gate를 돌린 뒤, viewer가 결과만 확인한다.
 
-## Steps
+## 단계
 
 1. owner 로그인
 2. `Team Access`에서 operator 또는 viewer를 추가
@@ -22,7 +22,7 @@
 6. `Artifact Export Job`으로 최신 Markdown artifact 생성
 7. viewer로 재로그인해 read-only 화면과 artifact preview 확인
 
-## Operator Checks
+## 운영자 확인 사항
 
 - `Job Activity`에 최근 상태가 남는가
 - `Proof Snapshot`이 기대 값에 맞는가

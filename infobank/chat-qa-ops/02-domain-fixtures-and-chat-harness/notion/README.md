@@ -1,24 +1,19 @@
-# 02-domain-fixtures-and-chat-harness Notion 문서 안내
+# 02-domain-fixtures-and-chat-harness 노트 안내
 
-이 폴더는 **Domain Fixtures & Chat Harness** 단계의 개발 과정과 의사결정을 기록한 블로그형 에세이 모음입니다.
+이 폴더는 stage의 판단 과정, 디버그 기록, 회고, 재사용 지식을 남기는 공개 백업 노트다. 특히 `05-development-timeline.md`는 학습자가 같은 결과를 다시 재현할 때 가장 먼저 따라갈 문서로 유지한다.
 
-## 어떤 문서를 먼저 읽을까?
+## 먼저 읽을 문서
 
-| 목적 | 문서 |
-|------|------|
-| 왜 fixture와 harness를 분리했는지 알고 싶다 | [00-problem-framing.md](./00-problem-framing.md) |
-| keyword matching을 왜 선택했는지 궁금하다 | [01-approach-log.md](./01-approach-log.md) |
-| 짧은 한국어 질의 매칭 문제를 보고 싶다 | [02-debug-log.md](./02-debug-log.md) |
-| 이 단계의 한계를 솔직하게 알고 싶다 | [03-retrospective.md](./03-retrospective.md) |
-| seeded KB, replay harness 개념을 정리하고 싶다 | [04-knowledge-index.md](./04-knowledge-index.md) |
-| 파일 생성 순서와 CLI를 따라가고 싶다 | [05-development-timeline.md](./05-development-timeline.md) |
+- `00-problem-framing.md`: 이 stage가 다루는 문제와 성공 기준
+- `01-approach-log.md`: 어떤 방향을 택했고 무엇을 버렸는지
+- `02-debug-log.md`: 자주 깨지는 지점과 검증 포인트
+- `03-retrospective.md`: 이번 stage가 남긴 강점과 한계
+- `04-knowledge-index.md`: 나중에도 다시 꺼내 쓸 개념과 참고 경로
+- `05-development-timeline.md`: 읽기 순서, 실행 명령, 체크포인트를 묶은 재현 타임라인
 
-## 이 문서들과 소스코드의 관계
+## 운영 원칙
 
-소스코드는 `harness.py`의 검색 로직과 `data/` 아래 fixture 파일들을 보여줍니다.
-이 문서들은 **왜 vector DB 없이 keyword로 시작했는지**, **fixture를 왜 JSON과 Markdown으로 나눴는지**, **한국어 단어 매칭에서 뭐가 안 됐는지** 등 소스코드에 없는 이야기를 담고 있습니다.
-
-## 관련 stage
-
-- **이전**: [01-quality-rubric-and-score-contract](../../01-quality-rubric-and-score-contract/notion/) — 품질 점수 체계
-- **다음**: [03-rule-and-guardrail-engine](../../03-rule-and-guardrail-engine/notion/) — 안전 규칙과 가드레일 엔진
+- 빠른 현재 상태 확인은 stage `README.md`, `problem/`, `docs/`를 먼저 본다.
+- 새 기준으로 다시 쓰고 싶다면 기존 `notion/`을 `notion-archive/`로 옮겨 보존한다.
+- `05-development-timeline.md`는 단순 일지가 아니라 재현 가능한 학습 순서 문서로 유지한다.
+- 더 거친 시행착오와 과거 버전별 로그는 `notion-archive/`에 남긴다.

@@ -1,6 +1,6 @@
-# Install
+# 설치 안내
 
-## Local Install
+## 로컬 설치
 
 ```bash
 pnpm install
@@ -12,7 +12,7 @@ pnpm bootstrap:owner
 pnpm dev
 ```
 
-Endpoints:
+접속 경로:
 
 - Web: `http://127.0.0.1:3003`
 - API: `http://127.0.0.1:3103`
@@ -20,20 +20,20 @@ Endpoints:
 - Health: `http://127.0.0.1:3103/healthz`
 - Ready: `http://127.0.0.1:3103/readyz`
 
-## Compose Install
+## Compose 설치
 
 ```bash
 docker compose up -d --build
 ```
 
-Compose topology:
+Compose 구성:
 
 - `postgres`: persistent Postgres
 - `api`: Fastify API, migration on boot
 - `worker`: pg-boss consumer
 - `web`: Next.js dashboard
 
-## Seed Accounts
+## 시드 계정
 
 - `owner@study1.local / ChangeMe123!`
 - `operator@study1.local / Operator123!`

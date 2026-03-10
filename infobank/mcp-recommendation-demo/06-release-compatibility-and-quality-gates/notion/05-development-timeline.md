@@ -1,89 +1,58 @@
-# Release Compatibility & Quality Gates — 개발 타임라인
+# 06 release compatibility와 quality gate 재현 타임라인
 
-## 1단계: compatibility-service.ts
+## 이 문서의 역할
 
-```bash
-cd 08-capstone-submission/v2-submission-polish/node/src/services
-touch compatibility-service.ts
-```
+이 문서는 과거의 상세 일지를 그대로 복사하지 않는다. 대신 지금 저장소 기준으로 같은 학습 결과를 다시 확인하려면 무엇을 어떤 순서로 읽고 실행해야 하는지 정리한다.
 
-구현 순서:
-1. RC의 toolId와 candidateVersion 파싱
-2. catalog에서 현재 버전 조회
-3. semver diff 계산 (major/minor/patch)
-4. 의존 도구 호환성 확인
+## 재현 순서
 
-```bash
-pnpm test  # compatibility-service.test.ts 실행
-```
+1. 상위 `README.md`, `problem/README.md`, `docs/README.md`를 읽어 이 stage가 왜 분리됐는지 고정한다.
+2. 아래 연결 경로를 위에서 아래 순서로 열어 실제 구현과 문서 설명을 대조한다.
 
-## 2단계: release-gate-service.ts
+- `08-capstone-submission/v2-submission-polish/node/src/services/compatibility-service.ts`
+- `08-capstone-submission/v2-submission-polish/node/src/services/release-gate-service.ts`
+- `08-capstone-submission/v2-submission-polish/node/src/services/artifact-service.ts`
+- `08-capstone-submission/v2-submission-polish/node/tests/compatibility-service.test.ts`
+- `08-capstone-submission/v2-submission-polish/node/tests/release-gate-service.test.ts`
+
+3. `v2-submission-polish` 폴더로 이동해 아래 명령으로 실제 동작과 테스트를 확인한다.
 
 ```bash
-touch release-gate-service.ts
-```
-
-구현 순서:
-1. compatibility gate 실행 → breaking change 확인
-2. eval 실행 → threshold 통과 확인
-3. deprecated dependency 확인
-4. 전체 PASS/FAIL 판정
-
-## 3단계: artifact-service.ts
-
-```bash
-touch artifact-service.ts
-```
-
-gate 결과를 JSON으로 직렬화하여 파일로 저장:
-
-```bash
-mkdir -p artifacts
-pnpm artifact:export rc-release-check-bot-1-5-0
-# → artifacts/rc-release-check-bot-1-5-0.json
-```
-
-## 4단계: CLI 스크립트 추가
-
-```json
-{
-  "scripts": {
-    "compatibility": "tsx src/scripts/run-compatibility.ts",
-    "release:gate": "tsx src/scripts/run-release-gate.ts",
-    "artifact:export": "tsx src/scripts/run-artifact-export.ts"
-  }
-}
-```
-
-각 스크립트는 RC ID를 CLI 인자로 받는다.
-
-## 5단계: 테스트
-
-```bash
-pnpm test
-```
-
-compatibility-service.test.ts:
-- minor 버전 변경 → compatible
-- major 버전 변경 → breaking change 경고
-
-release-gate-service.test.ts:
-- 모든 검사 통과 → PASS
-- breaking change 있음 → FAIL
-- deprecated dependency → WARN
-
-## 6단계: 통합 실행
-
-```bash
+pnpm install
+cp .env.example .env
+pnpm db:up
+pnpm migrate
+pnpm seed
+pnpm eval
 pnpm compatibility rc-release-check-bot-1-5-0
 pnpm release:gate rc-release-check-bot-1-5-0
 pnpm artifact:export rc-release-check-bot-1-5-0
+pnpm capture:presentation
+pnpm test
+pnpm e2e
 ```
 
-이 순서로 실행하면 RC의 전체 gate 과정이 완료된다.
+4. 실행 후에는 아래 항목이 실제로 충족되는지 체크한다.
 
-## 비고
+- 추천 시스템의 품질 개선을 배포 준비 상태와 연결해 설명할 수 있다.
+- 학생이 자기 프로젝트에서 release gate 문서를 설계할 기준을 얻는다.
+- 최종 제출물의 proof artifact 재생성 경로가 분명해진다.
 
-- 이 stage는 v2 capstone에서 구현된다. v0/v1에는 gate 기능이 없다.
-- artifact 파일은 artifacts/ 디렉터리에 저장되며, .gitignore에 포함시키지 않는다 (증거 문서).
-- v3에서는 gate 실행이 background job으로 처리되고 audit log에 기록된다.
+## 학습 체크포인트
+
+- 이 stage를 통해 이해해야 할 핵심 개념: 추천 결과를 release candidate 판단으로 연결하는 법, compatibility와 quality gate를 별도 개념으로 다루는 방식, 제출용 artifact export를 재생성 가능하게 유지하는 법
+- 이 stage를 포트폴리오로 옮길 때 강조할 것: release gate와 artifact export를 문서화하는 방식, 배포 전 품질 점검을 추천 시스템 서사에 연결하는 방법
+
+## 막히면 먼저 볼 것
+
+- `02-debug-log.md`
+- `v2-submission-polish`의 README와 docs
+- `../notion-archive/05-development-timeline.md`
+
+## 자기 포트폴리오 레포로 옮길 때
+
+- 이 문서의 순서를 그대로 유지하되, 경로만 내 저장소 구조에 맞게 바꾼다.
+- `README.md`에는 문제 해석, 현재 상태, 실행 명령만 남기고 더 긴 판단 과정은 `notion/`으로 보낸다.
+- `docs/README.md`에는 검증 기준, proof artifact, 오래 남길 개념만 남긴다.
+- 새 노트를 다시 쓰고 싶다면 기존 `notion/`을 `notion-archive/`로 옮겨 예전 판단을 보존한다.
+- 발표나 제출용 README를 만들 때는 이 문서의 체크포인트를 그대로 acceptance checklist로 재사용한다.

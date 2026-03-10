@@ -1,4 +1,4 @@
-# Eval Proof
+# 평가 증빙
 
 - Offline eval dataset: `shared/src/eval.ts`
 - Case count: 12

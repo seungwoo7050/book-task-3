@@ -1,36 +1,34 @@
-# Capstone — 회고
+# 08-capstone-submission 회고
 
-## 잘 된 것
+## 이번 stage로 강화된 점
 
-### 4-version 점진 전략이 실제로 효과적이다
+- 구현, 테스트, proof artifact, public docs가 서로 연결되어 있다.
+- 버전별 학습 목적과 변경 범위가 명확하다.
 
-v0에서 "일단 동작"시키고, v1에서 "제대로 연결"하고, v2에서 "개선 증명"하고, v3에서 "배포 가능"하게 만드는 흐름이 자연스러웠다.
-각 버전에서 집중할 게 명확하니, 스코프가 흐려지지 않았다.
+## 아직 약한 부분
 
-### stage 모듈의 인터페이스 분리가 capstone 통합을 쉽게 만들었다
+- external provider와 observability stack은 mock/no-op 검증이 주 경로다.
+- notion 문서는 공개 백업 문서이지만, 빠른 현재 상태 확인은 tracked docs를 먼저 읽는 편이 낫다.
 
-특히 judge output schema와 merge_score() 인터페이스가 고정되어 있어서,
-v0(heuristic) → v1(LLM provider chain) 전환 시 merge 쪽 코드를 건드리지 않았다.
-이건 stage 05에서 의도적으로 설계한 것이다.
+## 학생이 여기서 바로 가져갈 것
 
-### compare artifact가 설득력 있다
+- stage 학습 결과를 `v0 -> v3` 스냅샷으로 묶어 공개 저장소에서 설명하는 방식
+- proof artifact, release readiness, self-hosted 확장을 같은 레포 안에서 역할별 문서로 나누는 방식
 
-"avg_score 84.06 → 87.76"이라는 숫자 하나가 모든 설명을 대체한다.
-이 숫자를 자동으로 생성할 수 있는 파이프라인이 있다는 게 capstone의 가치다.
+## 다음 stage로 넘기는 자산
 
-## 아쉬운 것
+- immutable version snapshots
+- provider fallback chain
+- trace-rich evaluation pipeline
+- run-level version compare
+- RAG improvement proof
 
-### v3의 single admin auth는 실제 운영에 부족하다
+## 05-development-timeline.md와 같이 읽을 포인트
 
-팀 내 여러 사람이 사용하려면 최소한 role 기반 접근 제어가 필요하다.
-하지만 scope 제한이 없으면 영원히 끝나지 않으므로, 이건 올바른 제한이었다.
+- 먼저 `v2`를 제출 기준선으로 재현하고, 그 뒤에 `v0`, `v1`, `v3`를 비교하는 순서를 유지한다.
+- 자기 포트폴리오 레포로 옮길 때도 이 버전 분리 전략을 그대로 가져가면 설명력이 높아진다.
 
-### 폴더 복제 방식의 버전 관리
+## 나중에 다시 볼 것
 
-v0→v1→v2→v3가 각각 완전한 폴더 복제다. 공통 코드 변경 시 4곳을 모두 수정해야 한다.
-git branch 전략이 더 나았을 수 있지만, 교육 목적상 "한 리포에 모든 버전이 보이는" 구조가 유리했다.
-
-## 교훈
-
-- interface-first 설계(API schema → snapshot → 실제 구현)는 효과적이다.
-- 점진적 개선을 수치로 증명하려면, 변경 전후를 같은 기준으로 측정하는 파이프라인이 반드시 필요하다.
+- 실제 Upstage/OpenAI/Langfuse 자격증명이 준비되면 live smoke run 문서를 별도 부록으로 추가할 수 있다.
+- dashboard screenshots를 자동 재생성하는 스크립트를 붙이면 proof artifact 갱신이 더 쉬워진다.

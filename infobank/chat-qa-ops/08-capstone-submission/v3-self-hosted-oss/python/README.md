@@ -1,17 +1,17 @@
-# Python Backend
+# Python 백엔드
 
 이 디렉터리는 `v3-self-hosted-oss`의 FastAPI API, worker, CLI, SQLAlchemy 모델, pytest 회귀셋을 담는다.
 
-## Product Scope
+## 제품 범위
 
-- single admin auth
+- 단일 관리자 인증
 - dataset JSONL import
 - knowledge base ZIP import
 - evaluation job queue
-- run-scoped dashboard/session review API
-- optional provider chain / Langfuse preparation
+- run 단위 dashboard/session review API
+- 선택형 provider chain / Langfuse 준비 경로
 
-## Commands
+## 실행 명령
 
 ```bash
 UV_PYTHON=python3.12 uv sync --extra dev
@@ -25,7 +25,7 @@ UV_PYTHON=python3.12 PYTHONPATH=backend/src uv run uvicorn api.main:app --host 0
 UV_PYTHON=python3.12 PYTHONPATH=backend/src uv run python -m cli.main worker
 ```
 
-PostgreSQL smoke:
+PostgreSQL smoke 검증:
 
 ```bash
 UV_PYTHON=python3.12 make smoke-postgres

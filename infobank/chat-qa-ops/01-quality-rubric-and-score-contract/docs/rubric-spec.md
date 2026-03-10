@@ -1,6 +1,6 @@
-# Rubric Spec
+# 루브릭 명세
 
-## Score Dimensions
+## 점수 축
 
 | Dimension | Meaning | Weight |
 |---|---|---|
@@ -10,16 +10,16 @@
 | Resolution | 문제 해결 도움 정도 | 0.15 |
 | Communication | 표현 명확성, 어조 | 0.10 |
 
-## Hard Fail
+## 즉시 실패 조건
 
 아래는 총점과 별도로 즉시 실패 처리한다.
 
-- PII exposure
-- forbidden promise
-- critical policy violation
-- evidence contradiction
+- PII 노출
+- 금지된 약속
+- 치명적 정책 위반
+- 근거 충돌
 
-## Failure Taxonomy Baseline
+## 실패 분류 기준선
 
 - `FORBIDDEN_PROMISE`
 - `PII_EXPOSURE`
@@ -27,11 +27,11 @@
 - `UNSUPPORTED_CLAIM`
 - `CONTRADICTED_BY_SOURCE`
 
-## Grade Rule
+## 등급 규칙
 
-- `CRITICAL`: hard fail
+- `CRITICAL`: 즉시 실패
 - `A`: 90+
 - `B`: 75+
 - `C`: 60+
 - `D`: 40+
-- `F`: below 40
+- `F`: 40 미만

@@ -1,4 +1,4 @@
-# Release Gate Proof
+# 릴리즈 게이트 증빙
 
 `release gate`는 아래 조건이 모두 맞을 때만 통과한다.
 

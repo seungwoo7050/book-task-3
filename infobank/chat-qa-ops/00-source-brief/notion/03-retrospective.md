@@ -1,30 +1,31 @@
-# Source Brief — 회고: 첫 stage를 끝내고 나서
+# 00-source-brief 회고
 
-## 잘 된 것
+## 이번 stage로 강화된 점
 
-### 후속 stage에서 참조할 baseline과 stack이 명확해졌다
+- 후속 stage에서 참조할 baseline과 stack이 명확하다.
+- legacy 의도와 새 curriculum rationale이 같은 파일에서 연결된다.
 
-이건 기대한 대로였다. stage 01에서 rubric을 설계할 때 "우리의 primary stack이 뭐지?"라고 묻지 않아도 됐다.
-`build_source_brief().primary_stack`을 호출하면 답이 나온다.
+## 아직 약한 부분
 
-### legacy 의도와 새 curriculum rationale이 같은 파일에서 연결됐다
+- 실행 시스템이 아니라 navigation contract라서 체감 기능은 적다.
+- reference spine의 내용 품질은 별도 문서 관리에 의존한다.
 
-`reference_spine`에 `legacy-intent-audit.md`와 `curriculum-map.md`를 함께 넣어서, "과거에 뭘 하려 했는지"와 "지금 뭘 하려는지"가 한 곳에서 읽힌다.
+## 학생이 여기서 바로 가져갈 것
 
-## 아쉬운 것
+- 기능 구현이 없더라도 source brief를 코드 상수와 테스트로 고정하는 방식
+- curriculum rationale와 reference spine을 한 문서에 과도하게 섞지 않고 역할별로 나누는 방식
 
-### 실행 시스템이 아니라 navigation contract라서 체감 기능이 적다
+## 다음 stage로 넘기는 자산
 
-솔직히 이 stage를 끝내고 나면 "뭘 만든 건데?"라는 느낌이 든다.
-화면에 보이는 게 없고, API가 뜨는 것도 아니다. 하지만 이 불편함은 의도적이다.
-stage 00의 역할은 **방향을 잠그는 것**이지, 결과물을 보여주는 게 아니다.
+- 문서 중심 기획을 코드 계약으로 고정하는 방법
+- baseline snapshot과 curriculum rationale의 분리
+- reference spine을 stable navigation으로 유지하는 원칙
 
-### reference spine의 내용 품질은 별도 문서 관리에 의존한다
+## 05-development-timeline.md와 같이 읽을 포인트
 
-spine에 들어간 다섯 문서가 실제로 잘 쓰여 있는지는 이 stage에서 보장하지 않는다.
-"어떤 문서를 보라"고 가리키는 것과, "그 문서가 좋다"는 것은 별개의 문제다.
+- README, `problem/`, `docs/`, 테스트를 어떤 순서로 읽어야 brief가 흔들리지 않는지 확인한다.
+- 후속 stage를 읽기 전에 baseline version과 stack contract가 여기서 고정된다는 점을 다시 확인한다.
 
 ## 나중에 다시 볼 것
 
-- 만약 다른 study track(예: MCP 추천 최적화)이 추가되면, `SourceBrief` schema를 공통 모듈로 승격하는 것을 고려할 수 있다.
-- 현재는 chat-qa-ops 전용이지만, 구조 자체는 범용적이다.
+- 향후 다른 study track이 생기면 source brief schema를 공통 모듈로 승격할 수 있다.

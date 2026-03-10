@@ -1,124 +1,51 @@
-# Source Brief — 개발 타임라인
+# 00-source-brief 재현 타임라인
 
-이 문서는 stage 00을 처음부터 끝까지 재현하기 위해 필요한 모든 단계를 시간순으로 기록합니다.
-소스코드에는 남지 않는 CLI 명령, 설치 과정, 파일 생성 순서를 포함합니다.
+## 이 문서의 역할
 
----
+이 문서는 과거의 시간순 일지를 복원하는 대신, 지금 저장소 기준으로 같은 결과를 다시 확인하는 순서를 남긴다. 학습자는 이 순서를 따라가며 어떤 파일을 먼저 읽고, 어떤 명령을 실행하고, 어떤 결과를 근거로 삼아야 하는지 바로 파악할 수 있어야 한다.
 
-## Phase 1: 프로젝트 구조 초기화
+## 재현 전에 준비할 것
 
-### 1-1. Python 프로젝트 디렉터리 생성
+- 루트 문서에서 legacy intent와 새 커리큘럼 순서를 읽어야 한다.
+- capstone이 챗봇 제품이 아니라 QA Ops 플랫폼이라는 점을 먼저 이해해야 한다.
 
-```bash
-mkdir -p 00-source-brief/python/src/stage00
-mkdir -p 00-source-brief/python/tests
-touch 00-source-brief/python/src/stage00/__init__.py
-```
+## 재현 순서
 
-### 1-2. pyproject.toml 작성
+1. stage `README.md`, `problem/README.md`, `docs/README.md`를 먼저 읽어 문제 해석과 완료 기준을 고정한다.
+2. 아래 핵심 경로를 위에서 아래 순서로 열어 구현과 문서가 같은 뜻을 가리키는지 확인한다.
 
-```bash
-# 00-source-brief/python/pyproject.toml
-```
+- `python/src/stage00/source_brief.py`
+- `python/tests/test_source_brief.py`
 
-- `requires-python = ">=3.12,<3.13"`으로 Python 버전을 고정
-- `dependencies = []`로 외부 의존성 없음을 명시
-- dev 그룹에 `pytest>=9.0.0`만 추가
-
-### 1-3. uv 환경 세팅
+3. 아래 검증 명령을 그대로 실행해 현재 저장소 상태가 문서 설명과 맞는지 확인한다.
 
 ```bash
-cd 00-source-brief/python
-uv sync --extra dev
+cd python
+UV_PYTHON=python3.12 uv sync
+UV_PYTHON=python3.12 uv run pytest -q
 ```
 
-`uv`는 이 프로젝트 전체에서 Python 패키지 관리자로 사용된다. `pip` 대신 `uv`를 선택한 이유는 lock 파일 기반의 재현 가능한 환경과 빠른 속도 때문이다.
+4. 테스트나 실행 결과를 아래 증거와 대조한다.
 
----
+- `python/tests/test_source_brief.py`가 baseline version과 stack contract를 검증한다.
+- 생성된 stage README가 `00 -> 08` 순서를 repository-level index로 연결한다.
 
-## Phase 2: 핵심 코드 작성
+5. 결과가 다르면 `02-debug-log.md`와 `notion-archive/`를 함께 열어 어떤 가정이 바뀌었는지 추적한다.
 
-### 2-1. reference spine 상수 정의
+## 재현 체크포인트
 
-`python/src/stage00/source_brief.py` 파일을 생성하고, 맨 위에 `REFERENCE_SPINE` tuple을 작성했다.
-이 tuple은 이 트랙을 이해하기 위해 읽어야 할 핵심 문서 5개를 나열한다.
+- 주제, capstone goal, baseline version, primary stack이 코드 객체 하나에 정리된다.
+- reference spine이 임의 서술이 아니라 테스트 가능한 상수로 유지된다.
+- 후속 stage가 이 brief를 설계 기준으로 재사용할 수 있다.
 
-### 2-2. SourceBrief dataclass 작성
+## 막히면 먼저 볼 것
 
-같은 파일에 `SourceBrief`를 `frozen=True` dataclass로 정의했다.
-필드는 `topic`, `capstone_goal`, `baseline_version`, `primary_stack` 네 가지다.
+- stack 설명이 문서마다 조금씩 달라질 위험이 있었다. -> 확인 기준: `python/tests/test_source_brief.py`가 stack membership와 baseline version을 검증한다.
 
-### 2-3. build_source_brief() 팩토리 함수 작성
+## 자기 포트폴리오 레포로 옮길 때
 
-dataclass 인스턴스를 생성하는 팩토리 함수를 추가했다.
-직접 생성자를 호출하는 대신 팩토리를 쓴 이유는, 후속 stage에서 import할 때 **인터페이스를 한 곳으로 모으기 위해서**다.
-
----
-
-## Phase 3: 테스트 작성 및 실행
-
-### 3-1. conftest.py 배치
-
-```bash
-touch 00-source-brief/python/tests/conftest.py
-```
-
-pytest가 `src/` 아래 모듈을 찾을 수 있도록 conftest를 배치했다.
-
-### 3-2. test_source_brief.py 작성
-
-검증 항목:
-- `brief.topic == "챗봇 상담 품질 관리"`
-- `brief.baseline_version == "08/v0-initial-demo"`
-- `"FastAPI" in brief.primary_stack`
-- `len(REFERENCE_SPINE) == 5`
-
-이 네 가지 assertion은 "source brief가 drift하지 않았다"를 보장한다.
-
-### 3-3. 테스트 실행
-
-```bash
-cd 00-source-brief/python
-uv run pytest -q
-```
-
-기대 결과: `1 passed`
-
----
-
-## Phase 4: 문서 작성
-
-### 4-1. stage README 작성
-
-`00-source-brief/README.md`를 작성했다. stage의 목적, capstone 연결, 구현 포인터를 포함한다.
-
-### 4-2. docs/ 및 problem/ 디렉터리 생성
-
-```bash
-mkdir -p 00-source-brief/docs
-mkdir -p 00-source-brief/problem
-```
-
-`docs/`에는 acceptance criteria와 durable index를, `problem/`에는 scope와 input/output 정의를 배치했다.
-
----
-
-## Phase 5: 검증 체크리스트
-
-| 검증 항목 | 명령어 | 기대 결과 |
-|-----------|--------|-----------|
-| 테스트 통과 | `cd python && uv run pytest -q` | 1 passed |
-| Python 버전 확인 | `python --version` | 3.12.x |
-| stack contract 고정 | 테스트에서 `"FastAPI" in primary_stack` 확인 | True |
-| reference spine 길이 | 테스트에서 `len(REFERENCE_SPINE) == 5` 확인 | True |
-
----
-
-## 이 단계에서 사용한 도구 요약
-
-| 도구 | 용도 |
-|------|------|
-| `uv` | Python 패키지 관리 및 가상환경 |
-| `pytest` | 테스트 실행 |
-| Python 3.12 | 런타임 |
-| `dataclasses` (stdlib) | frozen dataclass로 계약 고정 |
+- 이 문서의 순서를 그대로 유지하되, 경로만 내 저장소 구조에 맞게 바꾼다.
+- `README.md`에는 문제 해석, 현재 상태, 실행 명령만 남기고 더 긴 판단 과정은 `notion/`으로 보낸다.
+- `docs/README.md`에는 검증 기준, proof artifact, 오래 남길 개념만 남긴다.
+- 새 노트를 다시 쓰고 싶다면 기존 `notion/`을 `notion-archive/`로 옮겨 예전 판단을 보존한다.
+- 발표나 제출용 README를 만들 때는 이 문서의 체크포인트를 그대로 acceptance checklist로 재사용한다.

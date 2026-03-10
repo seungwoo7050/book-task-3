@@ -1,35 +1,29 @@
-# Guardrail Engine — 왜 "안전 규칙"을 별도 엔진으로 만들어야 했는가
+# 03-rule-and-guardrail-engine 문제 정의
 
-## 출발점
+## 이 stage가 푸는 문제
 
-상담 품질을 평가할 때, "답변이 친절한가"와 "답변이 안전한가"는 전혀 다른 문제다.
-
-예를 들어, 고객이 "해지하려면 어떻게 하나요?"라고 물었을 때 챗봇이 "해지 절차를 안내드립니다"라고 친절하게 대답하지만 **본인확인을 언급하지 않았다면**, 이건 정책 위반이다. 해지/환불/명의변경에는 반드시 본인확인이 필요하다는 도메인 규칙이 있기 때문이다.
-
-이런 종류의 실패는 LLM이 "좋은 답변이었어요"라고 판단할 수 있지만, 실제로는 **위험한** 답변이다.
-그래서 "안전과 정책 준수"를 **별도 엔진**으로 분리해서, LLM judge와 독립적으로 검출할 수 있어야 했다.
-
-## 이 단계가 해결하려는 것
-
-핵심 질문:
-
-> "상담 품질 관리에서 반드시 잡아야 하는 안전 규칙을 어떻게 설명 가능하게 구현할 것인가?"
-
-답변에서 검출해야 하는 실패 유형은 네 가지:
-
-1. **MISSING_MANDATORY_STEP** — 해지/환불/명의변경 시 본인확인 누락
-2. **UNSUPPORTED_CLAIM** — "무조건", "100%", "반드시" 같은 과장 약속
-3. **PII_EXPOSURE** — 주민번호, 카드번호 같은 개인정보 노출
-4. **ESCALATION_MISS** — 민원/분쟁 상황에서 상담원 이관 미안내
+mandatory notice, forbidden promise, PII, escalation 규칙을 deterministic failure code로 환원하는 단계다.
 
 ## 성공 기준
 
-- 네 가지 failure type이 각각 **독립 코드**로 검출된다.
-- **LLM 없이도** 재현 가능한 deterministic regression이 가능하다.
+- mandatory notice, unsupported claim, PII exposure, escalation miss가 각각 독립 코드로 검출된다.
+- LLM 없이도 재현 가능한 deterministic regression이 가능하다.
 - 후속 score merge에서 compliance 축을 해석할 수 있다.
 
-## 이 트랙을 처음 보는 사람을 위한 전제
+## 왜 지금 이 단계를 먼저 보는가
 
-- 상담 품질 평가는 단순 친절도보다 **안전성과 정책 준수**를 우선해야 한다.
-- 이 stage에서는 동의어와 문맥 변형을 모두 포착하지 못한다. 규칙의 **surface**를 설명하기 위한 최소 범위다.
-- failure type은 stage 01의 rubric에서 compliance 축과 연결되고, stage 07의 dashboard failures 페이지에서 보여진다.
+- v0에서 추가한 escalation rule과 MP2 guardrail tests를 축소한 pack이다.
+- failure codes는 dashboard failures 페이지와 golden set assertion의 공통 언어가 된다.
+
+## 먼저 알고 있으면 좋은 것
+
+- 상담 품질 평가가 단순 친절도보다 안전성과 정책 준수를 우선해야 함을 이해해야 한다.
+
+## 확인할 증거
+
+- `python/tests/test_guardrails.py`가 네 가지 규칙을 각각 분리 검증한다.
+- 룰은 JSON 파일로 분리되어 정책 변경이 코드 diff 없이도 보인다.
+
+## 아직 남아 있는 불확실성
+
+동의어와 문맥 변형을 모두 포착하지는 못한다. 이 pack은 rule surface를 설명하기 위한 최소 범위다.

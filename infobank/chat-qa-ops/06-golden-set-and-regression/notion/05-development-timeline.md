@@ -1,101 +1,50 @@
-# Golden Set & Regression — 개발 타임라인
+# 06-golden-set-and-regression 재현 타임라인
 
-## 1단계: 디렉터리 생성
+## 이 문서의 역할
 
-```bash
-mkdir -p chat-qa-ops/06-golden-set-and-regression/python/{src/stage06,tests,data}
-```
+이 문서는 과거의 시간순 일지를 복원하는 대신, 지금 저장소 기준으로 같은 결과를 다시 확인하는 순서를 남긴다. 학습자는 이 순서를 따라가며 어떤 파일을 먼저 읽고, 어떤 명령을 실행하고, 어떤 결과를 근거로 삼아야 하는지 바로 파악할 수 있어야 한다.
 
-## 2단계: golden_cases.json 작성
+## 재현 전에 준비할 것
 
-```bash
-cat > chat-qa-ops/06-golden-set-and-regression/python/data/golden_cases.json << 'EOF'
-{
-  "cases": [
-    {
-      "id": "gs-001",
-      "required_evidence_doc_ids": ["refund_policy.md"]
-    },
-    {
-      "id": "gs-002",
-      "required_evidence_doc_ids": ["identity_verification.md"]
-    }
-  ]
-}
-EOF
-```
+- stage02 fixture/replay, stage04 evidence doc contract를 이해해야 한다.
 
-데이터 파일을 먼저 만든 이유: evaluate_case()의 입력 형태를 데이터 기준으로 결정하기 위해서다.
-코드보다 데이터가 먼저 있으면 인터페이스 설계가 자연스러워진다.
+## 재현 순서
 
-## 3단계: compare_manifest.json 작성
+1. stage `README.md`, `problem/README.md`, `docs/README.md`를 먼저 읽어 문제 해석과 완료 기준을 고정한다.
+2. 아래 핵심 경로를 위에서 아래 순서로 열어 구현과 문서가 같은 뜻을 가리키는지 확인한다.
+
+- `python/data/golden_cases.json`
+- `python/data/compare_manifest.json`
+- `python/src/stage06/regression.py`
+
+3. 아래 검증 명령을 그대로 실행해 현재 저장소 상태가 문서 설명과 맞는지 확인한다.
 
 ```bash
-cat > chat-qa-ops/06-golden-set-and-regression/python/data/compare_manifest.json << 'EOF'
-{
-  "baseline": "v1.0",
-  "candidate": "v1.1",
-  "dataset": "golden-set"
-}
-EOF
+cd python
+UV_PYTHON=python3.12 uv sync
+UV_PYTHON=python3.12 uv run pytest -q
 ```
 
-## 4단계: pyproject.toml 작성
+4. 테스트나 실행 결과를 아래 증거와 대조한다.
 
-```bash
-cat > chat-qa-ops/06-golden-set-and-regression/python/pyproject.toml << 'EOF'
-[project]
-name = "stage06-golden-set-and-regression"
-version = "0.1.0"
-requires-python = ">=3.12"
-dependencies = []
+- `python/tests/test_regression.py`가 golden assertion과 compare manifest를 확인한다.
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-EOF
-```
+5. 결과가 다르면 `02-debug-log.md`와 `notion-archive/`를 함께 열어 어떤 가정이 바뀌었는지 추적한다.
 
-외부 패키지 의존성 없음. json과 pathlib만 사용한다.
+## 재현 체크포인트
 
-## 5단계: regression.py 구현
+- golden case는 required evidence 문서를 명시한다.
+- assertion 실패는 reason code로 설명된다.
+- baseline과 candidate label을 manifest 파일로 고정한다.
 
-```bash
-touch chat-qa-ops/06-golden-set-and-regression/python/src/stage06/__init__.py
-# regression.py 작성
-```
+## 막히면 먼저 볼 것
 
-구현 순서:
-1. `evaluate_case(required_doc_ids, actual_doc_ids)` — any() 기반 통과 판정 + reason_codes 반환
-2. `load_manifest(path)` — JSON 파일을 dict로 로드
+- baseline과 candidate가 어떤 run label인지 문서만 봐서는 혼동될 수 있었다. -> 확인 기준: `test_golden_assertion_and_compare_manifest`가 `v1.0`, `v1.1`, `golden-set` 값을 검증한다.
 
-두 함수 모두 5줄 이내로 완료된다.
+## 자기 포트폴리오 레포로 옮길 때
 
-## 6단계: 테스트 작성 및 실행
-
-```bash
-touch chat-qa-ops/06-golden-set-and-regression/python/tests/test_regression.py
-```
-
-테스트 내용:
-1. required doc가 actual에 있으면 passed=True
-2. manifest에서 baseline/candidate 버전이 올바르게 로드되는지
-
-```bash
-cd chat-qa-ops/06-golden-set-and-regression/python
-uv run pytest tests/ -x -v
-```
-
-## 7단계: README 정리
-
-```bash
-cat > chat-qa-ops/06-golden-set-and-regression/python/README.md << 'EOF'
-# Stage 06 — Golden Set & Regression
-...
-EOF
-```
-
-## 비고
-
-- 이 stage는 전체 stage 중 코드량이 가장 적다 (regression.py가 11줄).
-- 복잡도가 낮은 대신, 데이터 설계(golden_cases.json의 구조)가 핵심이다.
-- 실제 운영에서는 golden case를 CI에 연결하여 PR마다 자동 실행하는 것이 목표다.
+- 이 문서의 순서를 그대로 유지하되, 경로만 내 저장소 구조에 맞게 바꾼다.
+- `README.md`에는 문제 해석, 현재 상태, 실행 명령만 남기고 더 긴 판단 과정은 `notion/`으로 보낸다.
+- `docs/README.md`에는 검증 기준, proof artifact, 오래 남길 개념만 남긴다.
+- 새 노트를 다시 쓰고 싶다면 기존 `notion/`을 `notion-archive/`로 옮겨 예전 판단을 보존한다.
+- 발표나 제출용 README를 만들 때는 이 문서의 체크포인트를 그대로 acceptance checklist로 재사용한다.

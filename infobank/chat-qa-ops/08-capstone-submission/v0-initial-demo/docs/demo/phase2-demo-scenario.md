@@ -1,4 +1,4 @@
-# Phase 2 Demo Scenario
+# Phase 2 데모 시나리오
 
 ## 목적
 

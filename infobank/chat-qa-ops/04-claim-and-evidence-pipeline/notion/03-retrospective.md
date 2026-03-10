@@ -1,30 +1,30 @@
-# Claim & Evidence Pipeline — 회고
+# 04-claim-and-evidence-pipeline 회고
 
-## 잘 된 것
+## 이번 stage로 강화된 점
 
-### session review에서 사람이 읽을 provenance data를 남길 수 있게 됐다
+- session review에서 사람이 읽을 provenance data를 남길 수 있다.
+- retrieval 성능 문제와 answer composition 문제를 분리해서 볼 수 있다.
 
-claim별로 "이 문장은 KB의 어떤 문서에 근거한다"가 보이니, human reviewer가 "이건 맞는 말인가?"를 바로 확인할 수 있다.
-`not_found`인 claim은 "이 문장은 KB에 근거가 없다 — 챗봇이 자체 생성한 내용이다"로 해석된다.
+## 아직 약한 부분
 
-### retrieval 성능 문제와 answer composition 문제를 분리할 수 있게 됐다
+- confidence score나 contradiction depth는 아직 없다.
 
-점수가 낮을 때, "검색이 맞는 문서를 못 찾았는가"(retrieval 문제)와 "찾았는데 답변에 반영을 안 했는가"(composition 문제)를 구분할 수 있다.
-retrieval trace에 검색 쿼리와 반환 문서가 함께 남기 때문이다.
+## 학생이 여기서 바로 가져갈 것
 
-## 아쉬운 것
+- claim을 추출한 뒤 근거 문서와 verdict trace를 끝까지 남겨, 실패 원인을 사람이 읽을 수 있게 하는 방식
+- retrieval 문제와 answer composition 문제를 같은 groundedness 실패로 뭉개지 않는 방식
 
-### confidence score나 contradiction depth는 아직 없다
+## 다음 stage로 넘기는 자산
 
-현재 verdict는 `support`/`not_found` 이분법이다.
-"부분적으로 지지한다"나 "KB 내용과 모순된다"는 구분이 없다.
+- claim extraction
+- retrieval trace
+- verdict trace와 evidence document linkage
 
-### claim segmentation이 단순 문장 분리다
+## 05-development-timeline.md와 같이 읽을 포인트
 
-마침표(`.`)와 물음표(`?`)로 split하는 것이 전부다.
-"환불은 본인확인 후 접수 가능하며, 처리까지 3~5일 소요됩니다"처럼 하나의 문장에 두 개의 claim이 있는 경우를 다루지 못한다.
+- pipeline 코드와 테스트를 먼저 대조하면 왜 `not_found` verdict를 버리지 않는지 이해하기 쉽다.
+- capstone session review를 볼 때도 이 stage의 trace shape를 기준으로 provenance를 읽는다.
 
 ## 나중에 다시 볼 것
 
-- domain classification과 reranking을 trace schema에 더 붙이면, "어떤 도메인의 문서를 선호했는가"까지 볼 수 있다.
-- contradiction detection을 추가하면 "근거 있는 오답"도 잡을 수 있다.
+- 후속 실험에서 domain classification과 reranking을 trace schema에 더 붙일 수 있다.

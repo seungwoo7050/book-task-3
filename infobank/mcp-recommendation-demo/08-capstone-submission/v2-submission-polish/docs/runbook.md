@@ -1,10 +1,10 @@
-# Runbook
+# 실행 안내서
 
-## Goal
+## 목표
 
-`v2` 데모는 추천 실험 결과를 릴리즈 후보 승인 흐름으로 연결하는 submission-ready 운영 경로를 재현한다.
+`v2` 데모는 추천 실험 결과를 릴리즈 후보 승인 흐름으로 연결하는 제출 준비가 끝난 운영 경로를 재현한다.
 
-## Local Run
+## 로컬 실행
 
 1. `cp .env.example .env`
 2. `pnpm install`
@@ -13,7 +13,7 @@
 5. `pnpm seed`
 6. `pnpm dev`
 
-## Release Workflow
+## 릴리즈 워크플로
 
 1. 대시보드에서 `Candidate 실행` 또는 `Compare 갱신`으로 최신 추천/평가 상태를 확인한다.
 2. `Release Candidate Console`에서 후보를 선택하거나 새로 생성한다.
@@ -21,7 +21,7 @@
 4. `Release Quality` 카드에서 `PASS/PENDING`를 확인한다.
 5. `Submission Artifact Preview`의 Markdown을 제출 증빙으로 사용한다.
 
-## CLI Path
+## CLI 경로
 
 ```bash
 pnpm eval

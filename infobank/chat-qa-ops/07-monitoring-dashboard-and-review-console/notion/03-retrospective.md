@@ -1,32 +1,31 @@
-# Monitoring Dashboard — 회고
+# 07-monitoring-dashboard-and-review-console 회고
 
-## 잘 된 것
+## 이번 stage로 강화된 점
 
-### snapshot 방식이 API 계약 확정에 효과적이다
+- 운영 콘솔이 어떤 질문에 답해야 하는지 stage 수준에서 분리 학습할 수 있다.
+- backend/frontend payload shape를 함께 검증한다.
 
-DB 없이 SNAPSHOT dict만으로 API를 구현했더니,
-API schema 논의가 빠르게 끝났다.
-프론트엔드 개발자는 API 문서 대신 SNAPSHOT dict를 읽으면 된다.
+## 아직 약한 부분
 
-### 프론트엔드와 백엔드의 완전한 분리
+- real API wiring과 persistent storage는 capstone 버전에서만 완전하다.
 
-React 앱은 `/api/*` 경로로만 통신한다.
-백엔드가 snapshot에서 실제 DB로 바뀌어도, 응답 형태만 같으면 프론트엔드는 수정할 필요가 없다.
-실제로 capstone v0→v1 전환에서 이 분리가 검증되었다.
+## 학생이 여기서 바로 가져갈 것
 
-### lineage 추적이 대시보드에 내장됨
+- 운영자 화면은 예쁜 UI보다 "어떤 질문에 답해야 하는가"를 먼저 정의해야 한다는 점
+- backend payload shape와 frontend 정보 구조를 같이 검증해야 운영 화면이 흔들리지 않는다는 점
 
-세션 상세 뷰에서 각 평가의 lineage(run_label, dataset, trace_id, retrieval_version)를 바로 볼 수 있다.
-문제가 생겼을 때 "이 평가는 어떤 조건에서 실행되었는가"를 즉시 확인할 수 있다.
+## 다음 stage로 넘기는 자산
 
-## 아쉬운 것
+- snapshot API
+- dashboard information architecture
+- session review trace surfacing
+- baseline/candidate version compare
 
-### 실시간 데이터가 없다
+## 05-development-timeline.md와 같이 읽을 포인트
 
-snapshot은 정적이다. 새 상담이 들어와도 대시보드가 갱신되지 않는다.
-capstone에서 DB 연결 후에야 실시간 반영이 가능하다.
+- overview, failures, session review가 각각 어떤 운영 질문에 답하는지 문서와 payload를 같이 본다.
+- capstone UI를 읽을 때는 이 stage의 정보 구조가 실제 제품 화면으로 어떻게 옮겨졌는지 연결해서 본다.
 
-### 대시보드 접근 제어가 없다
+## 나중에 다시 볼 것
 
-현재 누구나 API에 접근할 수 있다.
-capstone v3에서 auth/RBAC가 추가되지만, 이 stage에서는 고려하지 않았다.
+- 향후 screenshot 기반 docs나 storybook-style examples를 추가하면 공개 저장소 이해도가 더 높아질 수 있다.

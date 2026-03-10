@@ -1,104 +1,50 @@
-# Quality Rubric — 개발 타임라인
+# 01-quality-rubric-and-score-contract 재현 타임라인
 
-이 문서는 stage 01을 처음부터 끝까지 재현하기 위해 필요한 모든 단계를 시간순으로 기록합니다.
+## 이 문서의 역할
 
----
+이 문서는 과거의 시간순 일지를 복원하는 대신, 지금 저장소 기준으로 같은 결과를 다시 확인하는 순서를 남긴다. 학습자는 이 순서를 따라가며 어떤 파일을 먼저 읽고, 어떤 명령을 실행하고, 어떤 결과를 근거로 삼아야 하는지 바로 파악할 수 있어야 한다.
 
-## Phase 1: 프로젝트 구조 초기화
+## 재현 전에 준비할 것
 
-### 1-1. 디렉터리 생성
+- QA Ops의 목표가 상담 품질을 수치화하고 비교하는 것임을 알아야 한다.
 
-```bash
-mkdir -p 01-quality-rubric-and-score-contract/python/src/stage01
-mkdir -p 01-quality-rubric-and-score-contract/python/tests
-touch 01-quality-rubric-and-score-contract/python/src/stage01/__init__.py
-```
+## 재현 순서
 
-### 1-2. pyproject.toml 작성
+1. stage `README.md`, `problem/README.md`, `docs/README.md`를 먼저 읽어 문제 해석과 완료 기준을 고정한다.
+2. 아래 핵심 경로를 위에서 아래 순서로 열어 구현과 문서가 같은 뜻을 가리키는지 확인한다.
 
-- `name = "study2-stage01"`
-- `requires-python = ">=3.12,<3.13"`
-- `dependencies = []` — 외부 라이브러리 불필요
-- dev: `pytest>=9.0.0`
+- `python/src/stage01/rubric.py`
+- `python/tests/test_rubric.py`
 
-### 1-3. 환경 설정
+3. 아래 검증 명령을 그대로 실행해 현재 저장소 상태가 문서 설명과 맞는지 확인한다.
 
 ```bash
-cd 01-quality-rubric-and-score-contract/python
-uv sync --extra dev
+cd python
+UV_PYTHON=python3.12 uv sync
+UV_PYTHON=python3.12 uv run pytest -q
 ```
 
----
+4. 테스트나 실행 결과를 아래 증거와 대조한다.
 
-## Phase 2: Rubric 구현
+- `python/tests/test_rubric.py` 세 케이스가 점수 contract를 고정한다.
+- critical override는 `CRITICAL` grade와 `0.0` total로 정규화된다.
 
-### 2-1. WEIGHTS 상수 정의
+5. 결과가 다르면 `02-debug-log.md`와 `notion-archive/`를 함께 열어 어떤 가정이 바뀌었는지 추적한다.
 
-`python/src/stage01/rubric.py` 파일을 생성하고, 다섯 축의 weight를 dictionary로 정의했다.
+## 재현 체크포인트
 
-- correctness: 0.30
-- groundedness: 0.25
-- compliance: 0.20
-- resolution: 0.15
-- communication: 0.10
+- weight 총합이 1.0으로 유지된다.
+- critical failure는 어떤 점수보다 우선한다.
+- grade band가 후속 stage와 capstone에서 재사용 가능하다.
 
-이 값들의 합이 **정확히 1.0**이 되도록 조정했다.
+## 막히면 먼저 볼 것
 
-### 2-2. GRADE_BANDS 상수 정의
+- critical failure가 있어도 평균 점수가 높게 계산될 수 있었다. -> 확인 기준: `test_critical_override_wins`가 100점 입력에서도 `CRITICAL`을 기대한다.
 
-성적 등급 경계를 tuple of tuples로 정의했다: `(("A", 90), ("B", 75), ("C", 60), ("D", 40))`.
-이 순서는 `to_grade()` 함수에서 위에서 아래로 순회하면서 첫 번째로 충족되는 등급을 반환하는 데 사용된다.
+## 자기 포트폴리오 레포로 옮길 때
 
-### 2-3. to_grade() 함수 작성
-
-total score를 받아 grade band에 매칭하는 함수. 어떤 band에도 해당하지 않으면 `"F"`를 반환한다.
-
-### 2-4. merge_score() 함수 작성
-
-**핵심 설계 결정**: 함수 진입 직후 `critical` 파라미터를 먼저 검사한다.
-`critical=True`이면 가중 평균을 아예 계산하지 않고 즉시 `{"total": 0.0, "grade": "CRITICAL"}`을 반환한다.
-
-그 다음에야 다섯 축의 가중 평균을 계산하고, `round(total, 2)`로 소수점 2자리로 반올림한다.
-
----
-
-## Phase 3: 테스트 작성 및 검증
-
-### 3-1. 세 가지 테스트 케이스 작성
-
-| 테스트 | 검증 대상 |
-|--------|-----------|
-| `test_weights_sum_to_one` | weight 합산이 1.0 |
-| `test_critical_override_wins` | 모든 축 100점 + critical → total 0.0, grade CRITICAL |
-| `test_grade_band_contract` | 모든 축 90점 → grade A |
-
-### 3-2. 테스트 실행
-
-```bash
-cd 01-quality-rubric-and-score-contract/python
-uv run pytest -q
-```
-
-기대 결과: `3 passed`
-
----
-
-## Phase 4: 문서 정리
-
-### 4-1. stage README 작성
-
-목적, capstone 연결, 구현 포인터를 정리했다.
-
-### 4-2. docs/rubric-spec.md 작성
-
-rubric의 세부 사양을 durable index로 정리했다.
-
----
-
-## 이 단계에서 사용한 도구 요약
-
-| 도구 | 용도 |
-|------|------|
-| `uv` | Python 패키지 관리 및 가상환경 |
-| `pytest` | 테스트 실행 |
-| Python 3.12 | 런타임 |
+- 이 문서의 순서를 그대로 유지하되, 경로만 내 저장소 구조에 맞게 바꾼다.
+- `README.md`에는 문제 해석, 현재 상태, 실행 명령만 남기고 더 긴 판단 과정은 `notion/`으로 보낸다.
+- `docs/README.md`에는 검증 기준, proof artifact, 오래 남길 개념만 남긴다.
+- 새 노트를 다시 쓰고 싶다면 기존 `notion/`을 `notion-archive/`로 옮겨 예전 판단을 보존한다.
+- 발표나 제출용 README를 만들 때는 이 문서의 체크포인트를 그대로 acceptance checklist로 재사용한다.

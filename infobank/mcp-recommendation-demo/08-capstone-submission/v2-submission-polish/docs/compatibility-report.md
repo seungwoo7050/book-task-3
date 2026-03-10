@@ -1,4 +1,4 @@
-# Compatibility Report
+# 호환성 리포트
 
 `compatibility gate`는 아래 다섯 가지를 deterministic rule로 검사한다.
 

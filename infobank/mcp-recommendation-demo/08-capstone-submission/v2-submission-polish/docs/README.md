@@ -1,19 +1,25 @@
-# v2 Docs
+# v2 제출 마감 버전 문서 안내
 
-`v2-submission-polish`의 tracked docs index입니다. 운영 절차와 제출 증빙만 남기고, 시행착오와 세부 로그는 `notion/`으로 분리합니다.
+v1를 바탕으로 compatibility gate, release gate, artifact export, 제출용 proof 문서를 더해 최종 capstone으로 마감한 버전이다.
 
-## Included
+## 포함된 문서
 
-- `runbook.md`: 로컬 데모 부트스트랩과 release gate 실행 순서
-- `eval-proof.md`: offline eval acceptance 기준과 기대 결과
-- `compare-report.md`: baseline vs candidate compare 기준
-- `compatibility-report.md`: semver/compatibility gate 체크 항목
-- `release-gate-proof.md`: release gate pass/fail 조건과 artifact 묶음
-- `korean-market-fit.md`: 한국어 추천 근거와 운영 적합성 요약
-- `presentation-deck.md`: 발표용 시나리오, 실제 캡처 화면, 발표 멘트가 포함된 Markdown deck
-- `presentation-assets/`: `pnpm capture:presentation`으로 생성한 데모 화면 캡처
+- `docs/runbook.md`
+- `docs/eval-proof.md`
+- `docs/compare-report.md`
+- `docs/compatibility-report.md`
+- `docs/release-gate-proof.md`
+- `docs/korean-market-fit.md`
+- `docs/presentation-deck.md`
+- `problem/README.md`
 
-## Commands
+## 이 문서들이 맡는 역할
+
+- tracked docs는 실행 순서, 검증 기준, 발표 자료처럼 오래 남길 증빙을 맡는다.
+- 더 긴 시행착오와 판단 과정은 `notion/`에서 이어서 본다.
+- 학생 입장에서는 이 문서 묶음을 그대로 따라가면 자신의 포트폴리오용 제출 문서 세트를 구성할 수 있다.
+
+## 자주 쓰는 명령
 
 ```bash
 pnpm install
@@ -29,10 +35,3 @@ pnpm capture:presentation
 pnpm test
 pnpm e2e
 ```
-
-## Status
-
-- Backend/API: implemented
-- Dashboard: implemented
-- Compatibility and release gates: implemented
-- Dry-run pipeline: implemented via `../../.github/workflows/study1-v2-dry-run.yml`

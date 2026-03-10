@@ -1,25 +1,32 @@
-# v1 Ranking Hardening Problem
+# v1 랭킹 강건화 문제 정의
 
-## Scope
+## 이번 버전의 목표
 
-v0를 복제한 뒤 reranker, usage logs, feedback loop, baseline/candidate compare, catalog/experiment CRUD를 추가한 버전.
+v0를 바탕으로 reranker, usage logs, feedback loop, baseline/candidate compare를 더한 운영형 추천 버전이다.
 
-## Acceptance Criteria
+## 최소 범위
 
-- candidate reranking
-- usage event API
-- feedback API
-- experiment CRUD
-- compare snapshot UI
+- reranker와 compare runner
+- usage/feedback/experiment API
+- 운영 콘솔의 compare 화면
 
-## Verification Commands
+## 검증 명령
 
 ```bash
 pnpm install
+cp .env.example .env
 pnpm db:up
 pnpm migrate
 pnpm seed
 pnpm dev
 pnpm test
+pnpm eval
+pnpm capture:presentation
 pnpm e2e
 ```
+
+## 증빙 산출물
+
+- presentation deck
+- presentation capture assets
+- compare proof와 usage 흐름 설명

@@ -1,62 +1,30 @@
-# Golden Set & Regression — 접근 기록
+# 06-golden-set-and-regression 접근 기록
 
-## golden_cases.json 설계
+## 이 stage의 질문
 
-golden set의 최소 단위를 정해야 했다.
-후보는 세 가지였다:
+개선 실험이 실제 품질 향상인지 어떻게 데이터셋과 manifest로 증빙할 것인가?
 
-1. **질문 + 정답 텍스트**: 정답을 exact match로 비교
-2. **질문 + 기대 점수 범위**: judge 점수가 특정 범위 안에 들어야 통과
-3. **질문 + 필수 근거 문서 ID**: 검색 결과에 특정 문서가 포함되어야 통과
+## 선택한 방향
 
-1번은 응답 문구가 조금만 바뀌어도 실패하므로 너무 취약하다.
-2번은 judge 자체가 heuristic이라 점수 범위를 신뢰하기 어렵다.
-3번을 택했다. 근거 문서 포함 여부는 retrieval 품질의 가장 직접적인 지표이고, 텍스트 변동에 강건하다.
+- golden cases와 compare manifest를 별도 JSON 파일로 분리했다. 이유: 데이터셋 내용과 비교 대상 메타데이터가 서로 다른 변경 주기를 가지기 때문이다.
+- assertion 실패는 `MISSING_REQUIRED_EVIDENCE_DOC` 같은 reason code를 사용한다. 이유: v2의 개선 효과를 failure type 감소로 직접 비교하기 위해서다.
 
-결과 구조:
+## 제외한 대안
 
-```json
-{
-  "cases": [
-    {
-      "id": "gs-001",
-      "required_evidence_doc_ids": ["refund_policy.md"]
-    }
-  ]
-}
-```
+- 비교 대상을 테스트 코드에 하드코딩하는 방식
+- pass/fail만 남기고 failure reason을 버리는 방식
 
-## evaluate_case() 구현
+## 선택 기준
 
-핵심 로직은 한 줄이다:
+- golden case는 required evidence 문서를 명시한다.
+- assertion 실패는 reason code로 설명된다.
+- baseline과 candidate label을 manifest 파일로 고정한다.
 
-```python
-passed = any(doc_id in actual_doc_ids for doc_id in required_doc_ids)
-```
+## 커리큘럼 안에서의 역할
 
-`any()`를 쓴 이유: required_evidence_doc_ids 중 **하나라도** 실제 검색 결과에 포함되면 통과.
-처음에는 `all()`로 했다가 바꿨다.
-현실적으로 한 질문에 대해 여러 근거 문서가 있을 수 있고, 그중 하나만 찾아도 응답 품질은 유지된다.
+- v1 compare와 v2 improvement report의 최소 구조를 stage 단위로 축소한 것이다.
+- evidence miss 감소를 수치로 논증하려면 manifest와 assertion이 함께 있어야 한다.
 
-## reason code 설계
+## 아직 열어 둔 판단
 
-실패 시 단순히 `False`만 반환하면 디버깅이 불가능하다.
-어떤 이유로 실패했는지를 코드로 남겨야 한다.
-
-현재 정의된 reason code:
-- `MISSING_REQUIRED_EVIDENCE_DOC` — 필수 근거 문서가 검색 결과에 하나도 없음
-
-이 패턴은 stage 03의 failure_types와 같은 방식이다.
-문자열 상수로 정의하고, 리스트로 반환한다.
-
-## load_manifest() 설계
-
-compare manifest는 JSON 파일에서 로드한다.
-복잡한 파싱이 필요 없으므로 `json.loads(path.read_text())`로 충분하다.
-
-manifest가 반환하는 건 단순 dict다:
-- `baseline`: 기준 버전 (예: "v1.0")
-- `candidate`: 비교 대상 (예: "v1.1")
-- `dataset`: 어떤 데이터셋으로 비교할지 (예: "golden-set")
-
-이 정보는 stage 07 대시보드의 version compare 기능에서 사용된다.
+이 pack은 sample-size가 작아 통계적 의미를 주장하기보다 compare 구조를 설명하는 데 초점이 있다.

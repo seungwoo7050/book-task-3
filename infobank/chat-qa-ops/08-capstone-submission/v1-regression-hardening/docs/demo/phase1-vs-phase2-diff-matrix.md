@@ -1,4 +1,4 @@
-# Phase1 vs Phase2 Diff Matrix
+# Phase1 vs Phase2 차이 매트릭스
 
 | 구분 축 | Phase 1 (필수) | Phase 2 (가산점) | 검증 방법 |
 |---|---|---|---|

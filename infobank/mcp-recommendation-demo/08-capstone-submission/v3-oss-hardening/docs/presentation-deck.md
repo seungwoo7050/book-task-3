@@ -1,4 +1,4 @@
-# Study1 v3 OSS Hardening Presentation
+# MCP Recommendation Demo v3 발표 자료
 
 ## 1. 그래서 v3로 뭘 할 수 있나
 
@@ -31,7 +31,7 @@
 
 ## 4. Login Screen
 
-![v3 login](/Users/woopinbell/work/chat-bot/study1/08-capstone-submission/v3-oss-hardening/docs/presentation-assets/01-login.png)
+![v3 login](./presentation-assets/01-login.png)
 
 설명:
 
@@ -40,7 +40,7 @@
 
 ## 5. Owner Dashboard
 
-![v3 owner dashboard](/Users/woopinbell/work/chat-bot/study1/08-capstone-submission/v3-oss-hardening/docs/presentation-assets/02-owner-dashboard.png)
+![v3 owner dashboard](./presentation-assets/02-owner-dashboard.png)
 
 설명:
 
@@ -49,7 +49,7 @@
 
 ## 6. Candidate Recommendation
 
-![v3 candidate](/Users/woopinbell/work/chat-bot/study1/08-capstone-submission/v3-oss-hardening/docs/presentation-assets/03-candidate-recommendation.png)
+![v3 candidate](./presentation-assets/03-candidate-recommendation.png)
 
 설명:
 
@@ -58,7 +58,7 @@
 
 ## 7. Job Activity
 
-![v3 jobs](/Users/woopinbell/work/chat-bot/study1/08-capstone-submission/v3-oss-hardening/docs/presentation-assets/04-job-activity.png)
+![v3 jobs](./presentation-assets/04-job-activity.png)
 
 설명:
 
@@ -67,7 +67,7 @@
 
 ## 8. Audit Log
 
-![v3 audit](/Users/woopinbell/work/chat-bot/study1/08-capstone-submission/v3-oss-hardening/docs/presentation-assets/05-audit-log.png)
+![v3 audit](./presentation-assets/05-audit-log.png)
 
 설명:
 
@@ -76,7 +76,7 @@
 
 ## 9. Artifact Preview
 
-![v3 artifact](/Users/woopinbell/work/chat-bot/study1/08-capstone-submission/v3-oss-hardening/docs/presentation-assets/06-artifact-preview.png)
+![v3 artifact](./presentation-assets/06-artifact-preview.png)
 
 설명:
 

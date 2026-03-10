@@ -1,100 +1,49 @@
-# Judge & Score Merge — 개발 타임라인
+# 05-judge-and-score-merge 재현 타임라인
 
-## 1단계: 디렉터리 생성
+## 이 문서의 역할
 
-```bash
-mkdir -p chat-qa-ops/05-judge-and-score-merge/python/{src/stage05,tests}
-```
+이 문서는 과거의 시간순 일지를 복원하는 대신, 지금 저장소 기준으로 같은 결과를 다시 확인하는 순서를 남긴다. 학습자는 이 순서를 따라가며 어떤 파일을 먼저 읽고, 어떤 명령을 실행하고, 어떤 결과를 근거로 삼아야 하는지 바로 파악할 수 있어야 한다.
 
-## 2단계: pyproject.toml 작성
+## 재현 전에 준비할 것
 
-```bash
-cat > chat-qa-ops/05-judge-and-score-merge/python/pyproject.toml << 'EOF'
-[project]
-name = "stage05-judge-and-score-merge"
-version = "0.1.0"
-requires-python = ">=3.12"
-dependencies = []
+- stage01의 weighted rubric과 stage03의 failure taxonomy를 알고 있어야 한다.
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-EOF
-```
+## 재현 순서
 
-stage 01의 rubric 모듈을 import해야 하지만, 이 stage에서는 WEIGHTS를 직접 복사하는 방식을 택했다.
-cross-stage dependency를 pyproject.toml에 넣지 않은 이유는 각 stage가 독립 실행 가능해야 하기 때문이다.
+1. stage `README.md`, `problem/README.md`, `docs/README.md`를 먼저 읽어 문제 해석과 완료 기준을 고정한다.
+2. 아래 핵심 경로를 위에서 아래 순서로 열어 구현과 문서가 같은 뜻을 가리키는지 확인한다.
 
-## 3단계: judge_response() 구현
+- `python/src/stage05/judge.py`
+- `python/tests/test_judge.py`
+
+3. 아래 검증 명령을 그대로 실행해 현재 저장소 상태가 문서 설명과 맞는지 확인한다.
 
 ```bash
-touch chat-qa-ops/05-judge-and-score-merge/python/src/stage05/__init__.py
-# judge.py 작성 시작
+cd python
+UV_PYTHON=python3.12 uv sync
+UV_PYTHON=python3.12 uv run pytest -q
 ```
 
-구현 순서:
-1. `judge_response(response_text, failure_types)` — correctness부터 작성
-2. correctness: `max(0, 90 - len(failure_types) * 10)` — failure가 많을수록 감점
-3. resolution: 응답 길이 > 10이면 85, 아니면 40
-4. communication: "감사", "안내" 등 상담 키워드 포함 여부로 80/50 분기
+4. 테스트나 실행 결과를 아래 증거와 대조한다.
 
-이 시점에서 한번 테스트를 돌려 judge_response()가 dict를 정상 반환하는지 확인했다:
+- `python/tests/test_judge.py`가 judge+merge 조합 결과를 검증한다.
 
-```bash
-cd chat-qa-ops/05-judge-and-score-merge/python
-uv run pytest tests/ -x -v
-```
+5. 결과가 다르면 `02-debug-log.md`와 `notion-archive/`를 함께 열어 어떤 가정이 바뀌었는지 추적한다.
 
-## 4단계: merge_score() 구현
+## 재현 체크포인트
 
-```bash
-# judge.py에 merge_score() 추가
-```
+- judge와 scorer가 별도 함수 계약을 가진다.
+- failure types는 판단 결과와 최종 score 계산 모두에 반영된다.
+- live provider가 없어도 deterministic 테스트가 가능하다.
 
-stage 01 rubric.py의 WEIGHTS를 그대로 가져와서 가중 평균을 계산한다.
-empathy와 efficiency는 judge_response()에서 생산하지 않으므로, merge_score()의 입력 dict에 기본값(예: 70.0)을 넣는 방식으로 처리했다.
+## 막히면 먼저 볼 것
 
-```python
-# 기본값 패턴
-scores.setdefault("empathy", 70.0)
-scores.setdefault("efficiency", 70.0)
-```
+- 짧은 응답도 무조건 높은 resolution 점수를 받을 수 있었다. -> 확인 기준: `judge_response` 구현이 길이와 표현 여부를 다른 축으로 평가한다.
 
-## 5단계: 테스트 추가
+## 자기 포트폴리오 레포로 옮길 때
 
-```bash
-touch chat-qa-ops/05-judge-and-score-merge/python/tests/test_judge.py
-```
-
-테스트 케이스:
-1. failure 없을 때 correctness == 90
-2. failure 5개 이상일 때 correctness == max(0, ...)으로 0 이하 방지
-3. merge_score()가 0~100 범위 float 반환
-
-```bash
-cd chat-qa-ops/05-judge-and-score-merge/python
-uv run pytest tests/ -x -v
-```
-
-## 6단계: critical override 검증
-
-stage 01의 critical override 로직이 merge 결과에 제대로 적용되는지 확인하기 위해,
-correctness=0인 케이스를 추가했다.
-
-```bash
-# test_judge.py에 critical override 테스트 추가
-uv run pytest tests/test_judge.py::test_critical_override -v
-```
-
-## 7단계: README 및 문서 정리
-
-```bash
-cat > chat-qa-ops/05-judge-and-score-merge/python/README.md << 'EOF'
-# Stage 05 — Judge & Score Merge
-...
-EOF
-```
-
-## 비고
-
-- 이 stage에서 외부 패키지 설치는 없다. 순수 Python 표준 라이브러리만 사용한다.
-- LLM provider SDK(openai, anthropic 등)는 capstone v1에서 추가된다.
+- 이 문서의 순서를 그대로 유지하되, 경로만 내 저장소 구조에 맞게 바꾼다.
+- `README.md`에는 문제 해석, 현재 상태, 실행 명령만 남기고 더 긴 판단 과정은 `notion/`으로 보낸다.
+- `docs/README.md`에는 검증 기준, proof artifact, 오래 남길 개념만 남긴다.
+- 새 노트를 다시 쓰고 싶다면 기존 `notion/`을 `notion-archive/`로 옮겨 예전 판단을 보존한다.
+- 발표나 제출용 README를 만들 때는 이 문서의 체크포인트를 그대로 acceptance checklist로 재사용한다.

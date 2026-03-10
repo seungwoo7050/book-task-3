@@ -1,24 +1,19 @@
-# 05-judge-and-score-merge Notion 문서 안내
+# 05-judge-and-score-merge 노트 안내
 
-이 폴더는 **Judge & Score Merge** 단계의 개발 과정과 의사결정을 기록한 블로그형 에세이 모음입니다.
+이 폴더는 stage의 판단 과정, 디버그 기록, 회고, 재사용 지식을 남기는 공개 백업 노트다. 특히 `05-development-timeline.md`는 학습자가 같은 결과를 다시 재현할 때 가장 먼저 따라갈 문서로 유지한다.
 
-## 어떤 문서를 먼저 읽을까?
+## 먼저 읽을 문서
 
-| 목적 | 문서 |
-|------|------|
-| judge와 scorer를 왜 분리해야 하는지 알고 싶다 | [00-problem-framing.md](./00-problem-framing.md) |
-| heuristic judge를 왜 선택했는지 궁금하다 | [01-approach-log.md](./01-approach-log.md) |
-| resolution과 communication 점수 구분 문제를 보고 싶다 | [02-debug-log.md](./02-debug-log.md) |
-| heuristic 접근의 한계를 알고 싶다 | [03-retrospective.md](./03-retrospective.md) |
-| judge output schema 개념을 정리하고 싶다 | [04-knowledge-index.md](./04-knowledge-index.md) |
-| 파일 생성과 CLI 순서를 따라가고 싶다 | [05-development-timeline.md](./05-development-timeline.md) |
+- `00-problem-framing.md`: 이 stage가 다루는 문제와 성공 기준
+- `01-approach-log.md`: 어떤 방향을 택했고 무엇을 버렸는지
+- `02-debug-log.md`: 자주 깨지는 지점과 검증 포인트
+- `03-retrospective.md`: 이번 stage가 남긴 강점과 한계
+- `04-knowledge-index.md`: 나중에도 다시 꺼내 쓸 개념과 참고 경로
+- `05-development-timeline.md`: 읽기 순서, 실행 명령, 체크포인트를 묶은 재현 타임라인
 
-## 이 문서들과 소스코드의 관계
+## 운영 원칙
 
-소스코드(`judge.py`)는 heuristic 판단과 점수 합산 로직을 보여줍니다.
-이 문서들은 **왜 judge가 total까지 계산하면 안 되는지**, **왜 live LLM 대신 heuristic으로 시작했는지** 등 설계의 맥락을 설명합니다.
-
-## 관련 stage
-
-- **이전**: [04-claim-and-evidence-pipeline](../../04-claim-and-evidence-pipeline/notion/) — 주장 추출과 근거 검증
-- **다음**: [06-golden-set-and-regression](../../06-golden-set-and-regression/notion/) — 골든 세트 기반 회귀 테스트
+- 빠른 현재 상태 확인은 stage `README.md`, `problem/`, `docs/`를 먼저 본다.
+- 새 기준으로 다시 쓰고 싶다면 기존 `notion/`을 `notion-archive/`로 옮겨 보존한다.
+- `05-development-timeline.md`는 단순 일지가 아니라 재현 가능한 학습 순서 문서로 유지한다.
+- 더 거친 시행착오와 과거 버전별 로그는 `notion-archive/`에 남긴다.

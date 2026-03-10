@@ -1,32 +1,33 @@
-# Selection Rubric & Eval Contract — 디버그 기록
+# 01 추천 품질 기준과 평가 계약 디버그 기록
 
-## eval case 순위 매칭 로직 오류
+## 먼저 확인할 명령
 
-### 상황
+```bash
+pnpm install
+cp .env.example .env
+pnpm db:up
+pnpm migrate
+pnpm seed
+pnpm dev
+pnpm test
+pnpm eval
+pnpm capture:presentation
+pnpm e2e
+```
 
-eval에서 expected rank 1 도구가 실제 추천 목록의 2번째에 있을 때,
-이걸 "partially correct"로 처리해야 하는지, "incorrect"로 처리해야 하는지 혼란이 있었다.
+## 다시 막히기 쉬운 지점
 
-### 해결
+- 상위 `README.md`, `problem/README.md`, `docs/README.md`, 연결된 capstone 경로 설명이 서로 어긋나지 않는지 먼저 확인한다.
+- `v0-initial-demo`가 아니라 다른 버전의 코드를 보고 있으면 stage 목적이 흐려질 수 있다.
+- 이 단계는 '어떻게 구현했는가'보다 '무엇을 좋은 추천으로 볼 것인가'를 먼저 설명한다.
 
-rank accuracy는 strict 매칭으로 결정했다:
-- expected rank 1 도구가 실제 1순위 → 1.0
-- expected rank 1 도구가 실제 2순위 → 0.0 (rank accuracy 기준)
-- 단, relevance 축에서는 "목록에 포함" 여부만 보므로 1.0
+## 현재 상태 메모
 
-이렇게 축별로 기준을 분리하면 "관련은 있지만 순위가 틀린" 케이스를 정확히 포착할 수 있다.
+- 실제 계약은 `v0`의 shared contract와 eval service에 반영돼 있다.
+- 이 stage는 별도 구현보다 평가 기준을 stable index로 남기는 역할을 맡는다.
 
-## threshold를 너무 낮게 잡아서 모든 버전이 통과하는 문제
+## 재현 실패 시 다시 볼 경로
 
-### 상황
-
-초기 threshold를 relevance ≥ 0.5로 설정했더니,
-v0 baseline도 쉽게 통과해서 개선 동기가 없어졌다.
-
-### 해결
-
-v0 baseline 결과를 기반으로 threshold를 상향 조정했다:
-- relevance: 0.5 → 0.7 (v0이 0.65로 약간 못 미치는 수준)
-- rank accuracy: 0.3 → 0.5
-
-이제 v0은 threshold를 통과하지 못하고, v1 reranker 추가 후 통과하게 된다.
+- `08-capstone-submission/v0-initial-demo/shared/src/contracts.ts`
+- `08-capstone-submission/v0-initial-demo/shared/src/eval.ts`
+- `08-capstone-submission/v0-initial-demo/node/src/services/eval-service.ts`

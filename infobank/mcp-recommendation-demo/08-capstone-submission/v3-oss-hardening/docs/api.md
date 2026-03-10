@@ -1,12 +1,12 @@
-# API
+# API 요약
 
-## Auth
+## 인증
 
 - `POST /api/auth/login`
 - `POST /api/auth/logout`
 - `GET /api/auth/session`
 
-## Admin
+## 관리자
 
 - `GET /api/users`
 - `POST /api/users`
@@ -15,7 +15,7 @@
 - `PUT /api/settings`
 - `GET /api/audit-logs`
 
-## Catalog And Recommendation
+## 카탈로그와 추천
 
 - `GET /api/catalog`
 - `GET /api/catalog/:id`
@@ -28,7 +28,7 @@
 - `POST /api/recommendations`
 - `POST /api/recommendations/candidate`
 
-## Signals And Experiments
+## 신호와 실험
 
 - `GET /api/usage-events`
 - `POST /api/usage-events`
@@ -40,7 +40,7 @@
 - `DELETE /api/experiments/:id`
 - `GET /api/compare/latest`
 
-## Release
+## 릴리즈
 
 - `GET /api/release-candidates`
 - `POST /api/release-candidates`
@@ -50,7 +50,7 @@
 - `GET /api/release-gate/latest`
 - `GET /api/submission/latest`
 
-## Jobs
+## 작업
 
 - `GET /api/jobs`
 - `GET /api/jobs/:id`

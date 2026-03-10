@@ -1,12 +1,12 @@
 ---
 marp: true
 paginate: true
-title: Study1 Capstone v1 Demo
-description: v1 ranking hardening presentation deck
+title: 인포뱅크 1번 과제 capstone v1 데모
+description: v1 랭킹 강건화 발표 문서
 ---
 
-# Study1 Capstone
-## v1 Ranking Hardening
+# 인포뱅크 1번 과제 capstone
+## v1 랭킹 강건화
 
 baseline 위에 usage, feedback, rerank compare를 얹은 운영 실험 콘솔  
 검증일: 2026-03-07

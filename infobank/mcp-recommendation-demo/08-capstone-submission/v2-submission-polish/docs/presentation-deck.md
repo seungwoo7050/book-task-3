@@ -1,12 +1,12 @@
 ---
 marp: true
 paginate: true
-title: Study1 Capstone Final Demo
-description: v2 submission-ready MCP recommendation ops demo
+title: 인포뱅크 1번 과제 capstone 최종 데모
+description: v2 제출 마감 MCP 추천 운영 데모
 ---
 
-# Study1 Capstone Final
-## v2 Submission Polish
+# 인포뱅크 1번 과제 capstone 최종본
+## v2 제출 마감
 
 운영형 MCP 추천 시스템 데모  
 검증일: 2026-03-07

@@ -1,97 +1,51 @@
-# Guardrail Engine — 개발 타임라인
+# 03-rule-and-guardrail-engine 재현 타임라인
 
-이 문서는 stage 03을 처음부터 끝까지 재현하기 위해 필요한 모든 단계를 시간순으로 기록합니다.
+## 이 문서의 역할
 
----
+이 문서는 과거의 시간순 일지를 복원하는 대신, 지금 저장소 기준으로 같은 결과를 다시 확인하는 순서를 남긴다. 학습자는 이 순서를 따라가며 어떤 파일을 먼저 읽고, 어떤 명령을 실행하고, 어떤 결과를 근거로 삼아야 하는지 바로 파악할 수 있어야 한다.
 
-## Phase 1: 프로젝트 구조 생성
+## 재현 전에 준비할 것
 
-### 1-1. 디렉터리 생성
+- 상담 품질 평가가 단순 친절도보다 안전성과 정책 준수를 우선해야 함을 이해해야 한다.
 
-```bash
-mkdir -p 03-rule-and-guardrail-engine/python/src/stage03
-mkdir -p 03-rule-and-guardrail-engine/python/tests
-mkdir -p 03-rule-and-guardrail-engine/python/data
-touch 03-rule-and-guardrail-engine/python/src/stage03/__init__.py
-```
+## 재현 순서
 
-### 1-2. pyproject.toml 작성
+1. stage `README.md`, `problem/README.md`, `docs/README.md`를 먼저 읽어 문제 해석과 완료 기준을 고정한다.
+2. 아래 핵심 경로를 위에서 아래 순서로 열어 구현과 문서가 같은 뜻을 가리키는지 확인한다.
 
-- `name = "study2-stage03"`
-- `requires-python = ">=3.12,<3.13"`
-- `dependencies = []`
-- dev: `pytest>=9.0.0`
+- `python/data/rules.json`
+- `python/src/stage03/guardrails.py`
+- `python/tests/test_guardrails.py`
 
-### 1-3. 환경 설정
+3. 아래 검증 명령을 그대로 실행해 현재 저장소 상태가 문서 설명과 맞는지 확인한다.
 
 ```bash
-cd 03-rule-and-guardrail-engine/python
-uv sync --extra dev
+cd python
+UV_PYTHON=python3.12 uv sync
+UV_PYTHON=python3.12 uv run pytest -q
 ```
 
----
+4. 테스트나 실행 결과를 아래 증거와 대조한다.
 
-## Phase 2: 규칙 데이터 정의
+- `python/tests/test_guardrails.py`가 네 가지 규칙을 각각 분리 검증한다.
+- 룰은 JSON 파일로 분리되어 정책 변경이 코드 diff 없이도 보인다.
 
-### 2-1. rules.json 작성
+5. 결과가 다르면 `02-debug-log.md`와 `notion-archive/`를 함께 열어 어떤 가정이 바뀌었는지 추적한다.
 
-`data/rules.json`에 세 개의 키워드 목록을 정의했다:
+## 재현 체크포인트
 
-- `forbidden_promises`: `["무조건", "100%", "반드시"]`
-- `pii_patterns`: `["주민번호", "카드번호", "990101-1234567"]`
-- `escalation_terms`: `["민원", "분쟁", "환불 거절", "피해"]`
+- mandatory notice, unsupported claim, PII exposure, escalation miss가 각각 독립 코드로 검출된다.
+- LLM 없이도 재현 가능한 deterministic regression이 가능하다.
+- 후속 score merge에서 compliance 축을 해석할 수 있다.
 
-mandatory_notice_terms는 별도로 JSON에 넣지 않고 코드에서 직접 처리하기로 결정했다.
-이유: 이 규칙은 "특정 키워드가 user message에 있을 때 response에 특정 단어가 없으면 실패"라는 구조가 다른 규칙과 다르기 때문이다.
+## 막히면 먼저 볼 것
 
----
+- 민원 또는 분쟁 표현이 들어와도 상담원 이관 부재가 따로 보이지 않을 수 있었다. -> 확인 기준: `test_escalation_rule`이 `ESCALATION_MISS`를 직접 기대한다.
 
-## Phase 3: Guardrail 엔진 구현
+## 자기 포트폴리오 레포로 옮길 때
 
-### 3-1. load_rules() 함수 작성
-
-`python/src/stage03/guardrails.py`에 JSON 파일을 읽어 dict를 반환하는 함수를 작성했다.
-
-### 3-2. evaluate() 함수 작성
-
-네 가지 규칙을 순서대로 검사하는 함수:
-
-1. **Mandatory notice**: `["해지", "환불", "명의변경"]` 중 하나가 user_message에 있는데 response에 `"본인확인"`이 없으면 `MISSING_MANDATORY_STEP` 추가
-2. **Forbidden promise**: rules의 `forbidden_promises` 중 하나가 response에 있으면 `UNSUPPORTED_CLAIM` 추가
-3. **PII exposure**: rules의 `pii_patterns` 중 하나가 response에 있으면 `PII_EXPOSURE` 추가
-4. **Escalation miss**: rules의 `escalation_terms` 중 하나가 user_message에 있는데 response에 `"상담원"` 또는 `"전문 부서"`가 없으면 `ESCALATION_MISS` 추가
-
-반환값: `list[str]` — 감지된 failure type 목록 (빈 리스트이면 문제 없음)
-
----
-
-## Phase 4: 테스트 작성 및 검증
-
-### 4-1. 네 가지 테스트 작성
-
-| 테스트 | 입력 | 기대 failure |
-|--------|------|-------------|
-| `test_mandatory_notice_rule` | "해지하려면?" / "절차를 안내드리겠습니다." | `MISSING_MANDATORY_STEP` |
-| `test_forbidden_promise_rule` | "할인돼요?" / "무조건 가능합니다." | `UNSUPPORTED_CLAIM` |
-| `test_pii_rule` | "입력할까요?" / "주민번호 990101-1234567 입력하세요." | `PII_EXPOSURE` |
-| `test_escalation_rule` | "분쟁 접수하고 싶어요" / "정책만 안내드립니다." | `ESCALATION_MISS` |
-
-### 4-2. 테스트 실행
-
-```bash
-cd 03-rule-and-guardrail-engine/python
-uv run pytest -q
-```
-
-기대 결과: `4 passed`
-
----
-
-## 이 단계에서 사용한 도구 요약
-
-| 도구 | 용도 |
-|------|------|
-| `uv` | Python 패키지 관리 및 가상환경 |
-| `pytest` | 테스트 실행 |
-| Python 3.12 | 런타임 |
-| `json` (stdlib) | 규칙 파일 파싱 |
+- 이 문서의 순서를 그대로 유지하되, 경로만 내 저장소 구조에 맞게 바꾼다.
+- `README.md`에는 문제 해석, 현재 상태, 실행 명령만 남기고 더 긴 판단 과정은 `notion/`으로 보낸다.
+- `docs/README.md`에는 검증 기준, proof artifact, 오래 남길 개념만 남긴다.
+- 새 노트를 다시 쓰고 싶다면 기존 `notion/`을 `notion-archive/`로 옮겨 예전 판단을 보존한다.
+- 발표나 제출용 README를 만들 때는 이 문서의 체크포인트를 그대로 acceptance checklist로 재사용한다.

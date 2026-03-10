@@ -1,41 +1,28 @@
-# Golden Set & Regression — 문제 정의
+# 06-golden-set-and-regression 문제 정의
 
-## 풀어야 하는 문제
+## 이 stage가 푸는 문제
 
-stage 05까지 만든 judge와 merge 파이프라인은 응답 하나를 채점할 수 있다.
-하지만 **코드를 바꿨을 때 품질이 떨어졌는지 올라갔는지**를 자동으로 알 수 있는 방법이 없다.
+golden case, assertion, replay summary, compare manifest를 묶어 baseline과 candidate를 같은 데이터셋 위에서 비교하는 단계다.
 
-예를 들어 retrieval 로직을 개선했다고 하자.
-새 버전에서 평균 점수가 올라갔더라도, 특정 케이스에서 이전에 맞던 답이 틀리게 바뀌었을 수 있다.
-이걸 수동으로 확인하는 건 불가능하다.
+## 성공 기준
 
-## golden set이라는 접근
+- golden case는 required evidence 문서를 명시한다.
+- assertion 실패는 reason code로 설명된다.
+- baseline과 candidate label을 manifest 파일로 고정한다.
 
-golden set은 **반드시 통과해야 하는 케이스들의 집합**이다.
-각 케이스는 "이 질문에 대해 최소한 이 근거 문서가 검색 결과에 포함되어야 한다"는 조건을 명시한다.
+## 왜 지금 이 단계를 먼저 보는가
 
-이 접근의 핵심 가정:
-1. 품질이란 "특정 케이스를 맞추는 것"으로 환원 가능하다
-2. 케이스를 사람이 큐레이션하면, 그게 곧 품질 기준이 된다
-3. 새 버전이 golden set을 전부 통과하면 regression 없음으로 판정할 수 있다
+- v1 compare와 v2 improvement report의 최소 구조를 stage 단위로 축소한 것이다.
+- evidence miss 감소를 수치로 논증하려면 manifest와 assertion이 함께 있어야 한다.
 
-## compare manifest
+## 먼저 알고 있으면 좋은 것
 
-golden set만으로는 "두 버전 사이의 차이"를 보여줄 수 없다.
-그래서 compare manifest라는 구조를 도입했다:
+- stage02 fixture/replay, stage04 evidence doc contract를 이해해야 한다.
 
-```json
-{
-  "baseline": "v1.0",
-  "candidate": "v1.1",
-  "dataset": "golden-set"
-}
-```
+## 확인할 증거
 
-baseline과 candidate를 명시하고, 같은 dataset(golden-set)에 대해 둘 다 실행한 뒤 결과를 비교한다.
-stage 07 대시보드에서 이 비교 결과를 시각화한다.
+- `python/tests/test_regression.py`가 golden assertion과 compare manifest를 확인한다.
 
-## 제약
+## 아직 남아 있는 불확실성
 
-- golden case 수가 적으면(현재 2개) 통계적 의미가 약하다. 이건 의도적인 선택으로, stage 수준에서는 메커니즘 증명에 집중한다.
-- 실제 운영에서는 최소 50~100개 케이스가 필요하다.
+이 pack은 sample-size가 작아 통계적 의미를 주장하기보다 compare 구조를 설명하는 데 초점이 있다.

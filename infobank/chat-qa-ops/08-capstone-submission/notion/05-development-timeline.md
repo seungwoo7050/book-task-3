@@ -1,195 +1,57 @@
-# Capstone — 개발 타임라인
+# 08-capstone-submission 재현 타임라인
 
-## v0 — Initial Demo
+## 이 문서의 역할
 
-### 1단계: 프로젝트 구조 생성
+이 문서는 과거의 시간순 일지를 복원하는 대신, 지금 저장소 기준으로 같은 결과를 다시 확인하는 순서를 남긴다. 학습자는 이 순서를 따라가며 어떤 파일을 먼저 읽고, 어떤 명령을 실행하고, 어떤 결과를 근거로 삼아야 하는지 바로 파악할 수 있어야 한다.
 
-```bash
-mkdir -p chat-qa-ops/08-capstone-submission/v0-initial-demo/{python/{src,tests},react,docs/demo/proof-artifacts,docs/presentation}
-```
+## 재현 전에 준비할 것
 
-### 2단계: Python 백엔드 설정
+- Python 3.12 환경과 `uv`, `pnpm`, Docker가 있으면 검증을 재현하기 쉽다.
+- live Upstage/OpenAI/Langfuse 자격증명이 없어도 mock/no-op 경로로 테스트는 가능하다.
 
-```bash
-cd v0-initial-demo/python
-cat > pyproject.toml << 'EOF'
-[project]
-name = "capstone-v0"
-version = "0.1.0"
-requires-python = ">=3.12"
-dependencies = [
-    "fastapi>=0.115",
-    "uvicorn>=0.34",
-    "sqlalchemy>=2.0",
-]
-[project.optional-dependencies]
-dev = ["pytest", "httpx"]
-EOF
+## 재현 순서
 
-uv sync --extra dev
-```
+1. stage `README.md`, `problem/README.md`, `docs/README.md`를 먼저 읽어 문제 해석과 완료 기준을 고정한다.
+2. 아래 핵심 경로를 위에서 아래 순서로 열어 구현과 문서가 같은 뜻을 가리키는지 확인한다.
 
-### 3단계: DB 초기화 + 데모 데이터
+- `08-capstone-submission/README.md`
+- `08-capstone-submission/docs/release-readiness.md`
+- `08-capstone-submission/v0-initial-demo`
+- `08-capstone-submission/v1-regression-hardening`
+- `08-capstone-submission/v2-submission-polish`
+
+3. 아래 검증 명령을 그대로 실행해 현재 저장소 상태가 문서 설명과 맞는지 확인한다.
 
 ```bash
-make init-db     # SQLite DB 생성 + 테이블 마이그레이션
-make seed-demo   # 데모용 상담 데이터/golden case 삽입
-make test-backend
+cd v0-initial-demo/python && UV_PYTHON=python3.12 make gate-all
+cd v1-regression-hardening/python && UV_PYTHON=python3.12 make gate-all
+cd v1-regression-hardening/python && UV_PYTHON=python3.12 make smoke-postgres
+cd v2-submission-polish/python && UV_PYTHON=python3.12 make gate-all
+cd v2-submission-polish/python && UV_PYTHON=python3.12 make smoke-postgres
 ```
 
-### 4단계: React 대시보드 연결
+4. 테스트나 실행 결과를 아래 증거와 대조한다.
 
-```bash
-cd v0-initial-demo/react
-pnpm install
-pnpm test --run
-```
+- `08-capstone-submission/docs/release-readiness.md`에 실제 실행 명령과 결과가 정리되어 있다.
+- `v2-submission-polish/docs/demo/proof-artifacts` 아래에 compare/output artifacts가 저장되어 있다.
 
-stage 07 React 코드를 복사하고, API 경로를 v0 백엔드에 맞게 조정했다.
+5. 결과가 다르면 `02-debug-log.md`와 `notion-archive/`를 함께 열어 어떤 가정이 바뀌었는지 추적한다.
 
----
+## 재현 체크포인트
 
-## v1 — Regression Hardening
+- v0, v1, v2가 각자 독립적으로 runnable하고 역할이 다르다.
+- compare는 같은 dataset과 run label 위에서 baseline 대비 개선을 증빙한다.
+- fallback, dependency health, dashboard, proof artifact가 공개 저장소 기준으로 재현 가능하다.
 
-### 1단계: v0 폴더 복제
+## 막히면 먼저 볼 것
 
-```bash
-cp -r v0-initial-demo v1-regression-hardening
-```
+- `make gate-all`이 기본 Python 3.14 환경에서 `chromadb` import 문제로 깨졌다. -> 확인 기준: v0, v1, v2 모두 `UV_PYTHON=python3.12 make gate-all`을 통과했다.
+- baseline 실패 원인 중 `MISSING_REQUIRED_EVIDENCE_DOC` 비중이 높았다. -> 확인 기준: v2 compare 결과에서 fail count가 14에서 11로 줄고 critical count가 2에서 0으로 감소했다.
 
-### 2단계: provider chain 추가
+## 자기 포트폴리오 레포로 옮길 때
 
-```bash
-cd v1-regression-hardening/python
-# provider chain 모듈 추가
-# 의존성 추가
-uv add openai anthropic httpx
-```
-
-Solar, OpenAI, Ollama 각각의 adapter 파일 생성 후,
-chain을 실행하는 `run_judge_chain()` 함수를 구현했다.
-
-### 3단계: PostgreSQL smoke test
-
-```bash
-# PostgreSQL이 로컬에 있어야 함
-UV_PYTHON=python3.12 make smoke-postgres
-```
-
-Makefile에 `smoke-postgres` 타겟 추가:
-
-```makefile
-smoke-postgres:
-	DATABASE_URL=postgresql://... pytest tests/ -x -v -k postgres
-```
-
-### 4단계: Langfuse 준비
-
-```bash
-uv add langfuse
-```
-
-trace envelope 구조만 정의하고, 실제 Langfuse 서버 연동은 v3에서 진행.
-
----
-
-## v2 — Submission Polish
-
-### 1단계: v1 복제 + retrieval-v2
-
-```bash
-cp -r v1-regression-hardening v2-submission-polish
-cd v2-submission-polish/python
-```
-
-retrieval-v2 모듈 추가:
-- alias 매핑 dict 정의
-- category 태그 + 필터 로직
-- risk keyword 기반 rerank
-
-### 2단계: compare artifact 생성
-
-```bash
-# golden set을 baseline(v1 코드)과 candidate(v2 코드)로 각각 실행
-make run-golden-baseline
-make run-golden-candidate
-make generate-compare
-```
-
-결과 파일: `docs/demo/proof-artifacts/compare.json`
-
-### 3단계: improvement report
-
-compare.json 기반으로 마크다운 리포트 자동 생성:
-
-```bash
-make generate-report
-# docs/demo/proof-artifacts/improvement-report.md
-```
-
----
-
-## v3 — Self-Hosted OSS
-
-### 1단계: v2 복제 + auth 추가
-
-```bash
-cp -r v2-submission-polish v3-self-hosted-oss
-cd v3-self-hosted-oss/python
-uv add passlib[bcrypt] python-jose[cryptography]
-```
-
-관리자 인증: JWT 토큰 기반, 단일 관리자 계정.
-
-### 2단계: 비동기 worker
-
-evaluation job을 큐에 넣고 별도 프로세스에서 처리하는 worker 구현.
-Redis/Celery 대신 DB 기반 간단한 job queue를 구현했다 (scope 제한).
-
-### 3단계: Docker Compose 작성
-
-```bash
-cat > docker-compose.yml << 'EOF'
-services:
-  db:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_PASSWORD: postgres
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 2s
-      timeout: 5s
-      retries: 5
-  api:
-    build: ./python
-    depends_on:
-      db:
-        condition: service_healthy
-    ports:
-      - "8000:8000"
-  web:
-    build: ./react
-    ports:
-      - "5173:80"
-  worker:
-    build: ./python
-    command: python -m worker
-    depends_on:
-      db:
-        condition: service_healthy
-EOF
-```
-
-### 4단계: 검증
-
-```bash
-docker compose up --build
-# 브라우저에서 http://localhost:5173 접속
-# admin@example.com / password123 으로 로그인
-```
-
-## 비고
-
-- 각 버전 폴더는 이전 버전의 완전한 복제본이다. git diff가 아닌 폴더 비교로 delta를 추적한다.
-- v0~v2는 archive/demo 전용, v3이 실제 배포 대상이다.
-- v3의 AI profile은 optional이므로 외부 API key 없이도 동작한다.
+- 이 문서의 순서를 그대로 유지하되, 경로만 내 저장소 구조에 맞게 바꾼다.
+- `README.md`에는 문제 해석, 현재 상태, 실행 명령만 남기고 더 긴 판단 과정은 `notion/`으로 보낸다.
+- `docs/README.md`에는 검증 기준, proof artifact, 오래 남길 개념만 남긴다.
+- 새 노트를 다시 쓰고 싶다면 기존 `notion/`을 `notion-archive/`로 옮겨 예전 판단을 보존한다.
+- 발표나 제출용 README를 만들 때는 이 문서의 체크포인트를 그대로 acceptance checklist로 재사용한다.

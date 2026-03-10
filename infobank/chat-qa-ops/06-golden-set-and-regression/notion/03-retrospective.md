@@ -1,25 +1,30 @@
-# Golden Set & Regression — 회고
+# 06-golden-set-and-regression 회고
 
-## 잘 된 것
+## 이번 stage로 강화된 점
 
-### 메커니즘이 극단적으로 단순하다
+- 비교 대상과 데이터셋 범위가 명시적이다.
+- failure type 감소를 개선의 근거로 삼기 쉽다.
 
-evaluate_case()는 사실상 "집합 교집합이 비어있지 않은지" 확인하는 함수다.
-이 단순함 덕분에 버그 가능성이 거의 없고, 새 팀원이 코드를 읽는 데 30초면 충분하다.
+## 아직 약한 부분
 
-### reason code 패턴의 일관성
+- 실제 capstone처럼 run registry나 dashboard와 연결되지는 않는다.
 
-stage 03의 failure_types, stage 05의 judge output, stage 06의 reason_codes가 모두 같은 패턴("문자열 상수 리스트")을 따른다.
-나중에 로그 분석이나 대시보드 필터링에서 이 일관성이 큰 도움이 된다.
+## 학생이 여기서 바로 가져갈 것
 
-## 아쉬운 것
+- compare와 regression을 말로 설명하지 않고 dataset, manifest, assertion으로 고정하는 방식
+- failure type 감소를 개선 근거로 삼되, dataset 범위와 버전 라벨을 함께 남기는 방식
 
-### golden case 수가 너무 적다
+## 다음 stage로 넘기는 자산
 
-현재 2개(gs-001, gs-002)로는 regression 탐지의 신뢰도를 주장하기 어렵다.
-stage 수준에서는 메커니즘 증명이 목적이므로 의도적인 선택이지만, capstone에서는 최소 20개 이상으로 확장해야 한다.
+- golden set assertion
+- reason code 기반 regression
+- version compare input manifest
 
-### 점수 기반 regression은 이 stage에서 다루지 않는다
+## 05-development-timeline.md와 같이 읽을 포인트
 
-현재는 "근거 문서 포함 여부"만 확인한다.
-"평균 점수가 떨어졌는가?"는 stage 07의 version compare에서 처리하지만, 이 stage에 통합되어 있으면 더 자연스러웠을 수 있다.
+- 어떤 데이터셋과 어떤 버전 라벨을 비교하는지 먼저 고정하고 명령을 실행한다.
+- dashboard stage나 capstone compare proof를 읽을 때 이 stage의 manifest 관점을 기준으로 다시 본다.
+
+## 나중에 다시 볼 것
+
+- 향후 precision/recall 같은 richer assertion 메트릭을 추가할 수 있다.

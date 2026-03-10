@@ -1,56 +1,37 @@
-# Release Compatibility & Quality Gates — 디버그 기록
+# 06 release compatibility와 quality gate 디버그 기록
 
-## semver 파싱 엣지 케이스
+## 먼저 확인할 명령
 
-### 상황
-
-"1.0.0-beta.1" 같은 pre-release 버전을 파싱할 때,
-단순 split('.')으로는 "0-beta" 부분이 숫자로 변환되지 않았다.
-
-### 해결
-
-semver 라이브러리를 사용하지 않고, 직접 파싱했다:
-
-```typescript
-const [major, minor, patchStr] = version.split('.');
-const patch = parseInt(patchStr.split('-')[0], 10);
-const prerelease = patchStr.includes('-') ? patchStr.split('-').slice(1).join('-') : null;
+```bash
+pnpm install
+cp .env.example .env
+pnpm db:up
+pnpm migrate
+pnpm seed
+pnpm eval
+pnpm compatibility rc-release-check-bot-1-5-0
+pnpm release:gate rc-release-check-bot-1-5-0
+pnpm artifact:export rc-release-check-bot-1-5-0
+pnpm capture:presentation
+pnpm test
+pnpm e2e
 ```
 
-pre-release 버전은 같은 major.minor.patch보다 항상 이전 버전으로 취급한다.
+## 다시 막히기 쉬운 지점
 
-## gate FAIL인데 artifact export가 되는 문제
+- 상위 `README.md`, `problem/README.md`, `docs/README.md`, 연결된 capstone 경로 설명이 서로 어긋나지 않는지 먼저 확인한다.
+- `v2-submission-polish`가 아니라 다른 버전의 코드를 보고 있으면 stage 목적이 흐려질 수 있다.
+- 이 단계는 추천 결과를 보여 주는 데서 끝나지 않고, 배포 판단과 제출 산출물까지 연결한다.
 
-### 상황
+## 현재 상태 메모
 
-release gate가 FAIL인 RC에 대해 artifact:export를 실행하면
-FAIL 결과가 담긴 artifact가 생성되었다.
-이게 의도된 동작인지 혼란이 있었다.
+- compatibility, release gate, artifact export는 `v2`에서 구현돼 최종 제출 proof의 핵심이 된다.
+- 이 stage는 운영형 추천 시스템이 '배포 가능한가'를 어떻게 판단하는지 설명한다.
 
-### 해결
+## 재현 실패 시 다시 볼 경로
 
-의도된 동작이다.
-FAIL artifact도 "왜 이 버전을 배포하면 안 되는지"의 증거이므로 보존 가치가 있다.
-artifact에 `overallStatus: "FAIL"` 필드가 명시적으로 포함되어 있어서
-실수로 FAIL artifact를 PASS로 오인할 위험은 없다.
-
-## dry-run pipeline과 실제 실행의 차이
-
-### 상황
-
-v2에서 dry-run 모드를 추가했는데,
-dry-run에서는 DB에 기록하지 않고 결과만 반환해야 한다.
-
-### 해결
-
-각 service에 `dryRun: boolean` 옵션을 추가했다:
-
-```typescript
-async function runReleaseGate(rcId: string, options?: { dryRun?: boolean }) {
-  // ... gate 실행
-  if (!options?.dryRun) {
-    await saveGateResult(result);
-  }
-  return result;
-}
-```
+- `08-capstone-submission/v2-submission-polish/node/src/services/compatibility-service.ts`
+- `08-capstone-submission/v2-submission-polish/node/src/services/release-gate-service.ts`
+- `08-capstone-submission/v2-submission-polish/node/src/services/artifact-service.ts`
+- `08-capstone-submission/v2-submission-polish/node/tests/compatibility-service.test.ts`
+- `08-capstone-submission/v2-submission-polish/node/tests/release-gate-service.test.ts`

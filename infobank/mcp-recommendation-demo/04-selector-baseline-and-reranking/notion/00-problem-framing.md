@@ -1,36 +1,28 @@
-# Selector Baseline & Reranking — 문제 정의
+# 04 baseline selector와 reranking 문제 정의
 
-## 풀어야 하는 문제
+## 이 stage가 맡는 문제
 
-사용자가 "릴리즈 체크를 해야 해"라고 하면, catalog의 10+ 도구 중 관련 있는 것을 골라야 한다.
-이게 **selector**의 역할이다.
+baseline selector를 먼저 세우고 reranker와 compare runner를 더해 추천 로직 개선을 설명 가능한 형태로 만드는 단계다.
 
-## 왜 baseline과 reranker를 분리하는가
+## 현재 기준 성공 조건
 
-한 번에 완벽한 추천 알고리즘을 만들 수 없다.
-그래서 두 단계로 나눈다:
+- 추천 로직이 단계적으로 진화했다는 점을 버전별로 설명할 수 있다.
+- 학생이 baseline과 candidate를 분리해 개선 증빙 구조를 만들 수 있다.
+- compare 결과가 다음 stage의 로그/지표 설계와 자연스럽게 이어진다.
 
-1. **baseline selector**: 간단한 가중치 기반 매칭. v0에서 동작.
-   - query 키워드와 도구의 category/description을 매칭
-   - 정적 가중치로 점수 계산
-   - 점수 상위 N개 반환
+## 먼저 알고 있으면 좋은 것
 
-2. **reranker**: baseline 결과를 추가 신호(signal)로 재정렬. v1에서 추가.
-   - usage frequency (사용 빈도)
-   - feedback score (사용자 피드백 점수)
-   - recency (최근 업데이트 여부)
-   - compatibility (다른 도구와의 호환성)
+- 상위 `README.md`, `problem/README.md`, `docs/README.md`를 먼저 읽어 stage 목적을 고정한다.
+- 실제 구현 확인은 `v1-ranking-hardening` 기준으로 내려가야 한다.
+- 이 단계는 '더 똑똑한 추천'을 만들었다는 주장보다, 왜 그렇게 판단할 수 있는지의 근거를 정리한다.
 
-이 분리의 장점:
-- baseline만으로도 동작한다 (v0 데모 가능)
-- reranker를 추가해도 baseline을 수정할 필요 없다
-- eval로 baseline과 reranker의 차이를 수치화할 수 있다
+## 확인할 증거
 
-## compare runner
+- `08-capstone-submission/v0-initial-demo/node/src/services/recommendation-service.ts`
+- `08-capstone-submission/v1-ranking-hardening/node/src/services/rerank-service.ts`
+- `08-capstone-submission/v1-ranking-hardening/node/src/services/compare-service.ts`
+- `08-capstone-submission/v1-ranking-hardening/node/tests/rerank-service.test.ts`
 
-baseline과 reranker의 결과를 같은 eval case로 실행하고 비교하는 도구다.
-chat-qa-ops의 version compare와 같은 역할이다.
+## 아직 남아 있는 불확실성
 
-```bash
-pnpm compare  # baseline vs reranker 결과 비교
-```
+- 이 단계는 '더 똑똑한 추천'을 만들었다는 주장보다, 왜 그렇게 판단할 수 있는지의 근거를 정리한다.

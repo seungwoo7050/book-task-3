@@ -1,8 +1,9 @@
 import { expect, test } from "@playwright/test";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const assetDir =
-  "/Users/woopinbell/work/chat-bot/study1/08-capstone-submission/v3-oss-hardening/docs/presentation-assets";
+  path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../docs/presentation-assets");
 
 test("captures presentation flow for v3 oss hardening", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1200 });

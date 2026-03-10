@@ -1,25 +1,30 @@
-# Judge & Score Merge — 회고
+# 05-judge-and-score-merge 회고
 
-## 잘 된 것
+## 이번 stage로 강화된 점
 
-### judge 모델을 바꿔도 merge 검증은 그대로 유지
+- judge 모델을 바꾸어도 merge 검증은 그대로 유지된다.
+- failure taxonomy와 score axes의 연결이 명확하다.
 
-이게 이 stage의 가장 큰 성과다.
-v1에서 LLM judge로 교체했을 때, merge_score() 함수와 그 테스트는 **한 줄도 바꾸지 않았다**.
-judge output의 schema만 같으면 merge는 신경 쓸 필요가 없다.
+## 아직 약한 부분
 
-### failure taxonomy와 score axes의 연결이 명확하다
+- heuristic 기준이 실제 상담 품질 평가자 합의와 일치한다고 보장할 수 없다.
 
-failure_types(stage 03 출력) → correctness 감점(judge) → total score(merge) → grade(rubric)
-이 흐름이 코드 수준에서 추적 가능하다.
+## 학생이 여기서 바로 가져갈 것
 
-## 아쉬운 것
+- judge 모델 출력과 최종 점수 산식을 분리해, 모델 교체와 품질 계약을 따로 관리하는 방식
+- score axes, hard fail, explanation text를 한 객체에 과도하게 섞지 않고 경계를 두는 방식
 
-### heuristic 기준이 실제 상담 품질 평가자 합의와 일치한다고 보장할 수 없다
+## 다음 stage로 넘기는 자산
 
-response 길이가 10자 넘으면 resolution 85점이라는 건, 실제 상담 전문가가 동의할 결과가 아니다.
-하지만 이 stage의 목적이 judge 정교화가 아니라 **interface freeze**이므로, 의도적인 타협이다.
+- judge output schema
+- heuristic scoring
+- quality axes merge
+
+## 05-development-timeline.md와 같이 읽을 포인트
+
+- judge schema 테스트와 score merge 테스트를 따로 확인해 어떤 계약이 어디서 보장되는지 나눠 본다.
+- 이후 regression stage를 읽을 때는 compare 대상이 judge 출력 변화인지 merge 규칙 변화인지 구분해서 본다.
 
 ## 나중에 다시 볼 것
 
-- live judge 출력과 heuristic judge 출력을 같은 schema로 비교하는 회귀 실험을 추가하면, heuristic이 얼마나 벗어나는지 수치화할 수 있다.
+- 향후 live judge 출력과 heuristic judge 출력을 같은 schema로 비교하는 회귀 실험을 추가할 수 있다.

@@ -1,24 +1,27 @@
-# Source Brief — 회고
+# 00 문제 정의와 기준 문서 회고
 
-## 잘 된 것
+## 이번 stage로 좋아진 점
 
-### catalog seed가 다양한 테스트 시나리오를 커버한다
+- tracked 문서만 읽어도 이 트랙이 다루는 문제와 최종 데모 방향을 이해할 수 있다.
+- reference spine과 baseline capstone 경로가 문서 안에서 분명히 연결된다.
+- 학생이 자기 포트폴리오 레포를 만들 때 어떤 상위 문서가 먼저 필요한지 감이 잡힌다.
 
-10+ 도구를 의도적으로 선정한 덕분에, 이후 stage에서:
-- keyword 매칭 (baseline selector)
-- category 필터링 (reranker)
-- semver 호환성 (compatibility gate)
-- deprecation 체크 (release gate)
-를 모두 테스트할 수 있었다.
+## 아직 약한 부분
 
-### reference spine이 짧아서 팀원이 빠르게 이해한다
+- 별도 stage 구현이 없으므로 실제 동작은 capstone 버전으로 내려가 확인해야 한다.
+- 이 단계는 문서 단계다. 별도 구현 디렉터리를 만들기보다, 어떤 코드를 읽어야 하는지 정확히 가리키는 것이 더 중요하다.
 
-문서 2개로 프로젝트 범위를 설명할 수 있다.
-각 stage별 상세는 해당 stage의 docs/에 있으므로, 중복이 없다.
+## 학생이 여기서 바로 가져갈 것
 
-## 아쉬운 것
+- 프로젝트 소개문을 기능 소개가 아니라 학습 경로와 capstone 방향으로 쓰는 방식
+- reference spine, curriculum map, capstone entrypoint를 상위 문서에서 분리해 두는 방식
 
-### 실제 MCP 서버와의 연동 부재
+## 05-development-timeline.md와 같이 읽을 포인트
 
-seed 데이터로만 동작하므로, 실제 도구의 응답 시간이나 안정성을 반영하지 못한다.
-v3에서 Docker Compose로 일부 도구를 실제 실행할 수 있지만, 여전히 시뮬레이션 수준이다.
+- 이 stage는 구현보다 읽기 순서가 핵심이므로, 타임라인을 따라 어떤 문서가 기준 문서인지 먼저 고정한다.
+- capstone으로 내려가기 전에 왜 `00`이 별도 구현 없이도 필요한 stage인지 다시 확인한다.
+
+## 나중에 다시 볼 것
+
+- 문제 정의 문서와 reference spine을 먼저 세우는 방식
+- 학습용 레포를 기능 목록이 아니라 커리큘럼으로 설명하는 방식

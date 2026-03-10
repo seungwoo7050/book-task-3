@@ -1,133 +1,55 @@
-# Monitoring Dashboard — 개발 타임라인
+# 07-monitoring-dashboard-and-review-console 재현 타임라인
 
-## 1단계: FastAPI 백엔드 프로젝트 생성
+## 이 문서의 역할
 
-```bash
-mkdir -p chat-qa-ops/07-monitoring-dashboard-and-review-console/python/{src/stage07,tests}
-```
+이 문서는 과거의 시간순 일지를 복원하는 대신, 지금 저장소 기준으로 같은 결과를 다시 확인하는 순서를 남긴다. 학습자는 이 순서를 따라가며 어떤 파일을 먼저 읽고, 어떤 명령을 실행하고, 어떤 결과를 근거로 삼아야 하는지 바로 파악할 수 있어야 한다.
 
-### pyproject.toml 작성
+## 재현 전에 준비할 것
 
-```bash
-cat > chat-qa-ops/07-monitoring-dashboard-and-review-console/python/pyproject.toml << 'EOF'
-[project]
-name = "stage07-monitoring-dashboard"
-version = "0.1.0"
-requires-python = ">=3.12"
-dependencies = ["fastapi>=0.115", "uvicorn>=0.34"]
+- run label, retrieval version, failure taxonomy, score contract를 이미 알고 있어야 콘솔이 읽힌다.
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-EOF
-```
+## 재현 순서
 
-이전 stage들과 달리 외부 패키지가 필요하다:
-- `fastapi`: API 서버
-- `uvicorn`: ASGI 서버
+1. stage `README.md`, `problem/README.md`, `docs/README.md`를 먼저 읽어 문제 해석과 완료 기준을 고정한다.
+2. 아래 핵심 경로를 위에서 아래 순서로 열어 구현과 문서가 같은 뜻을 가리키는지 확인한다.
+
+- `python/src/stage07/app.py`
+- `python/tests/test_api.py`
+- `react/src/pages/Overview.tsx`
+- `react/src/pages/SessionReview.tsx`
+
+3. 아래 검증 명령을 그대로 실행해 현재 저장소 상태가 문서 설명과 맞는지 확인한다.
 
 ```bash
-cd chat-qa-ops/07-monitoring-dashboard-and-review-console/python
-uv sync
-```
-
-## 2단계: SNAPSHOT dict + API 엔드포인트 작성
-
-```bash
-touch chat-qa-ops/07-monitoring-dashboard-and-review-console/python/src/stage07/__init__.py
-# app.py 작성
-```
-
-SNAPSHOT dict를 먼저 완성하고, 각 엔드포인트는 SNAPSHOT의 해당 키를 반환하는 1줄 함수로 구현했다.
-compare 데이터의 수치(84.06→87.76 등)는 stage 06의 golden set 결과 기반으로 산출된 값이다.
-
-```bash
-cd chat-qa-ops/07-monitoring-dashboard-and-review-console/python
-uv run uvicorn stage07.app:app --reload --port 8000
-# 별도 터미널에서 curl로 각 엔드포인트 확인
-curl http://localhost:8000/api/dashboard/overview | python -m json.tool
-```
-
-## 3단계: API 테스트 작성
-
-```bash
-touch chat-qa-ops/07-monitoring-dashboard-and-review-console/python/tests/test_api.py
-```
-
-FastAPI의 TestClient를 사용하면 실제 서버를 띄우지 않고 테스트할 수 있다.
-추가 의존성:
-
-```bash
-uv add --dev httpx  # TestClient 내부에서 필요
-uv run pytest tests/ -x -v
-```
-
-## 4단계: React 프로젝트 생성
-
-```bash
-cd chat-qa-ops/07-monitoring-dashboard-and-review-console
-pnpm create vite react --template react-ts
-cd react
+cd python
+UV_PYTHON=python3.12 uv sync
+UV_PYTHON=python3.12 uv run pytest -q
+cd ../react
 pnpm install
+pnpm test --run
 ```
 
-### 추가 패키지 설치
+4. 테스트나 실행 결과를 아래 증거와 대조한다.
 
-```bash
-pnpm add react-router-dom
-pnpm add -D @testing-library/react @testing-library/jest-dom @testing-library/user-event vitest jsdom
-```
+- `python/tests/test_api.py`가 overview, failures, conversation detail, golden run, version compare endpoint를 검증한다.
+- `react` pack은 copied mocked tests로 주요 화면을 검증한다.
 
-- `react-router-dom`: 클라이언트 사이드 라우팅
-- `@testing-library/*`: 컴포넌트 테스트
-- `vitest`: Vite 네이티브 테스트 러너
+5. 결과가 다르면 `02-debug-log.md`와 `notion-archive/`를 함께 열어 어떤 가정이 바뀌었는지 추적한다.
 
-### Vite 설정
+## 재현 체크포인트
 
-```bash
-# vite.config.ts에 proxy 설정 추가
-# vitest.config.ts 생성
-```
+- 운영자가 평균 점수, failure top, 세션 trace, compare delta를 한 곳에서 읽을 수 있다.
+- backend contract와 frontend mocked tests가 같은 payload shape를 공유한다.
+- run label과 retrieval version 같은 lineage 정보가 session review에 노출된다.
 
-## 5단계: API 클라이언트 작성
+## 막히면 먼저 볼 것
 
-```bash
-mkdir -p react/src/api
-touch react/src/api/client.ts
-```
+- 문서 생성이 너무 얇으면 stage07이 단순 UI 복사본처럼 보였다. -> 확인 기준: 재생성된 stage07 문서가 API/React pack과 version compare 목적을 구분해 설명한다.
 
-fetch를 감싼 `apiGet()`, `apiPost()` 헬퍼를 만들었다.
-에러 처리는 throw 방식으로 하고, 호출하는 쪽에서 try/catch로 처리한다.
+## 자기 포트폴리오 레포로 옮길 때
 
-## 6단계: 페이지 컴포넌트 구현
-
-순서: Overview → Failures → SessionReview → EvalRunner
-
-```bash
-mkdir -p react/src/{pages,components,i18n}
-```
-
-각 페이지에서 useEffect로 API를 호출하고, useState로 데이터를 관리한다.
-
-### Overview.tsx 구현 시 주의점
-
-version compare 섹션은 overview API와 version-compare API 두 개를 호출해야 한다.
-두 API 호출을 separate useEffect로 분리했다.
-
-## 7단계: 컴포넌트 테스트
-
-```bash
-pnpm run test
-# 또는
-pnpm exec vitest run
-```
-
-각 페이지마다 `*.test.tsx` 파일을 만들어서:
-1. API 클라이언트를 모킹
-2. SNAPSHOT 데이터를 반환하도록 설정
-3. 렌더링 후 기대하는 텍스트/요소가 화면에 있는지 확인
-
-## 비고
-
-- 이 stage는 Python(backend)과 React/TypeScript(frontend) 두 개의 프로젝트로 구성된다.
-- 두 프로젝트의 패키지 관리자가 다르다: uv(Python) vs pnpm(React).
-- capstone에서는 Docker Compose로 두 서비스를 함께 배포한다.
+- 이 문서의 순서를 그대로 유지하되, 경로만 내 저장소 구조에 맞게 바꾼다.
+- `README.md`에는 문제 해석, 현재 상태, 실행 명령만 남기고 더 긴 판단 과정은 `notion/`으로 보낸다.
+- `docs/README.md`에는 검증 기준, proof artifact, 오래 남길 개념만 남긴다.
+- 새 노트를 다시 쓰고 싶다면 기존 `notion/`을 `notion-archive/`로 옮겨 예전 판단을 보존한다.
+- 발표나 제출용 README를 만들 때는 이 문서의 체크포인트를 그대로 acceptance checklist로 재사용한다.

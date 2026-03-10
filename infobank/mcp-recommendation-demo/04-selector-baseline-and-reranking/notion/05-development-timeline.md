@@ -1,77 +1,55 @@
-# Selector Baseline & Reranking — 개발 타임라인
+# 04 baseline selector와 reranking 재현 타임라인
 
-## 1단계: baseline selector (v0)
+## 이 문서의 역할
 
-```bash
-cd 08-capstone-submission/v0-initial-demo/node/src/services
-# recommendation-service.ts에 recommend() 함수 구현
-```
+이 문서는 과거의 상세 일지를 그대로 복사하지 않는다. 대신 지금 저장소 기준으로 같은 학습 결과를 다시 확인하려면 무엇을 어떤 순서로 읽고 실행해야 하는지 정리한다.
 
-구현 순서:
-1. catalog에서 전체 도구 목록 로드
-2. query 토큰화 (공백 분리)
-3. 도구별 점수 계산: category(0.4) + description(0.3) + name(0.3)
-4. 점수 기준 내림차순 정렬
-5. 상위 N개 + reasonTrace 반환
+## 재현 순서
 
-```bash
-cd 08-capstone-submission/v0-initial-demo
-pnpm test  # recommendation-service 테스트 포함
-```
+1. 상위 `README.md`, `problem/README.md`, `docs/README.md`를 읽어 이 stage가 왜 분리됐는지 고정한다.
+2. 아래 연결 경로를 위에서 아래 순서로 열어 실제 구현과 문서 설명을 대조한다.
 
-## 2단계: reranker (v1)
+- `08-capstone-submission/v0-initial-demo/node/src/services/recommendation-service.ts`
+- `08-capstone-submission/v1-ranking-hardening/node/src/services/rerank-service.ts`
+- `08-capstone-submission/v1-ranking-hardening/node/src/services/compare-service.ts`
+- `08-capstone-submission/v1-ranking-hardening/node/tests/rerank-service.test.ts`
+
+3. `v1-ranking-hardening` 폴더로 이동해 아래 명령으로 실제 동작과 테스트를 확인한다.
 
 ```bash
-cd 08-capstone-submission/v1-ranking-hardening/node/src/services
-touch rerank-service.ts
-```
-
-구현 순서:
-1. baseline 추천 결과를 입력으로 받음
-2. DB에서 usage_count, avg_feedback 조회
-3. 각 signal을 min-max 정규화
-4. finalScore 계산 (baseline * 0.6 + signals * 0.4)
-5. 재정렬된 결과 반환
-
-```bash
-cd 08-capstone-submission/v1-ranking-hardening
+pnpm install
+cp .env.example .env
+pnpm db:up
+pnpm migrate
+pnpm seed
+pnpm dev
 pnpm test
+pnpm eval
+pnpm capture:presentation
+pnpm e2e
 ```
 
-## 3단계: compare service (v1)
+4. 실행 후에는 아래 항목이 실제로 충족되는지 체크한다.
 
-```bash
-touch 08-capstone-submission/v1-ranking-hardening/node/src/services/compare-service.ts
-```
+- 추천 로직이 단계적으로 진화했다는 점을 버전별로 설명할 수 있다.
+- 학생이 baseline과 candidate를 분리해 개선 증빙 구조를 만들 수 있다.
+- compare 결과가 다음 stage의 로그/지표 설계와 자연스럽게 이어진다.
 
-```bash
-pnpm compare  # baseline vs reranker 비교 실행
-```
+## 학습 체크포인트
 
-compare 스크립트:
-1. eval case를 순회
-2. 각 case에 대해 baseline과 reranker 모두 실행
-3. 결과를 나란히 비교
-4. delta 계산 + JSON 출력
+- 이 stage를 통해 이해해야 할 핵심 개념: baseline selector에서 출발해 reranker로 확장하는 법, candidate와 baseline을 같은 입력셋에서 비교하는 실험 구조, 추천 개선을 코드와 문서 둘 다에서 설명하는 방법
+- 이 stage를 포트폴리오로 옮길 때 강조할 것: baseline 대비 candidate 개선을 설명하는 구조, reranking 실험을 문서와 테스트로 함께 남기는 방식
 
-## 4단계: reranker 테스트
+## 막히면 먼저 볼 것
 
-```bash
-touch 08-capstone-submission/v1-ranking-hardening/node/tests/rerank-service.test.ts
-```
+- `02-debug-log.md`
+- `v1-ranking-hardening`의 README와 docs
+- `../notion-archive/05-development-timeline.md`
 
-테스트 내용:
-- signal이 없을 때 baseline과 동일한 결과
-- usage_count가 높은 도구가 상위로 올라가는지
-- 정규화가 0~1 범위를 유지하는지
+## 자기 포트폴리오 레포로 옮길 때
 
-```bash
-pnpm test
-```
-
-## 비고
-
-- baseline selector는 v0에서 구현하고, reranker는 v1에서 추가한다.
-- compare runner는 CLI 도구로, 대시보드와 별도로 동작한다.
-- signal 데이터(usage, feedback)는 stage 05에서 DB에 기록된다.
-  v1 단계에서는 seed 데이터로 시뮬레이션한다.
+- 이 문서의 순서를 그대로 유지하되, 경로만 내 저장소 구조에 맞게 바꾼다.
+- `README.md`에는 문제 해석, 현재 상태, 실행 명령만 남기고 더 긴 판단 과정은 `notion/`으로 보낸다.
+- `docs/README.md`에는 검증 기준, proof artifact, 오래 남길 개념만 남긴다.
+- 새 노트를 다시 쓰고 싶다면 기존 `notion/`을 `notion-archive/`로 옮겨 예전 판단을 보존한다.
+- 발표나 제출용 README를 만들 때는 이 문서의 체크포인트를 그대로 acceptance checklist로 재사용한다.

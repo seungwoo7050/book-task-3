@@ -1,44 +1,29 @@
-# Release Compatibility & Quality Gates — 문제 정의
+# 06 release compatibility와 quality gate 문제 정의
 
-## 풀어야 하는 문제
+## 이 stage가 맡는 문제
 
-MCP 도구가 업데이트되면 두 가지 위험이 있다:
+semver/compatibility gate와 release gate를 deterministic rule로 구현해 추천 시스템의 배포 판단을 설명하는 단계다.
 
-1. **호환성 문제**: 새 버전이 기존 도구/시스템과 호환되지 않을 수 있다
-2. **품질 하락**: 업데이트 후 추천 품질이 떨어질 수 있다
+## 현재 기준 성공 조건
 
-이걸 사람이 매번 확인하는 건 실수 가능성이 높다.
-**자동화된 gate**가 필요하다.
+- 추천 시스템의 품질 개선을 배포 준비 상태와 연결해 설명할 수 있다.
+- 학생이 자기 프로젝트에서 release gate 문서를 설계할 기준을 얻는다.
+- 최종 제출물의 proof artifact 재생성 경로가 분명해진다.
 
-## 두 가지 gate
+## 먼저 알고 있으면 좋은 것
 
-### Compatibility Gate
-도구의 semver 버전을 분석하여 호환성을 판정한다.
+- 상위 `README.md`, `problem/README.md`, `docs/README.md`를 먼저 읽어 stage 목적을 고정한다.
+- 실제 구현 확인은 `v2-submission-polish` 기준으로 내려가야 한다.
+- 이 단계는 추천 결과를 보여 주는 데서 끝나지 않고, 배포 판단과 제출 산출물까지 연결한다.
 
-규칙:
-- major 버전 변경: **breaking change** → 경고
-- minor 버전 변경: **new feature** → 정보
-- patch 버전 변경: **bug fix** → 안전
+## 확인할 증거
 
-추가로 의존하는 다른 도구와의 호환성도 확인한다.
+- `08-capstone-submission/v2-submission-polish/node/src/services/compatibility-service.ts`
+- `08-capstone-submission/v2-submission-polish/node/src/services/release-gate-service.ts`
+- `08-capstone-submission/v2-submission-polish/node/src/services/artifact-service.ts`
+- `08-capstone-submission/v2-submission-polish/node/tests/compatibility-service.test.ts`
+- `08-capstone-submission/v2-submission-polish/node/tests/release-gate-service.test.ts`
 
-### Release Gate
-배포를 승인하기 전에 품질 기준을 자동으로 검증한다.
+## 아직 남아 있는 불확실성
 
-확인 항목:
-- eval 통과율이 threshold 이상인지
-- compatibility gate에서 breaking change가 없는지
-- deprecated 도구를 의존하지 않는지
-
-모든 항목이 통과하면 `PASS`, 하나라도 실패하면 `FAIL` + 사유를 반환한다.
-
-## release candidate 모델
-
-release candidate(RC)는 "아직 배포되지 않았지만 배포 준비가 된" 도구 버전이다.
-RC에 대해 compatibility gate와 release gate를 실행하고,
-모두 통과하면 실제 배포로 승격한다.
-
-## artifact export
-
-gate 실행 결과를 JSON 파일로 내보내는 기능이다.
-이 파일이 "이 버전을 배포해도 되는가?"의 증거 문서가 된다.
+- 이 단계는 추천 결과를 보여 주는 데서 끝나지 않고, 배포 판단과 제출 산출물까지 연결한다.

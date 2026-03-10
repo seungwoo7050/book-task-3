@@ -1,27 +1,19 @@
-# Stage 08 — Capstone Submission 노트 가이드
+# 08-capstone-submission 노트 안내
 
-이 폴더는 chat-qa-ops의 마지막 stage인 **Capstone Submission**의 설계 과정과 의사결정 기록을 담고 있다.
-Capstone은 v0부터 v3까지 4개 버전으로 점진적으로 발전한다.
+이 폴더는 stage의 판단 과정, 디버그 기록, 회고, 재사용 지식을 남기는 공개 백업 노트다. 특히 `05-development-timeline.md`는 학습자가 같은 결과를 다시 재현할 때 가장 먼저 따라갈 문서로 유지한다.
 
-## 문서 읽는 순서
+## 먼저 읽을 문서
 
-| 순서 | 파일 | 내용 |
-|------|------|------|
-| 1 | [00-problem-framing.md](./00-problem-framing.md) | 왜 4단계 버전이 필요한지, 각 버전의 목적 |
-| 2 | [01-approach-log.md](./01-approach-log.md) | v0→v1→v2→v3 전환 시 핵심 의사결정 |
-| 3 | [02-debug-log.md](./02-debug-log.md) | provider chain, PostgreSQL 전환, Docker Compose 문제 해결 |
-| 4 | [03-retrospective.md](./03-retrospective.md) | 4-version 점진 개선 방식의 장단점 |
-| 5 | [04-knowledge-index.md](./04-knowledge-index.md) | 버전별 기술 스택, 품질 지표, 아키텍처 개념 정리 |
-| 6 | [05-development-timeline.md](./05-development-timeline.md) | v0부터 v3까지 CLI 명령어, 패키지 설치, 배포 흐름 |
+- `00-problem-framing.md`: 이 stage가 다루는 문제와 성공 기준
+- `01-approach-log.md`: 어떤 방향을 택했고 무엇을 버렸는지
+- `02-debug-log.md`: 자주 깨지는 지점과 검증 포인트
+- `03-retrospective.md`: 이번 stage가 남긴 강점과 한계
+- `04-knowledge-index.md`: 나중에도 다시 꺼내 쓸 개념과 참고 경로
+- `05-development-timeline.md`: 읽기 순서, 실행 명령, 체크포인트를 묶은 재현 타임라인
 
-## 관련 stage
+## 운영 원칙
 
-- **이전**: stage 00~07의 모든 모듈이 여기서 통합된다
-- stage 00(source_brief) → v0 기준 정의
-- stage 01(rubric) → 모든 버전에서 사용
-- stage 02(harness) → v0 replay, v2 retrieval-v2
-- stage 03(guardrails) → v0~ failure_types
-- stage 04(pipeline) → v0~ claim verification
-- stage 05(judge) → v0 heuristic, v1 LLM judge
-- stage 06(golden set) → v0~ regression, v2 compare artifact
-- stage 07(dashboard) → v0~ React UI
+- 빠른 현재 상태 확인은 stage `README.md`, `problem/`, `docs/`를 먼저 본다.
+- 새 기준으로 다시 쓰고 싶다면 기존 `notion/`을 `notion-archive/`로 옮겨 보존한다.
+- `05-development-timeline.md`는 단순 일지가 아니라 재현 가능한 학습 순서 문서로 유지한다.
+- 더 거친 시행착오와 과거 버전별 로그는 `notion-archive/`에 남긴다.

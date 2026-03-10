@@ -1,47 +1,34 @@
-# Registry Catalog & Manifest Schema — 디버그 기록
+# 02 registry catalog와 manifest schema 디버그 기록
 
-## seed 중복 삽입 문제
+## 먼저 확인할 명령
 
-### 상황
-
-최초 seed.ts 구현에서 `INSERT` 를 사용했다.
-`pnpm seed`를 두 번 실행하면 unique constraint violation이 발생했다.
-
-### 해결
-
-Drizzle의 `onConflictDoUpdate`를 사용하여 upsert 패턴으로 변경:
-
-```typescript
-await db.insert(catalogTable)
-  .values(entry)
-  .onConflictDoUpdate({
-    target: catalogTable.name,
-    set: { ...entry, updatedAt: new Date() }
-  });
+```bash
+pnpm install
+cp .env.example .env
+pnpm db:up
+pnpm migrate
+pnpm seed
+pnpm dev
+pnpm test
+pnpm eval
+pnpm capture:presentation
+pnpm e2e
 ```
 
-name을 unique key로 사용하므로, 같은 이름의 도구가 있으면 업데이트한다.
+## 다시 막히기 쉬운 지점
 
-## manifest validation에서 optional 필드 처리
+- 상위 `README.md`, `problem/README.md`, `docs/README.md`, 연결된 capstone 경로 설명이 서로 어긋나지 않는지 먼저 확인한다.
+- `v0-initial-demo`가 아니라 다른 버전의 코드를 보고 있으면 stage 목적이 흐려질 수 있다.
+- 여기서는 추천 알고리즘보다 입력 데이터의 안정성과 검증 가능성을 먼저 설명한다.
 
-### 상황
+## 현재 상태 메모
 
-exposure.ko 필드가 없는 manifest를 validate했을 때,
-Zod가 에러를 반환하지 않아야 하는데 반환했다.
+- 실제 schema와 seed는 `v0`에 구현돼 있고, `v1`과 `v2`가 이를 확장해 재사용한다.
+- 이 stage는 데이터를 어떻게 고정했는지 설명하는 문서 단계다.
 
-원인: `exposure`를 `z.object({ ko: ... })`로 정의했는데,
-`exposure` 자체를 `.optional()`로 감싸지 않았다.
+## 재현 실패 시 다시 볼 경로
 
-### 해결
-
-```typescript
-exposure: z.object({
-  ko: z.object({
-    tagline: z.string(),
-    description: z.string(),
-    differentiator: z.string().optional()
-  })
-}).optional()
-```
-
-`exposure` 전체를 optional로, 그 안의 `differentiator`도 optional로 변경했다.
+- `08-capstone-submission/v0-initial-demo/shared/src/contracts.ts`
+- `08-capstone-submission/v0-initial-demo/shared/src/catalog.ts`
+- `08-capstone-submission/v0-initial-demo/node/src/scripts/seed.ts`
+- `08-capstone-submission/v0-initial-demo/node/tests/manifest-validation.test.ts`

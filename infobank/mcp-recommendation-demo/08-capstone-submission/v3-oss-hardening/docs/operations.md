@@ -1,6 +1,6 @@
-# Operations
+# 운영 절차
 
-## Bootstrap
+## 부트스트랩
 
 ```bash
 pnpm db:up
@@ -11,7 +11,7 @@ pnpm bootstrap:owner
 
 `bootstrap:owner`는 `BOOTSTRAP_OWNER_EMAIL`, `BOOTSTRAP_OWNER_PASSWORD`를 읽어 owner 계정을 upsert한다. 이미 존재하면 password hash와 활성 상태를 보정한다.
 
-## Job Model
+## 작업 모델
 
 동기 요청으로 남겨둔 것은 recommendation뿐이다. 아래는 모두 job으로 큐에 넣고 worker가 처리한다.
 
@@ -23,17 +23,17 @@ pnpm bootstrap:owner
 
 Job 상태는 `pending -> running -> completed|failed`로 저장되고, 콘솔은 `/api/jobs/:id`를 poll한다.
 
-## Metrics And Readiness
+## 지표와 준비 상태
 
 - `/healthz`: 프로세스 생존 확인
 - `/readyz`: settings와 DB 준비 상태 확인
 - `/metrics`: users/job status 수를 간단한 Prometheus 형식으로 노출
 
-## Audit Review
+## 감사 검토
 
 owner는 Audit Log 화면에서 최근 actor/action/target을 바로 확인할 수 있다. 이 로그는 실험 비교 결과보다 “누가 운영 상태를 바꿨는가”를 추적하는 용도로 둔다.
 
-## Common Operator Flow
+## 공통 운영 흐름
 
 1. owner 또는 operator 로그인
 2. catalog export 후 변경본 import

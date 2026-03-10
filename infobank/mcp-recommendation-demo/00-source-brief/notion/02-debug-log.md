@@ -1,38 +1,34 @@
-# Source Brief — 디버그 기록
+# 00 문제 정의와 기준 문서 디버그 기록
 
-## 한국어 노출 필드 스키마 결정
+## 먼저 확인할 명령
 
-### 상황
-
-catalog의 각 도구에 한국어 description을 넣어야 하는데,
-기존 영문 description과 어떻게 공존시킬지 결정해야 했다.
-
-옵션 1: `description_ko` 필드 추가
-옵션 2: `i18n: { ko: { description: "..." } }` 중첩 구조
-옵션 3: `exposure: { ko: { tagline: "...", description: "..." } }` 별도 객체
-
-### 결론
-
-옵션 3을 선택했다.
-이유: 한국어 노출은 단순 번역이 아니다. tagline(짧은 문구), description(설명), differentiator(차별점)까지 포함해야 한다.
-영문 description과 구조가 다르므로 별도 객체가 맞다.
-
-## eval case의 정답 순위 문제
-
-### 상황
-
-eval.ts에서 각 case의 기대 출력을 정의할 때,
-1순위 도구만 기록하면 "2순위도 합리적인 추천"인 경우를 놓친다.
-
-### 해결
-
-기대 출력을 배열로 만들어 순위를 포함시켰다:
-
-```typescript
-expected: [
-  { toolId: "release-check-bot", rank: 1 },
-  { toolId: "github-repo-inspector", rank: 2 }
-]
+```bash
+pnpm install
+cp .env.example .env
+pnpm db:up
+pnpm migrate
+pnpm seed
+pnpm dev
+pnpm test
+pnpm eval
+pnpm capture:presentation
+pnpm e2e
 ```
 
-eval 평가 시 rank 1을 맞추면 만점, rank 2까지 맞추면 가산점을 주는 방식으로 설계했다.
+## 다시 막히기 쉬운 지점
+
+- 상위 `README.md`, `problem/README.md`, `docs/README.md`, 연결된 capstone 경로 설명이 서로 어긋나지 않는지 먼저 확인한다.
+- `v0-initial-demo`가 아니라 다른 버전의 코드를 보고 있으면 stage 목적이 흐려질 수 있다.
+- 이 단계는 문서 단계다. 별도 구현 디렉터리를 만들기보다, 어떤 코드를 읽어야 하는지 정확히 가리키는 것이 더 중요하다.
+
+## 현재 상태 메모
+
+- 별도 구현 디렉터리를 만들지 않고, capstone 코드를 읽기 위한 기준 문서 단계로 유지한다.
+- 실제 동작 코드는 `v0-initial-demo`에서 시작하고, 이 stage는 그 코드를 이해하기 위한 상위 설명을 맡는다.
+
+## 재현 실패 시 다시 볼 경로
+
+- `08-capstone-submission/v0-initial-demo/shared/src/catalog.ts`
+- `08-capstone-submission/v0-initial-demo/shared/src/eval.ts`
+- `../../docs/reference-spine.md`
+- `../../docs/project-selection-rationale.md`

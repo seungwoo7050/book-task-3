@@ -1,46 +1,34 @@
-# Usage Logs, Metrics & Feedback Loop — 디버그 기록
+# 05 로그, 지표, 피드백 루프 디버그 기록
 
-## usage event 중복 기록 문제
+## 먼저 확인할 명령
 
-### 상황
-
-프론트엔드에서 "도구 선택" 버튼을 빠르게 두 번 클릭하면
-같은 usage event가 두 번 기록되었다.
-
-### 해결
-
-프론트엔드에서 debounce를 적용하고,
-백엔드에서도 같은 toolId + recommendationId + action 조합이
-최근 1초 이내에 있으면 무시하는 중복 방지 로직을 추가했다.
-
-## feedback score 범위 검증
-
-### 상황
-
-UI에서 1~5점만 선택할 수 있지만,
-API를 직접 호출하면 0이나 100 같은 값을 보낼 수 있다.
-
-### 해결
-
-Zod schema에서 범위 검증을 추가:
-
-```typescript
-score: z.number().int().min(1).max(5)
+```bash
+pnpm install
+cp .env.example .env
+pnpm db:up
+pnpm migrate
+pnpm seed
+pnpm dev
+pnpm test
+pnpm eval
+pnpm capture:presentation
+pnpm e2e
 ```
 
-Fastify의 route handler에서 Zod parse를 먼저 실행하고,
-유효하지 않으면 400을 반환한다.
+## 다시 막히기 쉬운 지점
 
-## experiment 상태 전이 제어
+- 상위 `README.md`, `problem/README.md`, `docs/README.md`, 연결된 capstone 경로 설명이 서로 어긋나지 않는지 먼저 확인한다.
+- `v1-ranking-hardening`가 아니라 다른 버전의 코드를 보고 있으면 stage 목적이 흐려질 수 있다.
+- 이 단계는 추천 품질을 '사용 이후'까지 추적하는 구조를 다룬다.
 
-### 상황
+## 현재 상태 메모
 
-completed 상태의 experiment를 다시 running으로 변경하는 API 호출이 가능했다.
+- usage event와 feedback loop는 `v1`에서 구현되고 `v2`가 이를 바탕으로 제출 산출물을 만든다.
+- 이 stage는 운영형 추천 시스템으로 넘어가는 지점을 설명한다.
 
-### 해결
+## 재현 실패 시 다시 볼 경로
 
-허용되는 상태 전이를 명시적으로 정의:
-- draft → running: 허용
-- running → completed: 허용
-- completed → anything: 거부 (400)
-- draft → completed: 거부 (running을 거쳐야 함)
+- `08-capstone-submission/v1-ranking-hardening/node/src/db/schema.ts`
+- `08-capstone-submission/v1-ranking-hardening/node/src/repositories/catalog-repository.ts`
+- `08-capstone-submission/v1-ranking-hardening/node/src/app.ts`
+- `08-capstone-submission/v1-ranking-hardening/react/components/mcp-dashboard.tsx`

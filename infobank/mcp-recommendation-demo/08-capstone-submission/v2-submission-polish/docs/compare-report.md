@@ -1,4 +1,4 @@
-# Compare Report
+# 비교 리포트
 
 - Baseline: `weighted-baseline-v0`
 - Candidate: `signal-rerank-v1`

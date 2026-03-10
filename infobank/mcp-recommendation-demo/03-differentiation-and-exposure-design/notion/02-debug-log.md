@@ -1,46 +1,33 @@
-# Differentiation & Exposure Design — 디버그 기록
+# 03 차별화 포인트와 노출 설계 디버그 기록
 
-## 한국어 tagline 줄바꿈 문제
+## 먼저 확인할 명령
 
-### 상황
-
-대시보드 카드에서 한국어 tagline이 길면 줄바꿈이 어색하게 발생했다.
-"PostgreSQL 테이블 구조를 분석하고 변경 영향 범위를 파악합니다"가
-"PostgreSQL 테이블 구조를 분석하" + "고 변경 영향 범위를 파악합니다"로 잘렸다.
-
-### 해결
-
-tagline을 15자 이내로 제한하는 가이드라인을 정했다.
-긴 설명은 description에 넣고, tagline은 핵심 기능만 요약한다.
-
-예: "스키마 영향 분석" (7자) → 줄바꿈 없이 표시됨.
-
-## exposure 누락 시 fallback 처리
-
-### 상황
-
-catalog의 일부 도구에 exposure.ko가 없다.
-대시보드에서 이 도구들이 빈 카드로 표시되었다.
-
-### 해결
-
-React 컴포넌트에서 fallback 로직 추가:
-
-```typescript
-const tagline = entry.exposure?.ko?.tagline ?? entry.description;
+```bash
+pnpm install
+cp .env.example .env
+pnpm db:up
+pnpm migrate
+pnpm seed
+pnpm dev
+pnpm test
+pnpm eval
+pnpm capture:presentation
+pnpm e2e
 ```
 
-exposure.ko가 없으면 영문 description을 표시하되,
-시각적으로 구분하기 위해 회색 텍스트로 렌더링한다.
+## 다시 막히기 쉬운 지점
 
-## reason 중복 표시 문제
+- 상위 `README.md`, `problem/README.md`, `docs/README.md`, 연결된 capstone 경로 설명이 서로 어긋나지 않는지 먼저 확인한다.
+- `v0-initial-demo`가 아니라 다른 버전의 코드를 보고 있으면 stage 목적이 흐려질 수 있다.
+- 이 단계는 ranking 수치 자체보다, 추천 이유를 어떻게 표현할지를 다룬다.
 
-### 상황
+## 현재 상태 메모
 
-reason template에서 도구 이름이 이미 카드 제목에 표시되는데,
-reason 문장에도 도구 이름이 반복되어 "release-check-bot — release-check-bot을 추천합니다"처럼 보였다.
+- 실제 노출 문구와 reason template은 `v0`에서 구현되고 이후 버전이 그대로 재사용한다.
+- 이 stage는 '왜 이 추천이 좋은가'를 말하는 문장을 정리하는 인덱스다.
 
-### 해결
+## 재현 실패 시 다시 볼 경로
 
-reason 문장에서 도구 이름을 제거하고 동사로 시작하도록 변경:
-"릴리즈 호환성을 자동으로 검증합니다. 사용자의 릴리즈 체크 요청과 가장 관련성이 높습니다."
+- `08-capstone-submission/v0-initial-demo/shared/src/catalog.ts`
+- `08-capstone-submission/v0-initial-demo/node/src/services/recommendation-service.ts`
+- `08-capstone-submission/v0-initial-demo/react/components/mcp-dashboard.tsx`

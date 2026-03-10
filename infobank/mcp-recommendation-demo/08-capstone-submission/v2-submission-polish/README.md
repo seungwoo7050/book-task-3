@@ -1,16 +1,16 @@
-# v2 Submission Polish
+# v2 제출 마감 버전
 
-v1를 복제한 뒤 compatibility gate, release gate, submission artifact export, dry-run pipeline, release candidate CRUD를 추가한 최종 버전.
+v1를 바탕으로 compatibility gate, release gate, artifact export, 제출용 proof 문서를 더해 최종 capstone으로 마감한 버전이다.
 
-## Included Packages
+## 이번 버전에서 보여 주는 것
 
-- `shared/`: Zod contracts, seeded catalog, offline eval fixtures
-- `node/`: Fastify + Drizzle + PostgreSQL API
-- `react/`: Next.js dashboard
-- `docs/`: stable runbook and proof docs
-- `problem/`: fixed scope and acceptance summary
+- release candidate CRUD
+- compatibility gate
+- release gate
+- artifact export
+- changesets + GitHub Actions dry-run
 
-## Commands
+## 실행 명령
 
 ```bash
 pnpm install
@@ -22,18 +22,23 @@ pnpm eval
 pnpm compatibility rc-release-check-bot-1-5-0
 pnpm release:gate rc-release-check-bot-1-5-0
 pnpm artifact:export rc-release-check-bot-1-5-0
+pnpm capture:presentation
 pnpm test
 pnpm e2e
 ```
 
-## Features
+## 먼저 확인할 문서
 
-- release candidate CRUD
-- compatibility gate
-- release gate
-- artifact export
-- changesets + GitHub Actions dry-run
+- `docs/runbook.md`
+- `docs/eval-proof.md`
+- `docs/compare-report.md`
+- `docs/compatibility-report.md`
+- `docs/release-gate-proof.md`
+- `docs/korean-market-fit.md`
+- `docs/presentation-deck.md`
+- `problem/README.md`
 
-## Status
+## 현재 상태
 
-- implemented and verified
+- 최종 제출용 capstone 버전으로 정리돼 있다.
+- 추천 품질 개선과 release 판단, 제출 산출물 재생성을 한 흐름으로 보여 준다.

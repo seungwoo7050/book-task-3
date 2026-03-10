@@ -1,38 +1,29 @@
-# Monitoring Dashboard — 문제 정의
+# 07-monitoring-dashboard-and-review-console 문제 정의
 
-## 풀어야 하는 문제
+## 이 stage가 푸는 문제
 
-stage 06까지 만든 파이프라인은 CLI에서만 실행 가능하다.
-golden set 결과도 JSON으로 출력되고, version compare도 터미널에서만 볼 수 있다.
+overview, failures, session review, eval runner, version compare를 보여주는 API와 React UI를 stage 단위로 집중 분리한 단계다.
 
-운영 팀이 매일 확인해야 하는 정보:
-1. 전체 평균 점수와 등급 분포
-2. 어떤 failure_type이 가장 많이 발생하는지
-3. 개별 상담 세션의 상세 평가 결과
-4. 새 버전이 기존 버전보다 나은지
+## 성공 기준
 
-이걸 매번 코드를 실행해서 확인하는 건 비현실적이다.
-**웹 대시보드**가 필요하다.
+- 운영자가 평균 점수, failure top, 세션 trace, compare delta를 한 곳에서 읽을 수 있다.
+- backend contract와 frontend mocked tests가 같은 payload shape를 공유한다.
+- run label과 retrieval version 같은 lineage 정보가 session review에 노출된다.
 
-## snapshot API 접근
+## 왜 지금 이 단계를 먼저 보는가
 
-실시간 데이터를 제공하려면 DB 연결, 쿼리 최적화, 캐싱이 필요하다.
-stage 수준에서는 이게 과하다.
+- v1 dashboard slice를 그대로 복제해 stage07에서 UI contract를 독립 학습할 수 있게 했다.
+- v2 improvement proof가 결국 어떤 화면과 API에서 읽혀야 하는지 보여준다.
 
-대신 **snapshot 방식**을 선택했다:
-- 모든 API가 하드코딩된 SNAPSHOT dict에서 데이터를 반환한다
-- DB 없이 API 계약(request/response schema)을 먼저 확정한다
-- React 프론트엔드는 이 API에 맞춰 개발한다
-- capstone에서 실제 DB로 교체할 때, API schema만 같으면 프론트엔드 수정이 불필요하다
+## 먼저 알고 있으면 좋은 것
 
-이건 "fake it till you make it"이 아니라 **interface-first 설계**다.
-API 계약이 먼저 확정되면, 백엔드와 프론트엔드를 독립적으로 개발할 수 있다.
+- run label, retrieval version, failure taxonomy, score contract를 이미 알고 있어야 콘솔이 읽힌다.
 
-## 대시보드의 4가지 뷰
+## 확인할 증거
 
-| 페이지 | 경로 | 표시 내용 |
-|--------|------|-----------|
-| 개요(Overview) | `/` | 평균 점수, 실패율, critical 건수, 등급 분포, version compare |
-| 실패 분석(Failures) | `/failures` | failure_type별 발생 건수, critical 비율, 평균 점수 |
-| 세션 리뷰(SessionReview) | `/sessions` | 개별 상담 세션 목록, 상세 턴/평가 조회 |
-| 평가 실행(EvalRunner) | `/runner` | golden set 실행 트리거, 결과 표시 |
+- `python/tests/test_api.py`가 overview, failures, conversation detail, golden run, version compare endpoint를 검증한다.
+- `react` pack은 copied mocked tests로 주요 화면을 검증한다.
+
+## 아직 남아 있는 불확실성
+
+stage07은 persistent storage 없이 snapshot payload를 보여주므로 실제 운영 데이터 규모나 latency를 검증하지는 않는다.

@@ -1,31 +1,28 @@
-# Registry Catalog & Manifest Schema — 문제 정의
+# 02 registry catalog와 manifest schema 문제 정의
 
-## 풀어야 하는 문제
+## 이 stage가 맡는 문제
 
-추천 시스템이 "무엇을" 추천하는지를 정의해야 한다.
-MCP 도구는 각각 이름, 버전, 카테고리, 입출력 규격을 가진다.
-이걸 자유 형식으로 관리하면 추천 로직이 불안정해진다.
+catalog seed와 manifest schema를 하나의 데이터 계약으로 묶어 추천 시스템의 입력 경계를 고정하는 단계다.
 
-## manifest schema라는 접근
+## 현재 기준 성공 조건
 
-모든 MCP 도구가 따라야 하는 **단일 스키마**를 Zod로 정의한다.
-스키마를 통과하지 못하는 도구는 catalog에 등록할 수 없다.
+- catalog 데이터와 manifest 형식이 한 묶음의 계약으로 이해된다.
+- 학생이 자기 프로젝트에서 seed data와 validation을 같이 설명할 수 있다.
+- 후속 추천 로직이 어떤 입력 위에서 동작하는지 추적 가능하다.
 
-이걸 "manifest validation"이라고 부른다.
-API 레벨에서 manifest 검증 엔드포인트를 제공하면,
-새 도구를 등록하기 전에 스키마 적합성을 확인할 수 있다.
+## 먼저 알고 있으면 좋은 것
 
-## seed catalog
+- 상위 `README.md`, `problem/README.md`, `docs/README.md`를 먼저 읽어 stage 목적을 고정한다.
+- 실제 구현 확인은 `v0-initial-demo` 기준으로 내려가야 한다.
+- 여기서는 추천 알고리즘보다 입력 데이터의 안정성과 검증 가능성을 먼저 설명한다.
 
-개발과 테스트를 위해 미리 정의된 도구 목록이 필요하다.
-catalog.ts에 10+ MCP 도구를 하드코딩하고, `pnpm seed` 스크립트로 DB에 삽입한다.
+## 확인할 증거
 
-seed가 중요한 이유:
-1. offline eval이 seed 데이터를 기반으로 동작한다
-2. 대시보드에서 보여줄 데이터가 있어야 한다
-3. 추천 알고리즘의 동작을 검증할 수 있다
+- `08-capstone-submission/v0-initial-demo/shared/src/contracts.ts`
+- `08-capstone-submission/v0-initial-demo/shared/src/catalog.ts`
+- `08-capstone-submission/v0-initial-demo/node/src/scripts/seed.ts`
+- `08-capstone-submission/v0-initial-demo/node/tests/manifest-validation.test.ts`
 
-## 제약
+## 아직 남아 있는 불확실성
 
-- 실시간 도구 등록/삭제 API는 v1 capstone에서 추가된다
-- seed 데이터는 deterministic이어야 한다 (매번 같은 결과)
+- 여기서는 추천 알고리즘보다 입력 데이터의 안정성과 검증 가능성을 먼저 설명한다.

@@ -1,12 +1,12 @@
 ---
 marp: true
 paginate: true
-title: Study1 Capstone v0 Demo
-description: v0 initial demo presentation deck
+title: 인포뱅크 1번 과제 capstone v0 데모
+description: v0 초기 실행 데모 발표 문서
 ---
 
-# Study1 Capstone
-## v0 Initial Demo
+# 인포뱅크 1번 과제 capstone
+## v0 초기 실행 데모
 
 baseline selector와 offline eval이 실제로 동작하는 첫 runnable 데모  
 검증일: 2026-03-07

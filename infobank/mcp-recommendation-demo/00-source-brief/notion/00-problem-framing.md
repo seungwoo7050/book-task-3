@@ -1,40 +1,28 @@
-# Source Brief — 문제 정의
+# 00 문제 정의와 기준 문서 문제 정의
 
-## 풀어야 하는 문제
+## 이 stage가 맡는 문제
 
-MCP(Model Context Protocol)는 LLM 도구 호출을 위한 표준이다.
-도구가 많아지면 **어떤 도구를 추천할 것인가**라는 문제가 생긴다.
+MCP 추천 최적화 트랙에서 무엇을 만들고 어떤 기준으로 좋은 추천을 판단할지 먼저 고정하는 단계다.
 
-이 프로젝트의 목표는:
-1. MCP 도구 카탈로그를 관리하고
-2. 사용자 요청에 맞는 도구를 추천하고
-3. 추천 품질을 측정/개선하는 시스템을 만드는 것이다.
+## 현재 기준 성공 조건
 
-## 왜 MCP 추천인가
+- tracked 문서만 읽어도 이 트랙이 다루는 문제와 최종 데모 방향을 이해할 수 있다.
+- reference spine과 baseline capstone 경로가 문서 안에서 분명히 연결된다.
+- 학생이 자기 포트폴리오 레포를 만들 때 어떤 상위 문서가 먼저 필요한지 감이 잡힌다.
 
-MCP 생태계가 커지면서 도구 선택이 점점 어려워진다.
-GitHub repo inspector, PostgreSQL schema mapper, Korean docs search 등
-10개 이상의 도구 중에서 현재 맥락에 맞는 것을 골라야 한다.
+## 먼저 알고 있으면 좋은 것
 
-단순 키워드 매칭으로는 안 된다. "릴리즈 체크를 해야 하는데"라는 요청에
-release-check-bot과 github-repo-inspector가 동시에 걸릴 수 있다.
-**근거 있는 선택**이 필요하다.
+- 상위 `README.md`, `problem/README.md`, `docs/README.md`를 먼저 읽어 stage 목적을 고정한다.
+- 실제 구현 확인은 `v0-initial-demo` 기준으로 내려가야 한다.
+- 이 단계는 문서 단계다. 별도 구현 디렉터리를 만들기보다, 어떤 코드를 읽어야 하는지 정확히 가리키는 것이 더 중요하다.
 
-## capstone 목표
+## 확인할 증거
 
-v0에서 baseline selector로 시작해서,
-v2에서 compatibility gate + release gate까지 완성하는 것.
-v3에서는 이걸 self-hosted OSS로 패키징한다.
+- `08-capstone-submission/v0-initial-demo/shared/src/catalog.ts`
+- `08-capstone-submission/v0-initial-demo/shared/src/eval.ts`
+- `../../docs/reference-spine.md`
+- `../../docs/project-selection-rationale.md`
 
-## reference spine
+## 아직 남아 있는 불확실성
 
-프로젝트 전체를 관통하는 참조 문서:
-- `docs/reference-spine.md` — 추천 시스템 참조 구조
-- `docs/project-selection-rationale.md` — 이 주제를 선택한 이유
-- `shared/src/catalog.ts` — 10+ MCP 도구 카탈로그
-- `shared/src/eval.ts` — offline eval case
-
-## 제약
-
-- 실제 MCP 서버 연동은 범위 밖. seed 데이터로 동작을 증명한다.
-- LLM 기반 추천은 사용하지 않는다. 규칙과 가중치 기반으로 구현한다.
+- 이 단계는 문서 단계다. 별도 구현 디렉터리를 만들기보다, 어떤 코드를 읽어야 하는지 정확히 가리키는 것이 더 중요하다.

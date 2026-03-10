@@ -1,49 +1,35 @@
-# Curriculum Map
+# 커리큘럼 맵
 
-## 공통 규칙
+## 공통 단계 의미
 
-- `00`: 원문 과제와 선택 근거 고정
-- `01`~`07`: 최종 데모를 위한 미니과제
-- `08`: 제출 가능한 capstone과 버전 폴더
+- `00`: 문제 정의, 참고 기준, 최종 방향을 먼저 고정한다.
+- `01~07`: capstone을 구성하는 핵심 개념을 작은 학습 단위로 분리한다.
+- `08`: 실제로 보여 줄 수 있는 capstone 버전 스냅샷과 제출 자료를 정리한다.
 
-## study1
+## 1번 과제: `mcp-recommendation-demo/`
 
-| 단계 | 프로젝트 | 목적 |
-|---|---|---|
-| 00 | source-brief | 공고/원문 기준으로 MCP 요구와 제출 기준 재구성 |
-| 01 | selection-rubric-and-eval-contract | 선택 기준과 평가 계약 고정 |
-| 02 | registry-catalog-and-manifest-schema | registry, manifest, metadata schema 구축 |
-| 03 | differentiation-and-exposure-design | MCP 차별화 포인트와 노출 정책 설계 |
-| 04 | selector-baseline-and-reranking | selector baseline, reranking, 추천 trace 구현 |
-| 05 | usage-logs-metrics-and-feedback-loop | 사용 로그와 성능 지표, feedback loop 구축 |
-| 06 | release-compatibility-and-quality-gates | 등록, 배포, semver, compatibility, release gate 구축 |
-| 07 | operator-dashboard-and-experiment-console | 운영자용 추천 품질 대시보드와 실험 콘솔 |
-| 08 | capstone-submission | 운영형 MCP 추천 시스템 데모 |
+| 단계 | 프로젝트 | 배우는 것 | 포트폴리오로 가져갈 것 |
+|---|---|---|---|
+| 00 | source-brief | MCP 추천 문제 공간, 참고 문헌, capstone 목표를 고정한다 | 문제 정의와 레퍼런스 스파인 작성법 |
+| 01 | selection-rubric-and-eval-contract | 추천 품질 기준과 오프라인 평가 계약을 정한다 | 평가 기준표와 acceptance threshold 문서화 |
+| 02 | registry-catalog-and-manifest-schema | registry catalog와 manifest schema를 계약으로 만든다 | schema-first 설계와 검증 가능한 데이터 계약 |
+| 03 | differentiation-and-exposure-design | 한국어 추천 근거와 차별화 문구를 설계한다 | 사용자 설명 문구와 노출 전략 |
+| 04 | selector-baseline-and-reranking | baseline selector와 reranker를 구현한다 | 추천 로직 비교와 실험 설계 |
+| 05 | usage-logs-metrics-and-feedback-loop | 사용 로그, 피드백, 실험 메타데이터를 연결한다 | 운영 지표와 피드백 루프 설계 |
+| 06 | release-compatibility-and-quality-gates | compatibility, quality gate, artifact export를 구현한다 | 배포 전 검증과 제출용 증빙 산출물 |
+| 07 | operator-dashboard-and-experiment-console | 운영자 콘솔과 실험 대시보드를 완성한다 | 운영 화면과 실험 콘솔 IA |
+| 08 | capstone-submission | `v0 -> v3` 버전 스냅샷으로 최종 데모를 관리한다 | 버전 스냅샷과 self-hosted 확장 전략 |
 
-## study2
+## 2번 과제: `chat-qa-ops/`
 
-| 단계 | 프로젝트 | 목적 |
-|---|---|---|
-| 00 | source-brief | STT와 공고 기준으로 2번 과제 범위 확정 |
-| 01 | quality-rubric-and-score-contract | 품질 차원, hard fail, taxonomy, score contract 정의 |
-| 02 | domain-fixtures-and-chat-harness | 최소 상담 도메인, seeded sessions, replay 하네스 구축 |
-| 03 | rule-and-guardrail-engine | 규칙/가드레일, PII, mandatory notice, escalation 구현 |
-| 04 | claim-and-evidence-pipeline | claim, retrieval, evidence verdict, groundedness trace 구현 |
-| 05 | judge-and-score-merge | judge, scoring, lineage, merge policy 구현 |
-| 06 | golden-set-and-regression | golden set, assertions, batch replay, version compare 입력 구축 |
-| 07 | monitoring-dashboard-and-review-console | dashboard, failures, session review, review console 구축 |
-| 08 | capstone-submission | 제출 가능한 Chat QA Ops 데모 |
-
-## study3
-
-| 단계 | 프로젝트 | 목적 |
-|---|---|---|
-| 00 | source-brief | 회의 어시스턴트 요구와 제출 기준 고정 |
-| 01 | meeting-event-model-and-success-metrics | 회의 이벤트 모델과 성공 지표 정의 |
-| 02 | audio-capture-and-stt-chunk-pipeline | chunked STT 파이프라인 구축 |
-| 03 | topic-shift-detection-and-issue-graph | 토픽 전환 감지와 issue graph 구조화 |
-| 04 | intervention-timing-and-action-policy | 개입 시점과 action policy 구현 |
-| 05 | material-retrieval-analysis-and-sharing | 자료 수집, 분석, 공유 artifact 구축 |
-| 06 | scenario-regression-and-safety-gates | 회귀셋과 개입 safety gate 구축 |
-| 07 | operator-console-and-replay-viewer | operator console과 replay viewer 구축 |
-| 08 | capstone-submission | 제출 가능한 한국어 회의 지원 데모 |
+| 단계 | 프로젝트 | 배우는 것 | 포트폴리오로 가져갈 것 |
+|---|---|---|---|
+| 00 | source-brief | 과제 해석, reference spine, baseline capstone 방향을 고정한다 | 문제 정의 문서와 학습 범위 선언 |
+| 01 | quality-rubric-and-score-contract | 품질 축, 점수 계약, critical override 규칙을 정의한다 | score contract와 평가 언어 통일 |
+| 02 | domain-fixtures-and-chat-harness | 상담 도메인 fixture와 replay harness를 만든다 | 재현 가능한 평가 입력셋 설계 |
+| 03 | rule-and-guardrail-engine | 안전 규칙, PII, mandatory notice, escalation을 구현한다 | 규칙 기반 guardrail과 failure taxonomy |
+| 04 | claim-and-evidence-pipeline | claim 추출과 근거 검증 파이프라인을 구현한다 | trace 중심 groundedness 설명 |
+| 05 | judge-and-score-merge | judge 출력과 점수 합산 정책을 만든다 | 판단 로직과 점수 계약의 분리 |
+| 06 | golden-set-and-regression | golden set, compare manifest, 회귀 검증 흐름을 만든다 | 개선 증빙과 regression proof |
+| 07 | monitoring-dashboard-and-review-console | 운영 대시보드와 세션 리뷰 콘솔을 만든다 | 운영 UI와 리뷰 도구 설계 |
+| 08 | capstone-submission | `v0 -> v3` 버전 스냅샷으로 제출/운영 데모를 정리한다 | stage 학습을 제품형 데모로 묶는 법 |

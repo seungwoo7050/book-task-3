@@ -1,25 +1,30 @@
-# Guardrail Engine — 회고
+# 03-rule-and-guardrail-engine 회고
 
-## 잘 된 것
+## 이번 stage로 강화된 점
 
-### 실패 이유가 명확해졌다
+- 실패 이유가 명확해 품질 논의를 human-review와 연결하기 쉽다.
+- golden regression에서 재현 가능한 failure taxonomy를 제공한다.
 
-`MISSING_MANDATORY_STEP`, `UNSUPPORTED_CLAIM`, `PII_EXPOSURE`, `ESCALATION_MISS` — 이름만 봐도 뭐가 잘못됐는지 안다.
-human review에서 "이 답변은 왜 나쁜가?"에 즉시 답할 수 있게 되었다.
+## 아직 약한 부분
 
-### golden regression에서 재현 가능한 failure taxonomy를 제공한다
+- rule coverage 확장은 수동 유지보수 비용이 든다.
 
-v0 → v1 개선 실험에서 "MISSING_REQUIRED_EVIDENCE_DOC가 14에서 11로 줄었다"는 보고가 가능한 건,
-failure type이 코드화되어 있기 때문이다. generic "compliance low"로는 이런 추적이 안 된다.
+## 학생이 여기서 바로 가져갈 것
 
-## 아쉬운 것
+- 정책 위반을 점수 저하가 아니라 명시적인 failure code로 남기는 방식
+- 한국어 상담 시나리오에서도 deterministic rule이 충분한 설명력을 가질 수 있게 만드는 방식
 
-### rule coverage 확장은 수동 유지보수 비용이 든다
+## 다음 stage로 넘기는 자산
 
-새로운 정책이 생길 때마다 `rules.json`에 키워드를 추가해야 한다.
-동의어나 문맥 변형(예: "확실히 되나요?"는 과장 약속인가?)은 keyword matching으로 잡히지 않는다.
+- rule-based guardrail
+- failure type taxonomy
+- 한국어 상담 시나리오의 escalation 조건
+
+## 05-development-timeline.md와 같이 읽을 포인트
+
+- guardrail 테스트를 먼저 읽고 나서 규칙 정의 파일을 보면 failure taxonomy가 더 잘 보인다.
+- 이후 claim/evidence stage를 볼 때도, rule violation과 groundedness failure를 섞지 않는 기준을 여기서 다시 확인한다.
 
 ## 나중에 다시 볼 것
 
-- 실제 상담 로그를 더 확보하면, synonym dictionary를 늘리거나 regex DSL을 도입할 수 있다.
-- LLM-based compliance checker와 rule-based checker를 **병행**하는 하이브리드 접근도 고려할 수 있다.
+- 실제 상담 로그를 더 확보하면 synonym dictionary를 늘리거나 regex DSL을 도입할 수 있다.

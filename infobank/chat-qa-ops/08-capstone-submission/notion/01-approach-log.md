@@ -1,59 +1,32 @@
-# Capstone — 접근 기록
+# 08-capstone-submission 접근 기록
 
-## v0 → v1: provider chain 도입
+## 이 stage의 질문
 
-v0에서 heuristic judge만 사용했을 때, "실제 LLM을 쓰면 결과가 어떻게 달라지나?"라는 질문에 답할 수 없었다.
+상담 품질 관리 플랫폼을 runnable demo, regression hardening, improvement proof까지 포함한 제출물로 어떻게 마감할 것인가?
 
-provider chain의 설계:
-1. 1차: Upstage Solar — 한국어 성능이 좋음
-2. 2차: OpenAI — Solar 실패 시 fallback
-3. 3차: Ollama — 외부 API 전부 실패 시 로컬 fallback
+## 선택한 방향
 
-chain의 핵심 규칙:
-- 각 provider가 timeout이나 에러를 반환하면 다음 provider로 넘어간다
-- 모든 provider가 실패하면 heuristic으로 최종 fallback한다
-- 어떤 provider가 실행되었는지 `judge_trace`에 기록한다
+- 버전은 폴더 단위 snapshot으로 유지했다. 이유: v0, v1, v2의 역할과 검증 결과를 분리해 학습 기록과 제출 증빙을 동시에 보존하기 위해서다.
+- v1은 안정화, v2는 retrieval improvement proof에 집중하도록 역할을 고정했다. 이유: 한 버전에서 너무 많은 축을 동시에 바꾸면 compare 결과 해석이 어려워진다.
+- provider chain은 Upstage Solar 우선, OpenAI 보조, Ollama fallback 구조로 유지했다. 이유: 한국어 성능, 상용 API 호환성, 로컬 fallback을 함께 확보하려는 요구와 맞기 때문이다.
 
-이 결정의 장점: 외부 API key 없이도 시스템이 동작한다. Ollama가 없어도 heuristic이 있다.
-단점: chain 순서를 런타임에 바꿀 수 없다 (하드코딩).
+## 제외한 대안
 
-## v1 → v2: retrieval-v2 개선
+- v0 폴더를 직접 계속 수정하는 in-place versioning
+- 개선 실험과 안정화 작업을 한 버전에 동시에 몰아넣는 방식
+- live provider 검증 없이는 전체 저장소를 설명할 수 없다고 보는 방식
 
-v1까지 retrieval은 keyword matching이었다.
-v2에서 세 가지를 추가했다:
+## 선택 기준
 
-1. **alias 매핑**: "환불" → "refund_policy.md", "본인확인" → "identity_verification.md"
-2. **category 기반 필터링**: 문서에 카테고리 태그를 달아 관련 문서 우선 반환
-3. **risk rerank**: 민감 주제(개인정보, 금융)에 해당하는 문서를 상위로 올림
+- v0, v1, v2가 각자 독립적으로 runnable하고 역할이 다르다.
+- compare는 같은 dataset과 run label 위에서 baseline 대비 개선을 증빙한다.
+- fallback, dependency health, dashboard, proof artifact가 공개 저장소 기준으로 재현 가능하다.
 
-이 개선의 효과를 같은 golden set으로 측정한 결과:
-- avg_score: 84.06 → 87.76 (+3.7)
-- critical_count: 2 → 0
-- pass_count: 16 → 19 (+3)
-- fail_count: 14 → 11 (-3)
+## 커리큘럼 안에서의 역할
 
-이 수치가 capstone의 핵심 증거다. "코드를 바꿨더니 실제로 좋아졌다"를 golden set이 보여준다.
+- 이 항목 자체가 최종 제출물이다.
+- tracked docs는 stable index 역할을 하고, notion은 process-heavy technical notebook 역할을 한다.
 
-## v2 → v3: self-hosted 패키징
+## 아직 열어 둔 판단
 
-v2까지는 개발자 로컬에서 실행하는 것을 전제했다.
-v3부터는 "다른 팀이 받아서 바로 쓸 수 있어야 한다"가 목표다.
-
-새로 추가된 것:
-- **관리자 인증**: email/password 기반 단일 관리자 로그인
-- **데이터 업로드 UI**: transcript JSONL, KB bundle ZIP
-- **비동기 job**: evaluation 요청을 큐에 넣고 worker가 처리
-- **Docker Compose**: 한 명령으로 전체 배포
-- **optional AI profile**: `--profile ai`로 ollama/chroma 컨테이너 추가
-
-Docker Compose 구성:
-```yaml
-services:
-  api:       # FastAPI 서버
-  web:       # React 프론트엔드
-  db:        # PostgreSQL
-  worker:    # evaluation worker
-  # optional:
-  ollama:    # local LLM
-  chroma:    # vector store
-```
+live Upstage/OpenAI/Langfuse 호출은 이 저장소에서 기본 검증 경로에 포함하지 않았다. 현재 증빙은 mock/no-op와 local fallback을 기준으로 한다.

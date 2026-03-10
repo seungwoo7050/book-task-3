@@ -1,95 +1,55 @@
-# Registry Catalog & Manifest Schema — 개발 타임라인
+# 02 registry catalog와 manifest schema 재현 타임라인
 
-## 1단계: contracts.ts에 manifest schema 확정
+## 이 문서의 역할
 
-```bash
-cd shared/src
-# contracts.ts 편집 — mcpManifestSchema, catalogEntrySchema 정의
-```
+이 문서는 과거의 상세 일지를 그대로 복사하지 않는다. 대신 지금 저장소 기준으로 같은 학습 결과를 다시 확인하려면 무엇을 어떤 순서로 읽고 실행해야 하는지 정리한다.
 
-Zod schema를 정의한 후 `z.infer<typeof mcpManifestSchema>`로 TypeScript 타입을 추출했다.
-이렇게 하면 schema와 타입이 항상 동기화된다.
+## 재현 순서
 
-## 2단계: catalog.ts 작성
+1. 상위 `README.md`, `problem/README.md`, `docs/README.md`를 읽어 이 stage가 왜 분리됐는지 고정한다.
+2. 아래 연결 경로를 위에서 아래 순서로 열어 실제 구현과 문서 설명을 대조한다.
 
-```bash
-touch shared/src/catalog.ts
-```
+- `08-capstone-submission/v0-initial-demo/shared/src/contracts.ts`
+- `08-capstone-submission/v0-initial-demo/shared/src/catalog.ts`
+- `08-capstone-submission/v0-initial-demo/node/src/scripts/seed.ts`
+- `08-capstone-submission/v0-initial-demo/node/tests/manifest-validation.test.ts`
 
-10+ MCP 도구를 하드코딩했다.
-각 도구가 mcpManifestSchema를 통과하는지 빌드 시 타입 체크로 확인된다.
+3. `v0-initial-demo` 폴더로 이동해 아래 명령으로 실제 동작과 테스트를 확인한다.
 
 ```bash
-cd shared
-pnpm tsc --noEmit  # 타입 체크
-```
-
-## 3단계: DB schema 정의 (Drizzle)
-
-```bash
-cd 08-capstone-submission/v0-initial-demo/node/src/db
-touch schema.ts
-```
-
-Drizzle ORM으로 PostgreSQL 테이블을 정의했다:
-
-```typescript
-export const catalogTable = pgTable('catalog', {
-  id: serial('id').primaryKey(),
-  name: varchar('name', { length: 255 }).unique().notNull(),
-  version: varchar('version', { length: 50 }).notNull(),
-  category: varchar('category', { length: 100 }).notNull(),
-  // ...
-});
-```
-
-```bash
-pnpm migrate  # DB 마이그레이션 실행
-```
-
-## 4단계: seed.ts 구현
-
-```bash
-cd node/src/scripts
-touch seed.ts
-```
-
-```bash
+pnpm install
+cp .env.example .env
+pnpm db:up
+pnpm migrate
 pnpm seed
-# ✓ Seeded 12 catalog entries
-```
-
-upsert 패턴으로 구현하여 반복 실행 가능.
-
-## 5단계: manifest validation route 추가
-
-```bash
-# app.ts에 POST /api/manifests/validate 라우트 추가
-```
-
-Fastify 라우트에서 request body를 Zod로 파싱:
-
-```typescript
-app.post('/api/manifests/validate', async (request, reply) => {
-  const result = mcpManifestSchema.safeParse(request.body);
-  return { valid: result.success, errors: result.error?.issues };
-});
-```
-
-## 6단계: 테스트
-
-```bash
-cd node
+pnpm dev
 pnpm test
+pnpm eval
+pnpm capture:presentation
+pnpm e2e
 ```
 
-manifest-validation.test.ts:
-- 올바른 manifest → `{ valid: true }`
-- 필수 필드 누락 → `{ valid: false, errors: [...] }`
-- optional 필드 없음 → `{ valid: true }`
+4. 실행 후에는 아래 항목이 실제로 충족되는지 체크한다.
 
-## 비고
+- catalog 데이터와 manifest 형식이 한 묶음의 계약으로 이해된다.
+- 학생이 자기 프로젝트에서 seed data와 validation을 같이 설명할 수 있다.
+- 후속 추천 로직이 어떤 입력 위에서 동작하는지 추적 가능하다.
 
-- `pnpm seed`는 `pnpm migrate` 후에 실행해야 한다.
-- DB가 없으면 `pnpm db:up`으로 PostgreSQL Docker 컨테이너를 먼저 시작한다.
-- seed 데이터 변경 시 eval 결과가 달라질 수 있으므로, 변경 후 `pnpm eval`로 영향을 확인한다.
+## 학습 체크포인트
+
+- 이 stage를 통해 이해해야 할 핵심 개념: schema-first로 catalog와 manifest를 설계하는 법, seed data와 validation route를 같은 계약으로 설명하는 방식, 데모용 데이터셋을 재현 가능하게 유지하는 법
+- 이 stage를 포트폴리오로 옮길 때 강조할 것: schema-first 설계와 seed data 운영 방식, validation route를 품질 증빙으로 활용하는 방식
+
+## 막히면 먼저 볼 것
+
+- `02-debug-log.md`
+- `v0-initial-demo`의 README와 docs
+- `../notion-archive/05-development-timeline.md`
+
+## 자기 포트폴리오 레포로 옮길 때
+
+- 이 문서의 순서를 그대로 유지하되, 경로만 내 저장소 구조에 맞게 바꾼다.
+- `README.md`에는 문제 해석, 현재 상태, 실행 명령만 남기고 더 긴 판단 과정은 `notion/`으로 보낸다.
+- `docs/README.md`에는 검증 기준, proof artifact, 오래 남길 개념만 남긴다.
+- 새 노트를 다시 쓰고 싶다면 기존 `notion/`을 `notion-archive/`로 옮겨 예전 판단을 보존한다.
+- 발표나 제출용 README를 만들 때는 이 문서의 체크포인트를 그대로 acceptance checklist로 재사용한다.

@@ -1,36 +1,26 @@
-# Source Brief — 접근 기록
+# 00 문제 정의와 기준 문서 접근 기록
 
-## reference spine 구성
+## 이 stage의 질문
 
-프로젝트의 참조 문서를 결정해야 했다.
-후보가 많았지만, 최종적으로 두 가지 문서로 정리했다:
+MCP 추천 최적화 트랙에서 무엇을 만들고 어떤 기준으로 좋은 추천을 판단할지 먼저 고정하는 단계다. 이 설명이 실제 capstone 코드와 같은 뜻으로 읽히게 만들 수 있는가?
 
-1. **reference-spine.md**: 추천 시스템의 참조 구조 (selector, reranker, evaluator, gate)
-2. **project-selection-rationale.md**: MCP 추천을 선택한 이유 (한국어 시장, 도구 증가 추세, 운영 필요성)
+## 현재 레포가 택한 방향
 
-나머지 문서들은 각 stage의 docs/에 분산시켰다.
-이 결정의 장점: source brief가 짧고 명확하다.
+- 별도 stage 구현을 새로 만들기보다, 실제 capstone 구현 경로를 정본으로 삼는다.
+- 상위 문서 -> stage 문서 -> 연결된 capstone 경로 순서로 읽게 해, 학습 순서와 구현 경로를 분리하지 않는다.
+- 실행 재현은 `v0-initial-demo` 명령을 기준으로 묶어 두고, stage 문서는 그 의미를 설명하는 역할에 집중한다.
 
-## catalog seed 결정
+## 이번에 버린 선택
 
-catalog.ts에 넣을 MCP 도구를 선정했다.
-실제 운영 가능한 도구 목록보다는 **추천 알고리즘의 다양한 케이스를 커버하는** 조합을 목표로 했다.
+- stage-local 가짜 구현을 추가해 실제 capstone 구조와 다른 예제를 만드는 방식
+- 없는 명령이나 파일을 있는 것처럼 적는 방식
+- 과거 노트만 보고 현재 구조를 추정하는 방식
 
-선정 기준:
-- 카테고리가 다양해야 한다 (dev-tools, data, docs, monitoring)
-- 한국어 노출 필드가 있는 도구와 없는 도구가 섞여야 한다
-- semver 버전이 달라야 compatibility gate를 테스트할 수 있다
-- 일부는 deprecated 상태여야 release gate를 테스트할 수 있다
+## 커리큘럼 안에서의 역할
 
-결과: github-repo-inspector, postgres-schema-mapper, korean-docs-search 등 10+ 도구를 seed에 포함했다.
+- 문제 정의 문서와 reference spine을 먼저 세우는 방식
+- 학습용 레포를 기능 목록이 아니라 커리큘럼으로 설명하는 방식
 
-## eval fixture 설계
+## 지금 열어 둔 판단
 
-eval.ts의 offline eval case를 설계했다.
-각 case는:
-- 입력: 사용자 요청 텍스트 + 맥락 정보
-- 기대 출력: 추천되어야 할 도구 ID + 순위
-
-case를 설계할 때 가장 어려웠던 건, **올바른 정답이 하나가 아닌 경우**다.
-"릴리즈 체크"라는 요청에 release-check-bot이 1순위, github-repo-inspector가 2순위일 수 있다.
-그래서 eval case에 순위(rank)를 포함시켰다.
+- 현재 이 stage는 문서 중심 인덱스 역할이 강하다. 필요하면 나중에 실제 mini implementation stage로 분화할 수 있다.

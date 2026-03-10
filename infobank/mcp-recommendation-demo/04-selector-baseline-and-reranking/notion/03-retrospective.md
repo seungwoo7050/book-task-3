@@ -1,26 +1,27 @@
-# Selector Baseline & Reranking — 회고
+# 04 baseline selector와 reranking 회고
 
-## 잘 된 것
+## 이번 stage로 좋아진 점
 
-### baseline → reranker 분리가 점진적 개선을 가능하게 했다
+- 추천 로직이 단계적으로 진화했다는 점을 버전별로 설명할 수 있다.
+- 학생이 baseline과 candidate를 분리해 개선 증빙 구조를 만들 수 있다.
+- compare 결과가 다음 stage의 로그/지표 설계와 자연스럽게 이어진다.
 
-v0에서 baseline만으로 데모를 보여주고,
-v1에서 reranker를 추가하면서 relevance +0.13, rankAccuracy +0.17 개선을 수치로 증명했다.
-이건 "코드를 바꿨더니 좋아졌다"를 eval이 보여주는 것이다.
+## 아직 약한 부분
 
-### compare runner가 의사결정 근거가 된다
+- 별도 stage 구현이 없으므로 실제 동작은 capstone 버전으로 내려가 확인해야 한다.
+- 이 단계는 '더 똑똑한 추천'을 만들었다는 주장보다, 왜 그렇게 판단할 수 있는지의 근거를 정리한다.
 
-"reranker를 도입할까?"라는 질문에 compare 결과로 답할 수 있다.
-숫자 없이는 판단이 주관적이 되지만, compare가 있으면 객관적이다.
+## 학생이 여기서 바로 가져갈 것
 
-## 아쉬운 것
+- baseline과 candidate를 같은 입력셋 위에서 비교하는 문서 구조
+- reranking 실험을 코드와 compare proof 둘 다로 남겨 설명력을 높이는 방식
 
-### keyword 매칭의 근본적 한계
+## 05-development-timeline.md와 같이 읽을 포인트
 
-"스키마 확인"이라고 했을 때 "postgres-schema-mapper"는 잡히지만,
-"테이블 구조 분석"이라고 하면 keyword가 안 맞아서 놓친다.
-embedding 기반 semantic search가 이상적이지만, 이 프로젝트 범위 밖이다.
+- 타임라인에서 `v0` baseline과 `v1` rerank 경로를 순서대로 읽어, 개선의 기준면을 먼저 잡는다.
+- compare snapshot을 볼 때는 uplift 숫자보다 baseline 보존과 candidate 설명력 확대를 함께 본다.
 
-### signal 데이터가 seed에 의존한다
+## 나중에 다시 볼 것
 
-실제 usage, feedback 데이터가 없으므로 signal의 효과를 현실적으로 검증하기 어렵다.
+- baseline 대비 candidate 개선을 설명하는 구조
+- reranking 실험을 문서와 테스트로 함께 남기는 방식

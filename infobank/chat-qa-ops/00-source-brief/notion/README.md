@@ -1,23 +1,19 @@
-# 00-source-brief Notion 문서 안내
+# 00-source-brief 노트 안내
 
-이 폴더는 **Source Brief** 단계의 개발 과정과 의사결정을 기록한 블로그형 에세이 모음입니다.
+이 폴더는 stage의 판단 과정, 디버그 기록, 회고, 재사용 지식을 남기는 공개 백업 노트다. 특히 `05-development-timeline.md`는 학습자가 같은 결과를 다시 재현할 때 가장 먼저 따라갈 문서로 유지한다.
 
-## 어떤 문서를 먼저 읽을까?
+## 먼저 읽을 문서
 
-| 목적 | 문서 |
-|------|------|
-| 이 단계가 무엇을 하는 건지 빠르게 알고 싶다 | [00-problem-framing.md](./00-problem-framing.md) |
-| 왜 이런 방식으로 만들었는지 궁금하다 | [01-approach-log.md](./01-approach-log.md) |
-| 만들다가 뭐가 깨졌는지 보고 싶다 | [02-debug-log.md](./02-debug-log.md) |
-| 끝나고 나서 어떤 생각을 했는지 알고 싶다 | [03-retrospective.md](./03-retrospective.md) |
-| 참고한 자료와 배운 개념을 찾고 싶다 | [04-knowledge-index.md](./04-knowledge-index.md) |
-| CLI, 설치, 파일 작성 순서를 시간순으로 따라가고 싶다 | [05-development-timeline.md](./05-development-timeline.md) |
+- `00-problem-framing.md`: 이 stage가 다루는 문제와 성공 기준
+- `01-approach-log.md`: 어떤 방향을 택했고 무엇을 버렸는지
+- `02-debug-log.md`: 자주 깨지는 지점과 검증 포인트
+- `03-retrospective.md`: 이번 stage가 남긴 강점과 한계
+- `04-knowledge-index.md`: 나중에도 다시 꺼내 쓸 개념과 참고 경로
+- `05-development-timeline.md`: 읽기 순서, 실행 명령, 체크포인트를 묶은 재현 타임라인
 
-## 이 문서들과 소스코드의 관계
+## 운영 원칙
 
-소스코드(`python/src/stage00/source_brief.py`, `python/tests/test_source_brief.py`)는 **무엇을 만들었는지**를 보여줍니다.
-이 문서들은 소스코드만으로는 알 수 없는 **왜 그렇게 만들었는지**, **어떤 순서로 작업했는지**, **어떤 도구를 썼는지**를 기록합니다.
-
-## 관련 stage
-
-- **다음**: [01-quality-rubric-and-score-contract](../../01-quality-rubric-and-score-contract/notion/) — Source Brief 위에 품질 점수 체계를 세운다
+- 빠른 현재 상태 확인은 stage `README.md`, `problem/`, `docs/`를 먼저 본다.
+- 새 기준으로 다시 쓰고 싶다면 기존 `notion/`을 `notion-archive/`로 옮겨 보존한다.
+- `05-development-timeline.md`는 단순 일지가 아니라 재현 가능한 학습 순서 문서로 유지한다.
+- 더 거친 시행착오와 과거 버전별 로그는 `notion-archive/`에 남긴다.

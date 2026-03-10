@@ -1,27 +1,27 @@
-# Release Compatibility & Quality Gates — 회고
+# 06 release compatibility와 quality gate 회고
 
-## 잘 된 것
+## 이번 stage로 좋아진 점
 
-### gate가 배포 판단을 객관적으로 만든다
+- 추천 시스템의 품질 개선을 배포 준비 상태와 연결해 설명할 수 있다.
+- 학생이 자기 프로젝트에서 release gate 문서를 설계할 기준을 얻는다.
+- 최종 제출물의 proof artifact 재생성 경로가 분명해진다.
 
-"이 버전 배포해도 되나요?"라는 질문에 gate 결과로 답할 수 있다.
-PASS이면 배포, FAIL이면 사유를 확인하고 수정.
-사람의 주관적 판단에 의존하지 않는다.
+## 아직 약한 부분
 
-### artifact가 감사 추적(audit trail)이 된다
+- 별도 stage 구현이 없으므로 실제 동작은 capstone 버전으로 내려가 확인해야 한다.
+- 이 단계는 추천 결과를 보여 주는 데서 끝나지 않고, 배포 판단과 제출 산출물까지 연결한다.
 
-모든 gate 실행 결과를 JSON으로 보존하면,
-나중에 "이 버전은 왜 배포되었는가?"를 추적할 수 있다.
-v3에서 audit log와 결합하면 더 강력해진다.
+## 학생이 여기서 바로 가져갈 것
 
-## 아쉬운 것
+- 추천 시스템에서도 release gate와 artifact export를 제품 서사의 일부로 다루는 방식
+- compatibility와 quality gate를 별도 proof 문서로 남겨 발표/제출과 운영 판단을 연결하는 방식
 
-### compatibility gate가 semver에만 의존한다
+## 05-development-timeline.md와 같이 읽을 포인트
 
-실제 호환성은 API 인터페이스 변경, 행동 변경 등을 확인해야 하는데,
-현재는 버전 번호만 본다. 이건 semver를 올바르게 사용한다는 가정에 의존한다.
+- 타임라인에서 compatibility, release gate, artifact export 명령을 같은 release candidate 기준으로 실행한다.
+- `v2` proof 문서를 읽을 때 왜 gate 기준이 필요한지 이 stage 회고와 함께 다시 본다.
 
-### release gate의 eval threshold가 고정이다
+## 나중에 다시 볼 것
 
-모든 도구에 같은 threshold를 적용하므로,
-중요도가 높은 도구와 낮은 도구를 구분하지 못한다.
+- release gate와 artifact export를 문서화하는 방식
+- 배포 전 품질 점검을 추천 시스템 서사에 연결하는 방법

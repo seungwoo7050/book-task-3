@@ -1,52 +1,27 @@
-# Capstone — 지식 인덱스
-
-## 버전별 기술 스택
-
-| 항목 | v0 | v1 | v2 | v3 |
-|------|----|----|----|----|
-| DB | SQLite | SQLite + PostgreSQL smoke | PostgreSQL | PostgreSQL |
-| Judge | heuristic | provider chain (Solar→OpenAI→Ollama→heuristic) | provider chain | provider chain |
-| Retrieval | keyword | keyword | keyword + alias/category/risk rerank | keyword + rerank |
-| Auth | 없음 | 없음 | 없음 | single admin (email/password) |
-| 배포 | 로컬 실행 | 로컬 실행 | 로컬 실행 | Docker Compose |
-| Trace | 없음 | Langfuse 준비 | Langfuse 준비 | Langfuse 연동 |
+# 08-capstone-submission 지식 인덱스
 
 ## 핵심 개념
 
-| 개념 | 설명 |
-|------|------|
-| provider chain | LLM provider가 실패하면 다음 provider로 넘어가는 fallback 체인. 최종 fallback은 heuristic |
-| retrieval-v2 | alias 매핑, category 필터, risk rerank를 추가한 개선된 검색 로직 |
-| compare artifact | baseline과 candidate의 golden set 실행 결과를 비교한 JSON 문서 |
-| lineage | 각 평가의 실행 환경 메타: run_label, dataset, trace_id, retrieval_version |
-| judge_trace | 어떤 provider/model로 채점했는지, short_circuit 발생 여부 |
-| evaluation job | v3에서 도입. 평가 요청을 큐에 넣고 worker가 비동기 처리 |
-| KB bundle | Knowledge Base 문서들을 ZIP으로 묶어서 업로드하는 방식 (v3) |
+- immutable version snapshots
+- provider fallback chain
+- trace-rich evaluation pipeline
+- run-level version compare
+- RAG improvement proof
 
-## 품질 지표 변화
+## 참고 경로
 
-```
-v1 (baseline)        →  v2 (candidate)
-avg_score: 84.06     →  87.76  (+3.7)
-critical:  2         →  0      (-2)
-pass:      16        →  19     (+3)
-fail:      14        →  11     (-3)
-```
+## 릴리즈 준비 상태
+- 제목: Release Readiness
+- 경로: chat-qa-ops/08-capstone-submission/docs/release-readiness.md
+- 확인 날짜: 2026-03-07
+- 참고 이유: 공개 저장소 기준으로 어떤 검증이 실제로 완료되었는지 정리하기 위해 읽었다.
+- 배운 점: 최종본은 단순히 코드가 있는 상태가 아니라, 실제 실행 명령과 결과가 연결된 상태여야 한다.
+- 현재 프로젝트에 준 영향: capstone docs와 notion에 검증 명령과 결과를 명시적으로 넣었다.
 
-## 실행 명령어 요약
-
-| 목적 | 명령어 |
-|------|--------|
-| v0 백엔드 테스트 | `cd v0-initial-demo/python && uv sync --extra dev && make test-backend` |
-| v1 전체 게이트 | `cd v1-regression-hardening/python && UV_PYTHON=python3.12 make gate-all` |
-| v1 PostgreSQL 테스트 | `UV_PYTHON=python3.12 make smoke-postgres` |
-| v3 Docker 실행 | `cd v3-self-hosted-oss && docker compose up --build` |
-| v3 AI 프로필 | `docker compose --profile ai up --build` |
-| React 테스트 (모든 버전) | `cd react && pnpm install && pnpm test --run` |
-
-## 다음 단계 (범위 밖)
-
-- multi-tenant / RBAC / SSO
-- Redis/Celery 기반 job queue (현재 in-process worker)
-- Kubernetes 배포
-- billing / usage metering
+## 개선 증빙 아티팩트
+- 제목: Improvement Proof Artifacts
+- 경로: chat-qa-ops/08-capstone-submission/v2-submission-polish/docs/demo/proof-artifacts/improvement-report.json
+- 확인 날짜: 2026-03-07
+- 참고 이유: v2 개선 실험을 문서가 아니라 데이터로 설명하기 위해 확인했다.
+- 배운 점: improvement claim은 compare labels, dataset, delta metrics를 함께 남겨야 신뢰할 수 있다.
+- 현재 프로젝트에 준 영향: capstone notebook에서 숫자와 artifact path를 같이 기록하도록 했다.

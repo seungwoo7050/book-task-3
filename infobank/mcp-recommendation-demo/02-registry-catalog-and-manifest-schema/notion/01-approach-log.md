@@ -1,47 +1,26 @@
-# Registry Catalog & Manifest Schema — 접근 기록
+# 02 registry catalog와 manifest schema 접근 기록
 
-## Zod manifest contract 설계
+## 이 stage의 질문
 
-manifest schema의 필수 필드를 결정해야 했다.
+catalog seed와 manifest schema를 하나의 데이터 계약으로 묶어 추천 시스템의 입력 경계를 고정하는 단계다. 이 설명이 실제 capstone 코드와 같은 뜻으로 읽히게 만들 수 있는가?
 
-필수:
-- `name`: 도구 고유 이름 (slug 형식)
-- `version`: semver 형식 (compatibility gate에서 사용)
-- `category`: dev-tools, data, docs, monitoring 등
-- `description`: 영문 도구 설명
-- `inputs`: 도구 입력 파라미터 스키마
-- `outputs`: 도구 출력 파라미터 스키마
+## 현재 레포가 택한 방향
 
-선택:
-- `exposure.ko`: 한국어 노출 필드 (stage 03에서 설계)
-- `status`: active, deprecated, experimental
-- `compatibility`: 다른 도구와의 호환성 정보
+- 별도 stage 구현을 새로 만들기보다, 실제 capstone 구현 경로를 정본으로 삼는다.
+- 상위 문서 -> stage 문서 -> 연결된 capstone 경로 순서로 읽게 해, 학습 순서와 구현 경로를 분리하지 않는다.
+- 실행 재현은 `v0-initial-demo` 명령을 기준으로 묶어 두고, stage 문서는 그 의미를 설명하는 역할에 집중한다.
 
-Zod의 `.optional()`과 `.default()`를 적절히 사용하여,
-필수 필드 누락 시 바로 에러를 반환하도록 했다.
+## 이번에 버린 선택
 
-## seed 스크립트(seed.ts) 설계
+- stage-local 가짜 구현을 추가해 실제 capstone 구조와 다른 예제를 만드는 방식
+- 없는 명령이나 파일을 있는 것처럼 적는 방식
+- 과거 노트만 보고 현재 구조를 추정하는 방식
 
-seed.ts의 역할:
-1. catalog.ts에서 도구 목록을 import
-2. Drizzle ORM으로 DB에 upsert (이미 있으면 업데이트, 없으면 삽입)
-3. seed 완료 후 삽입된 도구 수를 출력
+## 커리큘럼 안에서의 역할
 
-upsert를 쓴 이유: `pnpm seed`를 여러 번 실행해도 중복이 생기지 않아야 한다.
+- schema-first 설계와 seed data 운영 방식
+- validation route를 품질 증빙으로 활용하는 방식
 
-```bash
-pnpm seed
-# ✓ Seeded 12 catalog entries
-```
+## 지금 열어 둔 판단
 
-## manifest validation route
-
-`POST /api/manifests/validate` 엔드포인트:
-- body에 manifest JSON을 받는다
-- Zod schema로 파싱한다
-- 성공: `{ valid: true }`
-- 실패: `{ valid: false, errors: [...] }`
-
-Fastify의 schema validation과 별도로 Zod를 사용한 이유:
-Fastify JSON Schema는 OpenAPI 호환이지만, TypeScript 타입 추론이 약하다.
-Zod는 schema에서 타입을 추론하므로, 서비스 레이어에서 타입 안전성을 유지할 수 있다.
+- 현재 이 stage는 문서 중심 인덱스 역할이 강하다. 필요하면 나중에 실제 mini implementation stage로 분화할 수 있다.

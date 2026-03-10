@@ -1,24 +1,27 @@
-# Registry Catalog & Manifest Schema — 회고
+# 02 registry catalog와 manifest schema 회고
 
-## 잘 된 것
+## 이번 stage로 좋아진 점
 
-### schema-first 접근이 전체 프로젝트를 안정화시킨다
+- catalog 데이터와 manifest 형식이 한 묶음의 계약으로 이해된다.
+- 학생이 자기 프로젝트에서 seed data와 validation을 같이 설명할 수 있다.
+- 후속 추천 로직이 어떤 입력 위에서 동작하는지 추적 가능하다.
 
-Zod manifest schema를 확정한 뒤, 모든 stage가 이 schema에 의존한다.
-recommendation service, eval service, compatibility gate, release gate 모두
-catalog entry가 이 schema를 따른다는 가정 위에 구현되었다.
+## 아직 약한 부분
 
-schema를 먼저 고정하면, 생각보다 많은 설계 결정이 자동으로 따라온다.
+- 별도 stage 구현이 없으므로 실제 동작은 capstone 버전으로 내려가 확인해야 한다.
+- 여기서는 추천 알고리즘보다 입력 데이터의 안정성과 검증 가능성을 먼저 설명한다.
 
-### seed 데이터가 모든 stage의 기반이 된다
+## 학생이 여기서 바로 가져갈 것
 
-catalog.ts의 seed 데이터를 바꾸면 eval 결과, 추천 결과, compatibility 체크 결과가 모두 바뀐다.
-이건 seed 데이터가 "테스트 데이터"가 아니라 "시스템의 상태"라는 뜻이다.
+- catalog seed와 manifest schema를 추천 알고리즘과 분리된 입력 계약으로 설명하는 방식
+- validation route 자체를 품질 증빙으로 활용하는 방식
 
-## 아쉬운 것
+## 05-development-timeline.md와 같이 읽을 포인트
 
-### 실제 MCP 도구의 manifest를 자동으로 가져오는 기능이 없다
+- 어떤 파일이 seed data를 정의하고 어떤 경로가 validation을 보장하는지 먼저 본다.
+- capstone API나 import/export 기능을 읽을 때도 이 stage의 입력 계약 관점을 다시 적용한다.
 
-현재는 수동으로 catalog.ts에 추가해야 한다.
-실제 운영에서는 MCP 서버에서 manifest를 자동 수집하는 connectors가 필요하다.
-v3 non-goals에 명시적으로 제외되어 있다.
+## 나중에 다시 볼 것
+
+- schema-first 설계와 seed data 운영 방식
+- validation route를 품질 증빙으로 활용하는 방식

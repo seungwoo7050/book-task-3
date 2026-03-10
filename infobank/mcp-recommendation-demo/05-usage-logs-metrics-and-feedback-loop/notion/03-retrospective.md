@@ -1,28 +1,27 @@
-# Usage Logs, Metrics & Feedback Loop — 회고
+# 05 로그, 지표, 피드백 루프 회고
 
-## 잘 된 것
+## 이번 stage로 좋아진 점
 
-### feedback loop가 reranker signal을 실제 데이터로 채운다
+- 추천 품질 개선이 일회성 실험이 아니라 운영 루프로 설명된다.
+- 학생이 자기 프로젝트에서 어떤 운영 지표를 남겨야 할지 감을 잡는다.
+- 후속 release gate와 operator console 단계로 자연스럽게 이어진다.
 
-stage 04에서 reranker가 사용하는 usage_count, avg_feedback이
-이 stage에서 기록된 데이터에서 온다.
-파이프라인이 연결된 것이다.
+## 아직 약한 부분
 
-### experiment 메타데이터가 A/B 비교를 가능하게 한다
+- 별도 stage 구현이 없으므로 실제 동작은 capstone 버전으로 내려가 확인해야 한다.
+- 이 단계는 추천 품질을 '사용 이후'까지 추적하는 구조를 다룬다.
 
-같은 기간에 baseline과 reranker를 동시에 실행하고,
-experiment 단위로 feedback을 분리해서 비교하면
-"reranker가 실제로 사용자 만족도를 높이는가?"에 답할 수 있다.
+## 학생이 여기서 바로 가져갈 것
 
-## 아쉬운 것
+- 추천 결과를 한 번 보여 주고 끝내지 않고, usage와 feedback을 운영 신호로 남기는 방식
+- 실험 메타데이터와 로그를 다음 개선 의사결정의 입력으로 연결하는 방식
 
-### 실제 사용 데이터가 없다
+## 05-development-timeline.md와 같이 읽을 포인트
 
-모든 데이터가 seed이다. 실제 usage pattern이나 feedback 분포를 반영하지 못한다.
-v3에서 실제 사용자 인증을 추가했지만, 여전히 시뮬레이션 수준이다.
+- usage, feedback, experiment CRUD가 어떤 순서로 연결되는지 타임라인에서 먼저 본다.
+- capstone compare와 release gate를 읽을 때도 이 stage의 운영 신호가 어디에 반영되는지 따라간다.
 
-### metrics 집계가 실시간이 아니다
+## 나중에 다시 볼 것
 
-도구별 usage/feedback 요약은 API 호출 시점에 DB를 쿼리한다.
-사용량이 많아지면 성능 문제가 될 수 있다.
-캐싱이나 materialized view는 범위 밖이다.
+- 피드백 루프와 실험 메타데이터 설계
+- 운영 로그를 제품 품질 개선 서사로 묶는 방식

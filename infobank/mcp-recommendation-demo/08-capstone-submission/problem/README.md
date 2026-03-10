@@ -1,17 +1,17 @@
-# Capstone Problem
+# capstone 문제 정의
 
-## Goal
+## 목표
 
-운영형 MCP 추천 시스템 데모를 `v0`, `v1`, `v2` 세 단계로 완성한다.
+운영형 MCP 추천 시스템 데모를 `v0`, `v1`, `v2` 세 단계로 완성하고, 필요하면 `v3`에서 self-hosted OSS 확장 방향까지 보여 준다.
 
-## Fixed Scope
+## 고정 범위
 
 - v0: registry seed, manifest validation, baseline selector, 한국어 추천 근거, offline eval
 - v1: reranking, usage logs, feedback loop, baseline/candidate compare, catalog/experiment CRUD
 - v2: compatibility gate, release gate, submission artifact export, release candidate CRUD, dry-run pipeline
 
-## Acceptance
+## 완료 기준
 
 - 모든 버전이 실제 명령으로 실행 가능해야 한다.
 - selector, reranker, compatibility gate, release gate 테스트가 존재해야 한다.
-- tracked docs와 notion이 역할 분리를 지켜야 한다.
+- tracked docs와 `notion/`이 역할 분리를 지켜야 한다.

@@ -1,8 +1,8 @@
-# Compatibility Report
+# 호환성 리포트
 
 compatibility gate는 release candidate와 catalog manifest를 읽어 아래 항목을 검사한다.
 
-## Checks
+## 검사 항목
 
 - manifest schema validity
 - supported runtime range
@@ -10,13 +10,13 @@ compatibility gate는 release candidate와 catalog manifest를 읽어 아래 항
 - deprecated field usage
 - required Korean metadata completeness
 
-## Verification
+## 검증
 
 ```bash
 pnpm compatibility rc-release-check-bot-1-5-0
 ```
 
-## Last Verified Target
+## 마지막 검증 대상
 
 - `passed = true`
 - 모든 seeded check가 `PASS`

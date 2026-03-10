@@ -1,47 +1,26 @@
-# Differentiation & Exposure Design — 접근 기록
+# 03 차별화 포인트와 노출 설계 접근 기록
 
-## exposure 구조 설계
+## 이 stage의 질문
 
-catalog.ts의 각 도구에 exposure 객체를 추가해야 했다.
+한국어 추천 문구와 differentiation point를 설계해 사용자가 추천 이유를 바로 이해하도록 만드는 단계다. 이 설명이 실제 capstone 코드와 같은 뜻으로 읽히게 만들 수 있는가?
 
-최종 구조:
+## 현재 레포가 택한 방향
 
-```typescript
-exposure: {
-  ko: {
-    tagline: "짧은 한 줄 설명",
-    description: "운영자가 이해할 수 있는 2-3문장 설명",
-    differentiator: "비슷한 도구 대비 이 도구만의 장점"
-  }
-}
-```
+- 별도 stage 구현을 새로 만들기보다, 실제 capstone 구현 경로를 정본으로 삼는다.
+- 상위 문서 -> stage 문서 -> 연결된 capstone 경로 순서로 읽게 해, 학습 순서와 구현 경로를 분리하지 않는다.
+- 실행 재현은 `v0-initial-demo` 명령을 기준으로 묶어 두고, stage 문서는 그 의미를 설명하는 역할에 집중한다.
 
-`ko` 키를 중첩으로 넣은 이유: 향후 다른 언어(en, ja)를 추가할 수 있다.
-하지만 현재는 ko만 구현한다.
+## 이번에 버린 선택
 
-## reason template 설계
+- stage-local 가짜 구현을 추가해 실제 capstone 구조와 다른 예제를 만드는 방식
+- 없는 명령이나 파일을 있는 것처럼 적는 방식
+- 과거 노트만 보고 현재 구조를 추정하는 방식
 
-추천 결과에 포함할 근거 문장을 어떻게 생성할지 결정해야 했다.
+## 커리큘럼 안에서의 역할
 
-후보:
-1. LLM으로 자연어 생성 → 매번 결과가 다르므로 deterministic하지 않음. 제외.
-2. 고정 템플릿 → 기계적이지만 일관되고 테스트 가능. 채택.
-3. 규칙 기반 가변 템플릿 → 조건에 따라 다른 문장 패턴. 추후 고려.
+- 추천 로직과 설명 문구를 함께 설계하는 방식
+- 한국어 사용자에게 보이는 exposure copy 정리법
 
-recommendation-service.ts에서 추천 결과를 반환할 때,
-`reasonTrace`에 reason 문장을 포함시켰다:
+## 지금 열어 둔 판단
 
-```typescript
-{
-  toolId: "release-check-bot",
-  score: 0.85,
-  reason: "release-check-bot을 추천합니다. 릴리즈 호환성을 자동으로 검증합니다.",
-  exposure: { tagline: "...", description: "..." }
-}
-```
-
-## 대시보드 표시
-
-React 대시보드(mcp-dashboard.tsx)에서 추천 결과를 카드 형태로 표시한다.
-각 카드에 한국어 tagline, differentiator, reason이 표시된다.
-exposure.ko가 없는 도구는 영문 description을 회색으로 표시한다.
+- 현재 이 stage는 문서 중심 인덱스 역할이 강하다. 필요하면 나중에 실제 mini implementation stage로 분화할 수 있다.

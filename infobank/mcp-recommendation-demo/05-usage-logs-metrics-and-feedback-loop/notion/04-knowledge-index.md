@@ -1,43 +1,22 @@
-# Usage Logs, Metrics & Feedback Loop — 지식 인덱스
+# 05 로그, 지표, 피드백 루프 지식 인덱스
 
 ## 핵심 개념
 
-| 개념 | 설명 | 관련 파일 |
-|------|------|-----------|
-| usage event | 도구 선택/실행/해제 기록. toolId, action, recommendationId 포함 | `schema.ts → usageEvents` |
-| feedback record | 도구 사용 후 만족도 (1~5점) + 코멘트 | `schema.ts → feedbackRecords` |
-| experiment | A/B 테스트 메타데이터. selector type, status, 기간 | `schema.ts → experiments` |
-| feedback loop | usage → feedback → reranker signal → 개선된 추천 → usage ... 순환 | 전체 파이프라인 |
-| catalog CRUD | 대시보드에서 도구를 추가/수정/삭제하는 API | `catalog-repository.ts` |
+- 추천 서비스에서 어떤 로그와 피드백을 남겨야 하는지
+- 실험 메타데이터를 운영자 콘솔과 연결하는 법
+- 사용 로그를 다음 실험 설계와 품질 개선으로 잇는 방식
 
-## DB 테이블
+## 다시 찾을 경로
 
-| 테이블 | 주요 컬럼 | 관계 |
-|--------|-----------|------|
-| usage_events | tool_id, recommendation_id, experiment_id, action | → catalog |
-| feedback_records | tool_id, usage_event_id, score, comment | → usage_events |
-| experiments | id, name, selector_type, status | → usage_events |
+- `README.md`
+- `problem/README.md`
+- `docs/README.md`
+- `08-capstone-submission/v1-ranking-hardening/node/src/db/schema.ts`
+- `08-capstone-submission/v1-ranking-hardening/node/src/repositories/catalog-repository.ts`
+- `08-capstone-submission/v1-ranking-hardening/node/src/app.ts`
+- `08-capstone-submission/v1-ranking-hardening/react/components/mcp-dashboard.tsx`
 
-## API 엔드포인트
+## 포트폴리오 메모
 
-| 엔드포인트 | 메서드 | 설명 |
-|-----------|--------|------|
-| `/api/usage-events` | POST | usage event 기록 |
-| `/api/feedback` | POST | feedback 기록 |
-| `/api/experiments` | GET/POST | 실험 목록/생성 |
-| `/api/experiments/:id` | PATCH | 실험 상태 변경 |
-| `/api/metrics/tool/:id` | GET | 도구별 요약 |
-
-## 구현 위치
-
-| 기능 | capstone 버전 | 파일 |
-|------|--------------|------|
-| DB schema | v1 | `node/src/db/schema.ts` |
-| catalog CRUD | v1 | `node/src/repositories/catalog-repository.ts` |
-| API routes | v1 | `node/src/app.ts` |
-| dashboard CRUD UI | v1 | `react/components/mcp-dashboard.tsx` |
-
-## 다음 단계 연결
-
-- **stage 06**: usage 데이터가 release gate 판정 시 참고됨
-- **stage 07**: 대시보드에서 experiment 관리 + metrics 시각화
+- 피드백 루프와 실험 메타데이터 설계
+- 운영 로그를 제품 품질 개선 서사로 묶는 방식

@@ -1,62 +1,26 @@
-# Usage Logs, Metrics & Feedback Loop — 접근 기록
+# 05 로그, 지표, 피드백 루프 접근 기록
 
-## DB 테이블 설계
+## 이 stage의 질문
 
-Drizzle ORM으로 세 개의 테이블을 추가했다:
+usage event, feedback record, experiment metadata를 DB와 API로 연결해 추천 품질 개선의 운영 루프를 설명하는 단계다. 이 설명이 실제 capstone 코드와 같은 뜻으로 읽히게 만들 수 있는가?
 
-### usage_events
+## 현재 레포가 택한 방향
 
-```typescript
-export const usageEvents = pgTable('usage_events', {
-  id: serial('id').primaryKey(),
-  toolId: varchar('tool_id').notNull(),
-  recommendationId: varchar('recommendation_id'),
-  experimentId: varchar('experiment_id'),
-  action: varchar('action').notNull(),  // 'selected' | 'executed' | 'dismissed'
-  createdAt: timestamp('created_at').defaultNow()
-});
-```
+- 별도 stage 구현을 새로 만들기보다, 실제 capstone 구현 경로를 정본으로 삼는다.
+- 상위 문서 -> stage 문서 -> 연결된 capstone 경로 순서로 읽게 해, 학습 순서와 구현 경로를 분리하지 않는다.
+- 실행 재현은 `v1-ranking-hardening` 명령을 기준으로 묶어 두고, stage 문서는 그 의미를 설명하는 역할에 집중한다.
 
-### feedback_records
+## 이번에 버린 선택
 
-```typescript
-export const feedbackRecords = pgTable('feedback_records', {
-  id: serial('id').primaryKey(),
-  toolId: varchar('tool_id').notNull(),
-  usageEventId: integer('usage_event_id'),
-  score: integer('score').notNull(),  // 1~5
-  comment: text('comment'),
-  createdAt: timestamp('created_at').defaultNow()
-});
-```
+- stage-local 가짜 구현을 추가해 실제 capstone 구조와 다른 예제를 만드는 방식
+- 없는 명령이나 파일을 있는 것처럼 적는 방식
+- 과거 노트만 보고 현재 구조를 추정하는 방식
 
-### experiments
+## 커리큘럼 안에서의 역할
 
-```typescript
-export const experiments = pgTable('experiments', {
-  id: varchar('id').primaryKey(),
-  name: varchar('name').notNull(),
-  selectorType: varchar('selector_type').notNull(),  // 'baseline' | 'reranker'
-  status: varchar('status').notNull(),  // 'draft' | 'running' | 'completed'
-  startedAt: timestamp('started_at'),
-  endedAt: timestamp('ended_at')
-});
-```
+- 피드백 루프와 실험 메타데이터 설계
+- 운영 로그를 제품 품질 개선 서사로 묶는 방식
 
-## API 엔드포인트
+## 지금 열어 둔 판단
 
-| 엔드포인트 | 메서드 | 설명 |
-|-----------|--------|------|
-| `/api/usage-events` | POST | usage event 기록 |
-| `/api/feedback` | POST | feedback 기록 |
-| `/api/experiments` | GET | 실험 목록 |
-| `/api/experiments` | POST | 실험 생성 |
-| `/api/experiments/:id` | PATCH | 실험 상태 변경 |
-| `/api/metrics/tool/:id` | GET | 도구별 usage/feedback 요약 |
-
-## catalog CRUD 추가
-
-v1에서 catalog-repository.ts에 CRUD를 추가했다.
-이전에는 seed만 있었지만, 이제 대시보드에서 도구를 추가/수정/삭제할 수 있다.
-
-mcp-dashboard.tsx에서 catalog 목록 + CRUD 폼을 표시한다.
+- 현재 이 stage는 문서 중심 인덱스 역할이 강하다. 필요하면 나중에 실제 mini implementation stage로 분화할 수 있다.

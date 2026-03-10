@@ -1,4 +1,4 @@
-# Demo Fallbacks
+# 데모 fallback 안내
 
 ## 1) Ollama/Chroma 장애 시
 

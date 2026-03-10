@@ -1,4 +1,4 @@
-# Phase 1 Demo Scenario (v1.6, KR)
+# Phase 1 데모 시나리오 (v1.6, KR)
 
 ## 목적
 

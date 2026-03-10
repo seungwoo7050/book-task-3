@@ -1,15 +1,15 @@
-# Capstone Release Matrix
+# capstone 릴리즈 매트릭스
 
 이 문서는 `08-capstone-submission`의 공개 저장소 마감 기준을 한 장에 요약한다.
 
-## Version Roles
+## 버전 역할
 
 - `v0-initial-demo`: SQLite + heuristic baseline. runnable snapshot을 우선 안정화한 버전.
 - `v1-regression-hardening`: provider chain, lineage/version compare, trace payload, PostgreSQL smoke를 더한 운영 안정화 버전.
 - `v2-submission-polish`: retrieval improvement experiment와 compare proof를 반영한 제출 버전.
 - `v3-self-hosted-oss`: `v2`를 single-team self-hosted OSS snapshot으로 승격한 버전. 로그인, 업로드, 비동기 job, Docker Compose quickstart를 제공한다.
 
-## Verified Commands
+## 검증 완료 명령
 
 - `v0`
   - `cd python && UV_PYTHON=python3.12 make gate-all`
@@ -27,7 +27,7 @@
   - `cd .. && docker compose build api worker web`
   - `cd .. && docker compose up -d && docker compose ps -a`
 
-## Compare Result Used For Submission
+## 제출에 사용한 compare 결과
 
 - baseline source: `v1` code with `retrieval-v1`
 - candidate source: `v2` code with `retrieval-v2`
@@ -40,11 +40,11 @@
 
 증빙 파일:
 
-- [`api-version-compare.json`](/Users/woopinbell/work/chat-bot/study2/08-capstone-submission/v2-submission-polish/docs/demo/proof-artifacts/api-version-compare.json)
-- [`cli-compare.txt`](/Users/woopinbell/work/chat-bot/study2/08-capstone-submission/v2-submission-polish/docs/demo/proof-artifacts/cli-compare.txt)
-- [`improvement-report.json`](/Users/woopinbell/work/chat-bot/study2/08-capstone-submission/v2-submission-polish/docs/demo/proof-artifacts/improvement-report.json)
+- [`api-version-compare.json`](../v2-submission-polish/docs/demo/proof-artifacts/api-version-compare.json)
+- [`cli-compare.txt`](../v2-submission-polish/docs/demo/proof-artifacts/cli-compare.txt)
+- [`improvement-report.json`](../v2-submission-polish/docs/demo/proof-artifacts/improvement-report.json)
 
-## Public Notes
+## 공개 저장소 기준 메모
 
 - `v0/v1/v2`는 폴더 단위 snapshot 규칙을 유지한다.
 - self-hosted 사용 권장 버전은 `v3-self-hosted-oss`다.

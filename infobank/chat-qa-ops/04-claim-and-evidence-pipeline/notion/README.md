@@ -1,24 +1,19 @@
-# 04-claim-and-evidence-pipeline Notion 문서 안내
+# 04-claim-and-evidence-pipeline 노트 안내
 
-이 폴더는 **Claim & Evidence Pipeline** 단계의 개발 과정과 의사결정을 기록한 블로그형 에세이 모음입니다.
+이 폴더는 stage의 판단 과정, 디버그 기록, 회고, 재사용 지식을 남기는 공개 백업 노트다. 특히 `05-development-timeline.md`는 학습자가 같은 결과를 다시 재현할 때 가장 먼저 따라갈 문서로 유지한다.
 
-## 어떤 문서를 먼저 읽을까?
+## 먼저 읽을 문서
 
-| 목적 | 문서 |
-|------|------|
-| 왜 claim 단위로 근거를 추적해야 하는지 알고 싶다 | [00-problem-framing.md](./00-problem-framing.md) |
-| claim extraction과 verification을 왜 분리했는지 궁금하다 | [01-approach-log.md](./01-approach-log.md) |
-| 근거 없는 claim이 사라지는 버그를 보고 싶다 | [02-debug-log.md](./02-debug-log.md) |
-| 이 stage의 한계와 향후 방향을 알고 싶다 | [03-retrospective.md](./03-retrospective.md) |
-| groundedness, retrieval trace 개념을 정리하고 싶다 | [04-knowledge-index.md](./04-knowledge-index.md) |
-| 파일 생성과 CLI 순서를 따라가고 싶다 | [05-development-timeline.md](./05-development-timeline.md) |
+- `00-problem-framing.md`: 이 stage가 다루는 문제와 성공 기준
+- `01-approach-log.md`: 어떤 방향을 택했고 무엇을 버렸는지
+- `02-debug-log.md`: 자주 깨지는 지점과 검증 포인트
+- `03-retrospective.md`: 이번 stage가 남긴 강점과 한계
+- `04-knowledge-index.md`: 나중에도 다시 꺼내 쓸 개념과 참고 경로
+- `05-development-timeline.md`: 읽기 순서, 실행 명령, 체크포인트를 묶은 재현 타임라인
 
-## 이 문서들과 소스코드의 관계
+## 운영 원칙
 
-소스코드(`pipeline.py`)는 claim extraction과 verification 로직을 보여줍니다.
-이 문서들은 **왜 `not_found` verdict를 결과에서 제거하지 않는지**, **retrieval trace가 왜 필요한지** 등 소스코드에 담기지 않는 설계 이유를 설명합니다.
-
-## 관련 stage
-
-- **이전**: [03-rule-and-guardrail-engine](../../03-rule-and-guardrail-engine/notion/) — 안전 규칙 엔진
-- **다음**: [05-judge-and-score-merge](../../05-judge-and-score-merge/notion/) — 판정과 점수 통합
+- 빠른 현재 상태 확인은 stage `README.md`, `problem/`, `docs/`를 먼저 본다.
+- 새 기준으로 다시 쓰고 싶다면 기존 `notion/`을 `notion-archive/`로 옮겨 보존한다.
+- `05-development-timeline.md`는 단순 일지가 아니라 재현 가능한 학습 순서 문서로 유지한다.
+- 더 거친 시행착오와 과거 버전별 로그는 `notion-archive/`에 남긴다.
