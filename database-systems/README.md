@@ -5,7 +5,7 @@
 ## 이 레포로 배우는 것
 
 - 단일 노드 저장 엔진에서 memtable, SSTable, WAL, compaction, buffer pool, MVCC가 어떻게 이어지는지 배웁니다.
-- 분산 시스템에서 RPC, replication, sharding, consensus-lite, clustered KV 흐름이 어떻게 연결되는지 배웁니다.
+- 분산 시스템에서 RPC, replication, sharding, consensus-lite, clustered KV, quorum consistency, leader election, failure-injected replication 흐름이 어떻게 연결되는지 배웁니다.
 - 각 프로젝트를 `문제 해석 → 구현 → 개념 문서 → 학습 노트` 순서로 읽으면서, 단순 정답 복제보다 설계 판단을 먼저 이해하도록 돕습니다.
 
 ## 어디서 시작하면 좋은가

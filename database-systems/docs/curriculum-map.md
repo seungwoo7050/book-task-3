@@ -13,6 +13,9 @@
 | Sharding | `03-shard-routing` | `03-shard-routing` | 유지 | consistent hashing과 rebalance 비용을 독립적으로 보기 좋습니다. |
 | Consensus / Raft | `04-raft-lite` | 해당 없음 | Go 심화 유지 | 합의는 입문 경로보다 Go 심화 경로에 두는 편이 학습 부담이 적습니다. |
 | 저장 엔진 + 분산 시스템 브리지 | `05-clustered-kv-capstone` | `04-clustered-kv-capstone` | 신규 추가 | routing, replication, local storage를 한 요청 흐름으로 묶는 단계가 필요했습니다. |
+| Quorum and Consistency | `06-quorum-and-consistency` | 해당 없음 | Go 심화 신규 추가 | replication 다음 단계의 consistency trade-off를 별도 register 실험으로 분리해 설명하기 위해 |
+| Heartbeat and Leader Election | `07-heartbeat-and-leader-election` | 해당 없음 | Go 심화 신규 추가 | failure detector와 authority 교체를 full consensus와 분리해 먼저 다루기 위해 |
+| Failure-Injected Log Replication | `08-failure-injected-log-replication` | 해당 없음 | Go 심화 신규 추가 | retry, idempotency, quorum commit을 partial failure 장면으로 재현하기 위해 |
 
 ## 공용 유틸리티
 

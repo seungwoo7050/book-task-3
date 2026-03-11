@@ -5,7 +5,7 @@
 이 레포는 두 개의 큰 흐름을 한 저장소 안에서 연결해 배우도록 설계돼 있습니다.
 
 - `Database Internals`: memtable, SSTable, WAL, compaction, buffer pool, MVCC
-- `DDIA Distributed Systems`: RPC, replication, sharding, consensus-lite, clustered KV
+- `DDIA Distributed Systems`: RPC, replication, sharding, consensus-lite, clustered KV, quorum consistency, leader election, failure-injected replication
 
 핵심 목표는 “단일 노드 저장 엔진”과 “네트워크로 연결된 분산 저장소”를 별개의 주제로 끝내지 않고, 구현 관점에서 하나의 학습 경로로 묶는 것입니다.
 
@@ -29,6 +29,7 @@
 
 - 저장 엔진 초반부를 더 세밀하게 쪼개어 자료구조, 파일 포맷, orchestration을 단계별로 다룹니다.
 - Raft-lite와 compaction 같은 심화 슬롯을 포함합니다.
+- clustered KV capstone 뒤에는 quorum consistency, heartbeat/election, failure-injected replication 같은 Go-only deep dive가 이어집니다.
 - 전체 커리큘럼의 정본(superset) 역할을 맡습니다.
 
 ## 이 커리큘럼이 학생에게 주는 장점
@@ -42,7 +43,7 @@
 이 레포는 모든 DBMS 주제를 한 번에 다루지 않습니다. 다음 주제는 후속 확장 후보로 남깁니다.
 
 - query executor, planner, B-Tree 같은 상위 DBMS 주제
-- dynamic membership, fault tolerance, deployment automation 같은 운영 심화 주제
-- production-grade observability, benchmarking, failure injection
+- dynamic membership, snapshotting, deployment automation 같은 운영 심화 주제
+- production-grade observability, benchmarking, large-scale chaos automation
 
 이 빈칸은 단점이 아니라 다음 포트폴리오 주제를 설계할 여지를 남기는 장치입니다.
