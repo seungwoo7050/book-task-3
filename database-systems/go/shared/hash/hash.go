@@ -2,12 +2,12 @@ package hash
 
 import "hash/crc32"
 
-// CRC32 computes the IEEE CRC32 checksum used in later WAL exercises.
+// CRC32는 이후 WAL 실습에서 쓰는 IEEE CRC32 checksum을 계산한다.
 func CRC32(data []byte) uint32 {
 	return crc32.ChecksumIEEE(data)
 }
 
-// MurmurHash3 returns a 32-bit MurmurHash3 checksum for the given seed.
+// MurmurHash3는 주어진 seed에 대한 32-bit MurmurHash3 checksum을 반환한다.
 func MurmurHash3(data []byte, seed uint32) uint32 {
 	const (
 		c1 uint32 = 0xcc9e2d51

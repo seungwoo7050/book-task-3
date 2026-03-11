@@ -1,7 +1,0 @@
-loadtest rooms=2 bots_per_room=4 mode=in-process status=ok
-
-sqlite summary
-players=8
-matches=2
-match_1 winner=1 result=winner=1;forfeits=;scoreboard=1:0:0,2:0:0,3:0:0,4:0:0
-match_2 winner=5 result=winner=5;forfeits=;scoreboard=5:0:0,6:0:0,7:0:0,8:0:0

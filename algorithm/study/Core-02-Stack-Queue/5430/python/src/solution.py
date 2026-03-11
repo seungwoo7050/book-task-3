@@ -8,7 +8,7 @@ def solve():
         n = int(sys.stdin.readline())
         arr_str = sys.stdin.readline().strip()
 
-        # Parse array from "[x1,x2,...,xn]"
+        # `[x1,x2,...,xn]` 배열 문자열을 파싱
         if n == 0:
             dq = deque()
         else:

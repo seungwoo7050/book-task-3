@@ -26,7 +26,7 @@ bool validate_phase(int phase, const std::string &input)
     }
 }
 
-}  // namespace
+}  // 내부 helper 이름공간 끝
 
 int main(int argc, char **argv)
 {

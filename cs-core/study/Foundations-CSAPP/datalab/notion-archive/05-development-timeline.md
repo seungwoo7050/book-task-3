@@ -39,7 +39,7 @@ cd study/Foundations-CSAPP/datalab/problem
 make restore-official
 ```
 
-이 명령은 내부적으로 `study/tools/restore_csapp_self_study_assets.py` 스크립트를 실행하여 `csapp.cs.cmu.edu`에서 `datalab-handout.tar`를 다운로드하고 `problem/official/datalab-handout/` 디렉토리에 압축을 해제한다.
+이 명령은 내부적으로 `study/scripts/restore_csapp_self_study_assets.py` 스크립트를 실행하여 `csapp.cs.cmu.edu`에서 `datalab-handout.tar`를 다운로드하고 `problem/official/datalab-handout/` 디렉토리에 압축을 해제한다.
 
 ---
 
@@ -131,7 +131,7 @@ cd problem
 make docker-image
 ```
 
-이 명령은 `study/tools/Dockerfile.csapp-official`을 사용하여 `debian:bookworm-slim` 기반 이미지를 빌드한다. 설치되는 핵심 패키지:
+이 명령은 `study/scripts/Dockerfile.csapp-official`을 사용하여 `debian:bookworm-slim` 기반 이미지를 빌드한다. 설치되는 핵심 패키지:
 
 - `gcc`, `gcc-multilib` — 32비트 크로스 컴파일
 - `libc6-dev-i386` — 32비트 C 런타임

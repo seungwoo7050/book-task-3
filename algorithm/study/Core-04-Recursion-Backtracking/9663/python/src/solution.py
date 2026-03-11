@@ -3,8 +3,8 @@ import sys
 def solve():
     n = int(sys.stdin.readline())
     col = [False] * n
-    diag1 = [False] * (2 * n)  # row - col + n - 1
-    diag2 = [False] * (2 * n)  # row + col
+    diag1 = [False] * (2 * n)  # 부대각선 인덱스(row - col + n - 1)
+    diag2 = [False] * (2 * n)  # 주대각선 인덱스(row + col)
     count = 0
 
     def place(row):

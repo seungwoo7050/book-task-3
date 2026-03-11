@@ -1,4 +1,4 @@
-"""initial schema
+"""초기 스키마
 
 Revision ID: 20260308_0001
 Revises:

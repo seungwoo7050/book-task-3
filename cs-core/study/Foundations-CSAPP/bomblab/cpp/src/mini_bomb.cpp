@@ -101,7 +101,7 @@ int fun7(const TreeNode *node, int target)
     return 2 * fun7(node->right, target) + 1;
 }
 
-}  // namespace
+}  // 내부 helper 이름공간 끝
 
 bool phase1(std::string_view input)
 {
@@ -223,4 +223,4 @@ bool secret_phase(std::string_view input)
     return fun7(&root, value) == 6;
 }
 
-}  // namespace bomblab
+}  // bomblab 이름공간 끝

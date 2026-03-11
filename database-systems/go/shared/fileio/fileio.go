@@ -8,23 +8,23 @@ import (
 	"slices"
 )
 
-// FileHandle wraps os.File with the minimal surface used across study modules.
+// FileHandle은 학습용 모듈 전반에서 쓰는 최소한의 os.File 표면을 감싼다.
 type FileHandle struct {
 	path string
 	file *os.File
 }
 
-// NewHandle returns a handle bound to a path.
+// NewHandle은 특정 path에 연결된 handle을 반환한다.
 func NewHandle(path string) *FileHandle {
 	return &FileHandle{path: path}
 }
 
-// Path returns the underlying file path.
+// Path는 실제 파일 경로를 반환한다.
 func (handle *FileHandle) Path() string {
 	return handle.path
 }
 
-// Open opens the file using Node-like flags such as r, w, a, r+, w+, a+.
+// Open은 r, w, a, r+, w+, a+ 같은 Node-style flag로 파일을 연다.
 func (handle *FileHandle) Open(flags string) error {
 	if err := EnsureDir(filepath.Dir(handle.path)); err != nil {
 		return err
@@ -43,7 +43,7 @@ func (handle *FileHandle) Open(flags string) error {
 	return nil
 }
 
-// Append writes bytes at the current end-of-file.
+// Append는 현재 end-of-file 위치에 byte를 쓴다.
 func (handle *FileHandle) Append(data []byte) (int, error) {
 	if handle.file == nil {
 		return 0, errors.New("fileio: append on closed handle")
@@ -51,7 +51,7 @@ func (handle *FileHandle) Append(data []byte) (int, error) {
 	return handle.file.Write(data)
 }
 
-// WriteAt writes bytes at an absolute position.
+// WriteAt은 절대 위치에 byte를 쓴다.
 func (handle *FileHandle) WriteAt(data []byte, position int64) (int, error) {
 	if handle.file == nil {
 		return 0, errors.New("fileio: writeAt on closed handle")
@@ -59,7 +59,7 @@ func (handle *FileHandle) WriteAt(data []byte, position int64) (int, error) {
 	return handle.file.WriteAt(data, position)
 }
 
-// ReadAt reads up to length bytes at an absolute position.
+// ReadAt은 절대 위치에서 length byte까지 읽는다.
 func (handle *FileHandle) ReadAt(position int64, length int) ([]byte, error) {
 	if handle.file == nil {
 		return nil, errors.New("fileio: readAt on closed handle")
@@ -73,7 +73,7 @@ func (handle *FileHandle) ReadAt(position int64, length int) ([]byte, error) {
 	return buffer[:bytesRead], nil
 }
 
-// ReadAll returns the full file contents.
+// ReadAll은 파일 전체 내용을 반환한다.
 func (handle *FileHandle) ReadAll() ([]byte, error) {
 	size, err := handle.Size()
 	if err != nil {
@@ -85,7 +85,7 @@ func (handle *FileHandle) ReadAll() ([]byte, error) {
 	return handle.ReadAt(0, int(size))
 }
 
-// Sync fsyncs buffered writes to disk.
+// Sync는 buffered write를 디스크에 fsync한다.
 func (handle *FileHandle) Sync() error {
 	if handle.file == nil {
 		return errors.New("fileio: sync on closed handle")
@@ -93,7 +93,7 @@ func (handle *FileHandle) Sync() error {
 	return handle.file.Sync()
 }
 
-// Size returns the current file size.
+// Size는 현재 파일 크기를 반환한다.
 func (handle *FileHandle) Size() (int64, error) {
 	if handle.file == nil {
 		return 0, errors.New("fileio: size on closed handle")
@@ -105,7 +105,7 @@ func (handle *FileHandle) Size() (int64, error) {
 	return info.Size(), nil
 }
 
-// Close closes the file descriptor.
+// Close는 file descriptor를 닫는다.
 func (handle *FileHandle) Close() error {
 	if handle.file == nil {
 		return nil
@@ -115,12 +115,12 @@ func (handle *FileHandle) Close() error {
 	return err
 }
 
-// EnsureDir creates a directory tree if it does not exist.
+// EnsureDir는 디렉터리가 없으면 필요한 경로를 만든다.
 func EnsureDir(path string) error {
 	return os.MkdirAll(path, 0o755)
 }
 
-// ListFiles returns sorted file names, optionally filtered by suffix.
+// ListFiles는 suffix 조건을 적용해 정렬된 파일 이름 목록을 반환한다.
 func ListFiles(path string, suffix string) ([]string, error) {
 	entries, err := os.ReadDir(path)
 	if err != nil {
@@ -144,7 +144,7 @@ func ListFiles(path string, suffix string) ([]string, error) {
 	return files, nil
 }
 
-// AtomicWrite writes data through a sibling temp file and renames it into place.
+// AtomicWrite는 같은 디렉터리의 temp file에 쓴 뒤 rename으로 교체한다.
 func AtomicWrite(path string, data []byte) error {
 	if err := EnsureDir(filepath.Dir(path)); err != nil {
 		return err
@@ -171,7 +171,7 @@ func AtomicWrite(path string, data []byte) error {
 	return os.Rename(tempPath, path)
 }
 
-// RemoveFile removes a file if it exists.
+// RemoveFile은 파일이 존재할 때만 제거한다.
 func RemoveFile(path string) error {
 	err := os.Remove(path)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
@@ -180,7 +180,7 @@ func RemoveFile(path string) error {
 	return nil
 }
 
-// FileSize returns file size without keeping the file open.
+// FileSize는 파일을 열어 둔 채 유지하지 않고 크기만 조회한다.
 func FileSize(path string) (int64, error) {
 	info, err := os.Stat(path)
 	if err != nil {

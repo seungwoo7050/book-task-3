@@ -1,22 +1,20 @@
 # Python Track
 
-Python 트랙은 더 적은 프로젝트 수로 저장 엔진과 분산 시스템의 핵심 흐름을 먼저 익히도록 만든 입문 경로입니다. 구현 수를 줄인 대신, 각 프로젝트가 self-contained하게 이해되도록 문서와 읽는 순서를 더 친절하게 설명합니다.
+Python 쪽은 입문 경로입니다. 프로젝트 수를 줄이는 대신 각 프로젝트의 문제와 해법을 self-contained하게 따라갈 수 있게 구성했습니다.
 
-## 이 트랙이 잘 맞는 사람
+## 누가 여기서 시작해야 하는가
 
-- 저장 엔진과 분산 시스템을 처음 함께 배우는 사람
-- 빠르게 전체 그림을 잡고 나중에 Go 트랙으로 내려가고 싶은 사람
-- 학습 레포를 바탕으로 자신의 포트폴리오 레포 구조를 먼저 잡고 싶은 사람
+- 저장 엔진과 분산 시스템의 큰 흐름을 먼저 잡고 싶은 사람에게 맞습니다.
+- Go 심화 트랙으로 내려가기 전에 문제와 해법을 self-contained하게 따라가고 싶은 사람에게 맞습니다.
+- 시작점은 [저장 엔진 입문 경로](database-internals/README.md)와 [분산 시스템 입문 경로](ddia-distributed-systems/README.md)입니다.
 
-## 포함 트랙
+## 무엇이 들어 있는가
 
-| 트랙 | 시작점 | 특징 |
-| --- | --- | --- |
-| [database-internals/README.md](database-internals/README.md) | `01-mini-lsm-store` | memtable·SSTable·LSM을 한 프로젝트로 접어 더 빨리 큰 흐름을 봅니다. |
-| [ddia-distributed-systems/README.md](ddia-distributed-systems/README.md) | `01-rpc-framing` | Raft를 제외하고, clustered KV capstone까지 이어지는 입문 분산 경로를 제공합니다. 이후 quorum, election, failure handling은 Go 심화 슬롯으로 넘어갑니다. |
+- [Database Internals](database-internals/README.md): 01~05까지 LSM, WAL, index/filter, buffer pool, MVCC를 다룹니다.
+- [DDIA Distributed Systems](ddia-distributed-systems/README.md): 01~04까지 RPC, replication, routing, clustered KV capstone을 다룹니다.
 
-## 읽는 방법
+## 읽는 순서
 
-1. Python 트랙으로 큰 흐름을 먼저 잡습니다.
-2. 더 세분화된 구현이나 심화 주제가 필요해지면 Go 트랙의 대응 프로젝트로 이동합니다.
-3. 각 프로젝트 README 마지막의 “포트폴리오로 발전시키려면” 섹션을 보고, 무엇을 스스로 확장할지 정리해 보세요.
+- 먼저 [docs/catalog/project-catalog.md](../docs/catalog/project-catalog.md)에서 전체 문제와 검증 명령을 훑습니다.
+- 그다음 원하는 트랙 README로 내려가 프로젝트 표를 읽고, 각 프로젝트 README 첫 화면의 `문제 / 내 해법 / 검증`을 확인합니다.
+- 세부 판단이 필요할 때만 `docs/`와 `notion/`으로 내려갑니다.

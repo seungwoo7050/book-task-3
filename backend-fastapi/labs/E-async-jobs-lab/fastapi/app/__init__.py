@@ -1,1 +1,1 @@
-"""E-async-jobs-lab FastAPI application package."""
+"""E-async-jobs-lab FastAPI 애플리케이션 패키지."""

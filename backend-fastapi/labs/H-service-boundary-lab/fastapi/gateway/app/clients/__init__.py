@@ -1,1 +1,1 @@
-"""HTTP client helpers."""
+"""HTTP 클라이언트 헬퍼."""

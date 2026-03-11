@@ -22,7 +22,7 @@ void expect_true(const char *label, bool condition)
     }
 }
 
-}  // namespace
+}  // 테스트 helper 이름공간 끝
 
 int main()
 {

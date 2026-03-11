@@ -1,1 +1,1 @@
-"""Notification service package."""
+"""Notification 서비스 패키지."""

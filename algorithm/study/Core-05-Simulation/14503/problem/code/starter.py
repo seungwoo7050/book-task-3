@@ -1,7 +1,7 @@
 import sys
 
 def main():
-    # TODO: Implement solution
+    # 할 일: 풀이를 구현한다
     pass
 
 if __name__ == "__main__":

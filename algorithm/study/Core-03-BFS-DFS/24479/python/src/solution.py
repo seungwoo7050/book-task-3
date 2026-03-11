@@ -10,13 +10,13 @@ def solve():
         adj[u].append(v)
         adj[v].append(u)
 
-    # Sort each neighbor list ascending for deterministic order
+    # 결정적인 방문 순서를 위해 인접 리스트를 오름차순 정렬
     for i in range(1, n + 1):
         adj[i].sort()
 
     visited = [False] * (n + 1)
     result = [0] * (n + 1)
-    order = [0]  # mutable counter
+    order = [0]  # 가변 카운터
 
     def dfs(u):
         order[0] += 1

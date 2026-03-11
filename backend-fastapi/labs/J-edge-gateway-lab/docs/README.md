@@ -1,8 +1,8 @@
-# J-edge-gateway-lab 문서 지도
+# J-edge-gateway-lab 설계 문서
 
-이 문서는 “public API는 그대로인데 내부는 이미 분리되었다”는 상태를 gateway 중심으로 설명하는 개념 지도다. 핵심은 브라우저 상태를 edge에만 남기고, 내부 서비스는 bearer claims와 request id만 받도록 경계를 다시 세우는 데 있다.
+이 폴더는 J-edge-gateway-lab의 설계 설명을 모아 둔 곳입니다. 실행 순서보다 왜 이런 경계를 택했고 무엇을 설명해야 하는지를 먼저 정리합니다.
 
-## 먼저 보면 좋은 질문
+## 이 문서에서 먼저 볼 질문
 
 - 왜 public API를 gateway가 유지해야 하는가
 - 왜 쿠키와 CSRF를 내부 서비스에 넘기지 않는가
@@ -23,7 +23,7 @@
 - 브라우저 상태와 서비스 간 계약의 분리
 - J 랩이 왜 “새 기능 추가”보다 “경계 재설계”에 가까운지
 
-## 함께 보면 좋은 문서
+## 역할이 다른 관련 문서
 
 - [문제 정의](../problem/README.md)
 - [FastAPI 실행 문서](../fastapi/README.md)

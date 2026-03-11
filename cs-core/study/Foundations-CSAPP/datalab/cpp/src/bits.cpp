@@ -1,8 +1,8 @@
 /*
- * bits.cpp — Fresh C++ solutions for the migrated Data Lab project.
+ * bits.cpp - 옮겨온 Data Lab 프로젝트용 C++ 풀이 모음.
  *
- * This track keeps the same external contract as the C version while using
- * standard C++ compilation and tests.
+ * C 버전과 같은 외부 계약을 유지하되,
+ * 표준 C++ 컴파일과 테스트 흐름으로 검증한다.
  */
 
 int bitXor(int x, int y) {

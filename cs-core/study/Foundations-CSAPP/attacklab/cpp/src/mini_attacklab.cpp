@@ -69,7 +69,7 @@ bool tail_matches(const std::vector<std::uint8_t> &bytes, std::size_t offset, co
     return std::equal(tail.begin(), tail.end(), bytes.begin() + static_cast<std::ptrdiff_t>(offset));
 }
 
-}  // namespace
+}  // 내부 helper 이름공간 끝
 
 bool parse_hex_string(std::string_view text, std::vector<std::uint8_t> &bytes)
 {
@@ -198,4 +198,4 @@ const char *phase_name(int phase)
     }
 }
 
-}  // namespace attacklab
+}  // attacklab 이름공간 끝

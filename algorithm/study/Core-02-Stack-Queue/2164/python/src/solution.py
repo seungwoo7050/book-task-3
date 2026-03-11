@@ -6,8 +6,8 @@ def solve():
     q = deque(range(1, n + 1))
 
     while len(q) > 1:
-        q.popleft()          # discard top card
-        q.append(q.popleft()) # move next card to bottom
+        q.popleft()          # 맨 위 카드를 버린다
+        q.append(q.popleft()) # 다음 카드를 맨 아래로 보낸다
 
     print(q[0])
 

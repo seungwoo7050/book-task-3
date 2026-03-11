@@ -1,17 +1,16 @@
 /*
- * test_bits.c — Edge-case unit tests for Data Lab solutions.
+ * test_bits.c - Data Lab 풀이를 위한 경계값 테스트.
  *
- * Compile and run:
+ * 빌드와 실행:
  *   gcc -O1 -Wall -Werror -o test_bits test_bits.c ../src/bits.c && ./test_bits
  *
- * These tests supplement btest by focusing on tricky corner cases
- * that students commonly get wrong.
+ * 공식 btest가 놓치기 쉬운 경계 사례를 따로 확인한다.
  */
 
 #include <stdio.h>
 #include <limits.h>
 
-/* Imports from bits.c */
+/* bits.c에서 가져오는 함수 */
 extern int bitXor(int, int);
 extern int tmin(void);
 extern int isTmax(int);
@@ -59,7 +58,7 @@ int main(void) {
     TEST("negate(1)",    negate(1) == -1);
     TEST("negate(-1)",   negate(-1) == 1);
     TEST("negate(0)",    negate(0) == 0);
-    TEST("negate(TMin)", negate(INT_MIN) == INT_MIN);  /* overflow */
+    TEST("negate(TMin)", negate(INT_MIN) == INT_MIN);  /* 오버플로우 */
 
     /* ── isAsciiDigit ─────────────────────────────────────────── */
     TEST("isAsciiDigit(0x30)", isAsciiDigit(0x30) == 1);
@@ -112,10 +111,10 @@ int main(void) {
     /* ── floatPower2 ──────────────────────────────────────────── */
     TEST("floatPower2(0)",   floatPower2(0) == 0x3F800000);   /* 1.0 */
     TEST("floatPower2(1)",   floatPower2(1) == 0x40000000);   /* 2.0 */
-    TEST("floatPower2(128)", floatPower2(128) == 0x7F800000); /* +Inf */
-    TEST("floatPower2(-150)",floatPower2(-150) == 0);          /* too small */
+    TEST("floatPower2(128)", floatPower2(128) == 0x7F800000); /* 양의 무한대 */
+    TEST("floatPower2(-150)",floatPower2(-150) == 0);          /* 표현 불가 */
 
-    /* ── Summary ──────────────────────────────────────────────── */
+    /* ── 요약 ─────────────────────────────────────────────────── */
     printf("\n=== %d / %d edge-case tests passed ===\n", passes, passes + fails);
     return fails ? 1 : 0;
 }

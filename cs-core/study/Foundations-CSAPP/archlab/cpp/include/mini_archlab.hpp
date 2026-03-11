@@ -36,6 +36,6 @@ SeqIaddqTrace seq_iaddq(std::uint64_t pc, std::uint8_t dst_reg, std::int64_t val
 NcopyReport ncopy_baseline(const std::vector<std::int64_t> &src, std::vector<std::int64_t> &dst, std::int64_t len);
 NcopyReport ncopy_optimized(const std::vector<std::int64_t> &src, std::vector<std::int64_t> &dst, std::int64_t len);
 
-}  // namespace archlab
+}  // archlab 이름공간 끝
 
 #endif

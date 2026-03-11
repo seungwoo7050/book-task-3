@@ -10,7 +10,7 @@ int main() {
     vector<int> a(n);
     for (int i = 0; i < n; i++) cin >> a[i];
 
-    // dp[i] = length of LIS ending at index i
+    // dp[i] = i에서 끝나는 LIS 길이
     vector<int> dp(n, 1);
 
     for (int i = 1; i < n; i++) {

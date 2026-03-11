@@ -10,7 +10,7 @@
 
 ```bash
 cd study/Foundations-CSAPP/archlab/problem
-python3 ../../tools/restore_csapp_self_study_assets.py archlab
+python3 ../../scripts/restore_csapp_self_study_assets.py archlab
 ```
 
 공식 Architecture Lab self-study 핸드아웃이 `problem/official/archlab-handout/`에 다운로드된다. 이 디렉토리는 `.gitignore`에 등록되어 로컬에만 존재한다.
@@ -25,7 +25,7 @@ make docker-image
 내부 동작:
 ```bash
 docker build --platform linux/amd64 -t csapp-official-linux-amd64 \
-  -f ../../tools/Dockerfile.csapp-official ../../../..
+  -f ../../scripts/Dockerfile.csapp-official ../../../..
 ```
 
 Dockerfile은 `debian:bookworm-slim` 기반으로 `gcc-multilib`, `make`, `flex`, `bison`, `gdb` 등을 포함한다. Apple Silicon에서 `--platform linux/amd64`으로 QEMU 에뮬레이션으로 실행된다.
@@ -185,7 +185,7 @@ make verify-official
 | 항목 | 내용 |
 |---|---|
 | Docker 이미지 | `csapp-official-linux-amd64` (debian:bookworm-slim 기반) |
-| 복원 스크립트 | `study/tools/restore_csapp_self_study_assets.py` |
+| 복원 스크립트 | `study/scripts/restore_csapp_self_study_assets.py` |
 | 추가 빌드 플래그 | `-fcommon` (GCC 10+ 호환) |
 | 핸드아웃 위치 | `problem/official/archlab-handout/` (gitignored) |
 | Y86-64 도구 | `yas`, `yis`, `ssim`, `psim`, `ptest`, `correctness.pl`, `benchmark.pl` |

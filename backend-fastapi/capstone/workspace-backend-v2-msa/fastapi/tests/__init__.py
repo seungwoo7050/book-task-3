@@ -1,1 +1,1 @@
-"""System tests for workspace-backend-v2-msa."""
+"""workspace-backend-v2-msa 시스템 테스트."""

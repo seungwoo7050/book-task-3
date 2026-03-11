@@ -4,7 +4,7 @@ input = sys.stdin.readline
 
 def main():
     N = int(input())
-    heap = []  # min-heap; negate values for max-heap behavior
+    heap = []  # min-heap에 음수로 넣어 max-heap처럼 사용
     out = []
 
     for _ in range(N):

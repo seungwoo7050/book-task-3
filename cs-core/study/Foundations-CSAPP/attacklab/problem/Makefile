@@ -1,8 +1,8 @@
 # Attack Lab problem Makefile
 
 REPO_ROOT := $(abspath ../../../..)
-RESTORE_SCRIPT := $(REPO_ROOT)/study/tools/restore_csapp_self_study_assets.py
-DOCKERFILE := $(REPO_ROOT)/study/tools/Dockerfile.csapp-official
+RESTORE_SCRIPT := $(REPO_ROOT)/study/scripts/restore_csapp_self_study_assets.py
+DOCKERFILE := $(REPO_ROOT)/study/scripts/Dockerfile.csapp-official
 DOCKER_IMAGE := csapp-official-linux-amd64
 DOCKER_RUN = docker run --rm --platform linux/amd64 -v "$(REPO_ROOT):$(REPO_ROOT)" -w "$(CURDIR)" $(DOCKER_IMAGE) bash -lc
 OFFICIAL_DIR := official/target1

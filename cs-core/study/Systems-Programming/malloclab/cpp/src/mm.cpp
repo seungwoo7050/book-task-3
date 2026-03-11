@@ -191,7 +191,7 @@ void *find_fit(std::size_t wanted)
     return nullptr;
 }
 
-}  // namespace
+}  // 내부 helper 이름공간 끝
 
 extern "C" int mm_init(void)
 {

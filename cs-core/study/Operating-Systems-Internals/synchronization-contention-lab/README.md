@@ -1,34 +1,21 @@
 # Synchronization Contention Lab
 
-## 이 프로젝트가 가르치는 것
-
 `synchronization-contention-lab`는 mutex, semaphore, condition variable이 서로 다른 contention pattern에서 correctness와 timing을 어떻게 드러내는지 보여 주는 C 실험이다.
 
-## 누구를 위한 문서인가
+## 한눈에 보기
 
-- race와 contention을 분리해서 설명하고 싶은 학습자
-- `pthread_mutex_t`, POSIX semaphore, `pthread_cond_t` 사용 규칙을 비교해 보고 싶은 사람
-- 절대 성능보다 invariant 검증이 왜 먼저인지 작은 실험으로 확인하고 싶은 사람
+| 문제 | 중요 제약 | 이 레포의 답 | 검증 시작점 | 배우는 개념 | 상태 |
+| --- | --- | --- | --- | --- | --- |
+| counter, gate, bounded buffer 시나리오에서 synchronization primitive별 invariant를 검증한다. | correctness를 timing보다 먼저 검증하고, lock-free primitive나 kernel scheduler internals는 범위 밖으로 둔다. | 구현은 [`c/`](c/README.md)의 primitive별 시나리오 코드와 `problem/`의 shell test, demo binary로 정리한다. | [`problem/README.md`](problem/README.md), [`c/README.md`](c/README.md) | mutex, semaphore, condvar, contention invariant, scenario 기반 테스트 | `public verified` |
 
-## 먼저 읽을 곳
+## 디렉터리 역할
 
-1. [`problem/README.md`](problem/README.md)
-2. [`c/README.md`](c/README.md)
-3. [`docs/README.md`](docs/README.md)
-4. [`notion/README.md`](notion/README.md)
+- `problem/`: 문제 범위와 canonical `make` entrypoint
+- `c/`: synchronization 시나리오 구현과 binary
+- `docs/`: correctness-before-timing, primitive 비교, scenario invariant 정리
+- `notion/`: 디버그 로그와 재검증 기록
 
-## 디렉터리 구조
-
-```text
-synchronization-contention-lab/
-  README.md
-  problem/
-  c/
-  docs/
-  notion/
-```
-
-## 검증 방법
+## 검증 빠른 시작
 
 ```bash
 cd problem
@@ -42,15 +29,10 @@ make run-demo
 - gate max concurrency가 permit limit를 넘지 않는다.
 - buffer produced/consumed가 같고 underflow/overflow가 없다.
 
-## 스포일러 경계
+## 공개 경계
 
 - 이 프로젝트는 lock-free primitive나 kernel scheduler internals는 다루지 않는다.
 - README는 scenario와 검증 경로에 집중하고, 긴 설명은 `docs/`와 `notion/`으로 분리한다.
-
-## 포트폴리오로 확장하는 힌트
-
-- unsafe baseline을 추가해 race가 실제로 깨지는 모습을 비교하면 전달력이 커진다.
-- perf, flamegraph, thread sanitizer 같은 도구를 붙이면 더 현실적인 debugging lab이 된다.
 
 ## 현재 한계
 

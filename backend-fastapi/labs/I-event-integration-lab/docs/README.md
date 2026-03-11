@@ -1,8 +1,8 @@
-# I-event-integration-lab 문서 지도
+# I-event-integration-lab 설계 문서
 
-이 문서는 “댓글 저장과 알림 전달은 같은 트랜잭션이 아니다”라는 사실을 서비스 경계에서 어떻게 설명할지 정리하는 개념 지도다. 핵심은 `workspace-service`가 outbox까지 책임지고, `notification-service`는 stream consume와 dedupe만 맡는다는 점을 분명히 하는 데 있다.
+이 폴더는 I-event-integration-lab의 설계 설명을 모아 둔 곳입니다. 실행 순서보다 왜 이런 경계를 택했고 무엇을 설명해야 하는지를 먼저 정리합니다.
 
-## 먼저 보면 좋은 질문
+## 이 문서에서 먼저 볼 질문
 
 - outbox가 왜 여전히 필요한가
 - stream payload에는 무엇을 넣고 무엇을 넣지 않는가
@@ -23,7 +23,7 @@
 - eventual consistency가 허용하는 지연
 - 중복 읽기가 있어도 결과를 한 번만 남기는 구조
 
-## 함께 보면 좋은 문서
+## 역할이 다른 관련 문서
 
 - [문제 정의](../problem/README.md)
 - [FastAPI 실행 문서](../fastapi/README.md)

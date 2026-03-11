@@ -1,1 +1,1 @@
-"""D-data-api-lab FastAPI application package."""
+"""D-data-api-lab FastAPI 애플리케이션 패키지."""

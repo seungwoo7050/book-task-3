@@ -6,7 +6,7 @@ def main():
     r, c, d = map(int, input().split())
     grid = [list(map(int, input().split())) for _ in range(N)]
 
-    # Direction: 0=N, 1=E, 2=S, 3=W
+    # 방향 인코딩: 0=N, 1=E, 2=S, 3=W
     dr = [-1, 0, 1, 0]
     dc = [0, 1, 0, -1]
 
@@ -14,15 +14,15 @@ def main():
     count = 0
 
     while True:
-        # Step 1: Clean current cell
+        # 1단계: 현재 칸을 청소
         if not cleaned[r][c]:
             cleaned[r][c] = True
             count += 1
 
-        # Step 2: Try turning left 4 times
+        # 2단계: 왼쪽 회전을 최대 4번 시도
         found = False
         for _ in range(4):
-            d = (d + 3) % 4  # turn left
+            d = (d + 3) % 4  # 왼쪽으로 회전
             nr, nc = r + dr[d], c + dc[d]
             if 0 <= nr < N and 0 <= nc < M and grid[nr][nc] == 0 and not cleaned[nr][nc]:
                 r, c = nr, nc
@@ -32,13 +32,13 @@ def main():
         if found:
             continue
 
-        # Step 3: All four directions blocked — try moving backward
-        bd = (d + 2) % 4  # opposite direction
+        # 3단계: 네 방향이 모두 막히면 뒤로 이동을 시도
+        bd = (d + 2) % 4  # 반대 방향
         br, bc = r + dr[bd], c + dc[bd]
         if 0 <= br < N and 0 <= bc < M and grid[br][bc] != 1:
             r, c = br, bc
         else:
-            break  # wall behind — stop
+            break  # 뒤가 벽이면 종료
 
     print(count)
 

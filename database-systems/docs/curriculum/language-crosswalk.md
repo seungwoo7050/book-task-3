@@ -1,0 +1,18 @@
+# Language Crosswalk
+
+Python 트랙은 빠른 진입을 위한 입문 경로이고, Go 트랙은 세분화된 정본 경로입니다. 아래 표는 Python 프로젝트를 읽다가 “Go에서는 이 주제가 어디로 더 자세히 나뉘는가?”를 바로 찾도록 돕습니다.
+
+| Python 프로젝트 | 대응하는 Go 프로젝트 | 주 참조 주제 | 읽는 팁 |
+| --- | --- | --- | --- |
+| `python/database-internals/projects/01-mini-lsm-store` | `go/database-internals/projects/01-memtable-skiplist`, `02-sstable-format`, `03-mini-lsm-store` | `Database Internals` | Python으로 큰 흐름을 잡은 뒤 Go 세 프로젝트로 내려가면 자료구조·포맷·오케스트레이션이 분리되어 보입니다. |
+| `python/database-internals/projects/02-wal-recovery` | `go/database-internals/projects/04-wal-recovery` | `Database Internals` | durability 흐름은 거의 같은 개념 범위입니다. |
+| `python/database-internals/projects/03-index-filter` | `go/database-internals/projects/06-index-filter` | `Database Internals` | Bloom filter와 sparse index를 비교하며 읽기 좋습니다. |
+| `python/database-internals/projects/04-buffer-pool` | `go/database-internals/projects/07-buffer-pool` | `Database Internals` | page cache 개념은 동일하고 구현 표면만 다릅니다. |
+| `python/database-internals/projects/05-mvcc` | `go/database-internals/projects/08-mvcc` | `Database Internals` | transaction visibility 규칙을 언어별로 비교하기 좋습니다. |
+| `python/ddia-distributed-systems/projects/01-rpc-framing` | `go/ddia-distributed-systems/projects/01-rpc-framing` | `DDIA` | framing과 pending map 개념은 거의 1:1입니다. |
+| `python/ddia-distributed-systems/projects/02-leader-follower-replication` | `go/ddia-distributed-systems/projects/02-leader-follower-replication` | `DDIA` | replication log와 follower catch-up을 같은 질문으로 비교하면 됩니다. |
+| `python/ddia-distributed-systems/projects/03-shard-routing` | `go/ddia-distributed-systems/projects/03-shard-routing` | `DDIA` | consistent hashing과 reassignment accounting을 언어별로 비교할 수 있습니다. |
+| `python/ddia-distributed-systems/projects/04-clustered-kv-capstone` | `go/ddia-distributed-systems/projects/05-clustered-kv-capstone` | `DDIA` + `Database Internals` | Python은 static topology + FastAPI boundary, Go는 더 넓은 심화 경로로 이어집니다. |
+| 해당 없음 | `go/ddia-distributed-systems/projects/06-quorum-and-consistency` | `DDIA` | Python 입문 트랙에는 없는 Go-only deep dive입니다. consistency trade-off를 별도 quorum 실험으로 읽으면 됩니다. |
+| 해당 없음 | `go/ddia-distributed-systems/projects/07-heartbeat-and-leader-election` | `DDIA` | Python 입문 트랙에는 없는 Go-only deep dive입니다. authority 교체와 split-brain 방지 질문을 따로 읽으면 됩니다. |
+| 해당 없음 | `go/ddia-distributed-systems/projects/08-failure-injected-log-replication` | `DDIA` | Python 입문 트랙에는 없는 Go-only deep dive입니다. partial failure, retry, idempotency를 독립 슬롯으로 다룹니다. |

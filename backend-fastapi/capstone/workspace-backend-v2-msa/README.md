@@ -2,48 +2,47 @@
 
 이 프로젝트는 capstone v2입니다. `workspace-backend` v1을 기준선으로 남겨 둔 채, 같은 협업형 도메인을 `gateway + identity-service + workspace-service + notification-service`로 다시 분해한 MSA 학습 버전입니다.
 
-## 이 랩에서 배우는 것
+## 문제 요약
 
-- public API를 유지한 채 내부 서비스를 분리하는 방법
-- bearer claims, outbox, Redis Streams, websocket fan-out을 서비스 경계로 재배치하는 방법
-- 단일 백엔드 v1과 MSA v2를 같은 문제 정의 안에서 비교하는 방법
+- `workspace-backend` v1은 인증, 워크스페이스 도메인, 알림 전달을 한 프로세스 안에서 통합했다. v2의 목표는 같은 협업형 도메인을 MSA로 다시 분해해, public API를 유지한 채 내부 경계와 분산 복잡성이 어떻게 바뀌는지 설명 가능한 상태로 만드는 것이다.
+- `gateway`가 public `/api/v1/auth/*`, `/api/v1/platform/*` 경로를 유지해야 한다.
+- `identity-service`, `workspace-service`, `notification-service`는 각자 자기 DB만 읽어야 한다.
+- 상세 성공 기준과 제외 범위는 [problem/README.md](problem/README.md)에 둡니다.
 
-## 선수 지식
+## 내 답
 
-- [capstone/workspace-backend](../workspace-backend/README.md) 수준의 단일 백엔드 통합 흐름
-- [labs/H-service-boundary-lab](../../labs/H-service-boundary-lab/README.md)부터 [labs/K-distributed-ops-lab](../../labs/K-distributed-ops-lab/README.md)까지의 서비스 분리, 이벤트 통합, gateway, 분산 운영 개념
-- "왜 MSA로 나누는가"뿐 아니라 "무엇이 더 복잡해지는가"를 함께 설명할 준비
+- public `/api/v1/auth/*`, `/api/v1/platform/*` route shape는 gateway가 유지합니다.
+- `identity-service`, `workspace-service`, `notification-service`가 각자 자기 DB를 소유하도록 분리했습니다.
+- 댓글 생성 뒤에는 outbox, Redis Streams consumer, websocket fan-out으로 이어지는 비동기 전달 경로를 구성했습니다.
+- v1과 v2의 차이를 문서와 노트만 읽고도 비교할 수 있도록 비교 학습 구조를 유지했습니다.
 
-## 비교 포인트
+## 핵심 설계 선택
 
-| 항목 | v1 | v2 |
-| --- | --- | --- |
-| public API | 단일 FastAPI 앱 | gateway가 유지 |
-| 인증 | 같은 프로세스 안에서 처리 | `identity-service` 분리 |
-| 워크스페이스 도메인 | 같은 DB와 서비스 계층 | `workspace-service` 분리 |
-| 알림 전달 | 앱 내부 큐 + websocket | outbox + stream + consumer + pub/sub |
-| 운영성 | 단일 앱 기준 | 서비스별 health, metrics, request id |
+- 브라우저 쿠키와 CSRF는 gateway에만 두고 내부 서비스는 bearer claims만 읽도록 경계를 나눴습니다.
+- 서비스별 DB ownership을 지키고 사용자 정보는 claims와 event payload로만 전달합니다.
+- notification-service 장애가 댓글 생성 성공을 막지 않도록 eventual consistency를 전제로 설계했습니다.
 
-## 실행 방법
+## 검증
 
-1. [problem/README.md](problem/README.md)에서 왜 v2가 필요한지 읽습니다.
-2. [fastapi/README.md](fastapi/README.md)에서 전체 스택을 실행합니다.
-3. [docs/README.md](docs/README.md)와 [notion/README.md](notion/README.md)로 경계 선택과 비용을 복습합니다.
+```bash
+make lint
+make test
+make smoke
+docker compose up --build
+```
 
-## 검증 방법
+- 실행과 환경 설명은 [fastapi/README.md](fastapi/README.md)에서 다룹니다.
+- 마지막 기록된 실제 검증 결과는 [../../docs/verification-report.md](../../docs/verification-report.md)에 있습니다.
 
-- `cd fastapi && make lint`
-- `cd fastapi && make test`
-- `cd fastapi && make smoke`
-- `cd fastapi && docker compose up --build`
+## 제외 범위
 
-## 추천 학습 순서
+- Kubernetes, service mesh, service discovery
+- 실제 클라우드 배포 자동화와 IaC
+- front-end 렌더링과 정적 자산
+- saga orchestration과 다단계 보상 흐름
 
-1. 먼저 [workspace-backend](../workspace-backend/README.md)에서 단일 백엔드 기준선을 다시 확인합니다.
-2. 이어서 [labs/H-service-boundary-lab](../../labs/H-service-boundary-lab/README.md)부터 [labs/K-distributed-ops-lab](../../labs/K-distributed-ops-lab/README.md)까지의 심화 랩에서 서비스 경계와 운영 비용을 복습합니다.
-3. 마지막으로 v2에서 무엇을 분리했고 어떤 복잡성을 새로 떠안았는지 비교 표와 문서로 정리합니다.
+## 다음 랩 또는 비교 대상
 
-## 포트폴리오로 확장하려면
-
-- 서비스 수를 늘리기보다 경계의 타당성과 새 복잡성을 먼저 설명합니다.
-- Saga, retry policy, service discovery, trace backend는 후속 실험으로 분리하는 편이 좋습니다.
+- 비교 기준선은 [workspace-backend](../workspace-backend/README.md)입니다.
+- 심화 랩의 분해 이유를 다시 보려면 [H-service-boundary-lab](../../labs/H-service-boundary-lab/README.md)부터 [K-distributed-ops-lab](../../labs/K-distributed-ops-lab/README.md)까지를 함께 읽습니다.
+- 설계 설명은 [docs/README.md](docs/README.md), 학습 로그는 [notion/README.md](notion/README.md), 실행 진입점은 [fastapi/README.md](fastapi/README.md)에서 읽습니다.

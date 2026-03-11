@@ -8,27 +8,27 @@ def solve():
     layers = min(N, M) // 2
 
     for k in range(layers):
-        # Extract layer k into a 1D list (clockwise traversal)
+        # k번째 레이어를 1차원 리스트로 펼친다(시계 방향 순회)
         ring = []
-        # Top row: left to right
+        # 윗줄: left에서 right까지
         for j in range(k, M - k):
             ring.append(arr[k][j])
-        # Right column: top+1 to bottom
+        # 오른쪽 열: top+1에서 bottom까지
         for i in range(k + 1, N - k):
             ring.append(arr[i][M - 1 - k])
-        # Bottom row: right-1 to left
+        # 아랫줄: right-1에서 left까지
         for j in range(M - 2 - k, k - 1, -1):
             ring.append(arr[N - 1 - k][j])
-        # Left column: bottom-1 to top+1
+        # 왼쪽 열: bottom-1에서 top+1까지
         for i in range(N - 2 - k, k, -1):
             ring.append(arr[i][k])
 
-        # Rotate counterclockwise by R (= shift list left by R)
+        # R번 반시계 회전한다(리스트를 왼쪽으로 R칸 이동)
         L = len(ring)
         r = R % L
         ring = ring[r:] + ring[:r]
 
-        # Write back to the array
+        # 배열에 다시 써 넣는다
         idx = 0
         for j in range(k, M - k):
             arr[k][j] = ring[idx]; idx += 1
@@ -39,7 +39,7 @@ def solve():
         for i in range(N - 2 - k, k, -1):
             arr[i][k] = ring[idx]; idx += 1
 
-    # Output
+    # 출력
     for row in arr:
         print(' '.join(map(str, row)))
 

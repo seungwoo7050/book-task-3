@@ -1,5 +1,5 @@
 #
-# trace_sigint.txt - forward SIGINT to foreground job
+# trace_sigint.txt - foreground job에 SIGINT를 전달한다
 #
 /bin/sleep 5
 WAIT

@@ -10,19 +10,19 @@ import (
 
 const TombstoneMarker = math.MaxUint32
 
-// Record is a binary-serializable key-value pair. Nil Value means tombstone.
+// Record는 binary serialization 가능한 key-value pair다. Nil Value는 tombstone을 뜻한다.
 type Record struct {
 	Key   string
 	Value *string
 }
 
-// StringPtr helps tests and demos construct live records.
+// StringPtr는 test와 demo에서 live record를 만들 때 쓰는 helper다.
 func StringPtr(value string) *string {
 	copyValue := value
 	return &copyValue
 }
 
-// EncodeRecord serializes a record into [key_len][val_len][key][value].
+// EncodeRecord는 record를 [key_len][val_len][key][value] 형식으로 직렬화한다.
 func EncodeRecord(record Record) ([]byte, error) {
 	keyBytes := []byte(record.Key)
 	valueBytes := []byte{}
@@ -49,7 +49,7 @@ func EncodeRecord(record Record) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
-// EncodeAll serializes multiple records into a single buffer.
+// EncodeAll은 여러 record를 하나의 buffer로 직렬화한다.
 func EncodeAll(records []Record) ([]byte, error) {
 	buffers := make([][]byte, 0, len(records))
 	totalLength := 0
@@ -69,7 +69,7 @@ func EncodeAll(records []Record) ([]byte, error) {
 	return result, nil
 }
 
-// DecodeRecord decodes one record starting at offset and reports bytes consumed.
+// DecodeRecord는 offset부터 record 하나를 복원하고 읽은 byte 수를 함께 반환한다.
 func DecodeRecord(data []byte, offset int) (Record, int, error) {
 	if len(data) < offset+8 {
 		return Record{}, 0, errors.New("serializer: not enough bytes for header")
@@ -101,7 +101,7 @@ func DecodeRecord(data []byte, offset int) (Record, int, error) {
 	return record, totalLength, nil
 }
 
-// DecodeAll decodes every record from a contiguous byte slice.
+// DecodeAll은 연속된 byte slice에서 모든 record를 복원한다.
 func DecodeAll(data []byte) ([]Record, error) {
 	records := []Record{}
 	offset := 0

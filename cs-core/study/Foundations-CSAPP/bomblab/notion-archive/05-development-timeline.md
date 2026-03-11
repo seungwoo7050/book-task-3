@@ -51,7 +51,7 @@ cd problem
 make restore-official
 ```
 
-이 명령은 `study/tools/restore_csapp_self_study_assets.py`를 실행하여 `csapp.cs.cmu.edu`에서 `bomb.tar`를 다운로드하고 `problem/official/bomb/` 아래에 압축을 해제한다.
+이 명령은 `study/scripts/restore_csapp_self_study_assets.py`를 실행하여 `csapp.cs.cmu.edu`에서 `bomb.tar`를 다운로드하고 `problem/official/bomb/` 아래에 압축을 해제한다.
 
 ### 분석 파일 생성
 

@@ -12,7 +12,7 @@ def solve():
         grid.append(row)
         for j in range(M):
             if row[j] == 1:
-                q.append((i, j, 0))  # row, col, day
+                q.append((i, j, 0))  # 행, 열, 경과일
 
     dx = [0, 0, 1, -1]
     dy = [1, -1, 0, 0]
@@ -27,7 +27,7 @@ def solve():
                 q.append((nx, ny, day + 1))
                 ans = max(ans, day + 1)
 
-    # Check if any unripe tomato remains
+    # 익지 않은 토마토가 남았는지 확인
     for row in grid:
         if 0 in row:
             print(-1)

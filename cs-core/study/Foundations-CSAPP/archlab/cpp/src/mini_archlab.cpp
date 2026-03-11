@@ -28,7 +28,7 @@ std::uint64_t optimized_cycles(std::int64_t len)
     return 10 + chunks4 * 22 + remainder * 8;
 }
 
-}  // namespace
+}  // 내부 helper 이름공간 끝
 
 std::int64_t sum_list(const Node *head)
 {
@@ -128,4 +128,4 @@ NcopyReport ncopy_optimized(const std::vector<std::int64_t> &src, std::vector<st
     return NcopyReport{count, cycles, len > 0 ? static_cast<double>(cycles) / static_cast<double>(len) : 0.0};
 }
 
-}  // namespace archlab
+}  // archlab 이름공간 끝

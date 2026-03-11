@@ -19,6 +19,6 @@ bool phase5(const std::vector<std::uint8_t> &bytes);
 bool validate_phase(int phase, const std::vector<std::uint8_t> &bytes);
 const char *phase_name(int phase);
 
-}  // namespace attacklab
+}  // attacklab 이름공간 끝
 
 #endif

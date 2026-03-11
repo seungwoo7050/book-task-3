@@ -1,8 +1,8 @@
-# workspace-backend-v2-msa 문서 지도
+# workspace-backend-v2-msa 설계 문서
 
-이 문서는 v1 기준선에서 v2로 넘어오면서 어떤 경계가 새로 생겼는지 추적하는 개념 지도다. v2의 목적은 서비스를 많이 늘리는 데 있지 않고, 같은 협업형 도메인을 다른 아키텍처로 다시 설명할 수 있게 만드는 데 있다.
+이 폴더는 workspace-backend-v2-msa의 설계 설명을 모아 둔 곳입니다. 실행 순서보다 왜 이런 경계를 택했고 무엇을 설명해야 하는지를 먼저 정리합니다.
 
-## 먼저 보면 좋은 질문
+## 이 문서에서 먼저 볼 질문
 
 - 왜 `platform`을 그대로 두지 않고 `identity/workspace/notification`으로 나눴는가
 - public API는 왜 gateway에서 유지하는가
@@ -26,7 +26,7 @@
 - notification-service 장애가 comment 생성과 분리되어야 하는 이유
 - 운영 문서에서 target shape와 실제 검증 완료를 어떻게 구분해야 하는가
 
-## 함께 보면 좋은 문서
+## 역할이 다른 관련 문서
 
 - [문제 정의](../problem/README.md)
 - [FastAPI 실행 문서](../fastapi/README.md)

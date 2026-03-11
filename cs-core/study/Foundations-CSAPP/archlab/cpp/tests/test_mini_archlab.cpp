@@ -25,7 +25,7 @@ void expect_equal_ll(const char *label, long long actual, long long expected)
     }
 }
 
-}  // namespace
+}  // 테스트 helper 이름공간 끝
 
 int main()
 {

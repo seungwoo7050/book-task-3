@@ -5,8 +5,8 @@ def solve():
     t = int(input())
     for _ in range(t):
         keys = input().strip()
-        left = []   # characters to the left of cursor
-        right = []  # characters to the right of cursor (reversed)
+        left = []   # 커서 왼쪽 문자들
+        right = []  # 커서 오른쪽 문자들(역순 보관)
 
         for ch in keys:
             if ch == '<':
@@ -21,7 +21,7 @@ def solve():
             else:
                 left.append(ch)
 
-        # Combine: left stack + reversed right stack
+        # 합치기: left 스택 + 뒤집힌 right 스택
         sys.stdout.write(''.join(left) + ''.join(reversed(right)) + '\n')
 
 if __name__ == "__main__":

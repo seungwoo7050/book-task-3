@@ -23,7 +23,7 @@ void expect_false(const std::string &label, bool value)
     }
 }
 
-}  // namespace
+}  // 테스트 helper 이름공간 끝
 
 int main()
 {

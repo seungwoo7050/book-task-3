@@ -20,13 +20,13 @@ int main(){
     int count = 0;
 
     while(true){
-        // Clean current cell
+        // 현재 칸을 청소
         if(!cleaned[r][c]){
             cleaned[r][c] = true;
             count++;
         }
 
-        // Try turning left 4 times
+        // 왼쪽으로 4번 회전해 본다
         bool found = false;
         for(int i = 0; i < 4; i++){
             d = (d + 3) % 4;
@@ -40,7 +40,7 @@ int main(){
         }
         if(found) continue;
 
-        // All blocked — try backward
+        // 네 방향이 모두 막히면 뒤로 한 칸 시도한다.
         int bd = (d + 2) % 4;
         int br = r + dr[bd], bc = c + dc[bd];
         if(br >= 0 && br < N && bc >= 0 && bc < M && grid[br][bc] != 1){

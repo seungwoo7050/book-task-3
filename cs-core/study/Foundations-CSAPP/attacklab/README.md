@@ -1,40 +1,21 @@
 # Attack Lab
 
-## 이 프로젝트가 가르치는 것
+`attacklab`은 stack layout, code injection, ROP, 상대 주소 계산을 단계적으로 익히는 프로젝트다.
 
-`attacklab`은 스택 레이아웃, 제어 흐름 탈취, 코드 주입, ROP, 상대 주소 계산을 단계적으로 익히게 하는 프로젝트입니다.
-동시에 공개 가능한 학습 기록과 민감한 exploit 정보의 경계를 어떻게 유지할지도 함께 배우게 합니다.
+## 한눈에 보기
 
-## 누구를 위한 문서인가
+| 문제 | 중요 제약 | 이 레포의 답 | 검증 시작점 | 배우는 개념 | 상태 |
+| --- | --- | --- | --- | --- | --- |
+| 주어진 target의 호출 규약과 메모리 배치를 읽고, phase별로 control flow를 원하는 지점으로 유도한다. | 공식 target, cookie, exploit 검증은 로컬 전용이고, course target에 바로 적용 가능한 raw exploit은 저장소에 두지 않는다. | 공개 답은 [`c/src/mini_attacklab.c`](c/src/mini_attacklab.c), [`cpp/src/mini_attacklab.cpp`](cpp/src/mini_attacklab.cpp) companion과 [`docs/README.md`](docs/README.md) payload model 정리다. | [`problem/README.md`](problem/README.md), [`c/README.md`](c/README.md), [`cpp/README.md`](cpp/README.md) | stack layout, calling convention, ROP, 상대 주소 계산 | `verified (local-only asset)` |
 
-- 버퍼 오버플로와 ROP를 구조적으로 이해하고 싶은 학습자
-- 공식 타깃 복원 절차와 companion verifier의 역할을 구분해서 보고 싶은 사람
-- 보안 주제를 공개 저장소에서 안전하게 다루는 문서 구조가 필요한 사람
+## 디렉터리 역할
 
-## 먼저 읽을 곳
+- `problem/`: 공식 target 복원, local-only verifier, 실행 스크립트
+- `c/`, `cpp/`: 공격 모델을 설명하기 위한 companion 구현
+- `docs/`: payload model, ROP, relative addressing 개념 정리
+- `notion/`: phase별 분석 기록과 재검증 timeline
 
-1. [`problem/README.md`](problem/README.md)
-2. [`docs/README.md`](docs/README.md)
-3. [`c/README.md`](c/README.md)
-4. [`cpp/README.md`](cpp/README.md)
-5. [`notion/README.md`](notion/README.md)
-
-## 디렉터리 구조
-
-```text
-attacklab/
-  README.md
-  problem/
-  c/
-  cpp/
-  docs/
-  notion/
-  notion-archive/
-```
-
-## 검증 방법
-
-2026-03-10 문서 정비 기준으로 유지하는 검증 경로는 다음과 같습니다.
+## 검증 빠른 시작
 
 공식 self-study target 검증:
 
@@ -58,13 +39,8 @@ cd cpp
 make clean && make test
 ```
 
-## 스포일러 경계
+## 공개 경계
 
-- 공개 문서는 payload 사고법과 방어 기법 차이를 설명합니다.
-- 비공개 course target에 바로 적용 가능한 raw exploit 정보는 늘리지 않습니다.
-- `problem/official/` 아래 복원되는 타깃과 쿠키 파일은 로컬 전용 자산입니다.
-
-## 포트폴리오로 확장하는 힌트
-
-- 이 프로젝트는 "어떤 제약이 공격 표면을 바꾸는가"를 설명하기 좋습니다.
-- 개인 저장소에서는 phase별로 바이트 배열을 어떻게 해석했는지 도식으로 정리하면 전달력이 커집니다.
+- 공개 문서는 payload 사고법과 방어 기법 차이를 설명한다.
+- 비공개 course target에 바로 적용 가능한 raw exploit 정보는 늘리지 않는다.
+- `problem/official/` 아래 복원되는 target과 cookie 파일은 로컬 전용 자산이다.

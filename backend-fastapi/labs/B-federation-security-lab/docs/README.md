@@ -1,8 +1,8 @@
-# B-federation-security-lab 문서 지도
+# B-federation-security-lab 설계 문서
 
-이 문서는 외부 로그인과 2단계 인증이 세션 모델에 어떤 부담을 주는지 정리할 때 참고하는 개념 지도입니다.
+이 폴더는 B-federation-security-lab의 설계 설명을 모아 둔 곳입니다. 실행 순서보다 왜 이런 경계를 택했고 무엇을 설명해야 하는지를 먼저 정리합니다.
 
-## 먼저 보면 좋은 질문
+## 이 문서에서 먼저 볼 질문
 
 - 외부 공급자 계정과 내부 사용자 계정을 어떻게 연결할 것인가
 - 2FA를 로그인 흐름 어디에 끼워 넣을 것인가
@@ -14,7 +14,7 @@
 - 보안 강화 흐름의 단계 분리
 - throttling과 audit log의 역할
 
-## 함께 보면 좋은 문서
+## 역할이 다른 관련 문서
 
 - [문제 정의](../problem/README.md)
 - [FastAPI 실행 문서](../fastapi/README.md)

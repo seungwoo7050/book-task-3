@@ -1,2 +1,0 @@
-demo-alpha MATCH_RESULT winner=1 scoreboard=1:0:0,2:0:0
-demo-beta MATCH_RESULT winner=1 scoreboard=1:0:0,2:0:0

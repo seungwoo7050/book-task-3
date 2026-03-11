@@ -2,21 +2,14 @@
 
 로컬 인증 이후에 붙는 보안 강화 흐름을 따로 떼어 연습하는 랩입니다. 외부 로그인, 2단계 인증, 회복 코드, 감사 로그를 하나의 보안 랩으로 묶어 "계정 진입 경로를 어떻게 단단하게 만들 것인가"에 집중합니다.
 
-## 이 랩에서 배우는 것
+## 문제 요약
 
-- Google OIDC 로그인 흐름
-- 외부 계정과 내부 사용자 계정 연결
-- TOTP 기반 2단계 인증
-- recovery code 발급과 재생성
-- 로그인 throttling과 auth audit log
+- 이미 로컬 인증이 있는 서비스에 외부 로그인과 보안 강화 기능을 붙여야 한다고 가정합니다. 사용자는 Google 스타일 로그인으로 진입할 수 있어야 하고, 필요하면 2단계 인증과 recovery code를 사용할 수 있어야 합니다. 동시에 로그인 시도는 남용에 대비해 제한하고, 중요한 인증 이벤트는 기록해야 합니다.
+- 외부 인증 공급자와 내부 사용자 계정의 연결 관계가 설명 가능해야 합니다.
+- TOTP 등록과 검증 흐름이 독립된 단계로 구현되어야 합니다.
+- 상세 성공 기준과 제외 범위는 [problem/README.md](problem/README.md)에 둡니다.
 
-## 선수 지식
-
-- [A-auth-lab](../A-auth-lab/README.md) 수준의 로컬 인증 개념
-- OAuth 2.0 / OIDC 용어
-- 세션과 토큰 수명 관리 기본
-
-## 구현 범위
+## 내 답
 
 - Google 스타일 authorization-code 로그인
 - provider-linked identity 관리
@@ -24,32 +17,33 @@
 - recovery code rotation
 - 로그인 보안 이벤트 기록
 
-## 일부러 단순화한 점
+## 핵심 설계 선택
 
+- Google OIDC 로그인 흐름
+- 외부 계정과 내부 사용자 계정 연결
+- TOTP 기반 2단계 인증
 - 테스트는 실제 Google 서비스가 아니라 mock 경로를 사용합니다.
 - 제품 도메인 로직은 넣지 않고 인증 보안 흐름만 분리합니다.
 
-## 실행 방법
+## 검증
 
-1. [problem/README.md](problem/README.md)로 이 랩의 보안 범위를 읽습니다.
-2. [fastapi/README.md](fastapi/README.md)에서 Alembic 적용까지 포함된 실행 경로를 확인합니다.
-3. [docs/README.md](docs/README.md)와 [notion/README.md](notion/README.md)로 보안 강화 포인트를 복기합니다.
+```bash
+make lint
+make test
+make smoke
+docker compose up --build
+```
 
-## 검증 방법
+- 실행과 환경 설명은 [fastapi/README.md](fastapi/README.md)에서 다룹니다.
+- 마지막 기록된 실제 검증 결과는 [../../docs/verification-report.md](../../docs/verification-report.md)에 있습니다.
 
-- `cd fastapi && make lint`
-- `cd fastapi && make test`
-- `cd fastapi && make smoke`
-- `cd fastapi && docker compose up --build`
+## 제외 범위
 
-## 추천 학습 순서
+- 실제 Google 서비스와의 end-to-end 통신 검증
+- 제품 도메인별 권한과 리소스 모델
+- 복수 공급자에 대한 공통 추상화 완성
 
-1. 로컬 인증과 외부 인증의 경계를 먼저 정리합니다.
-2. 2FA와 recovery code가 세션 흐름에 어떻게 끼어드는지 확인합니다.
-3. throttling과 audit log가 보안 설명에서 왜 중요한지 문서로 정리합니다.
+## 다음 랩 또는 비교 대상
 
-## 포트폴리오로 확장하려면
-
-- 여러 소셜 로그인 공급자를 한 모델로 통합해 볼 수 있습니다.
-- risk-based auth, device trust, 관리자 보안 감사 화면으로 확장할 수 있습니다.
-- 보안 포트폴리오에서는 "무엇을 막는 설계인지"를 기능 목록보다 먼저 설명하는 편이 좋습니다.
+- 다음 단계는 [C-authorization-lab](../C-authorization-lab/README.md)입니다.
+- 설계 설명은 [docs/README.md](docs/README.md), 학습 로그는 [notion/README.md](notion/README.md), 실행 진입점은 [fastapi/README.md](fastapi/README.md)에서 읽습니다.

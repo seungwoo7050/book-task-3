@@ -1,1 +1,1 @@
-"""workspace-backend FastAPI application package."""
+"""workspace-backend FastAPI 애플리케이션 패키지."""

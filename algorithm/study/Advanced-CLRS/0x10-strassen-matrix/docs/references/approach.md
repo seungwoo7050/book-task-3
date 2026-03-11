@@ -1,29 +1,36 @@
 # 접근 정리 — Strassen 행렬 곱셈
 
-## 이 문서의 역할
+## 문제 계약
 
-이 문서는 `Strassen 행렬 곱셈` 프로젝트를 읽을 때 어떤 판단 기준으로 구현을 따라가면 좋은지 정리한 짧은 안내서다. 정답 코드 자체보다, 어떤 상태를 먼저 고정하고 어떤 연산을 나중에 확인해야 하는지 설명하는 데 목적이 있다.
+- `problem/README.md`와 `problem/data/`가 canonical 입력/출력 계약이다.
+- `problem/Makefile`이 실행과 검증의 기준선이다.
+- 이 문서는 코드 전문보다 어떤 상태와 판단 순서로 구현을 읽어야 하는지 요약한다.
 
-## 이번 프로젝트에서 특히 볼 것
+## 채택 답
 
-- 학습 초점: Strassen 행렬 곱셈의 핵심 아이디어를 작은 실험과 자동 검증으로 다시 설명하는 연습
-- CLRS Ch 4의 핵심 아이디어를 입출력과 자동 검증이 가능한 작은 실험으로 바꾸는 과정이 중요했다.
-- CLRS에서 읽은 개념을 코드와 fixture로 다시 확인하는 흐름
+- `python/src/solution.py`에서 `Strassen 행렬 곱셈` 핵심 절차를 실행 가능한 입출력 실험으로 재현한다.
+- 정식 검증은 `make -C study/Advanced-CLRS/0x10-strassen-matrix/problem test`를 기준으로 둔다.
+- 장문 reasoning은 `../../notion/`으로 내린다.
 
-## 먼저 고정할 질문
+## 왜 이 전략인가
 
-- 입력을 어떤 자료구조로 받아 두어야 이후 연산이 단순해지는가?
-- 연산을 처리할 때 유지해야 하는 핵심 상태는 무엇인가?
-- 자동 검증으로 가장 먼저 확인할 실패 시나리오는 무엇인가?
+- 이론 중심 알고리즘을 작은 실험과 검증 가능한 입출력 문제로 재구성하는 연습
+- `CLRS Ch 4`의 개념을 코드와 fixture로 다시 확인할 수 있다.
+- README에는 길찾기만 남기고 세부 reasoning은 `docs/`와 `notion/`으로 분리해 공개 표면을 가볍게 유지한다.
 
-## 읽는 기준
+## 복잡도
 
-- 먼저 `problem/README.md`로 자료 구성을 확인한다.
-- 그다음 `python/` 기본 구현에서 상태 전이가 어떻게 옮겨졌는지 본다.
-- 필요하면 경계 사례 문서를 다시 열어, 어떤 입력에서 구현이 흔들릴 수 있는지 점검한다.
+- 시간 복잡도와 공간 복잡도는 `python/src/solution.py`의 구현 기준으로 읽는다.
+- 입력 상한과 경계 사례는 `problem/README.md`와 `problem/data/`를 함께 확인한다.
 
-## 코드 매핑 메모
+## 실수 포인트
+
+- 이론 설명을 그대로 옮기고 입출력 계약을 코드에 연결하지 못하는 문제
+- 경계 사례를 fixture로 고정하지 않아 재검증이 어려워지는 문제
+- 개념 설명이 README와 `docs/`에 중복되어 공개 표면이 흐려지는 문제
+
+## 코드 매핑
 
 - Python 기본 구현: `../../python/src/solution.py`
-- 전체 재현 흐름은 `../../notion/05-development-timeline.md`에서 빠르게 다시 밟을 수 있다.
-- 이 프로젝트의 더 긴 설명은 `../../notion/`, 이전 버전 메모는 `../../notion-archive/`에 둔다.
+- 빠른 검증: `make -C study/Advanced-CLRS/0x10-strassen-matrix/problem test`
+- 전체 재현 흐름: `../../notion/05-development-timeline.md`

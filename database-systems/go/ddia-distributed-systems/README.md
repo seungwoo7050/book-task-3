@@ -1,31 +1,32 @@
 # DDIA Distributed Systems Track
 
-Go 분산 트랙은 RPC부터 replication, sharding, Raft-lite, clustered KV capstone을 거친 뒤, quorum consistency, leader election, failure-injected replication까지 확장되는 심화 경로입니다.
+Go 분산 시스템 심화 트랙입니다. RPC부터 replication, sharding, Raft-lite, quorum, leader election, failure injection까지 이어집니다.
 
-## 읽기 전에 알면 좋은 것
+## 누가 여기서 시작해야 하는가
 
-- 기본 네트워크와 분산 시스템 용어를 알고 있으면 좋습니다.
-- 05 capstone 전까지는 transport, replication, routing, storage 연결을 먼저 잡습니다.
-- 06 이후에는 consistency, authority, partial failure를 별도 질문으로 분해해 읽으면 좋습니다.
+- Python 분산 트랙을 끝낸 뒤 consensus-lite, quorum, failure handling까지 더 깊게 보고 싶은 사람에게 맞습니다.
+- transport, routing, authority, consistency를 별도 실험 단위로 나눠 추적하고 싶은 사람에게 맞습니다.
+- 각 행의 `문제`, `내 해법`, `검증`은 [전역 카탈로그](../../docs/catalog/project-catalog.md)와 같은 문구를 사용합니다.
 
-## 추천 순서
+## 이 트랙이 답하는 질문
 
-| 순서 | 프로젝트 | 이 단계에서 보는 질문 | 다음 단계 |
-| --- | --- | --- | --- |
-| 1 | [`01-rpc-framing`](01-rpc-framing/README.md) | TCP stream 위에서 request/response 경계를 복구하는 첫 분산 단계 | 02 Leader-Follower Replication |
-| 2 | [`02-leader-follower-replication`](02-leader-follower-replication/README.md) | replication log와 follower catch-up을 배우는 단계 | 03 Shard Routing |
-| 3 | [`03-shard-routing`](03-shard-routing/README.md) | consistent hashing과 rebalance 비용을 배우는 단계 | 04 Raft Lite |
-| 4 | [`04-raft-lite`](04-raft-lite/README.md) | consensus의 핵심 안전 규칙을 보는 Go 심화 단계 | 05 Clustered KV Capstone |
-| 5 | [`05-clustered-kv-capstone`](05-clustered-kv-capstone/README.md) | 지금까지 배운 저장 엔진·분산 개념을 하나로 묶는 캡스톤 | 06 Quorum and Consistency |
-| 6 | [`06-quorum-and-consistency`](06-quorum-and-consistency/README.md) | 어떤 quorum 조합이 최신 읽기를 보장하고 stale read를 허용하는가 | 07 Heartbeat and Leader Election |
-| 7 | [`07-heartbeat-and-leader-election`](07-heartbeat-and-leader-election/README.md) | 누가 authority를 가지며 split-brain을 어떻게 막는가 | 08 Failure-Injected Log Replication |
-| 8 | [`08-failure-injected-log-replication`](08-failure-injected-log-replication/README.md) | partial failure 뒤에도 append/ack replication이 어떻게 수렴하는가 | 관찰성·membership·snapshotting 확장 |
+- 분산 저장소는 transport, replication, routing, consensus, consistency를 어떤 경계로 나눠 이해해야 하는가
+- partial failure와 authority 교체를 어떤 실험 단위로 검증할 수 있는가
 
-## 이 트랙을 끝내면 남는 것
+## 프로젝트 표
 
-- 각 프로젝트가 어떤 설계 질문을 던지는지 한 번의 경로로 따라갈 수 있습니다.
-- 각 README 마지막 섹션을 통해 공개용 포트폴리오로 확장할 수 있는 방향을 바로 확인할 수 있습니다.
+| 프로젝트 | 문제 | 내 해법 | 검증 | 다음 단계 |
+| --- | --- | --- | --- | --- |
+| [01 RPC Framing](projects/01-rpc-framing/README.md) | 4-byte big-endian length prefix framing을 구현해야 합니다. | TCP stream에서 message boundary를 복구하는 방법을 익힙니다. | `go test ./...`<br>`go run ./cmd/rpc-framing` | Leader-Follower Replication |
+| [02 Leader-Follower Replication](projects/02-leader-follower-replication/README.md) | 순차 offset을 갖는 mutation log를 유지해야 합니다. | leader가 local state와 append-only log를 어떻게 함께 유지하는지 익힙니다. | `go test ./...`<br>`go run ./cmd/replication` | Shard Routing |
+| [03 Shard Routing](projects/03-shard-routing/README.md) | deterministic consistent hash ring을 구현해야 합니다. | consistent hash ring이 key를 물리 node에 매핑하는 방식을 익힙니다. | `go test ./...`<br>`go run ./cmd/shard-routing` | Raft Lite |
+| [04 Raft Lite](projects/04-raft-lite/README.md) | leader election과 단일 leader 보장을 재현해야 합니다. | term과 election cycle이 leader 교체를 어떻게 제어하는지 익힙니다. | `go test ./...`<br>`go run ./cmd/raft-lite` | Clustered KV Capstone |
+| [05 Clustered KV Capstone](projects/05-clustered-kv-capstone/README.md) | key를 shard로 라우팅하고 shard별 leader/follower group을 선택해야 합니다. | router, leader, follower, local store가 한 write pipeline 안에서 어떻게 연결되는지 익힙니다. | `go test ./...`<br>`go run ./cmd/clustered-kv` | Quorum and Consistency |
+| [06 Quorum and Consistency](projects/06-quorum-and-consistency/README.md) | replica 3개를 가진 versioned register를 구현해야 합니다. | replica 일부가 뒤처져도 quorum read가 최신 버전을 고르는 조건을 익힙니다. | `go test ./...`<br>`go run ./cmd/quorum-demo` | Heartbeat and Leader Election |
+| [07 Heartbeat and Leader Election](projects/07-heartbeat-and-leader-election/README.md) | leader가 주기적으로 heartbeat를 보내야 합니다. | heartbeat silence가 suspicion으로 바뀌고, 그 다음 election으로 이어지는 흐름을 익힙니다. | `go test ./...`<br>`go run ./cmd/leader-election` | Failure-Injected Log Replication |
+| [08 Failure-Injected Log Replication](projects/08-failure-injected-log-replication/README.md) | single leader가 append-only log를 가지고 follower에게 entry를 보낼 수 있어야 합니다. | dropped append가 retry로 수렴하는 흐름을 익힙니다. | `go test ./...`<br>`go run ./cmd/failure-replication` | 자체 확장 프로젝트 |
 
 ## 다음 단계
 
-분산 트랙을 끝내면 membership change, snapshotting, observability, benchmark/failure drill 프로젝트로 이어 가기 좋습니다.
+- 각 프로젝트는 `README -> problem/README -> docs/README -> 구현 -> tests -> notion/README` 순서로 읽습니다.
+- 이 트랙 뒤에는 membership change, snapshotting, observability, benchmark/failure drill 프로젝트를 붙이기 좋습니다.

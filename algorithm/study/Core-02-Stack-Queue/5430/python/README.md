@@ -1,28 +1,23 @@
 # Python 구현 안내
 
-## 구현 범위
+## 이 폴더의 역할
 
-- AC 프로젝트의 기본 구현
-- BOJ 전체 채점 범위
+이 폴더는 현재 프로젝트의 canonical 공개 답안을 담는다. README와 `problem/`에서 문제 계약을 확인한 뒤 `src/solution.py`를 읽는다.
 
-## 왜 이 구현을 먼저 보는가
+## 먼저 볼 파일
 
-이 레포에서 기본 구현은 Python을 기준으로 설명한다. 먼저 여기서 상태 전이를 따라가고, 필요하면 다른 구현과 비교한다.
+- `src/solution.py`
 
-## 실행 명령
+## 기준 명령
 
-- `python3 src/solution.py < ../problem/data/input1.txt`: 가장 짧은 수동 실행 경로다.
+- 실행: `make -C study/Core-02-Stack-Queue/5430/problem run-py`
+- 검증: `make -C study/Core-02-Stack-Queue/5430/problem test`
 
-## 검증 명령
+## 현재 범위
 
-- `make -C ../problem test`: 현재 프로젝트의 기본 자동 검증 루프다. 구현을 수정한 뒤에는 이 명령부터 다시 실행하는 편이 좋다.
+- 한 줄 답: `함수 문자열을 reverse flag + deque 양끝 제거로 lazy evaluation`
 
-## 현재 상태
+## 남은 약점
 
-- 2026-03-10 기준 `make -C ../problem test` 통과
-
-## 구현 메모
-
-- 공개용 판단 근거는 `../docs/`에 둔다.
-- 전체 재현 흐름은 `../notion/05-development-timeline.md`에서 먼저 확인하고, 더 긴 학습 노트는 `../notion/`에서 이어서 읽는다.
-- 이전 버전 메모나 예전 템플릿 흔적은 `../notion-archive/`에 보관한다.
+- 장문 reasoning과 디버깅 이력은 이 폴더가 아니라 `../docs/`와 `../notion/`에 둔다.
+- fixture 중심 검증 기준은 `../problem/Makefile`을 따른다.

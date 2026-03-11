@@ -1,1 +1,1 @@
-"""System tests for workspace-backend-v2-msa."""
+"""K-distributed-ops-lab 시스템 테스트."""

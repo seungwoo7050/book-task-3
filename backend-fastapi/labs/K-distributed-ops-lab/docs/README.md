@@ -1,8 +1,8 @@
-# K-distributed-ops-lab 문서 지도
+# K-distributed-ops-lab 설계 문서
 
-이 문서는 “다중 서비스 구조도 운영 질문에 답할 수 있어야 한다”는 관점에서 K 랩을 읽게 하는 개념 지도다. 기능 추가보다 live/ready, JSON 로그, 최소 metrics, Compose health matrix, AWS target shape 문서가 먼저 등장하는 이유를 설명한다.
+이 폴더는 K-distributed-ops-lab의 설계 설명을 모아 둔 곳입니다. 실행 순서보다 왜 이런 경계를 택했고 무엇을 설명해야 하는지를 먼저 정리합니다.
 
-## 먼저 보면 좋은 질문
+## 이 문서에서 먼저 볼 질문
 
 - 서비스별 readiness는 무엇을 확인해야 하는가
 - request id와 metrics는 어떤 운영 질문에 답하는가
@@ -23,7 +23,7 @@
 - Compose health matrix와 AWS 문서의 역할
 - 왜 운영성 문서도 학습 저장소의 핵심 산출물인지
 
-## 함께 보면 좋은 문서
+## 역할이 다른 관련 문서
 
 - [문제 정의](../problem/README.md)
 - [FastAPI 실행 문서](../fastapi/README.md)

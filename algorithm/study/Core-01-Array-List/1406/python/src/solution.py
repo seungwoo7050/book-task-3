@@ -5,7 +5,7 @@ def solve():
     s = input().strip()
     m = int(input())
 
-    # Two-stack model: left = chars before cursor, right = chars after cursor (reversed)
+    # 두 스택 모델: left = 커서 왼쪽, right = 커서 오른쪽(역순)
     left = list(s)
     right = []
 
@@ -23,7 +23,7 @@ def solve():
         elif cmd[0] == 'P':
             left.append(cmd[2])
 
-    # Final string: left (bottom→top) + right (top→bottom)
+    # 최종 문자열: left(아래→위) + right(위→아래)
     print(''.join(left) + ''.join(reversed(right)))
 
 if __name__ == "__main__":

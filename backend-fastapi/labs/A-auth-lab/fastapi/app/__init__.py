@@ -1,1 +1,1 @@
-"""A-auth-lab FastAPI application package."""
+"""A-auth-lab FastAPI 애플리케이션 패키지."""

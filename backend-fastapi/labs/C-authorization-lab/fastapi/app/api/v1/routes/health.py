@@ -29,7 +29,7 @@ def ready(
         db.execute(text("SELECT 1"))
         if settings.redis_url:
             Redis.from_url(settings.redis_url).ping()
-    except Exception as exc:  # pragma: no cover - exercised by smoke checks, not unit tests
+    except Exception as exc:  # pragma: no cover - smoke 검증에서 다루고 unit test에서는 직접 다루지 않음
         raise AppError(
             code="DEPENDENCY_NOT_READY",
             message="Database or Redis is not ready.",

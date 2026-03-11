@@ -1,8 +1,8 @@
-# F-realtime-lab 문서 지도
+# F-realtime-lab 설계 문서
 
-이 문서는 실시간 연결과 presence 상태를 REST API와 다른 문제로 나눠 설명할 때 참고하는 개념 지도입니다.
+이 폴더는 F-realtime-lab의 설계 설명을 모아 둔 곳입니다. 실행 순서보다 왜 이런 경계를 택했고 무엇을 설명해야 하는지를 먼저 정리합니다.
 
-## 먼저 보면 좋은 질문
+## 이 문서에서 먼저 볼 질문
 
 - WebSocket 인증은 어디서 끝나야 하는가
 - presence는 왜 TTL과 heartbeat를 함께 써야 하는가
@@ -14,7 +14,7 @@
 - 다중 연결 fan-out 모델
 - reconnect를 고려한 보조 HTTP surface의 역할
 
-## 함께 보면 좋은 문서
+## 역할이 다른 관련 문서
 
 - [문제 정의](../problem/README.md)
 - [FastAPI 실행 문서](../fastapi/README.md)

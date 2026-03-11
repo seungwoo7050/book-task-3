@@ -1,8 +1,8 @@
 /*
- * bits.c — Fresh C solutions for the migrated Data Lab project.
+ * bits.c - 옮겨온 Data Lab 프로젝트용 C 풀이 모음.
  *
- * Integer puzzles keep the original bit-manipulation contract.
- * Floating-point puzzles work on unsigned bit patterns only.
+ * 정수 퍼즐은 원문 bit-manipulation 계약을 그대로 지키고,
+ * 부동소수점 퍼즐은 unsigned bit pattern만 다룬다.
  */
 
 int bitXor(int x, int y) {

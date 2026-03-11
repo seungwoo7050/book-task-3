@@ -3,7 +3,7 @@ input = sys.stdin.readline
 
 def main():
     N = int(input())
-    # prev[c] = min cost to paint up to previous house, ending with color c
+    # prev[c] = 이전 집까지 칠했을 때 마지막 색이 c인 최소 비용
     prev = list(map(int, input().split()))
 
     for _ in range(N - 1):

@@ -1,5 +1,5 @@
 #
-# trace_stop_fg.txt - stop a foreground job, bring it back, then interrupt it
+# trace_stop_fg.txt - foreground job을 멈춘 뒤 다시 foreground로 가져오고 interrupt한다
 #
 /bin/sleep 5
 WAIT

@@ -1,56 +1,32 @@
 # Systems-Programming
 
-## 이 트랙이 가르치는 것
+`Systems-Programming`은 프로세스 제어, 시그널, 메모리 관리, 네트워크 프록시를 실제 구현으로 묶어 시스템 프로그래밍 계약을 익히는 트랙이다.
 
-이 트랙은 프로세스 제어, 시그널, 동적 메모리 관리, 네트워크 프록시를 실제 코드로 익히는 구간입니다.
-CS:APP 후반부를 "운영체제와 시스템 프로그래밍 감각"으로 연결하는 역할을 합니다.
+## 프로젝트 지도
 
-## 누구를 위한 문서인가
+| 프로젝트 | 문제 | 이 레포의 답 | 검증 시작점 | 상태 |
+| --- | --- | --- | --- | --- |
+| [`shlab`](shlab/README.md) | process group과 foreground/background job control shell 구현 | `c/src/tsh.c`, `cpp/src/tsh.cpp`, `tests/` | [`problem`](shlab/problem/README.md), [`c`](shlab/c/README.md), [`cpp`](shlab/cpp/README.md) | `public verified` |
+| [`malloclab`](malloclab/README.md) | explicit free list allocator와 `realloc` 경계 구현 | `c/src/mm.c`, `cpp/src/mm.cpp`, `docs/` | [`problem`](malloclab/problem/README.md), [`c`](malloclab/c/README.md), [`cpp`](malloclab/cpp/README.md) | `public verified` |
+| [`proxylab`](proxylab/README.md) | concurrent HTTP proxy와 in-memory cache 구현 | `c/src/proxy.c`, `cpp/src/proxy.cpp`, `tests/` | [`problem`](proxylab/problem/README.md), [`c`](proxylab/c/README.md), [`cpp`](proxylab/cpp/README.md) | `public verified` |
 
-- 셸, 메모리 할당기, 프록시를 직접 구현해 보고 싶은 학습자
-- 시스템 프로그래밍 과제를 공개 저장소에 정리하는 방법이 필요한 사람
-- 동시성, 시그널, 캐시, 테스트 하네스 설계를 함께 보고 싶은 사람
+## 권장 순서
 
-## 먼저 읽을 곳
-
-1. [`shlab/README.md`](shlab/README.md)
-2. [`malloclab/README.md`](malloclab/README.md)
-3. [`proxylab/README.md`](proxylab/README.md)
-
-## 디렉터리 구조
-
-```text
-Systems-Programming/
-  README.md
-  shlab/
-  malloclab/
-  proxylab/
-```
-
-## 필수 코어와 심화
+1. [`shlab`](shlab/README.md)
+2. [`malloclab`](malloclab/README.md)
+3. [`proxylab`](proxylab/README.md)
 
 - `필수 코어`: `shlab -> malloclab`
 - `심화/선택`: `proxylab`
 
-프로세스와 시그널 감각을 먼저 익힌 뒤 allocator invariant를 다지고,
-네트워크 I/O와 concurrent cache는 그 다음 단계로 확장하는 흐름을 전제로 합니다.
+## 검증 원칙
 
-## 검증 방법
+- `shlab`은 self-owned trace와 shell test로 process/signal 경계를 검증한다.
+- `malloclab`은 starter contract 위에 작성한 allocator를 `c/`, `cpp/` 테스트로 검증한다.
+- `proxylab`은 local origin server와 캐시 테스트를 포함한 공개 검증 경로를 유지한다.
 
-2026-03-10 문서 정비 기준으로 모든 프로젝트가 공개 구현용 테스트 경로를 갖고 있습니다.
+## 공개 경계
 
-- `shlab`: 직접 작성한 트레이스와 시그널 중심 테스트
-- `malloclab`: 자체 trace driver 기반 정합성 검증
-- `proxylab`: 로컬 origin server 기반 기능/동시성/캐시 테스트
-
-구체 명령은 프로젝트별 `c/README.md`, `cpp/README.md`, `problem/README.md`를 따르면 됩니다.
-
-## 스포일러 경계
-
-- 이 트랙은 외부 비공개 바이너리를 다루지 않으므로 구현 원리와 테스트 전략을 비교적 넓게 공개합니다.
-- 대신 README는 여전히 "학습 안내문" 역할에 집중하고, 긴 구현 해설은 `docs/`와 `notion/`으로 나눕니다.
-
-## 포트폴리오로 확장하는 힌트
-
-- 이 트랙은 코드 품질, 테스트 설계, 동시성 사고를 보여 주기 좋아 포트폴리오 가치가 높습니다.
-- 개인 저장소에서는 각 프로젝트에 "실패했던 버그 한 가지"와 "검증 자동화 한 가지"를 강조하면 차별화가 큽니다.
+- 이 트랙은 외부 비공개 바이너리에 의존하지 않으므로 구현 코드, 테스트 하네스, 개념 문서를 비교적 넓게 공개한다.
+- README는 `문제`, `답`, `검증`만 짧게 안내하고, 긴 구현 reasoning은 각 프로젝트 `docs/`, `notion/`으로 보낸다.
+- authored comment는 한국어를 기본으로 유지하되 protocol, system call, code identifier는 English 그대로 둔다.

@@ -7,7 +7,7 @@ def main():
 
     for _ in range(N):
         w, v = map(int, input().split())
-        # Iterate in reverse to ensure 0/1 property
+        # 0/1 배낭 성질을 지키기 위해 역순으로 순회
         for j in range(K, w - 1, -1):
             dp[j] = max(dp[j], dp[j - w] + v)
 

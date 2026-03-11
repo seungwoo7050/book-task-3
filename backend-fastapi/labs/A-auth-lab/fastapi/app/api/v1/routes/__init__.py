@@ -1,1 +1,1 @@
-"""Versioned route modules."""
+"""버전별 라우트 모듈."""

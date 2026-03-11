@@ -1,1 +1,1 @@
-"""Core application concerns."""
+"""애플리케이션 핵심 공통 모듈."""

@@ -1,28 +1,23 @@
 # C++ 비교 구현 안내
 
-## 구현 범위
+## 이 폴더의 역할
 
-- AC 프로젝트의 비교 구현
-- BOJ 전체 채점 범위
+이 폴더는 Python 기준 풀이를 다른 언어로 비교해 볼 때 쓰는 보조 구현을 담는다. 프로젝트의 canonical 설명은 여전히 Python 쪽을 먼저 읽는다.
 
-## 왜 이 구현을 먼저 보는가
+## 먼저 볼 파일
 
-C++ 디렉터리는 정답 코드를 더 빠르게 짜기 위한 공간이 아니라, 같은 알고리즘 결정을 다른 언어에서 어떻게 표현하는지 비교하는 용도에 가깝다.
+- `src/solution.cpp`
 
-## 실행 명령
+## 기준 명령
 
-- `make -C ../problem run-cpp`: 비교 구현을 직접 실행하는 가장 단순한 경로다.
+- 실행: `make -C study/Core-02-Stack-Queue/5430/problem run-cpp`
+- 검증: `make -C study/Core-02-Stack-Queue/5430/problem test`
 
-## 검증 명령
+## 현재 범위
 
-- `make -C ../problem test`: 현재 프로젝트의 기본 자동 검증 루프다. 구현을 수정한 뒤에는 이 명령부터 다시 실행하는 편이 좋다.
+- 비교 답안: `함수 문자열을 reverse flag + deque 양끝 제거로 lazy evaluation`
 
-## 현재 상태
+## 남은 약점
 
-- 이번 문서 정리 라운드에서는 별도 자동 재검증을 하지 않았다. Python 구현과 같은 fixture를 기준으로 비교용으로 읽는다.
-
-## 구현 메모
-
-- 공개용 판단 근거는 `../docs/`에 둔다.
-- 전체 재현 흐름은 `../notion/05-development-timeline.md`에서 먼저 확인하고, 더 긴 학습 노트는 `../notion/`에서 이어서 읽는다.
-- 이전 버전 메모나 예전 템플릿 흔적은 `../notion-archive/`에 보관한다.
+- README와 `docs/`의 설명 기준선은 Python 구현 쪽에 둔다.
+- 언어별 미세 최적화 비교는 최소한만 남기고, 핵심 판단 근거만 확인한다.

@@ -242,7 +242,7 @@ void transpose_generic(int M, int N, const std::vector<int> &A, std::vector<int>
     }
 }
 
-}  // namespace
+}  // 내부 helper 이름공간 끝
 
 PerfStats run_trace_file(const std::string &tracefile, int s, int E, int b, bool verbose)
 {
@@ -332,4 +332,4 @@ TransposeResult measure_transpose(int M, int N, TransposeKernel kernel)
     };
 }
 
-}  // namespace perflab
+}  // perflab 이름공간 끝

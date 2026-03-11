@@ -13,7 +13,7 @@ def solve():
     for i in range(1, n + 1):
         adj[i].sort()
 
-    # DFS
+    # DFS 순회
     dfs_order = []
     visited = [False] * (n + 1)
 
@@ -26,7 +26,7 @@ def solve():
 
     dfs(v)
 
-    # BFS
+    # BFS 순회
     bfs_order = []
     visited = [False] * (n + 1)
     q = deque([v])

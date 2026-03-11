@@ -1,8 +1,8 @@
-# H-service-boundary-lab 문서 지도
+# H-service-boundary-lab 설계 문서
 
-이 문서는 `identity-service`와 `workspace-service`를 처음으로 분리할 때 어떤 경계를 먼저 고정해야 하는지 설명하는 개념 지도다. 여기서 중요한 것은 서비스를 많이 만들었다는 사실이 아니라, 사용자 정보 전달 방식을 `DB join`에서 `token claims`로 바꾸는 기준을 분명히 세우는 일이다.
+이 폴더는 H-service-boundary-lab의 설계 설명을 모아 둔 곳입니다. 실행 순서보다 왜 이런 경계를 택했고 무엇을 설명해야 하는지를 먼저 정리합니다.
 
-## 먼저 보면 좋은 질문
+## 이 문서에서 먼저 볼 질문
 
 - 인증 서비스와 워크스페이스 서비스를 왜 분리하는가
 - 어떤 데이터는 claim으로 넘기고 어떤 데이터는 넘기지 않는가
@@ -23,7 +23,7 @@
 - 공유 ORM 모델을 피하는 이유
 - 서비스 분리를 시작할 때 gateway나 event broker를 일부러 뒤로 미루는 이유
 
-## 함께 보면 좋은 문서
+## 역할이 다른 관련 문서
 
 - [문제 정의](../problem/README.md)
 - [FastAPI 실행 문서](../fastapi/README.md)

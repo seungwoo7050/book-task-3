@@ -1,5 +1,5 @@
 /*
- * tsh_helper.h - Signal-safe helper routines for tiny shell.
+ * tsh_helper.h - tiny shell용 signal-safe helper 모음.
  */
 
 #ifndef TSH_HELPER_H

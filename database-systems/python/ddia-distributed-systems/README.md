@@ -1,26 +1,28 @@
 # DDIA Distributed Systems Track
 
-Python 분산 트랙은 Raft를 제외하고, 분산 시스템의 핵심 흐름을 capstone까지 self-contained하게 보여 주는 입문 경로입니다.
+Python 분산 시스템 입문 트랙입니다. RPC, replication, sharding, clustered KV capstone까지를 self-contained하게 따라갑니다.
 
-## 읽기 전에 알면 좋은 것
+## 누가 여기서 시작해야 하는가
 
-- 분산 시스템을 처음 접하는 학습자에게 적합합니다.
-- 입문 경로인 만큼 consensus보다 request 흐름과 topology 연결 이해를 우선합니다.
+- 분산 시스템을 처음 공부하며 request 흐름, replication, routing, clustered KV를 먼저 한 바퀴 돌고 싶은 사람에게 맞습니다.
+- consensus 이전의 골격을 self-contained 프로젝트로 먼저 고정하고 싶은 사람에게 맞습니다.
+- 각 행의 `문제`, `내 해법`, `검증`은 [전역 카탈로그](../../docs/catalog/project-catalog.md)와 같은 문구를 사용합니다.
 
-## 추천 순서
+## 이 트랙이 답하는 질문
 
-| 순서 | 프로젝트 | 이 단계에서 보는 질문 | 다음 단계 |
-| --- | --- | --- | --- |
-| 1 | [`01-rpc-framing`](01-rpc-framing/README.md) | TCP stream 위에서 request/response 경계를 복구하는 첫 분산 단계 | 02 Leader-Follower Replication |
-| 2 | [`02-leader-follower-replication`](02-leader-follower-replication/README.md) | replication log와 follower catch-up을 배우는 단계 | 03 Shard Routing |
-| 3 | [`03-shard-routing`](03-shard-routing/README.md) | consistent hashing과 rebalance 비용을 배우는 단계 | 04 Clustered KV Capstone |
-| 4 | [`04-clustered-kv-capstone`](04-clustered-kv-capstone/README.md) | 지금까지 배운 저장 엔진·분산 개념을 하나로 묶는 캡스톤 | Go DDIA track의 04~08 심화 슬롯 또는 FastAPI 기반 확장판 |
+- 분산 시스템 입문에서 request 흐름, replication, routing을 어떤 순서로 연결해 볼 것인가
+- consensus 이전에 clustered KV까지 어떤 골격을 먼저 고정해야 하는가
 
-## 이 트랙을 끝내면 남는 것
+## 프로젝트 표
 
-- 각 프로젝트가 어떤 설계 질문을 던지는지 한 번의 경로로 따라갈 수 있습니다.
-- 각 README 마지막 섹션을 통해 공개용 포트폴리오로 확장할 수 있는 방향을 바로 확인할 수 있습니다.
+| 프로젝트 | 문제 | 내 해법 | 검증 | 다음 단계 |
+| --- | --- | --- | --- | --- |
+| [01 RPC Framing](projects/01-rpc-framing/README.md) | 4-byte big-endian length prefix framing을 구현해야 합니다. | TCP stream에서 message boundary를 복구하는 방법을 익힙니다. | `PYTHONPATH=src python -m pytest`<br>`PYTHONPATH=src python -m rpc_framing` | Leader-Follower Replication |
+| [02 Leader-Follower Replication](projects/02-leader-follower-replication/README.md) | 순차 offset을 갖는 mutation log를 유지해야 합니다. | leader가 local state와 append-only log를 어떻게 함께 유지하는지 익힙니다. | `PYTHONPATH=src python -m pytest`<br>`PYTHONPATH=src python -m leader_follower` | Shard Routing |
+| [03 Shard Routing](projects/03-shard-routing/README.md) | deterministic consistent hash ring을 구현해야 합니다. | consistent hash ring이 key를 물리 node에 매핑하는 방식을 익힙니다. | `PYTHONPATH=src python -m pytest`<br>`PYTHONPATH=src python -m shard_routing` | Clustered KV Capstone |
+| [04 Clustered KV Capstone](projects/04-clustered-kv-capstone/README.md) | key를 shard로 라우팅하고 shard별 leader/follower group을 선택해야 합니다. | router, leader, follower, local store가 한 write pipeline 안에서 어떻게 연결되는지 익힙니다. | `python -m pip install -e '.[dev]'`<br>`PYTHONPATH=src python -m pytest && python -m clustered_kv` | Go 심화 슬롯 |
 
 ## 다음 단계
 
-이 트랙을 끝낸 뒤 Go 분산 트랙의 `04-raft-lite`, `06-quorum-and-consistency`, `07-heartbeat-and-leader-election`, `08-failure-injected-log-replication`으로 넘어가면 authority, consistency, partial failure를 더 세밀하게 읽을 수 있습니다.
+- 각 프로젝트는 `README -> problem/README -> docs/README -> 구현 -> tests -> notion/README` 순서로 읽습니다.
+- 이 트랙을 끝낸 뒤 [Go 분산 트랙](../../go/ddia-distributed-systems/README.md)의 Raft-lite, quorum, election, failure handling 슬롯으로 넘어가면 authority와 consistency를 더 깊게 읽을 수 있습니다.

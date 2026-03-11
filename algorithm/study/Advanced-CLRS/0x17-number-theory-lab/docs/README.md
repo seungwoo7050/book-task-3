@@ -1,28 +1,27 @@
-# 공개 학습 문서
+# 학습 문서 안내
 
-## 이 디렉터리의 역할
+## 이 폴더의 역할
 
-이 디렉터리는 `정수론 실습` 프로젝트의 공개 해설과 검증 메모를 보관한다. 문제 원문 복사본보다, 어떤 판단 기준으로 구현을 읽어야 하는지 안내하는 데 목적이 있다.
+이 폴더는 이 프로젝트를 읽을 때 반복해서 다시 볼 판단 근거만 남긴다. 문제 이해의 출발점은 프로젝트 README이고, 이 폴더는 답을 왜 그렇게 골랐는지 확인하는 보조 표면이다.
 
-## 포함 문서
+## 먼저 볼 파일
 
-- `references/overview.md`: 이 프로젝트 문서를 어떤 순서로 읽으면 좋은지 안내
-- `references/approach.md`: 핵심 접근과 선택 이유
-- `references/reproducibility.md`: 빠르게 실행 명령과 최근 검증 결과를 확인하는 문서
-- `concepts/`: 경계 사례와 핵심 개념 정리
-- `../notion/05-development-timeline.md`: 전체 재현 흐름을 장문으로 따라가는 문서
+- [references/approach.md](references/approach.md)
+- [references/reproducibility.md](references/reproducibility.md)
+- [concepts/edge-cases.md](concepts/edge-cases.md)
+- [concepts/number-theory-concept.md](concepts/number-theory-concept.md)
 
-## 추천 읽기 순서
+## 기준 명령
 
-1. `references/overview.md`로 문서 지도를 본다.
-2. `references/approach.md`에서 판단 기준을 읽는다.
-3. 필요한 개념 문서를 확인한다.
-4. `references/reproducibility.md`에서 검증 명령을 확인한 뒤 구현으로 내려간다.
-5. 구현을 다 읽은 뒤에는 `../notion/05-development-timeline.md`에서 전체 재현 순서를 다시 밟는다.
-6. 마지막으로 `../notion/`의 나머지 노트로 개념과 회고를 확장한다.
+- 기준 검증: `make -C study/Advanced-CLRS/0x17-number-theory-lab/problem test`
+- 개념 문서 위치: `docs/concepts/`
+- 참고 문서 위치: `docs/references/`
 
-## 함께 보면 좋은 경로
+## 현재 범위
 
-- 기본 구현: `../python/`
-- 추가 실험: 필요하면 직접 다른 언어로 다시 구현해 보기
-- 보관된 이전 노트: `../notion-archive/`
+- 한 줄 답: `python/src/solution.py`에서 `정수론 실습` 핵심 절차를 실행 가능한 실험으로 재현
+
+## 남은 약점
+
+- 이 폴더만으로 문제와 구현을 모두 이해하게 만들지는 않는다.
+- 프로젝트 전체 맥락과 경로는 상위 README를 기준으로 확인한다.

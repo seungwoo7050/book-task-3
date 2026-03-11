@@ -323,7 +323,7 @@ void *thread_main(void *arg)
     return nullptr;
 }
 
-}  // namespace
+}  // 내부 helper 이름공간 끝
 
 int main(int argc, char **argv)
 {

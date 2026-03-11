@@ -1,40 +1,21 @@
 # Performance Lab
 
-## 이 프로젝트가 가르치는 것
+`perflab`은 cache simulator와 transpose 최적화를 통해 "왜 더 빠른가"를 코드와 지표로 설명하는 프로젝트다.
 
-`perflab`은 캐시 시뮬레이터와 행렬 전치 최적화를 통해 "정답이 맞는가"를 넘어 "왜 더 빠른가"를 설명하게 만드는 프로젝트입니다.
-주소 분해, LRU 교체, locality, miss count 중심의 성능 측정이 핵심 학습 포인트입니다.
+## 한눈에 보기
 
-## 누구를 위한 문서인가
+| 문제 | 중요 제약 | 이 레포의 답 | 검증 시작점 | 배우는 개념 | 상태 |
+| --- | --- | --- | --- | --- | --- |
+| Part A는 trace-driven cache simulator, Part B는 cache-friendly transpose 구현이다. | trace 입력과 miss 집계 규칙을 지키고, transpose는 correctness와 miss budget을 함께 만족해야 한다. | C 답은 [`c/src/perflab.c`](c/src/perflab.c), C++ 답은 [`cpp/src/perflab.cpp`](cpp/src/perflab.cpp)이며, miss 근거와 전략 비교는 `docs/`에 둔다. | [`problem/README.md`](problem/README.md), [`c/README.md`](c/README.md), [`cpp/README.md`](cpp/README.md) | cache model, LRU, trace-driven 검증, blocking 전략 | `public verified` |
 
-- 캐시 동작을 추상 설명이 아니라 실행 가능한 코드로 이해하고 싶은 학습자
-- 성능 과제를 wall-clock time 대신 재현 가능한 지표로 정리하고 싶은 사람
-- 동일 계약을 C와 C++로 비교해 보고 싶은 사람
+## 디렉터리 역할
 
-## 먼저 읽을 곳
+- `problem/`: self-written starter boundary와 sample trace
+- `c/`, `cpp/`: simulator와 transpose 구현
+- `docs/`: cache model, LRU, transpose strategy 설명
+- `notion/`: 최적화 과정, 실패 사례, 재측정 기록
 
-1. [`problem/README.md`](problem/README.md)
-2. [`c/README.md`](c/README.md)
-3. [`cpp/README.md`](cpp/README.md)
-4. [`docs/README.md`](docs/README.md)
-5. [`notion/README.md`](notion/README.md)
-
-## 디렉터리 구조
-
-```text
-perflab/
-  README.md
-  problem/
-  c/
-  cpp/
-  docs/
-  notion/
-  notion-archive/
-```
-
-## 검증 방법
-
-2026-03-10 문서 정비 기준으로 유지하는 검증 경로는 다음과 같습니다.
+## 검증 빠른 시작
 
 문제 경계 확인:
 
@@ -58,13 +39,8 @@ cd cpp
 make clean && make test
 ```
 
-## 스포일러 경계
+## 공개 경계
 
-- 공개 문서는 캐시 모델과 최적화 전략을 설명합니다.
-- 특정 코드 블록 전체를 해답처럼 붙여 넣기보다, miss를 줄이는 원리를 중심으로 정리합니다.
-- `problem/`은 self-written starter boundary만 유지합니다.
-
-## 포트폴리오로 확장하는 힌트
-
-- 성능 과제는 "무엇을 측정했고 왜 그 지표를 믿는가"를 쓰는 것이 중요합니다.
-- 개인 저장소에서는 naive 버전과 최적화 버전의 miss 차이를 표로 추가하면 훨씬 설득력이 생깁니다.
+- 공개 문서는 cache model과 최적화 전략을 설명한다.
+- 특정 코드 블록 전체를 해답처럼 붙여 넣기보다, miss를 줄이는 원리를 중심으로 정리한다.
+- `problem/`은 self-written starter boundary만 유지한다.

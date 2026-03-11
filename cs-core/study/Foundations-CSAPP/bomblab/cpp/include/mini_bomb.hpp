@@ -13,6 +13,6 @@ bool phase5(std::string_view input);
 bool phase6(std::string_view input);
 bool secret_phase(std::string_view input);
 
-}  // namespace bomblab
+}  // bomblab 이름공간 끝
 
 #endif

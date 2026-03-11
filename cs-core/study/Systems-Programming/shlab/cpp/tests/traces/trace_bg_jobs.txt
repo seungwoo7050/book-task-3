@@ -1,5 +1,5 @@
 #
-# trace_bg_jobs.txt - background job and jobs builtin
+# trace_bg_jobs.txt - background job과 jobs builtin을 확인한다
 #
 /bin/sleep 1 &
 jobs

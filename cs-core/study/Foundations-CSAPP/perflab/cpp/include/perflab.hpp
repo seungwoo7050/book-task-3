@@ -39,6 +39,6 @@ void transpose_submit(int M, int N, const std::vector<int> &A, std::vector<int> 
 bool is_transpose(int M, int N, const std::vector<int> &A, const std::vector<int> &B);
 TransposeResult measure_transpose(int M, int N, TransposeKernel kernel);
 
-}  // namespace perflab
+}  // perflab 이름공간 끝
 
 #endif

@@ -33,7 +33,7 @@ cd problem
 make restore-official
 ```
 
-`restore_csapp_self_study_assets.py`가 `csapp.cs.cmu.edu`에서 `target1.tar`를 다운로드, `problem/official/target1/` 아래에 풀어놓는다. 포함 파일: `ctarget`, `rtarget`, `hex2raw`, `cookie.txt`, `farm.c`.
+`study/scripts/restore_csapp_self_study_assets.py`가 `csapp.cs.cmu.edu`에서 `target1.tar`를 다운로드, `problem/official/target1/` 아래에 풀어놓는다. 포함 파일: `ctarget`, `rtarget`, `hex2raw`, `cookie.txt`, `farm.c`.
 
 ---
 

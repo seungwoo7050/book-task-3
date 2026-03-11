@@ -11,26 +11,26 @@ network-atda/
 
 ## 디렉터리 역할
 
-- `README.md`: 저장소 전체 목적, 학습 순서, 검증 원칙, 포트폴리오 가이드
-- `docs/`: 저장소 수준 문서
-- `study/`: 실제 학습 트랙과 프로젝트
+- `README.md`: 저장소 전체 목적, 학습 순서, 프로젝트 카탈로그, 검증 빠른 시작
+- `docs/`: 저장소 수준 문서와 README 계약
+- `study/`: 실제 학습 단계와 프로젝트
 
-## `study/` 안의 현재 트랙
+## `study/` 안의 현재 단계
 
-- `Application-Protocols-and-Sockets`
-- `Reliable-Transport`
-- `Packet-Analysis-Top-Down`
-- `Network-Diagnostics-and-Routing`
-- `Game-Server-Capstone`
+- `01-Application-Protocols-and-Sockets`
+- `02-Reliable-Transport`
+- `03-Packet-Analysis-Top-Down`
+- `04-Network-Diagnostics-and-Routing`
+- `05-Game-Server-Capstone`
 
 ## 현재 프로젝트 개수
 
-- 트랙: `5`
+- 단계: `5`
 - 프로젝트: `17`
 - 구현 과제(`python/`, `cpp/`): `10`
 - 패킷 분석 과제(`analysis/`): `7`
-- 새 형식 `notion/`을 갖는 프로젝트: `10`
-- 과거 형식 백업 `notion-archive/`를 갖는 프로젝트: `10` 예정
+- `notion/`을 갖는 프로젝트: `10`
+- `notion-archive/`를 갖는 프로젝트: `10`
 
 ## 프로젝트 공통 구조
 
@@ -44,5 +44,5 @@ network-atda/
 ## 저장소 해석 원칙
 
 - 문서는 현재 존재하는 소스와 디렉터리만 기준으로 씁니다.
-- `problem/`과 구현/답안 디렉터리를 분리해, 제공 자료와 사용자 작업을 섞지 않습니다.
-- `README.md`는 빠르게 길을 찾게 하는 인덱스 역할을 맡고, 자세한 과정 기록은 `notion/`으로 넘깁니다.
+- `problem/`과 구현/답안 디렉터리를 분리해 제공 자료와 사용자 작업을 섞지 않습니다.
+- 최상위는 학습 단계 순서로 정렬하고, 프로젝트 README는 같은 공개 계약을 반복합니다.

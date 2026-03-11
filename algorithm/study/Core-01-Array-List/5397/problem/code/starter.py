@@ -2,7 +2,7 @@ import sys
 input = sys.stdin.readline
 
 def solve():
-    # TODO: Implement keylogger simulation
+    # 할 일: 키로거 시뮬레이션을 구현한다
     pass
 
 if __name__ == "__main__":

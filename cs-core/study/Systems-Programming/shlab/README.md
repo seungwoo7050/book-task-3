@@ -1,41 +1,22 @@
 # Shell Lab
 
-## 이 프로젝트가 가르치는 것
+`shlab`은 프로세스 그룹, foreground/background job control, `SIGCHLD` 처리, `fork` 주변 race를 작은 셸 구현으로 익히는 프로젝트다.
 
-`shlab`은 프로세스 그룹, foreground/background job control, `SIGCHLD` 처리, `fork` 주변 race를 실제 셸 구현으로 익히게 합니다.
-겉보기에는 작은 셸이지만, 운영체제 수업에서 자주 헷갈리는 동기화와 시그널 전달 규칙을 압축해서 보여 줍니다.
+## 한눈에 보기
 
-## 누구를 위한 문서인가
+| 문제 | 중요 제약 | 이 레포의 답 | 검증 시작점 | 배우는 개념 | 상태 |
+| --- | --- | --- | --- | --- | --- |
+| foreground/background job control, builtin command, signal forwarding을 갖춘 tiny shell을 구현한다. | 공식 starter shell과 공식 trace는 저장소에 두지 않고, self-owned trace와 테스트 하네스로 계약을 재구성한다. | C 답은 [`c/src/tsh.c`](c/src/tsh.c), C++ 답은 [`cpp/src/tsh.cpp`](cpp/src/tsh.cpp), 공용 trace는 `tests/`와 각 구현 테스트에 둔다. | [`problem/README.md`](problem/README.md), [`c/README.md`](c/README.md), [`cpp/README.md`](cpp/README.md) | process group, signal forwarding, race discipline, job list 관리 | `public verified` |
 
-- 작은 셸을 직접 구현하며 process control을 체득하고 싶은 학습자
-- 시그널과 job list race를 공개 저장소에서 설명하는 방법이 필요한 사람
-- 공식 starter 없이도 과제 계약을 어떻게 보존할지 보고 싶은 사람
+## 디렉터리 역할
 
-## 먼저 읽을 곳
+- `problem/`: self-owned 문제 계약과 최소 검증 경계
+- `c/`, `cpp/`: shell 구현과 구현별 테스트
+- `tests/`: 공용 trace와 시나리오
+- `docs/`: job control flow, signal/race reasoning 정리
+- `notion/`: 디버그 로그와 재검증 timeline
 
-1. [`problem/README.md`](problem/README.md)
-2. [`c/README.md`](c/README.md)
-3. [`cpp/README.md`](cpp/README.md)
-4. [`docs/README.md`](docs/README.md)
-5. [`notion/README.md`](notion/README.md)
-
-## 디렉터리 구조
-
-```text
-shlab/
-  README.md
-  problem/
-  c/
-  cpp/
-  docs/
-  notion/
-  notion-archive/
-  tests/
-```
-
-## 검증 방법
-
-2026-03-10 문서 정비 기준으로 유지하는 검증 경로는 다음과 같습니다.
+## 검증 빠른 시작
 
 문제 경계 확인:
 
@@ -58,13 +39,8 @@ cd cpp
 make clean && make test
 ```
 
-## 스포일러 경계
+## 공개 경계
 
-- 공개 문서는 process group, signal forwarding, race discipline을 설명합니다.
-- 공식 starter shell과 공식 traces는 공개 트리에 싣지 않습니다.
-- 대신 `tests/`, `c/tests/`, `cpp/tests/`의 self-owned 검증 경로를 중심으로 문서를 구성합니다.
-
-## 포트폴리오로 확장하는 힌트
-
-- 이 프로젝트는 "왜 마스킹이 필요한가"를 설명할 수 있을 때 강해집니다.
-- 개인 저장소에서는 `fork` 직후와 `SIGCHLD` 도착 사이의 race를 타임라인 그림으로 정리하면 좋습니다.
+- 공개 문서는 process group, signal forwarding, race discipline을 설명한다.
+- 공식 starter shell과 공식 trace는 공개 트리에 싣지 않고, `tests/`, `c/tests/`, `cpp/tests/`의 self-owned 검증 경로를 중심으로 유지한다.
+- 긴 구현 reasoning은 `docs/`, `notion/`으로 분리한다.

@@ -4,7 +4,7 @@ input = sys.stdin.readline
 def main():
     N = int(input())
     meetings = [tuple(map(int, input().split())) for _ in range(N)]
-    # Sort by end time, then by start time
+    # 종료 시간 우선, 같으면 시작 시간 순으로 정렬
     meetings.sort(key=lambda x: (x[1], x[0]))
 
     count = 0

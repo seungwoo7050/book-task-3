@@ -5,7 +5,7 @@ def solve():
     n = int(input())
     a = list(map(int, input().split()))
 
-    # dp[i] = length of LIS ending at index i
+    # dp[i] = i에서 끝나는 LIS 길이
     dp = [1] * n
 
     for i in range(1, n):

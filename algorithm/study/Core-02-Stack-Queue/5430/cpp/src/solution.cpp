@@ -17,7 +17,7 @@ int main() {
         cin >> arr_str;
 
         deque<string> dq;
-        // Parse "[x1,x2,...,xn]"
+        // `[x1,x2,...,xn]` 형식을 파싱
         string num;
         for (int i = 1; i < (int)arr_str.size(); i++) {
             if (arr_str[i] == ',' || arr_str[i] == ']') {

@@ -1,34 +1,21 @@
 # Filesystem Mini Lab
 
-## 이 프로젝트가 가르치는 것
+`filesystem-mini-lab`은 root-only toy filesystem으로 inode allocation, block allocation, metadata journaling, recovery를 작은 JSON disk image 위에서 설명하는 실험이다.
 
-`filesystem-mini-lab`는 root-only toy filesystem을 통해 inode allocation, block allocation, metadata journaling, recovery를 작은 JSON disk image 위에서 설명하는 실험이다.
+## 한눈에 보기
 
-## 누구를 위한 문서인가
+| 문제 | 중요 제약 | 이 레포의 답 | 검증 시작점 | 배우는 개념 | 상태 |
+| --- | --- | --- | --- | --- | --- |
+| 작은 filesystem 모델에서 create/write/read/delete와 journaling recovery를 구현한다. | root-only 모델, whole-file write, metadata journaling에 범위를 고정하고 subdirectory와 permission은 다루지 않는다. | 구현은 [`python/`](python/README.md)의 filesystem 모델, JSON disk image, crash-recovery demo로 정리한다. | [`problem/README.md`](problem/README.md), [`python/README.md`](python/README.md) | inode/block allocation, journaling, recovery, disk image 모델링 | `public verified` |
 
-- inode와 block bitmap을 직접 만져 보고 싶은 학습자
-- journaling이 recovery에 어떤 도움을 주는지 작은 예제로 보고 싶은 사람
-- 복잡한 커널 파일시스템 전에 최소 모델을 먼저 잡고 싶은 사람
+## 디렉터리 역할
 
-## 먼저 읽을 곳
+- `problem/`: 문제 범위와 canonical `make` entrypoint
+- `python/`: filesystem 구현과 CLI
+- `docs/`: inode, block, transaction state, journaling recovery 정리
+- `notion/`: 실패 사례와 재검증 기록
 
-1. [`problem/README.md`](problem/README.md)
-2. [`python/README.md`](python/README.md)
-3. [`docs/README.md`](docs/README.md)
-4. [`notion/README.md`](notion/README.md)
-
-## 디렉터리 구조
-
-```text
-filesystem-mini-lab/
-  README.md
-  problem/
-  python/
-  docs/
-  notion/
-```
-
-## 검증 방법
+## 검증 빠른 시작
 
 ```bash
 cd problem
@@ -42,15 +29,10 @@ make run-demo
 - reopen 뒤에도 파일 내용이 유지된다.
 - `after_prepare`와 `after_commit` crash가 recovery에서 다르게 처리된다.
 
-## 스포일러 경계
+## 공개 경계
 
 - nested directory, permission bit, hard link, journaling mode 비교는 다루지 않는다.
 - README는 문제 범위와 검증 경로에 집중하고, 긴 설명은 `docs/`와 `notion/`으로 분리한다.
-
-## 포트폴리오로 확장하는 힌트
-
-- root-only 제약을 걷어내고 subdirectory path lookup을 추가하면 한 단계 더 현실적인 toy filesystem이 된다.
-- metadata-only journaling 뒤에 data journaling 또는 copy-on-write를 비교해도 좋다.
 
 ## 현재 한계
 
