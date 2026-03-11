@@ -17,6 +17,42 @@
 4. [`study/Network-Diagnostics-and-Routing/README.md`](study/Network-Diagnostics-and-Routing/README.md) - ICMP 진단 도구와 라우팅 알고리즘으로 네트워크 계층 감각을 넓힙니다.
 5. [`study/Game-Server-Capstone/README.md`](study/Game-Server-Capstone/README.md) - 앞선 학습을 하나의 설명 가능한 서버 프로젝트로 묶습니다.
 
+## 필수와 심화
+
+처음부터 모든 프로젝트를 다 읽을 필요는 없습니다. 이 저장소에서는 **다음 학습의 선수 지식이 되는 축**을 `필수`, 범위를 넓히거나 비교 학습을 강화하는 프로젝트를 `심화`, 앞선 내용을 하나로 묶는 프로젝트를 `capstone`으로 봅니다.
+
+### 필수 완주 경로
+
+1. [`Web Server`](study/Application-Protocols-and-Sockets/web-server/README.md)
+2. [`UDP Pinger`](study/Application-Protocols-and-Sockets/udp-pinger/README.md)
+3. [`RDT Protocol`](study/Reliable-Transport/rdt-protocol/README.md)
+4. [`HTTP Packet Analysis`](study/Packet-Analysis-Top-Down/http/README.md)
+5. [`DNS Packet Analysis`](study/Packet-Analysis-Top-Down/dns/README.md)
+6. [`TCP and UDP Packet Analysis`](study/Packet-Analysis-Top-Down/tcp-udp/README.md)
+7. [`IP and ICMP Packet Analysis`](study/Packet-Analysis-Top-Down/ip-icmp/README.md)
+8. [`ICMP Pinger`](study/Network-Diagnostics-and-Routing/icmp-pinger/README.md)
+9. [`Traceroute`](study/Network-Diagnostics-and-Routing/traceroute/README.md)
+10. [`Distance-Vector Routing`](study/Network-Diagnostics-and-Routing/routing/README.md)
+
+응용 계층 구현 -> 신뢰 전송 -> 패킷 관찰 -> 진단/라우팅으로 이어지는 최소 학습 축입니다.
+
+### 심화 확장
+
+- [`SMTP Client`](study/Application-Protocols-and-Sockets/smtp-client/README.md)
+- [`Web Proxy`](study/Application-Protocols-and-Sockets/web-proxy/README.md)
+- [`Selective Repeat`](study/Reliable-Transport/selective-repeat/README.md)
+- [`Ethernet and ARP Packet Analysis`](study/Packet-Analysis-Top-Down/ethernet-arp/README.md)
+- [`802.11 Wireless Packet Analysis`](study/Packet-Analysis-Top-Down/wireless-802.11/README.md)
+- [`TLS Packet Analysis`](study/Packet-Analysis-Top-Down/tls-ssl/README.md)
+
+응용 프로토콜 범위 확장, 전송 계층 비교 심화, 링크/보안 계층 관찰 강화에 해당합니다.
+
+### Capstone
+
+- [`Tactical Arena Server`](study/Game-Server-Capstone/tactical-arena-server/README.md)
+
+앞선 트랙에서 배운 내용을 하나의 설명 가능한 서버 프로젝트로 통합합니다.
+
 ## 빠른 시작
 
 1. 루트 README를 읽고 관심 있는 트랙으로 이동합니다.

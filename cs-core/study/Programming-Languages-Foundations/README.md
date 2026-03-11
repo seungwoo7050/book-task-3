@@ -9,13 +9,13 @@
 - 정적 타입 검사가 런타임 오류와 어떻게 다른지 작은 예제로 보고 싶은 사람
 - AST 이후 intermediate representation과 VM까지 연결되는 최소 경로가 필요한 사람
 
-## 추천 순서
+## 필수 코어와 심화
 
-| 순서 | 상태 | 프로젝트 | 이 단계에서 보는 질문 | 다음 단계 |
+| 순서 | 구분 | 프로젝트 | 이 단계에서 보는 질문 | 다음 단계 |
 | --- | --- | --- | --- | --- |
-| 1 | `verified` | [`parser-interpreter`](parser-interpreter/README.md) | 토큰화, 파싱, 평가기가 한 언어 안에서 어떻게 연결되는가 | `static-type-checking` |
-| 2 | `verified` | [`static-type-checking`](static-type-checking/README.md) | 같은 언어에서 어떤 오류를 실행 전에 막을 수 있는가 | `bytecode-ir` |
-| 3 | `verified` | [`bytecode-ir`](bytecode-ir/README.md) | AST를 bytecode와 VM으로 바꾸면 실행 모델이 어떻게 달라지는가 | 더 큰 compiler/runtime 실험 |
+| 1 | `필수 코어` | [`parser-interpreter`](parser-interpreter/README.md) | 토큰화, 파싱, 평가기가 한 언어 안에서 어떻게 연결되는가 | `static-type-checking` |
+| 2 | `필수 코어` | [`static-type-checking`](static-type-checking/README.md) | 같은 언어에서 어떤 오류를 실행 전에 막을 수 있는가 | `bytecode-ir` |
+| 3 | `심화/선택` | [`bytecode-ir`](bytecode-ir/README.md) | AST를 bytecode와 VM으로 바꾸면 실행 모델이 어떻게 달라지는가 | 더 큰 compiler/runtime 실험 |
 
 ## 공용 언어 계약
 

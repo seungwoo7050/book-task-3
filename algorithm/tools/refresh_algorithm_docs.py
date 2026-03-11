@@ -144,15 +144,6 @@ TRACKS = [
         "projects": ["1916", "1753", "11657"],
     },
     {
-        "id": "Core-0D-MST-Topo",
-        "topic": "MST와 위상 정렬",
-        "intro": "그래프 학습 후반부에서 가장 자주 다시 만나는 두 패턴인 최소 스패닝 트리와 선행관계 정렬을 묶은 트랙이다.",
-        "why": "트리 구축과 순서 결정은 둘 다 '조건을 만족하는 구조를 만들어 간다'는 공통점이 있다. 같은 시야로 다루면 기억이 오래 간다.",
-        "portfolio_tip": "이 트랙은 선택 기준과 자료구조 준비가 절반이다. 간선 정렬 기준, 진입 차수 관리처럼 핵심 준비 단계를 따로 적어 두면 좋다.",
-        "learning_focus": "그래프 전체 구조를 만들거나 순서를 고정하는 규칙을 설명하는 연습",
-        "projects": ["9372", "2252", "1197"],
-    },
-    {
         "id": "Core-Bridges",
         "topic": "브리지 프로젝트",
         "intro": "정규 트랙 사이의 학습 공백을 메우는 보강 프로젝트 모음이다. 지금은 union-find를 독립적으로 다룬다.",
@@ -160,6 +151,15 @@ TRACKS = [
         "portfolio_tip": "브리지 프로젝트는 '왜 여기서 이 개념을 먼저 배우는가'를 적어 두면 커리큘럼 설계 감각까지 함께 보여 줄 수 있다.",
         "learning_focus": "다음 트랙에서 필요한 선행 개념을 별도 실습으로 고정하는 연습",
         "projects": ["1717"],
+    },
+    {
+        "id": "Core-0D-MST-Topo",
+        "topic": "MST와 위상 정렬",
+        "intro": "그래프 학습 후반부에서 가장 자주 다시 만나는 두 패턴인 최소 스패닝 트리와 선행관계 정렬을 묶은 트랙이다.",
+        "why": "트리 구축과 순서 결정은 둘 다 '조건을 만족하는 구조를 만들어 간다'는 공통점이 있다. 같은 시야로 다루면 기억이 오래 간다.",
+        "portfolio_tip": "이 트랙은 선택 기준과 자료구조 준비가 절반이다. 간선 정렬 기준, 진입 차수 관리처럼 핵심 준비 단계를 따로 적어 두면 좋다.",
+        "learning_focus": "그래프 전체 구조를 만들거나 순서를 고정하는 규칙을 설명하는 연습",
+        "projects": ["9372", "2252", "1197"],
     },
     {
         "id": "Advanced-CLRS",
@@ -824,14 +824,21 @@ def format_impls(meta: ProjectMeta) -> str:
 def root_readme(track_meta: list[dict], projects: list[ProjectMeta]) -> str:
     total_projects = len(projects)
     passed = sum(1 for project in projects if project.test.passed)
+    essential_tracks = [track for track in track_meta if track["id"] != "Advanced-CLRS"]
+    advanced_tracks = [track for track in track_meta if track["id"] == "Advanced-CLRS"]
+    essential_path = " -> ".join(f"`{track['id']}`" for track in essential_tracks)
     legacy_note = (
         "- 현재 작업 트리에는 `legacy/` 디렉터리가 없으므로, 문서에서는 legacy를 필수 경로가 아니라 선택적 provenance 자료로만 다룬다."
         if not (ROOT / "legacy").exists()
         else "- `legacy/`는 원본 참조 트리로 유지하고, 새 학습 구조는 `study/`에서 읽는다."
     )
-    track_lines = "\n".join(
+    essential_track_lines = "\n".join(
         f"- [{track['id']}](study/{track['id']}/README.md): {track['intro']}"
-        for track in track_meta
+        for track in essential_tracks
+    )
+    advanced_track_lines = "\n".join(
+        f"- [{track['id']}](study/{track['id']}/README.md): {track['intro']}"
+        for track in advanced_tracks
     )
     return normalize(
         f"""
@@ -860,9 +867,19 @@ def root_readme(track_meta: list[dict], projects: list[ProjectMeta]) -> str:
         4. [study/Core-00-Basics/10988/README.md](study/Core-00-Basics/10988/README.md) 같은 작은 프로젝트 하나를 끝까지 읽는다.
         5. 익숙해지면 같은 형식을 자기 레포에 그대로 옮겨 본다.
 
-        ## 트랙 둘러보기
+        ## 학습 경로 한눈에 보기
 
-        {track_lines}
+        - 필수 코스: {essential_path}
+        - 심화 코스: `Advanced-CLRS`
+        - `Core-Bridges`는 선택 보강이 아니라 `Core-0D-MST-Topo` 전에 두는 필수 브리지로 읽는 편이 좋다.
+
+        ## 필수 코스 트랙
+
+        {essential_track_lines}
+
+        ## 심화 코스 트랙
+
+        {advanced_track_lines}
 
         ## 이 레포를 자기 포트폴리오로 옮길 때의 기준
 
@@ -883,9 +900,16 @@ def root_readme(track_meta: list[dict], projects: list[ProjectMeta]) -> str:
 
 
 def study_readme(track_meta: list[dict]) -> str:
-    track_lines = "\n".join(
+    essential_tracks = [track for track in track_meta if track["id"] != "Advanced-CLRS"]
+    advanced_tracks = [track for track in track_meta if track["id"] == "Advanced-CLRS"]
+    essential_path = " -> ".join(f"`{track['id']}`" for track in essential_tracks)
+    essential_track_lines = "\n".join(
         f"- [{track['id']}]({track['id']}/README.md): {track['topic']}를 배우는 트랙"
-        for track in track_meta
+        for track in essential_tracks
+    )
+    advanced_track_lines = "\n".join(
+        f"- [{track['id']}]({track['id']}/README.md): {track['topic']}를 배우는 트랙"
+        for track in advanced_tracks
     )
     return normalize(
         f"""
@@ -899,23 +923,33 @@ def study_readme(track_meta: list[dict]) -> str:
         2. 프로젝트 README에서 읽기 순서와 검증 명령을 확인한다.
         3. `problem/` -> `docs/` -> 구현 -> `notion/05-development-timeline.md` -> 나머지 `notion/` 순으로 내려간다.
 
-        ## 트랙 목록
+        ## 학습 경로 요약
 
-        {track_lines}
+        - 필수 트랙: {essential_path}
+        - 심화 트랙: `Advanced-CLRS`
+        - `Core-Bridges`는 `Core-0D-MST-Topo` 바로 전에 읽는 필수 브리지로 둔다.
+
+        ## 필수 트랙
+
+        {essential_track_lines}
+
+        ## 심화 트랙
+
+        {advanced_track_lines}
         """
     )
 
 
 def curriculum_map(track_meta: list[dict], project_meta: list[ProjectMeta]) -> str:
     meta_by_key = {project.key: project for project in project_meta}
-    core_rows = []
-    for track in track_meta:
-        if track["id"] == "Advanced-CLRS":
-            continue
+    essential_tracks = [track for track in track_meta if track["id"] != "Advanced-CLRS"]
+    essential_path = " -> ".join(f"`{track['id']}`" for track in essential_tracks)
+    essential_rows = []
+    for track in essential_tracks:
         project_names = ", ".join(
             f"{slug} {meta_by_key[f'{track['id']}/{slug}'].korean_title}" for slug in track["projects"]
         )
-        core_rows.append(
+        essential_rows.append(
             f"| {track['id']} | {track['topic']} | {track['learning_focus']} | {project_names} |"
         )
     advanced_track = next(track for track in track_meta if track["id"] == "Advanced-CLRS")
@@ -929,11 +963,14 @@ def curriculum_map(track_meta: list[dict], project_meta: list[ProjectMeta]) -> s
 
         이 문서는 레포 안의 프로젝트를 번호순이 아니라 **학습 순서**로 읽기 위한 안내서다. 문제를 나열하는 것이 아니라, 왜 이 주제가 다음 주제로 이어지는지 설명하는 데 목적이 있다.
 
-        ## Core 트랙 순서
+        ## 필수 학습 경로
+
+        - 권장 순서: {essential_path}
+        - `Core-Bridges`는 `Core-0D-MST-Topo` 앞에서 union-find를 미리 고정하는 필수 브리지다.
 
         | 트랙 | 주제 | 이 트랙에서 익히는 힘 | 대표 프로젝트 |
         | :--- | :--- | :--- | :--- |
-        {'\n'.join(core_rows)}
+        {'\n'.join(essential_rows)}
 
         ## 브리지 프로젝트
 
@@ -941,9 +978,10 @@ def curriculum_map(track_meta: list[dict], project_meta: list[ProjectMeta]) -> s
         - `Core-00-Basics/11053`은 DP 트랙 전에 "상태를 누적한다"는 감각을 먼저 보여 주는 작은 다리 역할을 한다.
         - `Core-00-Basics/16926`은 기본기 트랙에 두되, 시뮬레이션 트랙을 배운 뒤 다시 읽으면 더 잘 보이는 문제로 설명한다.
 
-        ## Advanced-CLRS 순서
+        ## 심화 학습 경로
 
-        Advanced 트랙은 CLRS 챕터를 그대로 옮기지 않고, 구현 가능한 작은 실험으로 다시 쪼개서 배치했다.
+        - 진입 기준: 필수 코스를 끝내고 그래프 후반부와 기본 자료구조 설명을 스스로 정리할 수 있을 때 들어간다.
+        - Advanced 트랙은 CLRS 챕터를 그대로 옮기지 않고, 구현 가능한 작은 실험으로 다시 쪼개서 배치했다.
 
         | 슬롯 | 프로젝트 | CLRS | 비고 |
         | :--- | :--- | :--- | :--- |

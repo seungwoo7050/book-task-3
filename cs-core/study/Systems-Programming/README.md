@@ -27,8 +27,13 @@ Systems-Programming/
   proxylab/
 ```
 
-권장 순서는 `shlab -> malloclab -> proxylab`입니다.
-프로세스와 시그널 감각을 먼저 익힌 뒤, 메모리와 네트워크로 확장하는 흐름을 전제로 합니다.
+## 필수 코어와 심화
+
+- `필수 코어`: `shlab -> malloclab`
+- `심화/선택`: `proxylab`
+
+프로세스와 시그널 감각을 먼저 익힌 뒤 allocator invariant를 다지고,
+네트워크 I/O와 concurrent cache는 그 다음 단계로 확장하는 흐름을 전제로 합니다.
 
 ## 검증 방법
 

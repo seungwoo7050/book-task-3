@@ -16,6 +16,16 @@
 | [go/README.md](go/README.md) | 세분화된 프로젝트와 심화 주제까지 모두 보고 싶은 학습자 | Go 트랙은 전체 커리큘럼의 정본(superset)입니다. |
 | [docs/README.md](docs/README.md) | 왜 이런 순서로 재구성했는지 먼저 알고 싶은 사람 | 커리큘럼 감사, 교차 매핑, 문서 스타일 규칙을 한 번에 볼 수 있습니다. |
 
+## 필수 코스와 심화 코스
+
+| 구분 | 권장 시작점 | 포함 범위 | 의미 |
+| --- | --- | --- | --- |
+| 필수 코스 | [python/README.md](python/README.md) | `python/database-internals` 01~05, `python/ddia-distributed-systems` 01~04 | 저장 엔진과 분산 시스템의 핵심 흐름을 가장 적은 프로젝트 수로 먼저 익히는 기본 경로입니다. |
+| 심화 코스 | [go/README.md](go/README.md) | `go/database-internals` 01~08, `go/ddia-distributed-systems` 01~08 | Python에서 본 개념을 더 잘게 분해하고, compaction, Raft-lite, quorum, election, failure handling까지 확장하는 정본 경로입니다. |
+
+- 처음 읽는다면 `필수 코스 → docs/language-crosswalk.md → 심화 코스` 순서를 권장합니다.
+- 이미 저장 엔진이나 분산 시스템 기초가 있다면 Go 심화 코스부터 시작해도 됩니다.
+
 ## 디렉터리 안내
 
 - [go/README.md](go/README.md): 전체 커리큘럼과 심화 분산 주제를 포함한 정본 트랙

@@ -19,18 +19,19 @@
 
 ## 현재 트랙
 
-### Foundations Security
+| 순서 | 구분 | 프로젝트 | 상태 | 역할 |
+| --- | --- | --- | --- | --- |
+| 01 | 필수 | [crypto-primitives-in-practice](study/Foundations-Security/crypto-primitives-in-practice/README.md) | `verified` | hash, MAC, KDF 경계를 vector로 검증합니다. |
+| 02 | 필수 | [auth-threat-modeling](study/Foundations-Security/auth-threat-modeling/README.md) | `verified` | session, JWT, OAuth control vocabulary를 고정합니다. |
+| 03 | 필수 | [owasp-backend-mitigations](study/Foundations-Security/owasp-backend-mitigations/README.md) | `verified` | backend defense 경계를 endpoint fixture로 평가합니다. |
+| 04 | 필수 | [dependency-vulnerability-workflow](study/Foundations-Security/dependency-vulnerability-workflow/README.md) | `verified` | advisory triage와 patch priority 판단 흐름을 익힙니다. |
+| 05 | 심화 | [collab-saas-security-review](study/Capstone/collab-saas-security-review/README.md) | `verified` | 앞선 vocabulary를 remediation workflow로 다시 조합합니다. |
 
-- [crypto-primitives-in-practice](study/Foundations-Security/crypto-primitives-in-practice/README.md) `verified`
-- [auth-threat-modeling](study/Foundations-Security/auth-threat-modeling/README.md) `verified`
-- [owasp-backend-mitigations](study/Foundations-Security/owasp-backend-mitigations/README.md) `verified`
-- [dependency-vulnerability-workflow](study/Foundations-Security/dependency-vulnerability-workflow/README.md) `verified`
+## 추천 학습 경로
 
-### Capstone
-
-- [collab-saas-security-review](study/Capstone/collab-saas-security-review/README.md) `verified`
-
-이 capstone은 앞선 네 프로젝트의 vocabulary를 하나의 remediation workflow로 다시 묶는 offline review 파이프라인입니다.
+- 필수 경로: `01 -> 02 -> 03 -> 04`
+- 심화 경로: 필수 경로를 끝낸 뒤 `05`
+- 가장 짧은 입문 경로가 필요하면 `01 -> 02 -> 03`까지를 최소 필수로 보고, dependency triage와 capstone은 다음 단계로 넘겨도 됩니다.
 
 ## 빠른 시작
 

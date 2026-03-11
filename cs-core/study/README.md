@@ -3,13 +3,13 @@
 ## 이 디렉터리가 맡는 역할
 
 `study/`는 이 저장소의 실제 학습 작업 트리입니다.
-`legacy/`를 기계적으로 복사하는 것이 목적이 아니라, 더 읽기 쉽고 다시 실행하기 쉬운 학습 아카이브로 재구성하는 것이 목적입니다.
+과거 흔적을 별도 `legacy/` 트리로 남겨 두는 방식은 더 이상 쓰지 않고, 더 읽기 쉽고 다시 실행하기 쉬운 학습 아카이브를 현재 구조 안에서 유지하는 것이 목적입니다.
 
 ## 누구를 위한 문서인가
 
 - CS:APP 계열 프로젝트를 처음부터 다시 따라가고 싶은 학습자
 - 이미 과제를 해 봤지만 공개용 저장소 구조를 더 깔끔하게 만들고 싶은 사람
-- `legacy/`를 읽기 전에 현재 기준의 정리된 구조부터 보고 싶은 사람
+- 과거 재구성 메모보다 현재 기준의 정리된 구조부터 보고 싶은 사람
 
 ## 먼저 읽을 곳
 
@@ -19,6 +19,36 @@
 4. [`Programming-Languages-Foundations/README.md`](Programming-Languages-Foundations/README.md)
 5. 관심 있는 프로젝트의 `README.md`
 6. 프로젝트 안의 `problem/README.md`, `docs/README.md`, `notion/README.md`
+
+현재 레포에는 별도의 `legacy/` 디렉터리가 없습니다.
+예전 맥락은 루트 `docs/` 아래의 계획 문서 이름에만 남겨 둡니다.
+
+## 권장 학습 레이어
+
+처음 읽는 사람 기준으로는 `필수 코어`를 먼저 따라가고, 이후 관심 분야에 따라 `심화/선택`으로 들어가는 편이 가장 자연스럽습니다.
+
+### 필수 코어
+
+| 순서 | 프로젝트 | 이유 |
+|---|---|---|
+| 1 | [`Foundations-CSAPP/datalab`](Foundations-CSAPP/datalab/README.md) | 비트와 표현 규칙을 먼저 잡아 이후 시스템/아키텍처 설명의 바닥을 만듭니다. |
+| 2 | [`Foundations-CSAPP/archlab`](Foundations-CSAPP/archlab/README.md) | ISA와 pipeline 관점을 먼저 잡아 두면 뒤의 성능/시스템 문서가 훨씬 읽기 쉬워집니다. |
+| 3 | [`Systems-Programming/shlab`](Systems-Programming/shlab/README.md) | 프로세스, 시그널, job control을 직접 구현하며 시스템 프로그래밍 핵심 계약을 익힙니다. |
+| 4 | [`Systems-Programming/malloclab`](Systems-Programming/malloclab/README.md) | 메모리 레이아웃과 allocator invariant를 코드와 trace로 다룹니다. |
+| 5 | [`Operating-Systems-Internals/scheduling-simulator`](Operating-Systems-Internals/scheduling-simulator/README.md) | 운영체제 정책을 작은 실험으로 정리합니다. |
+| 6 | [`Operating-Systems-Internals/virtual-memory-lab`](Operating-Systems-Internals/virtual-memory-lab/README.md) | locality와 replacement를 OS 핵심 개념으로 연결합니다. |
+| 7 | [`Programming-Languages-Foundations/parser-interpreter`](Programming-Languages-Foundations/parser-interpreter/README.md) | 언어를 읽고 실행하는 최소 단위를 직접 구현합니다. |
+| 8 | [`Programming-Languages-Foundations/static-type-checking`](Programming-Languages-Foundations/static-type-checking/README.md) | 같은 언어에 static reasoning을 추가해 PL 기초를 마무리합니다. |
+
+### 심화/선택
+
+| 갈래 | 프로젝트 | 선행 권장 |
+|---|---|---|
+| 보안/역공학 | [`Foundations-CSAPP/bomblab`](Foundations-CSAPP/bomblab/README.md) -> [`Foundations-CSAPP/attacklab`](Foundations-CSAPP/attacklab/README.md) | `datalab` 이후 |
+| 성능/캐시 | [`Foundations-CSAPP/perflab`](Foundations-CSAPP/perflab/README.md) | `archlab` 이후 |
+| 네트워크 시스템 | [`Systems-Programming/proxylab`](Systems-Programming/proxylab/README.md) | `shlab`, `malloclab` 이후 |
+| 운영체제 breadth 확장 | [`Operating-Systems-Internals/filesystem-mini-lab`](Operating-Systems-Internals/filesystem-mini-lab/README.md) -> [`Operating-Systems-Internals/synchronization-contention-lab`](Operating-Systems-Internals/synchronization-contention-lab/README.md) | `scheduling-simulator`, `virtual-memory-lab` 이후 |
+| PL runtime 확장 | [`Programming-Languages-Foundations/bytecode-ir`](Programming-Languages-Foundations/bytecode-ir/README.md) | `parser-interpreter`, `static-type-checking` 이후 |
 
 ## 디렉터리 구조
 

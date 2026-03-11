@@ -8,7 +8,13 @@
 2. 프로젝트 README에서 읽기 순서와 검증 명령을 확인한다.
 3. `problem/` -> `docs/` -> 구현 -> `notion/05-development-timeline.md` -> 나머지 `notion/` 순으로 내려간다.
 
-## 트랙 목록
+## 학습 경로 요약
+
+- 필수 트랙: `Core-00-Basics` -> `Core-01-Array-List` -> `Core-02-Stack-Queue` -> `Core-03-BFS-DFS` -> `Core-04-Recursion-Backtracking` -> `Core-05-Simulation` -> `Core-06-Sorting` -> `Core-07-Binary-Search-Hash` -> `Core-08-DP` -> `Core-09-Greedy` -> `Core-0A-Priority-Queue` -> `Core-0B-Graph-Tree` -> `Core-0C-Shortest-Path` -> `Core-Bridges` -> `Core-0D-MST-Topo`
+- 심화 트랙: `Advanced-CLRS`
+- `Core-Bridges`는 `Core-0D-MST-Topo` 바로 전에 읽는 필수 브리지로 둔다.
+
+## 필수 트랙
 
 - [Core-00-Basics](Core-00-Basics/README.md): 기초 구현를 배우는 트랙
 - [Core-01-Array-List](Core-01-Array-List/README.md): 배열과 리스트를 배우는 트랙
@@ -23,6 +29,9 @@
 - [Core-0A-Priority-Queue](Core-0A-Priority-Queue/README.md): 우선순위 큐를 배우는 트랙
 - [Core-0B-Graph-Tree](Core-0B-Graph-Tree/README.md): 트리와 그래프 심화를 배우는 트랙
 - [Core-0C-Shortest-Path](Core-0C-Shortest-Path/README.md): 최단 경로를 배우는 트랙
-- [Core-0D-MST-Topo](Core-0D-MST-Topo/README.md): MST와 위상 정렬를 배우는 트랙
 - [Core-Bridges](Core-Bridges/README.md): 브리지 프로젝트를 배우는 트랙
+- [Core-0D-MST-Topo](Core-0D-MST-Topo/README.md): MST와 위상 정렬를 배우는 트랙
+
+## 심화 트랙
+
 - [Advanced-CLRS](Advanced-CLRS/README.md): CLRS 심화를 배우는 트랙

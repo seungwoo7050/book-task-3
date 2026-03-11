@@ -3,7 +3,8 @@
 ## 이 트랙이 가르치는 것
 
 이 트랙은 CS:APP의 핵심 학습 순서를 프로젝트 중심으로 다시 정리한 것입니다.
-비트 수준 사고에서 출발해, 역공학과 공격 모델을 거쳐, 프로세서 구조와 캐시 성능까지 이어집니다.
+비트 수준 사고에서 출발해 프로세서 구조와 캐시 성능의 spine을 먼저 세우고,
+필요하면 역공학과 공격 모델로 확장해 들어가는 흐름을 제안합니다.
 
 ## 누구를 위한 문서인가
 
@@ -14,9 +15,9 @@
 ## 먼저 읽을 곳
 
 1. [`datalab/README.md`](datalab/README.md)
-2. [`bomblab/README.md`](bomblab/README.md)
-3. [`attacklab/README.md`](attacklab/README.md)
-4. [`archlab/README.md`](archlab/README.md)
+2. [`archlab/README.md`](archlab/README.md)
+3. [`bomblab/README.md`](bomblab/README.md)
+4. [`attacklab/README.md`](attacklab/README.md)
 5. [`perflab/README.md`](perflab/README.md)
 
 ## 디렉터리 구조
@@ -31,8 +32,13 @@ Foundations-CSAPP/
   perflab/
 ```
 
-권장 순서는 `datalab -> bomblab -> attacklab -> archlab -> perflab`입니다.
-앞쪽 프로젝트일수록 뒤쪽 프로젝트의 읽기 부담을 줄여 줍니다.
+## 필수 코어와 심화
+
+- `필수 코어`: `datalab -> archlab`
+- `심화/선택`: `bomblab -> attacklab`, `perflab`
+
+CS:APP 전체를 처음 다시 정리하는 사람이라면 비트 표현과 아키텍처 spine을 먼저 끝내고,
+보안/역공학과 성능 최적화는 관심 분야에 따라 확장하는 편이 더 자연스럽습니다.
 
 ## 검증 방법
 

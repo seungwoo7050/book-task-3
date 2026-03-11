@@ -23,7 +23,13 @@
 4. [study/Core-00-Basics/10988/README.md](study/Core-00-Basics/10988/README.md) 같은 작은 프로젝트 하나를 끝까지 읽는다.
 5. 익숙해지면 같은 형식을 자기 레포에 그대로 옮겨 본다.
 
-## 트랙 둘러보기
+## 학습 경로 한눈에 보기
+
+- 필수 코스: `Core-00-Basics` -> `Core-01-Array-List` -> `Core-02-Stack-Queue` -> `Core-03-BFS-DFS` -> `Core-04-Recursion-Backtracking` -> `Core-05-Simulation` -> `Core-06-Sorting` -> `Core-07-Binary-Search-Hash` -> `Core-08-DP` -> `Core-09-Greedy` -> `Core-0A-Priority-Queue` -> `Core-0B-Graph-Tree` -> `Core-0C-Shortest-Path` -> `Core-Bridges` -> `Core-0D-MST-Topo`
+- 심화 코스: `Advanced-CLRS`
+- `Core-Bridges`는 선택 보강이 아니라 `Core-0D-MST-Topo` 전에 두는 필수 브리지로 읽는 편이 좋다.
+
+## 필수 코스 트랙
 
 - [Core-00-Basics](study/Core-00-Basics/README.md): 입출력, 문자열, 배열, 가장 짧은 DP 브리지를 통해 이후 모든 트랙에서 필요한 기본 구현 습관을 잡는 출발점이다.
 - [Core-01-Array-List](study/Core-01-Array-List/README.md): 배열 순회와 편집기 시뮬레이션을 묶어, 자료구조 선택이 성능과 구현 난이도에 어떤 차이를 만드는지 체감하게 한다.
@@ -38,8 +44,11 @@
 - [Core-0A-Priority-Queue](study/Core-0A-Priority-Queue/README.md): 힙을 직접 구현하기보다, 힙이 필요한 문제 구조를 구분하는 감각을 키우는 트랙이다.
 - [Core-0B-Graph-Tree](study/Core-0B-Graph-Tree/README.md): 트리 구조를 별도 자료형으로 다루며, 부모 찾기, 순회, 지름 계산 같은 대표 패턴을 익히는 트랙이다.
 - [Core-0C-Shortest-Path](study/Core-0C-Shortest-Path/README.md): 가중치 조건에 따라 Dijkstra와 Bellman-Ford를 고르는 기준을 실전 문제로 익히는 트랙이다.
-- [Core-0D-MST-Topo](study/Core-0D-MST-Topo/README.md): 그래프 학습 후반부에서 가장 자주 다시 만나는 두 패턴인 최소 스패닝 트리와 선행관계 정렬을 묶은 트랙이다.
 - [Core-Bridges](study/Core-Bridges/README.md): 정규 트랙 사이의 학습 공백을 메우는 보강 프로젝트 모음이다. 지금은 union-find를 독립적으로 다룬다.
+- [Core-0D-MST-Topo](study/Core-0D-MST-Topo/README.md): 그래프 학습 후반부에서 가장 자주 다시 만나는 두 패턴인 최소 스패닝 트리와 선행관계 정렬을 묶은 트랙이다.
+
+## 심화 코스 트랙
+
 - [Advanced-CLRS](study/Advanced-CLRS/README.md): Core를 지나 CLRS의 고급 주제를 직접 구현 가능한 작은 실험으로 바꿔 보는 심화 트랙이다.
 
 ## 이 레포를 자기 포트폴리오로 옮길 때의 기준

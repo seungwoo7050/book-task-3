@@ -5,12 +5,12 @@
 
 ## 프로젝트 지도
 
-| 순서 | 프로젝트 | 상태 | 핵심 질문 |
-| --- | --- | --- | --- |
-| 01 | [crypto-primitives-in-practice](crypto-primitives-in-practice/README.md) | `verified` | hash, MAC, KDF는 어디서 구분해야 하는가 |
-| 02 | [auth-threat-modeling](auth-threat-modeling/README.md) | `verified` | session, JWT, OAuth 경계를 어떻게 위협 모델로 설명할까 |
-| 03 | [owasp-backend-mitigations](owasp-backend-mitigations/README.md) | `verified` | 대표 backend mitigation을 어떤 작은 랩으로 나눌까 |
-| 04 | [dependency-vulnerability-workflow](dependency-vulnerability-workflow/README.md) | `verified` | advisory, SBOM, patch triage를 어떻게 재현할까 |
+| 순서 | 구분 | 프로젝트 | 상태 | 핵심 질문 |
+| --- | --- | --- | --- | --- |
+| 01 | 필수 | [crypto-primitives-in-practice](crypto-primitives-in-practice/README.md) | `verified` | hash, MAC, KDF는 어디서 구분해야 하는가 |
+| 02 | 필수 | [auth-threat-modeling](auth-threat-modeling/README.md) | `verified` | session, JWT, OAuth 경계를 어떻게 위협 모델로 설명할까 |
+| 03 | 필수 | [owasp-backend-mitigations](owasp-backend-mitigations/README.md) | `verified` | 대표 backend mitigation을 어떤 작은 랩으로 나눌까 |
+| 04 | 필수 | [dependency-vulnerability-workflow](dependency-vulnerability-workflow/README.md) | `verified` | advisory, SBOM, patch triage를 어떻게 재현할까 |
 
 ## 권장 학습 순서
 
@@ -19,3 +19,6 @@
 3. [owasp-backend-mitigations](owasp-backend-mitigations/README.md)에서 route defense 경계를 고정합니다.
 4. [dependency-vulnerability-workflow](dependency-vulnerability-workflow/README.md)에서 patch queue와 triage 판단 흐름을 정리합니다.
 5. [../Capstone/collab-saas-security-review/README.md](../Capstone/collab-saas-security-review/README.md)에서 이 판단 기준을 remediation board로 다시 조합합니다.
+
+위 네 프로젝트가 이 저장소의 기본 필수 경로입니다. 시간이 부족하면 `01 -> 02 -> 03`까지를 최소 필수로 보고,
+`04`와 capstone은 다음 단계로 넘겨도 됩니다.

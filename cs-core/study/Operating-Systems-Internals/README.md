@@ -29,14 +29,14 @@ Operating-Systems-Internals/
   synchronization-contention-lab/
 ```
 
-## 권장 순서
+## 필수 코어와 심화
 
-| 순서 | 프로젝트 | 이 단계에서 보는 질문 | 다음 단계 |
-| --- | --- | --- | --- |
-| 1 | [`scheduling-simulator`](scheduling-simulator/README.md) | policy가 fairness와 latency를 어떻게 바꾸는가 | Virtual Memory |
-| 2 | [`virtual-memory-lab`](virtual-memory-lab/README.md) | locality와 replacement가 fault 수를 어떻게 바꾸는가 | Filesystem |
-| 3 | [`filesystem-mini-lab`](filesystem-mini-lab/README.md) | inode/block allocation과 journaling recovery를 어떻게 최소 모델로 설명할까 | Synchronization |
-| 4 | [`synchronization-contention-lab`](synchronization-contention-lab/README.md) | mutex/semaphore/condvar는 어떤 contention invariant를 가져오는가 | deferred `xv6-bridge` |
+| 순서 | 구분 | 프로젝트 | 이 단계에서 보는 질문 | 다음 단계 |
+| --- | --- | --- | --- | --- |
+| 1 | `필수 코어` | [`scheduling-simulator`](scheduling-simulator/README.md) | policy가 fairness와 latency를 어떻게 바꾸는가 | Virtual Memory |
+| 2 | `필수 코어` | [`virtual-memory-lab`](virtual-memory-lab/README.md) | locality와 replacement가 fault 수를 어떻게 바꾸는가 | Filesystem |
+| 3 | `심화/선택` | [`filesystem-mini-lab`](filesystem-mini-lab/README.md) | inode/block allocation과 journaling recovery를 어떻게 최소 모델로 설명할까 | Synchronization |
+| 4 | `심화/선택` | [`synchronization-contention-lab`](synchronization-contention-lab/README.md) | mutex/semaphore/condvar는 어떤 contention invariant를 가져오는가 | deferred `xv6-bridge` |
 
 ## 검증 방법
 

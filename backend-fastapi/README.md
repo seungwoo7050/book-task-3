@@ -17,23 +17,29 @@
 4. `fastapi/README.md`에서 실제 실행과 검증 방법을 따라갑니다.
 5. `docs/README.md`와 `notion/README.md`로 넘어가 설계 포인트와 학습 노트를 정리합니다.
 
+## 단계별 추천 경로
+
+- 필수 트랙: `A-auth -> B-federation-security -> C-authorization -> D-data-api -> E-async-jobs -> F-realtime -> G-ops -> workspace-backend`
+- 심화 트랙: `H-service-boundary -> I-event-integration -> J-edge-gateway -> K-distributed-ops -> workspace-backend-v2-msa`
+- 권장 방식: 먼저 필수 트랙으로 단일 FastAPI 백엔드 기준선을 만든 뒤, 심화 트랙에서 같은 도메인을 MSA로 다시 분해합니다.
+
 ## 랩 지도
 
-| 경로 | 핵심 주제 | 이 랩이 주는 포트폴리오 신호 |
-| --- | --- | --- |
-| [labs/A-auth-lab](labs/A-auth-lab/README.md) | 로컬 계정 인증, 세션, 복구 흐름 | 보안 기본기와 상태 전이 설계 |
-| [labs/B-federation-security-lab](labs/B-federation-security-lab/README.md) | Google OIDC, 2FA, 회복 코드, 감사 로그 | 외부 인증 연동과 보안 강화 흐름 |
-| [labs/C-authorization-lab](labs/C-authorization-lab/README.md) | RBAC, 초대, 소유권 규칙 | 권한 경계와 서비스 계층 설계 |
-| [labs/D-data-api-lab](labs/D-data-api-lab/README.md) | CRUD, 정렬/필터링, 소프트 삭제, 낙관적 락 | 데이터 API 구조화와 변경 충돌 처리 |
-| [labs/E-async-jobs-lab](labs/E-async-jobs-lab/README.md) | Celery, Redis, outbox, idempotency | 비동기 작업 안정성과 재시도 전략 |
-| [labs/F-realtime-lab](labs/F-realtime-lab/README.md) | WebSocket 인증, presence, fan-out | 실시간 이벤트 전달과 연결 상태 관리 |
-| [labs/G-ops-lab](labs/G-ops-lab/README.md) | health/readiness, metrics, CI, 배포 문서 | 운영 가능성을 설명하는 최소 백엔드 |
-| [capstone/workspace-backend](capstone/workspace-backend/README.md) | capstone v1, 단일 백엔드 통합 | 분리 학습 내용을 하나의 제품형 구조로 합치는 능력 |
-| [labs/H-service-boundary-lab](labs/H-service-boundary-lab/README.md) | 서비스 분리, DB ownership, bearer claims | 서비스 경계를 어디서 끊어야 하는지 설명 |
-| [labs/I-event-integration-lab](labs/I-event-integration-lab/README.md) | outbox, Redis Streams, idempotent consumer | 이벤트 기반 통합과 eventual consistency 설명 |
-| [labs/J-edge-gateway-lab](labs/J-edge-gateway-lab/README.md) | edge gateway, cookie/CSRF, request id 전파 | public API와 내부 서비스를 분리해 설명 |
-| [labs/K-distributed-ops-lab](labs/K-distributed-ops-lab/README.md) | 서비스별 health, JSON 로그, metrics, AWS target shape | 다중 서비스 운영 기준을 문서와 검증으로 설명 |
-| [capstone/workspace-backend-v2-msa](capstone/workspace-backend-v2-msa/README.md) | capstone v2, MSA 재편 | 같은 도메인을 단일 백엔드와 MSA로 비교 설계 |
+| 트랙 | 경로 | 핵심 주제 | 이 랩이 주는 포트폴리오 신호 |
+| --- | --- | --- | --- |
+| 필수 | [labs/A-auth-lab](labs/A-auth-lab/README.md) | 로컬 계정 인증, 세션, 복구 흐름 | 보안 기본기와 상태 전이 설계 |
+| 필수 | [labs/B-federation-security-lab](labs/B-federation-security-lab/README.md) | Google OIDC, 2FA, 회복 코드, 감사 로그 | 외부 인증 연동과 보안 강화 흐름 |
+| 필수 | [labs/C-authorization-lab](labs/C-authorization-lab/README.md) | RBAC, 초대, 소유권 규칙 | 권한 경계와 서비스 계층 설계 |
+| 필수 | [labs/D-data-api-lab](labs/D-data-api-lab/README.md) | CRUD, 정렬/필터링, 소프트 삭제, 낙관적 락 | 데이터 API 구조화와 변경 충돌 처리 |
+| 필수 | [labs/E-async-jobs-lab](labs/E-async-jobs-lab/README.md) | Celery, Redis, outbox, idempotency | 비동기 작업 안정성과 재시도 전략 |
+| 필수 | [labs/F-realtime-lab](labs/F-realtime-lab/README.md) | WebSocket 인증, presence, fan-out | 실시간 이벤트 전달과 연결 상태 관리 |
+| 필수 | [labs/G-ops-lab](labs/G-ops-lab/README.md) | health/readiness, metrics, CI, 배포 문서 | 운영 가능성을 설명하는 최소 백엔드 |
+| 필수 | [capstone/workspace-backend](capstone/workspace-backend/README.md) | capstone v1, 단일 백엔드 통합 | 분리 학습 내용을 하나의 제품형 구조로 합치는 능력 |
+| 심화 | [labs/H-service-boundary-lab](labs/H-service-boundary-lab/README.md) | 서비스 분리, DB ownership, bearer claims | 서비스 경계를 어디서 끊어야 하는지 설명 |
+| 심화 | [labs/I-event-integration-lab](labs/I-event-integration-lab/README.md) | outbox, Redis Streams, idempotent consumer | 이벤트 기반 통합과 eventual consistency 설명 |
+| 심화 | [labs/J-edge-gateway-lab](labs/J-edge-gateway-lab/README.md) | edge gateway, cookie/CSRF, request id 전파 | public API와 내부 서비스를 분리해 설명 |
+| 심화 | [labs/K-distributed-ops-lab](labs/K-distributed-ops-lab/README.md) | 서비스별 health, JSON 로그, metrics, AWS target shape | 다중 서비스 운영 기준을 문서와 검증으로 설명 |
+| 심화 | [capstone/workspace-backend-v2-msa](capstone/workspace-backend-v2-msa/README.md) | capstone v2, MSA 재편 | 같은 도메인을 단일 백엔드와 MSA로 비교 설계 |
 
 ## 이 레포를 읽을 때 기억할 점
 

@@ -21,6 +21,7 @@ study/
 
 ## 읽는 방법
 
+- `Foundations-Security/`는 필수 구간, `Capstone/`은 심화 구간으로 읽습니다.
 - 트랙 README로 순서와 상태를 먼저 파악합니다.
 - 프로젝트에 들어가면 `problem/README.md`로 범위와 fixture provenance를 먼저 확인합니다.
 - `docs/`에서 개념 구분을 맞춘 뒤, `python/`과 테스트를 읽습니다.

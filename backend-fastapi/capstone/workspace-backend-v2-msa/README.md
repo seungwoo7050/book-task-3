@@ -8,6 +8,12 @@
 - bearer claims, outbox, Redis Streams, websocket fan-out을 서비스 경계로 재배치하는 방법
 - 단일 백엔드 v1과 MSA v2를 같은 문제 정의 안에서 비교하는 방법
 
+## 선수 지식
+
+- [capstone/workspace-backend](../workspace-backend/README.md) 수준의 단일 백엔드 통합 흐름
+- [labs/H-service-boundary-lab](../../labs/H-service-boundary-lab/README.md)부터 [labs/K-distributed-ops-lab](../../labs/K-distributed-ops-lab/README.md)까지의 서비스 분리, 이벤트 통합, gateway, 분산 운영 개념
+- "왜 MSA로 나누는가"뿐 아니라 "무엇이 더 복잡해지는가"를 함께 설명할 준비
+
 ## 비교 포인트
 
 | 항목 | v1 | v2 |
@@ -30,6 +36,12 @@
 - `cd fastapi && make test`
 - `cd fastapi && make smoke`
 - `cd fastapi && docker compose up --build`
+
+## 추천 학습 순서
+
+1. 먼저 [workspace-backend](../workspace-backend/README.md)에서 단일 백엔드 기준선을 다시 확인합니다.
+2. 이어서 [labs/H-service-boundary-lab](../../labs/H-service-boundary-lab/README.md)부터 [labs/K-distributed-ops-lab](../../labs/K-distributed-ops-lab/README.md)까지의 심화 랩에서 서비스 경계와 운영 비용을 복습합니다.
+3. 마지막으로 v2에서 무엇을 분리했고 어떤 복잡성을 새로 떠안았는지 비교 표와 문서로 정리합니다.
 
 ## 포트폴리오로 확장하려면
 
