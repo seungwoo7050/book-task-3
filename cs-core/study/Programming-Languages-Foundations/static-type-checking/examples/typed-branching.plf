@@ -1,0 +1,8 @@
+let choose: Bool -> Int =
+  fun (flag: Bool) -> Int =>
+    if flag then
+      1
+    else
+      2
+in
+choose(false)

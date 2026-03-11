@@ -1,0 +1,3 @@
+let make_adder = fun (x: Int) -> Int => fun (y: Int) -> Int => x + y in
+let add_three = make_adder(3) in
+add_three(39)

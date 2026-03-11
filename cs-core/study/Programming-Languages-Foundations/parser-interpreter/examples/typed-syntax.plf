@@ -1,0 +1,3 @@
+let inc = fun (n: Int) -> Int => n + 1 in
+let apply: (Int -> Int) -> Int = fun (f: Int -> Int) -> Int => f(10) in
+apply(inc)

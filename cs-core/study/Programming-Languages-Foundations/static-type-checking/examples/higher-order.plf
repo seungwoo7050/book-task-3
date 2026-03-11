@@ -1,0 +1,7 @@
+let compose: ((Int -> Int), (Int -> Int)) -> Int -> Int =
+  fun (f: Int -> Int, g: Int -> Int) -> Int -> Int =>
+    fun (x: Int) -> Int => f(g(x))
+in
+let inc = fun (n: Int) -> Int => n + 1 in
+let twice = compose(inc, inc) in
+twice(10)

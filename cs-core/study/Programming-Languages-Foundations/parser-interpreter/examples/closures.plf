@@ -1,0 +1,3 @@
+let make_adder = fun (x: Int) -> Int => fun (y: Int) -> Int => x + y in
+let add_two = make_adder(2) in
+add_two(40)

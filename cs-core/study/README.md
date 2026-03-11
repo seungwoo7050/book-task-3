@@ -15,8 +15,10 @@
 
 1. [`Foundations-CSAPP/README.md`](Foundations-CSAPP/README.md)
 2. [`Systems-Programming/README.md`](Systems-Programming/README.md)
-3. 관심 있는 프로젝트의 `README.md`
-4. 프로젝트 안의 `problem/README.md`, `docs/README.md`, `notion/README.md`
+3. [`Operating-Systems-Internals/README.md`](Operating-Systems-Internals/README.md)
+4. [`Programming-Languages-Foundations/README.md`](Programming-Languages-Foundations/README.md)
+5. 관심 있는 프로젝트의 `README.md`
+6. 프로젝트 안의 `problem/README.md`, `docs/README.md`, `notion/README.md`
 
 ## 디렉터리 구조
 
@@ -25,6 +27,8 @@ study/
   README.md
   Foundations-CSAPP/
   Systems-Programming/
+  Operating-Systems-Internals/
+  Programming-Languages-Foundations/
   PUBLISHABILITY_REVIEW.md
   TODO.md
   tools/
@@ -32,6 +36,8 @@ study/
 
 - `Foundations-CSAPP/`: 비트 연산부터 캐시/아키텍처까지 이어지는 기초 트랙
 - `Systems-Programming/`: 셸, 메모리 할당기, 프록시를 통해 시스템 프로그래밍 감각을 다지는 트랙
+- `Operating-Systems-Internals/`: scheduler, VM, filesystem, synchronization을 작은 실험으로 다시 묶는 운영체제 breadth 트랙
+- `Programming-Languages-Foundations/`: parser, typing, bytecode/VM을 작은 언어로 이어 보는 PL/컴파일러 기초 트랙
 - `PUBLISHABILITY_REVIEW.md`: 공개 가능한 자산과 로컬 전용 자산의 경계
 - `TODO.md`: 남아 있는 유지보수와 확장 백로그
 
@@ -41,6 +47,8 @@ study/
 
 - 공식 자산이 필요한 프로젝트는 `problem/`에서 `make restore-official`과 `make verify-official`을 사용합니다.
 - 공개 구현 검증은 각 `c/`, `cpp/`, `y86/` README에 적힌 명령을 따릅니다.
+- 운영체제 breadth 프로젝트는 `problem/`에서 `make test`와 `make run-demo`를 사용합니다.
+- Python 기반 PL 프로젝트는 각 디렉터리 README에 적힌 `pytest`와 CLI demo 명령을 따릅니다.
 - 루트 수준 점검은 링크 검색과 정책 검색으로 수행합니다.
 
 ## 스포일러 경계

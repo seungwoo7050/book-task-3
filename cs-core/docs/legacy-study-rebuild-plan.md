@@ -10,8 +10,9 @@
 - 공개 문서는 한국어 우선으로 정리한다.
 - 루트와 트랙 README만 읽어도 저장소 전체 학습 순서를 이해할 수 있어야 한다.
 - 프로젝트마다 `problem/`, 구현 디렉터리, `docs/`, `notion/`의 역할을 분리한다.
-- 기존 장문 기록은 `notion-archive/`로 보존하고, 현재 `notion/`은 다시 실행 가능한 압축판으로 유지한다.
-- 공개 README는 짧고 탐색 가능해야 하며, 긴 로그와 재현 기록은 `notion/` 또는 `notion-archive/`로 보낸다.
+- self-authored Python lab은 `examples/`, `pyproject.toml`, `src/<package>/`, `tests/`를 함께 두는 현재 관례를 따른다.
+- 현재 기준의 장문 기록과 재현 문서는 `notion/`에 유지하고, 필요할 때만 로컬 백업을 별도로 둔다.
+- 공개 README는 짧고 탐색 가능해야 하며, 긴 로그와 재현 기록은 `notion/`으로 보낸다.
 
 ## 루트 구조
 
@@ -28,10 +29,12 @@ README.md
 
 ## 트랙 구조
 
-현재 `study/`는 두 트랙으로 나뉩니다.
+현재 `study/`는 네 트랙으로 나뉩니다.
 
 - `Foundations-CSAPP`: `datalab` -> `bomblab` -> `attacklab` -> `archlab` -> `perflab`
 - `Systems-Programming`: `shlab` -> `malloclab` -> `proxylab`
+- `Operating-Systems-Internals`: `scheduling-simulator` -> `virtual-memory-lab` -> `filesystem-mini-lab` -> `synchronization-contention-lab`
+- `Programming-Languages-Foundations`: `parser-interpreter` -> `static-type-checking` -> `bytecode-ir`
 
 이 순서는 "비트/표현 이해 -> 기계 수준 분석 -> 시스템 구현" 흐름을 분명하게 만들기 위한 현재 기준입니다.
 
@@ -49,6 +52,15 @@ study/
         code/
         data/
         script/
+      examples/
+      pyproject.toml
+      python/
+        README.md
+        src/
+        tests/
+      src/
+        <package>/
+      tests/
       c/
         README.md
         src/
@@ -70,7 +82,11 @@ study/
         04-knowledge-index.md
         05-development-timeline.md
       notion-archive/
+        README.md
 ```
+
+모든 프로젝트가 위 구조를 전부 가져야 하는 것은 아닙니다.
+예를 들어 self-authored Python toy lab은 `python/` 대신 `pyproject.toml + src/ + tests/ + examples/` 조합을 쓰는 편이 현재 기준에 더 잘 맞습니다.
 
 ## README 템플릿 규칙
 
@@ -91,8 +107,8 @@ study/
 - `notion/`은 현재 업로드용 문서다.
 - 현재 표준 파일 세트는 `00`~`05`다.
 - `05-development-timeline.md`는 재현 순서, 검증 명령, 성공 신호를 압축해서 보존하는 문서다.
-- `notion-archive/`는 이전 장문 기록을 보존하는 백업 폴더다.
-- 새로 작성할 때는 기존 `notion-archive/`를 삭제하지 않는다.
+- `notion/`은 현재 공개용 기준 문서다.
+- 백업이 필요하면 로컬 전용 보조 폴더를 둘 수 있지만, 새 프로젝트 템플릿의 필수 경로는 아니다.
 - 공개 README는 `notion/`을 열지 않아도 프로젝트 구조를 이해할 수 있어야 한다.
 
 ## 커리큘럼 설계 규칙
@@ -101,6 +117,8 @@ study/
 - 누락된 연결 프로젝트가 있으면 `study/`에 새로 추가할 수 있다.
 - 너무 약한 프로젝트는 합치거나 이름을 바꿀 수 있다.
 - 프로젝트를 추가하거나 바꿀 때는 어떤 개념 공백을 메우는지 README에 남긴다.
+- 구현 축은 프로젝트 성격에 맞게 하나만 둘 수도 있다. 예를 들어 Python toy lab이면 `python/`만, C 동기화 실험이면 `c/`만 둔다.
+- self-authored language/runtime lab은 `examples/`와 CLI demo를 canonical replay surface로 유지하는 편이 좋다.
 
 ## 검증과 공개 범위
 
