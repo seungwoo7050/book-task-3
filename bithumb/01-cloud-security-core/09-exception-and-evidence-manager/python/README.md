@@ -2,13 +2,18 @@
 
 아래 내용은 모두 레포 루트 기준입니다.
 
-## 다루는 범위
+## 구현한 답의 범위
 
 - exception, evidence, audit trail을 모델링합니다.
 - 예외 승인과 만료, 증적 연결 흐름을 다룹니다.
 - append-only 성격의 감사 기록을 남깁니다.
 
-## 실행 예시
+## 핵심 엔트리포인트
+
+- `python/src/exception_evidence_manager/manager.py`
+- `python/src/exception_evidence_manager/cli.py`
+
+## 실행
 
 ```bash
 make venv
@@ -21,9 +26,16 @@ PYTHONPATH=01-cloud-security-core/09-exception-and-evidence-manager/python/src .
 PYTHONPATH=01-cloud-security-core/09-exception-and-evidence-manager/python/src .venv/bin/python -m pytest 01-cloud-security-core/09-exception-and-evidence-manager/python/tests
 ```
 
-## 상태
+## 대표 출력 예시
 
-`verified`
+```json
+{
+  "exception_id": "54cbecc3-371e-480e-9f59-c71d48226f71",
+  "approved_status": "approved",
+  "evidence_id": "0df263ec-8e63-4964-8e07-014aa59019db",
+  "audit_event_count": 3
+}
+```
 
 ## 구현 메모
 

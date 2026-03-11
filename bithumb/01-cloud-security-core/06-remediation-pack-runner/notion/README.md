@@ -1,6 +1,11 @@
 # 06 Remediation Pack Runner notion 기록
 
-## 이 문서 묶음이 하는 일
+## 이 문서 묶음의 위치
+
+프로젝트 개요는 [../README.md](../README.md)에서 먼저 보고, 이 문서 묶음은 현재 remediation 흐름을 왜 dry-run 기준으로
+나눴는지, 어떤 테스트가 근거인지, 어떻게 재현하는지를 보완하는 레이어로 읽습니다.
+
+## 이 문서 묶음이 보완하는 것
 
 이 `notion/`은 finding 이후 단계에서 “무조건 자동 수정”이 아니라 “검토 가능한 dry-run 조치안”을 먼저 만드는 설계를 정리합니다.
 현재 버전은 `runner.py`, sample finding, 테스트가 증명하는 승인 전/후 상태 전이를 기준으로 다시 썼습니다.

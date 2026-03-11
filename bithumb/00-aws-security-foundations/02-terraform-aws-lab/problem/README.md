@@ -1,19 +1,29 @@
 # 문제 정리
 
-## 문제 요약
+## 원래 문제
 
-Terraform plan JSON을 로컬에서 만들고 읽으면서, 안전한 설정과 위험한 설정의 차이를 보안 분석 관점으로 바꾸는 실습입니다.
+Terraform을 배포 성공 여부가 아니라 보안 분석 입력으로 읽는 실습입니다.
+insecure 설정과 secure 설정을 plan JSON 기준으로 비교해, 다음 프로젝트가 읽을 입력 구조를 먼저 고정해야 합니다.
 
-## 입력
+## 제공된 자료
 
-- Terraform 설정 파일
-- plan JSON
+- `terraform/insecure/main.tf`
+- `terraform/secure/main.tf`
+- lab별 `terraform init`, `validate`, `plan`, `show -json` 흐름
 
-## 출력
+## 제약
 
-- 검증 가능한 plan 출력
-- 후속 프로젝트에서 재사용할 fixture 관점
+- 실제 `terraform apply`는 하지 않습니다.
+- AWS 계정 없이 로컬에서 plan JSON을 재현하는 데 집중합니다.
 
-## 학습 포인트
+## 통과 기준
 
-배포 성공 여부보다 “이 설정을 나중에 어떻게 분석할 것인가”를 먼저 생각합니다.
+- insecure lab과 secure lab 모두 plan JSON을 생성할 수 있어야 합니다.
+- 테스트가 대표 resource type 존재를 검증해야 합니다.
+- 결과 plan이 다음 프로젝트 입력으로 재사용 가능해야 합니다.
+
+## 이번 프로젝트에서 일부러 제외한 것
+
+- 실제 리소스 배포
+- drift detection
+- misconfiguration 규칙 평가 자체

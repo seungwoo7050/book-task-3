@@ -1,6 +1,11 @@
 # 08 Container Guardrails notion 기록
 
-## 이 문서 묶음이 하는 일
+## 이 문서 묶음의 위치
+
+프로젝트 개요는 [../README.md](../README.md)에서 먼저 보고, 이 문서 묶음은 현재 guardrail 규칙을 왜 그 범위로 잡았는지,
+secure fixture를 어떻게 근거로 쓰는지, 어떻게 재현하는지를 보완하는 레이어로 읽습니다.
+
+## 이 문서 묶음이 보완하는 것
 
 이 `notion/`은 EKS 클러스터 없이도 컨테이너 보안의 핵심 guardrail을 학습할 수 있다는 점을 보여 주는 기록입니다.
 현재 버전은 manifest scanner, image metadata scanner, insecure/secure fixture 쌍과 테스트가 실제로 증명하는 여덟 개 control을 중심으로 다시 정리했습니다.

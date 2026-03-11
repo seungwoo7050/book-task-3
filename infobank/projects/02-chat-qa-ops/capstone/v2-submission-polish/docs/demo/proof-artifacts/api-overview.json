@@ -1,0 +1,20 @@
+{
+  "avg_score": 87.76,
+  "fail_rate": 0.0,
+  "critical_count": 0,
+  "evaluation_count": 30,
+  "avg_latency_ms": 0.07,
+  "grade_distribution": {
+    "A": 12,
+    "B": 18
+  },
+  "failure_top": [
+    {
+      "failure_type": "MISSING_MANDATORY_STEP",
+      "count": 11
+    }
+  ],
+  "run_labels": [
+    "v1.6"
+  ]
+}

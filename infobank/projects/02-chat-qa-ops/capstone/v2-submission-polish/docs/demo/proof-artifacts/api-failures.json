@@ -1,0 +1,10 @@
+{
+  "items": [
+    {
+      "failure_type": "MISSING_MANDATORY_STEP",
+      "count": 11,
+      "critical_count": 0,
+      "avg_score": 84.35
+    }
+  ]
+}

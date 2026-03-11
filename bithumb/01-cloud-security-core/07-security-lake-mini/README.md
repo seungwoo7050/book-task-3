@@ -1,47 +1,45 @@
 # 07 Security Lake Mini
 
-## 프로젝트 한줄 소개
+## 풀려는 문제
 
-보안 로그를 적재하고 detection query를 돌리는 작은 local security lake입니다.
+로그를 모으는 것만으로는 탐지 체계가 되지 않습니다.
+이 프로젝트는 CloudTrail fixture를 local lake에 적재하고, preset detection query를 반복 실행해 alert를 만드는 최소 흐름을 구현합니다.
 
-## 왜 배우는가
+## 내가 낸 답
 
-로그를 모으는 것만으로는 탐지 체계가 되지 않습니다. 이 프로젝트는 CloudTrail fixture를 로컬 lake에 적재하고 preset query를 반복 실행하는 흐름을 통해 detection engineering 입문 감각을 만듭니다.
+- CloudTrail fixture를 DuckDB table과 Parquet 파일로 적재합니다.
+- 미리 정한 detection query를 실행해 `LAKE-*` alert를 생성합니다.
+- 적재와 탐지를 하나의 CLI 흐름으로 묶어 로컬에서도 반복 검증되게 합니다.
+- 03번의 정규화 감각을 이어받아 detection engineering 입문 문제로 확장합니다.
 
-## 현재 구현 범위
+## 입력과 출력
 
-- CloudTrail fixture를 DuckDB와 Parquet에 적재합니다.
-- preset detection query를 실행해 alert를 생성합니다.
-- 로컬에서 security lake 개념을 축소 재현합니다.
+- 입력: `problem/data/cloudtrail_suspicious.json`, lake DB 경로, Parquet 경로
+- 출력: local lake 산출물과 detection alert 목록
 
-## 빠른 시작
-
-아래 명령은 레포 루트 기준입니다.
+## 검증 방법
 
 ```bash
 make venv
 mkdir -p .artifacts/security-lake-mini
 PYTHONPATH=01-cloud-security-core/07-security-lake-mini/python/src .venv/bin/python -m security_lake_mini.cli 01-cloud-security-core/07-security-lake-mini/problem/data/cloudtrail_suspicious.json .artifacts/security-lake-mini/lake.duckdb .artifacts/security-lake-mini/events.parquet
-```
-
-## 검증 명령
-
-```bash
 PYTHONPATH=01-cloud-security-core/07-security-lake-mini/python/src .venv/bin/python -m pytest 01-cloud-security-core/07-security-lake-mini/python/tests
 ```
 
-## 먼저 읽을 파일
+## 현재 상태
+
+- `verified`
+- local lake 적재와 detection query 실행을 fixture 기반으로 재현할 수 있습니다.
+- 10번 캡스톤의 CloudTrail ingestion 흐름과 alert성 finding 설계에 연결됩니다.
+
+## 한계와 다음 단계
+
+- VPC Flow Logs join과 다중 테이블 detection은 캡스톤에서 확장합니다.
+- 분산 저장소나 대용량 처리 최적화는 다루지 않고, local lake 개념 재현에 집중합니다.
+
+## 더 깊게 읽을 문서
 
 - [problem/README.md](problem/README.md)
-- [docs/README.md](docs/README.md)
 - [python/README.md](python/README.md)
+- [docs/README.md](docs/README.md)
 - [notion/README.md](notion/README.md)
-
-## 포트폴리오 확장 힌트
-
-“lake를 만들었다”는 말보다, 어떤 탐지 질문을 어떤 query preset으로 증명했는지 보여 주는 편이 훨씬 강합니다.
-
-## 알려진 한계
-
-- VPC Flow Logs와 multi-table join은 캡스톤에서 확장합니다.
-- 분산 저장소나 대용량 처리 최적화는 다루지 않습니다.

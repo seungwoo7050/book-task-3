@@ -1,52 +1,46 @@
 # 10 Cloud Security Control Plane
 
-## 프로젝트 한줄 소개
+## 풀려는 문제
 
-앞선 프로젝트의 판단 로직을 하나의 API, worker, 상태 저장소, 보고 흐름으로 통합한 캡스톤입니다.
+앞선 아홉 개 프로젝트는 각각의 판단 로직을 보여 주지만, 실무의 보안 플랫폼은 이 로직들을 하나의 운영 흐름으로 묶어야 합니다.
+이 캡스톤은 scan 요청, ingestion, finding 저장, exception, remediation, report를 local 환경에서 통합하는 것을 목표로 합니다.
 
-## 왜 배우는가
+## 내가 낸 답
 
-실무의 보안 플랫폼은 개별 스캐너를 따로 실행하는 데서 끝나지 않습니다. 스캔 요청, 상태 저장, 비동기 처리, 예외, 조치안, 보고까지 한 흐름으로 연결해야 하므로, 이 프로젝트는 그 최소 구조를 로컬에서 재현하는 데 집중합니다.
+- Terraform plan, IAM policy, CloudTrail fixture, Kubernetes manifest를 공통 finding 흐름으로 통합합니다.
+- FastAPI API, scan worker, remediation worker, PostgreSQL/SQLite 상태 저장소를 분리합니다.
+- finding, exception, remediation dry-run, markdown report를 한 서비스 레이어에서 연결합니다.
+- Docker daemon이 없을 때도 SQLite fallback으로 demo를 재현할 수 있게 했습니다.
 
-## 현재 구현 범위
+## 입력과 출력
 
-- Terraform plan, IAM policy, CloudTrail fixture, Kubernetes manifest를 수집합니다.
-- FastAPI API, scan worker, remediation worker, PostgreSQL/SQLite 상태 저장소를 운영합니다.
-- finding, exception, remediation, markdown report 흐름을 한 곳에서 통합합니다.
+- 입력: `problem/data/insecure_plan.json`, `broad_admin_policy.json`, `cloudtrail_suspicious.json`, `insecure_k8s.yaml`
+- 출력: finding 목록, exception 상태, remediation dry-run 결과, markdown report, audit event
 
-## 빠른 시작
-
-아래 명령은 레포 루트 기준입니다.
+## 검증 방법
 
 ```bash
 make venv
-PYTHONPATH=02-capstone/10-cloud-security-control-plane/python/src .venv/bin/python -m cloud_security_control_plane.cli findings list
-```
-
-## 검증 명령
-
-```bash
+PYTHONPATH=02-capstone/10-cloud-security-control-plane/python/src .venv/bin/python -m cloud_security_control_plane.cli scan terraform-plan 02-capstone/10-cloud-security-control-plane/problem/data/insecure_plan.json
 make test-capstone
 make demo-capstone
 ```
 
-- `make test-capstone`: 캡스톤 테스트를 실행합니다.
-- `make demo-capstone`: Docker daemon이 있으면 PostgreSQL, 없으면 SQLite fallback으로 데모 산출물을 만듭니다.
+## 현재 상태
 
-## 먼저 읽을 파일
+- `verified`
+- `make demo-capstone`으로 end-to-end 데모 산출물을 재현할 수 있습니다.
+- PostgreSQL과 SQLite fallback 경로를 모두 지원합니다.
+
+## 한계와 다음 단계
+
+- 실제 AWS 계정 연동, 외부 큐 시스템, 운영용 인증과 멀티테넌시는 다루지 않습니다.
+- 학습용 캡스톤이므로 로컬 재현성과 구조 설명에 집중하고, 운영 스케일의 분산 아키텍처는 의도적으로 비워 둡니다.
+
+## 더 깊게 읽을 문서
 
 - [problem/README.md](problem/README.md)
+- [python/README.md](python/README.md)
 - [docs/README.md](docs/README.md)
 - [docs/demo-walkthrough.md](docs/demo-walkthrough.md)
-- [python/README.md](python/README.md)
 - [notion/README.md](notion/README.md)
-
-## 포트폴리오 확장 힌트
-
-캡스톤 하나만 크게 포장하기보다, 앞선 01~09 프로젝트의 어떤 로직이 여기서 재사용되는지 연결해서 설명하는 편이 훨씬 강합니다.
-
-## 알려진 한계
-
-- 실제 AWS 계정과 연동하지 않습니다.
-- 외부 큐 시스템 없이 DB polling worker로 단순화했습니다.
-- 운영용 인증·권한 관리나 멀티테넌시는 다루지 않습니다.

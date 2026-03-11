@@ -1,6 +1,11 @@
 # 01 AWS Security Primitives notion 기록
 
-## 이 문서 묶음이 하는 일
+## 이 문서 묶음의 위치
+
+프로젝트 개요는 [../README.md](../README.md)에서 먼저 보고, 이 문서 묶음은 현재 답을 어떻게 만들었는지,
+어디서 막혔는지, 어떻게 재현하는지를 보완하는 레이어로 읽습니다.
+
+## 이 문서 묶음이 보완하는 것
 
 이 `notion/`은 IAM policy evaluation을 단순한 allow/deny 결과가 아니라, 왜 그런 결론이 나왔는지 설명 가능한 판단 흐름으로 정리한 기록입니다.
 archive의 장문 설명은 [../notion-archive/essay.md](../notion-archive/essay.md)와 [../notion-archive/dev-timeline.md](../notion-archive/dev-timeline.md)에 남겨 두고, 현재 버전은 엔진 코드·테스트·문제 문서를 근거로 다시 썼습니다.

@@ -2,13 +2,18 @@
 
 아래 내용은 모두 레포 루트 기준입니다.
 
-## 다루는 범위
+## 구현한 답의 범위
 
 - broad admin과 scoped policy를 구분합니다.
 - `iam:PassRole` 같은 escalation action을 별도 고위험 finding으로 분리합니다.
 - 설명 가능한 finding 구조와 severity를 반환합니다.
 
-## 실행 예시
+## 핵심 엔트리포인트
+
+- `python/src/iam_policy_analyzer/analyzer.py`
+- `python/src/iam_policy_analyzer/cli.py`
+
+## 실행
 
 ```bash
 make venv
@@ -21,9 +26,21 @@ PYTHONPATH=01-cloud-security-core/04-iam-policy-analyzer/python/src .venv/bin/py
 PYTHONPATH=01-cloud-security-core/04-iam-policy-analyzer/python/src .venv/bin/python -m pytest 01-cloud-security-core/04-iam-policy-analyzer/python/tests
 ```
 
-## 상태
+## 대표 출력 예시
 
-`verified`
+```json
+[
+  {
+    "source": "iam-policy",
+    "control_id": "IAM-001",
+    "severity": "HIGH",
+    "resource_type": "iam-policy",
+    "resource_id": "BroadAdmin",
+    "title": "Policy allows every action",
+    "evidence_ref": "BroadAdmin"
+  }
+]
+```
 
 ## 구현 메모
 

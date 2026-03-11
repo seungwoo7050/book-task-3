@@ -1,53 +1,46 @@
 # 커리큘럼 맵
 
-## 왜 이런 모양으로 재구성했는가
+## 왜 3트랙 구조로 다시 묶었는가
 
-이 저장소는 예전의 큰 C++ 서버 작업을 그대로 보여 주지 않는다. 대신 한 번에 너무 많은 층이 섞여 있던 문제를, 학습자가 단계별로 따라갈 수 있는 6개의 lab으로 다시 나눴다. 기준은 단순하다.
+이 저장소가 풀고 싶은 핵심 문제는 기능 수가 아니라 설명 가능성이다. event loop, parser, IRC 상태 전이, authoritative simulation, capstone을 한 줄로 진열하면 결국 "그래서 어디까지가 어느 문제였는가"가 흐려진다. 그래서 현재 구조는 아래 세 층으로 고정한다.
 
-1. 각 lab은 독립적으로 읽히고 독립적으로 검증되어야 한다.
-2. IRC 서버와 게임 서버는 같은 저장소 안에 있어도 학습 질문이 섞이지 않아야 한다.
-3. 마지막 capstone은 곧바로 공개 포트폴리오로 확장 가능한 형태여야 한다.
+1. `shared-core`
+   - 서버 런타임과 parser 책임을 먼저 분리한다.
+2. `irc-track`
+   - 연결 위에 IRC 상태 전이를 올리고, 마지막에 capstone으로 다시 통합한다.
+3. `game-track`
+   - simulation을 headless로 먼저 고정한 뒤, 마지막에 TCP 서버 capstone으로 다시 통합한다.
 
-## lab 순서
+## 전체 읽기 순서
 
-1. `eventlab`
-   - 질문: 서버는 연결을 받고 읽고 쓰고 정리하는 최소 단위에서 어떻게 움직이는가
-   - 결과물: non-blocking TCP loop, keep-alive, smoke test
-2. `msglab`
-   - 질문: parser와 validator는 네트워크 I/O와 어떻게 분리해야 하는가
-   - 결과물: `Message`, `Parser`, transcript 기반 테스트
-3. `roomlab`
-   - 질문: IRC subset 서버에서 등록과 room lifecycle은 어떤 상태 전이로 보이는가
-   - 결과물: registration, JOIN/PART, broadcast, disconnect cleanup
-4. `ticklab`
-   - 질문: authoritative simulation은 transport 없이도 검증 가능한가
-   - 결과물: fixed-step engine, reconnect grace, deterministic test
-5. `ircserv`
-   - 질문: 앞선 IRC lab을 합쳐 capstone으로 만들면 무엇이 추가되어야 하는가
-   - 결과물: modern IRC command surface, channel privilege, smoke test
-6. `arenaserv`
-   - 질문: authoritative game server에서 세션 연속성과 room state machine을 최소 범위로 어떻게 보여 줄 수 있는가
-   - 결과물: pure TCP arena server, snapshot broadcast, reconnect, multi-client smoke test
+1. [study/shared-core/01-eventlab](../study/shared-core/01-eventlab/README.md)
+2. [study/shared-core/02-msglab](../study/shared-core/02-msglab/README.md)
+3. [study/irc-track/01-roomlab](../study/irc-track/01-roomlab/README.md)
+4. [study/irc-track/02-ircserv](../study/irc-track/02-ircserv/README.md)
+5. [study/game-track/01-ticklab](../study/game-track/01-ticklab/README.md)
+6. [study/game-track/02-arenaserv](../study/game-track/02-arenaserv/README.md)
 
-## 왜 이 순서가 학습에 유리한가
+게임 서버 축만 보려면 `shared-core`를 마친 뒤 `game-track`으로 바로 넘어가도 된다. 다만 저장소 전체를 읽을 때는 IRC 축을 먼저 두어 상태 전이와 capstone 통합 패턴을 한 번 더 본 뒤 게임 축으로 넘어가는 편이 설명이 더 잘 맞는다.
 
-- `eventlab`은 커널 이벤트와 연결 수명주기를 먼저 고립시킨다.
-- `msglab`은 parser를 네트워크와 분리해, 나중에 버그가 생겼을 때 어느 층을 봐야 하는지 명확하게 만든다.
-- `roomlab`은 실제 서버 상태 전이와 IRC subset을 묶어 본다.
-- `ticklab`은 게임 서버에서 중요한 authoritative 판단을 transport보다 먼저 검증하게 한다.
-- `ircserv`는 IRC 축의 capstone으로, protocol completeness를 보여 주는 자리다.
-- `arenaserv`는 게임 서버 축의 capstone으로, state continuity와 reconnect를 보여 주는 자리다.
+## 트랙별 질문
 
-## 학생이 이 레포에서 가져가면 좋은 것
+### `shared-core`
 
-- “작은 질문을 먼저 분리해 검증한 다음 capstone으로 합친다”는 커리큘럼 설계법
-- README, 개념 노트, 학습 노트, 테스트 증거를 분리하는 문서 구조
-- 포트폴리오 레포에서 어떤 지점을 데모 영상, 로그, 설계 설명으로 보여 주면 좋은지에 대한 힌트
+- `01-eventlab`: 연결을 받고 읽고 쓰고 정리하는 최소 event loop는 어떻게 움직이는가
+- `02-msglab`: parser와 validator를 네트워크 I/O에서 어떻게 분리해야 하는가
 
-## 의도적으로 뺀 것
+### `irc-track`
 
-- WebSocket과 브라우저 클라이언트
-- 운영 배포 구성(Nginx, Docker Compose, DB, metrics)
-- 게임 규칙 전체를 제품 수준으로 확장하는 작업
+- `01-roomlab`: 등록과 room lifecycle을 실제 TCP 서버 위에서 어떻게 다룰 것인가
+- `02-ircserv`: 앞선 경계를 다시 합쳐 pure TCP IRC capstone을 어디까지 만들 것인가
 
-이 요소들은 흥미롭지만, 현재 커리큘럼의 핵심 질문을 흐리기 때문에 공식 학습 범위에서는 제외한다.
+### `game-track`
+
+- `01-ticklab`: authoritative simulation을 transport 없이 먼저 어떻게 고정할 것인가
+- `02-arenaserv`: reconnect와 snapshot을 포함한 최소 authoritative TCP game server를 어떻게 보여 줄 것인가
+
+## 이 구조가 주는 이점
+
+- 학습자가 지금 읽는 코드가 런타임 문제인지 parser 문제인지 상태 전이 문제인지 구분하기 쉽다.
+- 각 capstone이 무엇을 새로 더했고 무엇을 일부러 남겼는지 비교하기 쉽다.
+- README만 읽어도 문제, 답, 검증 경로가 바로 잡힌다.

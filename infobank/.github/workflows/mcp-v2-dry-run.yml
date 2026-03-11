@@ -1,0 +1,59 @@
+name: mcp-v2-dry-run
+
+on:
+  push:
+    paths:
+      - "projects/01-mcp-recommendation-demo/capstone/v2-submission-polish/**"
+      - ".github/workflows/mcp-v2-dry-run.yml"
+  pull_request:
+    paths:
+      - "projects/01-mcp-recommendation-demo/capstone/v2-submission-polish/**"
+      - ".github/workflows/mcp-v2-dry-run.yml"
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/01-mcp-recommendation-demo/capstone/v2-submission-polish
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 23
+          cache: pnpm
+          cache-dependency-path: projects/01-mcp-recommendation-demo/capstone/v2-submission-polish/pnpm-lock.yaml
+      - name: Install
+        run: pnpm install --no-frozen-lockfile
+      - name: Start Postgres
+        run: docker compose up -d postgres
+      - name: Migrate
+        run: pnpm migrate
+      - name: Seed
+        run: pnpm seed
+      - name: Changeset Status
+        run: pnpm changeset:status
+      - name: Eval
+        run: pnpm eval
+      - name: Compatibility Gate
+        run: pnpm compatibility rc-release-check-bot-1-5-0
+      - name: Release Gate
+        run: pnpm release:gate rc-release-check-bot-1-5-0
+      - name: Build
+        run: pnpm build
+      - name: Test
+        run: pnpm test
+      - name: E2E
+        run: pnpm e2e
+      - name: Export Artifact
+        run: pnpm artifact:export rc-release-check-bot-1-5-0 > docs/submission-artifact-latest.md
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcp-v2-dry-run
+          path: |
+            projects/01-mcp-recommendation-demo/capstone/v2-submission-polish/.changeset/status.json
+            projects/01-mcp-recommendation-demo/capstone/v2-submission-polish/docs

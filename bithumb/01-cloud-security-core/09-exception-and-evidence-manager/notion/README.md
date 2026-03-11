@@ -1,6 +1,11 @@
 # 09 Exception and Evidence Manager notion 기록
 
-## 이 문서 묶음이 하는 일
+## 이 문서 묶음의 위치
+
+프로젝트 개요는 [../README.md](../README.md)에서 먼저 보고, 이 문서 묶음은 현재 예외와 증적 모델을 왜 그렇게 나눴는지,
+어떤 테스트가 근거인지, 어떻게 재현하는지를 보완하는 레이어로 읽습니다.
+
+## 이 문서 묶음이 보완하는 것
 
 이 `notion/`은 모든 finding을 즉시 고치는 대신, 예외와 증거를 어떻게 관리할 것인가를 다루는 프로젝트 기록입니다.
 현재 버전은 `ExceptionManager`, CLI demo, 테스트가 실제로 보장하는 suppression, expiry, append-only audit 흐름을 중심으로 다시 썼습니다.

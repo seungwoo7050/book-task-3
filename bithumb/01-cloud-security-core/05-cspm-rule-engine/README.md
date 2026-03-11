@@ -1,46 +1,44 @@
 # 05 CSPM Rule Engine
 
-## 프로젝트 한줄 소개
+## 풀려는 문제
 
-Terraform plan JSON과 운영 snapshot을 읽어 triage 가능한 finding을 만드는 규칙 엔진입니다.
+Terraform plan과 운영 snapshot을 읽고, 운영자가 바로 triage할 수 있는 misconfiguration finding을 만들어야 합니다.
+이 프로젝트는 CSPM을 막연한 제품명이 아니라, 설명 가능한 규칙 묶음으로 재구성하는 데 집중합니다.
 
-## 왜 배우는가
+## 내가 낸 답
 
-CSPM은 결국 “이 설정이 안전한가?”에 자동으로 답하는 도구입니다. 이 프로젝트는 Terraform plan과 access key snapshot을 함께 읽어, 오탐을 줄이면서도 설명 가능한 규칙을 만드는 감각을 익히게 합니다.
+- Terraform plan JSON과 access key snapshot을 함께 읽어 인프라와 계정 위험을 한 흐름에서 평가합니다.
+- S3 public access, open ingress, storage encryption, access key age를 규칙으로 구현합니다.
+- 결과를 `severity`, `control_id`, `evidence_ref`가 있는 finding으로 반환합니다.
+- insecure fixture에서 위험을 잡고 secure fixture에서 조용히 통과하는 기준을 같이 검증합니다.
 
-## 현재 구현 범위
+## 입력과 출력
 
-- Terraform plan JSON misconfiguration을 탐지합니다.
-- S3 public access, open ingress, storage encryption, access key age를 검사합니다.
-- 운영자가 바로 triage할 수 있는 finding 형태로 결과를 반환합니다.
+- 입력: `problem/data/insecure_plan.json`, `problem/data/secure_plan.json`, `problem/data/access_keys_snapshot.json`
+- 출력: triage 가능한 misconfiguration finding 목록과 remediation 힌트 필드
 
-## 빠른 시작
-
-아래 명령은 레포 루트 기준입니다.
+## 검증 방법
 
 ```bash
 make venv
 PYTHONPATH=01-cloud-security-core/05-cspm-rule-engine/python/src .venv/bin/python -m cspm_rule_engine.cli 01-cloud-security-core/05-cspm-rule-engine/problem/data/insecure_plan.json 01-cloud-security-core/05-cspm-rule-engine/problem/data/access_keys_snapshot.json
-```
-
-## 검증 명령
-
-```bash
 PYTHONPATH=01-cloud-security-core/05-cspm-rule-engine/python/src .venv/bin/python -m pytest 01-cloud-security-core/05-cspm-rule-engine/python/tests
 ```
 
-## 먼저 읽을 파일
+## 현재 상태
 
-- [problem/README.md](problem/README.md)
-- [docs/README.md](docs/README.md)
-- [python/README.md](python/README.md)
-- [notion/README.md](notion/README.md)
+- `verified`
+- Terraform plan과 snapshot을 함께 읽는 규칙 묶음을 fixture와 테스트로 재현할 수 있습니다.
+- 06번 remediation과 10번 캡스톤에서 그대로 이어받을 finding 구조를 제공합니다.
 
-## 포트폴리오 확장 힌트
-
-규칙 개수보다 규칙의 근거와 false positive를 어떻게 줄였는지를 보여 주는 편이 더 낫습니다. secure fixture에서 finding 0개가 나오는 이유까지 설명하면 좋습니다.
-
-## 알려진 한계
+## 한계와 다음 단계
 
 - v1 rule set은 S3, Security Group, encryption, access key age로 제한합니다.
-- 실제 배포 환경 전체를 스캔하지 않고 로컬 fixture 입력만 사용합니다.
+- 실제 계정 전체 스캔이나 drift detection은 다루지 않고, local fixture 기반 규칙 설계에 집중합니다.
+
+## 더 깊게 읽을 문서
+
+- [problem/README.md](problem/README.md)
+- [python/README.md](python/README.md)
+- [docs/README.md](docs/README.md)
+- [notion/README.md](notion/README.md)

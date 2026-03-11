@@ -2,13 +2,18 @@
 
 아래 내용은 모두 레포 루트 기준입니다.
 
-## 다루는 범위
+## 구현한 답의 범위
 
 - CloudTrail fixture를 DuckDB와 Parquet에 적재합니다.
 - preset detection query를 실행해 alert를 생성합니다.
 - 로컬에서 security lake 개념을 축소 재현합니다.
 
-## 실행 예시
+## 핵심 엔트리포인트
+
+- `python/src/security_lake_mini/lake.py`
+- `python/src/security_lake_mini/cli.py`
+
+## 실행
 
 ```bash
 make venv
@@ -22,9 +27,19 @@ PYTHONPATH=01-cloud-security-core/07-security-lake-mini/python/src .venv/bin/pyt
 PYTHONPATH=01-cloud-security-core/07-security-lake-mini/python/src .venv/bin/python -m pytest 01-cloud-security-core/07-security-lake-mini/python/tests
 ```
 
-## 상태
+## 대표 출력 예시
 
-`verified`
+```json
+[
+  {
+    "control_id": "LAKE-001",
+    "title": "Detected suspicious event: CreateAccessKey",
+    "event_name": "CreateAccessKey",
+    "actor": "arn:aws:iam::123456789012:user/devops",
+    "occurred_at": "2026-03-07T10:00:00Z"
+  }
+]
+```
 
 ## 구현 메모
 

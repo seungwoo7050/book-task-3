@@ -64,10 +64,13 @@ def run_lab(lab_dir: Path) -> dict[str, Any]:
     return json.loads(rendered.stdout)
 
 
+def default_labs_root() -> Path:
+    return Path(__file__).resolve().parents[3] / "terraform"
+
+
 if __name__ == "__main__":
-    root = Path(__file__).resolve().parents[4] / "terraform"
+    root = default_labs_root()
     for lab_name in ("insecure", "secure"):
         plan = run_lab(root / lab_name)
         resource_count = len(plan["planned_values"]["root_module"]["resources"])
         print(f"{lab_name}: {resource_count} resources")
-

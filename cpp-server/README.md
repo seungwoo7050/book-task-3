@@ -1,45 +1,54 @@
-# cpp-server 학습 아카이브
+# cpp-server
 
-이 저장소는 예전에 만들었던 C++ 서버 작업을 그대로 진열하는 포트폴리오가 아니라, 그 경험을 다시 학습 순서에 맞게 분해해 놓은 공부용 레포다. 목표는 네트워크 서버와 authoritative 게임 서버의 핵심 질문을 단계적으로 익히게 하는 것, 그리고 이 레포를 참고한 학생이 자기만의 더 나은 공개 포트폴리오 레포를 설계할 수 있게 돕는 것이다.
+이 저장소는 C++ 서버 학습 결과물이 시간이 지나면 "무슨 문제를 풀었고, 어떤 답을 만들었고, 어디까지 검증했는가"가 흐려지는 문제를 다시 정리하기 위해 만든 study-first 레포다.
 
-2026-03-10 기준으로 `study/` 아래 6개 lab의 `make clean && make test`를 모두 다시 확인했다. 문서는 이 기준선 위에서 관리한다.
+## 이 레포가 푸는 문제
 
-## 여기서 무엇을 볼 수 있는가
+- 네트워크 서버 학습이 event loop, parser, 상태 전이, capstone을 한 번에 섞어 설명하게 되는 문제
+- IRC 서버 축과 authoritative 게임 서버 축이 같은 저장소 안에서 뒤섞여 읽히는 문제
+- 학습 레포를 다시 열었을 때 문제, 답, 검증 경로가 앞면에서 바로 보이지 않는 문제
 
-- `study/`: 실제 학습 경로다. 각 lab은 독립적으로 읽히고 독립적으로 빌드/테스트된다.
-- `docs/`: 이 레포가 왜 이런 순서를 택했는지, 어떤 문서 규칙을 따르는지 설명한다.
-- `study/*/notion/`: 현재 공개용 학습 노트다. 친절한 설명과 재정리된 판단 기준을 담는다.
-- `study/*/notion-archive/`: 이전 초안과 타임라인을 그대로 보존한 백업 폴더다.
+## 내가 만든 답
 
-## 학습 순서
+- `study/`를 `shared-core -> irc-track -> game-track` 3트랙으로 재배치했다.
+- 각 lab의 공개 표면을 `README -> problem -> cpp -> docs -> notion` 순서로 고정했다.
+- 루트와 각 lab README 첫 화면에서 `푸는 문제 -> 만든 답 -> 검증 방법`이 먼저 보이도록 문서를 다시 썼다.
 
-1. [study/README.md](study/README.md)에서 전체 순서를 본다.
-2. [docs/curriculum-map.md](docs/curriculum-map.md)에서 왜 이 순서가 필요한지 읽는다.
-3. 각 lab의 `problem/README.md`로 문제를 먼저 이해한다.
-4. `cpp/README.md`로 구현 범위와 검증 명령을 확인한다.
-5. `docs/README.md`와 `notion/`으로 사고 과정과 확장 포인트를 따라간다.
+## 현재 검증 상태
 
-## 현재 포함된 lab
+- 기준일: `2026-03-11`
+- 아래 6개 lab에서 `make clean && make test`를 다시 실행해 통과를 확인한다.
+- 각 lab의 실제 실행 방법은 해당 `cpp/README.md`에 둔다.
 
-| lab | 핵심 질문 | 포트폴리오로 가져갈 수 있는 신호 |
-| --- | --- | --- |
-| `eventlab` | non-blocking socket과 event loop는 최소 단위에서 어떻게 움직이는가 | 연결 수명주기, keep-alive, smoke test 증거 |
-| `msglab` | parser는 네트워크 I/O와 어떻게 분리해야 하는가 | 입력 정규화, validator, transcript 테스트 |
-| `roomlab` | IRC subset 서버에서 등록과 room lifecycle은 어떻게 얽히는가 | 상태 전이, broadcast, 중복 nick 처리 |
-| `ticklab` | authoritative simulation은 transport 없이도 검증 가능한가 | fixed-step, reconnect grace, deterministic test |
-| `ircserv` | 앞선 IRC lab을 합치면 어느 지점이 capstone이 되는가 | protocol completeness, client compatibility |
-| `arenaserv` | authoritative game server를 pure TCP로 보여 주려면 무엇이 최소 핵심인가 | session continuity, snapshot, room state machine |
+| track | lab | 현재 상태 | 검증 진입점 |
+| --- | --- | --- | --- |
+| `shared-core` | [01-eventlab](study/shared-core/01-eventlab/README.md) | `verified` | [cpp/README.md](study/shared-core/01-eventlab/cpp/README.md) |
+| `shared-core` | [02-msglab](study/shared-core/02-msglab/README.md) | `verified` | [cpp/README.md](study/shared-core/02-msglab/cpp/README.md) |
+| `irc-track` | [01-roomlab](study/irc-track/01-roomlab/README.md) | `verified` | [cpp/README.md](study/irc-track/01-roomlab/cpp/README.md) |
+| `irc-track` | [02-ircserv](study/irc-track/02-ircserv/README.md) | `verified` | [cpp/README.md](study/irc-track/02-ircserv/cpp/README.md) |
+| `game-track` | [01-ticklab](study/game-track/01-ticklab/README.md) | `verified` | [cpp/README.md](study/game-track/01-ticklab/cpp/README.md) |
+| `game-track` | [02-arenaserv](study/game-track/02-arenaserv/README.md) | `verified` | [cpp/README.md](study/game-track/02-arenaserv/cpp/README.md) |
 
-## 문서 원칙
+## 트랙 지도
 
-- 현재 레포에 실제로 존재하는 파일만 직접 링크한다.
-- `notion/`은 local-only가 아니라 Git에 포함되는 공개용 백업 문서다.
-- `notion/`을 새로 쓰고 싶다면 기존 폴더를 `notion-archive/`로 바꿔 보존한 뒤 새 `notion/`을 만든다.
-- 공개 문서는 정답 복사용 해설집이 아니라, 학습 흐름과 포트폴리오 설계 판단을 돕는 안내서로 쓴다.
+| track | 포함 lab | 핵심 질문 | capstone |
+| --- | --- | --- | --- |
+| [shared-core](study/shared-core/README.md) | `01-eventlab`, `02-msglab` | 서버 런타임과 parser 책임을 어디서 끊어 설명할까 | 없음 |
+| [irc-track](study/irc-track/README.md) | `01-roomlab`, `02-ircserv` | IRC subset 서버를 어떻게 상태 전이와 capstone으로 확장할까 | `02-ircserv` |
+| [game-track](study/game-track/README.md) | `01-ticklab`, `02-arenaserv` | authoritative simulation과 TCP game server를 어떻게 분리해 검증할까 | `02-arenaserv` |
 
-## 먼저 열어볼 문서
+## 먼저 읽을 순서
 
-- 전체 학습 경로: [study/README.md](study/README.md)
-- 저장소 판단 근거: [docs/repository-audit.md](docs/repository-audit.md)
-- 커리큘럼 설계 의도: [docs/curriculum-map.md](docs/curriculum-map.md)
-- 문서 운영 기준: [docs/README.md](docs/README.md)
+1. [docs/README.md](docs/README.md)
+2. [study/README.md](study/README.md)
+3. [study/shared-core/README.md](study/shared-core/README.md)
+4. [study/shared-core/01-eventlab/README.md](study/shared-core/01-eventlab/README.md)
+5. [study/shared-core/02-msglab/README.md](study/shared-core/02-msglab/README.md)
+6. IRC 축이 목적이면 [study/irc-track/README.md](study/irc-track/README.md)부터, 게임 서버 축이 목적이면 [study/game-track/README.md](study/game-track/README.md)부터 이어서 읽는다.
+
+## 기준 문서
+
+- 문서 지도: [docs/README.md](docs/README.md)
+- 트랙 설계 이유: [docs/curriculum-map.md](docs/curriculum-map.md)
+- 현재 저장소 상태: [docs/repository-audit.md](docs/repository-audit.md)
+- 경로 변경표: [docs/path-migration-map.md](docs/path-migration-map.md)

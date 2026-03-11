@@ -1,46 +1,44 @@
 # 08 Container Guardrails
 
-## 프로젝트 한줄 소개
+## 풀려는 문제
 
-Kubernetes manifest와 이미지 메타데이터에서 위험 설정을 찾는 guardrail 스캐너입니다.
+클러스터를 직접 띄우지 않아도 manifest와 image metadata만으로 충분히 배울 수 있는 컨테이너 보안 규칙이 있습니다.
+이 프로젝트는 Kubernetes manifest와 image metadata에서 위험 설정을 찾는 guardrail scanner를 구현합니다.
 
-## 왜 배우는가
+## 내가 낸 답
 
-클러스터를 직접 띄우지 않아도 컨테이너 보안의 핵심 위험 설정을 충분히 학습할 수 있습니다. 이 프로젝트는 manifest와 이미지 메타데이터만으로도 설명 가능한 보안 규칙을 만들 수 있다는 점을 보여 줍니다.
+- Kubernetes manifest에서 `hostPath`, `privileged`, `runAsRoot`, broad capability 같은 위험 설정을 검사합니다.
+- image metadata에서 `latest` tag, root 실행, `ALL` capability 같은 위험 신호를 추가로 해석합니다.
+- manifest와 image metadata 결과를 각각 설명 가능한 finding으로 반환합니다.
+- secure fixture 0건 시나리오를 함께 두어 규칙의 기준선을 분명하게 만듭니다.
 
-## 현재 구현 범위
+## 입력과 출력
 
-- Kubernetes manifest를 읽고 위험한 보안 설정을 찾습니다.
-- 이미지 메타데이터와 함께 해석해 guardrail finding을 생성합니다.
-- manifest 수준에서 설명 가능한 규칙에 집중합니다.
+- 입력: `problem/data/insecure_k8s.yaml`, `problem/data/insecure_image.json`, secure fixture 쌍
+- 출력: `K8S-*`, `IMG-*` control ID를 가진 guardrail finding 목록
 
-## 빠른 시작
-
-아래 명령은 레포 루트 기준입니다.
+## 검증 방법
 
 ```bash
 make venv
 PYTHONPATH=01-cloud-security-core/08-container-guardrails/python/src .venv/bin/python -m container_guardrails.cli 01-cloud-security-core/08-container-guardrails/problem/data/insecure_k8s.yaml 01-cloud-security-core/08-container-guardrails/problem/data/insecure_image.json
-```
-
-## 검증 명령
-
-```bash
 PYTHONPATH=01-cloud-security-core/08-container-guardrails/python/src .venv/bin/python -m pytest 01-cloud-security-core/08-container-guardrails/python/tests
 ```
 
-## 먼저 읽을 파일
+## 현재 상태
 
-- [problem/README.md](problem/README.md)
-- [docs/README.md](docs/README.md)
-- [python/README.md](python/README.md)
-- [notion/README.md](notion/README.md)
+- `verified`
+- insecure/secure fixture 쌍과 설명 가능한 finding 출력이 준비되어 있습니다.
+- 10번 캡스톤이 이 scanner를 k8s 입력 처리 경로에서 재사용합니다.
 
-## 포트폴리오 확장 힌트
-
-EKS를 띄우지 않았다는 점을 약점처럼 숨기지 말고, manifest 수준에서 어떤 위험을 충분히 검토할 수 있는지와 범위 밖을 명확히 적는 편이 좋습니다.
-
-## 알려진 한계
+## 한계와 다음 단계
 
 - PodSecurity admission 전체를 재현하지는 않습니다.
-- 실제 클러스터 런타임 이벤트와 admission controller 연동은 다루지 않습니다.
+- 런타임 이벤트, admission controller, 실제 클러스터 연동은 범위 밖입니다.
+
+## 더 깊게 읽을 문서
+
+- [problem/README.md](problem/README.md)
+- [python/README.md](python/README.md)
+- [docs/README.md](docs/README.md)
+- [notion/README.md](notion/README.md)

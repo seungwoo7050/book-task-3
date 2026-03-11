@@ -1,2 +1,1 @@
-"""Project 08 package."""
-
+"""08번 컨테이너 guardrail 스캐너 패키지."""

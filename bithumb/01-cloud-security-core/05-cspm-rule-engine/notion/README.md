@@ -1,6 +1,11 @@
 # 05 CSPM Rule Engine notion 기록
 
-## 이 문서 묶음이 하는 일
+## 이 문서 묶음의 위치
+
+프로젝트 개요는 [../README.md](../README.md)에서 먼저 보고, 이 문서 묶음은 현재 규칙을 어떤 근거로 설계했는지,
+어떻게 재현하고 어디서 막혔는지를 보완하는 레이어로 읽습니다.
+
+## 이 문서 묶음이 보완하는 것
 
 이 `notion/`은 CSPM을 막연한 제품명이 아니라, plan JSON과 운영 snapshot을 읽어 설명 가능한 finding을 내는 작은 규칙 엔진으로 재구성한 기록입니다.
 학습 재현성 관점에서 가장 중요한 문서는 [05-reproduction-guide.md](05-reproduction-guide.md)입니다. 이 문서는 insecure/secure 비교, access key aging, 테스트 기준을 한 번에 다시 따라갈 수 있게 설계했습니다.

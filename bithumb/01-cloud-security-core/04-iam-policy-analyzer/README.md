@@ -1,46 +1,44 @@
 # 04 IAM Policy Analyzer
 
-## 프로젝트 한줄 소개
+## 풀려는 문제
 
-IAM 정책을 읽고 least privilege 관점의 finding으로 바꾸는 분석기입니다.
+정책 평가 결과만으로는 운영자가 무엇이 위험한지 바로 알기 어렵습니다.
+이 프로젝트는 IAM policy를 least privilege 관점의 finding으로 바꿔, 정책 위험을 triage 가능한 형태로 설명하는 것을 목표로 합니다.
 
-## 왜 배우는가
+## 내가 낸 답
 
-정책 평가 엔진만으로는 “허용된다/거부된다”까지만 말할 수 있습니다. 이 프로젝트는 그 위에 위험 설명을 얹어, broad permission과 privilege escalation 패턴을 triage 가능한 finding으로 바꾸는 연습을 합니다.
+- broad admin 정책과 scoped policy를 구분합니다.
+- `iam:PassRole` 같은 privilege escalation 패턴을 별도 고위험 finding으로 분리합니다.
+- finding마다 `control_id`, `severity`, `resource_id`, `evidence_ref`를 반환해 remediation으로 연결하기 쉽게 만듭니다.
+- safe fixture에서 0건이 나오는 조건을 함께 검증해 false positive를 줄입니다.
 
-## 현재 구현 범위
+## 입력과 출력
 
-- broad admin과 scoped policy를 구분합니다.
-- `iam:PassRole` 같은 escalation action을 별도 고위험 finding으로 분리합니다.
-- 설명 가능한 finding 구조와 severity를 반환합니다.
+- 입력: `problem/data/broad_admin_policy.json`, `problem/data/passrole_policy.json`, `problem/data/scoped_policy.json`
+- 출력: least privilege finding 목록과 severity, 설명, 근거 필드
 
-## 빠른 시작
-
-아래 명령은 레포 루트 기준입니다.
+## 검증 방법
 
 ```bash
 make venv
 PYTHONPATH=01-cloud-security-core/04-iam-policy-analyzer/python/src .venv/bin/python -m iam_policy_analyzer.cli 01-cloud-security-core/04-iam-policy-analyzer/problem/data/broad_admin_policy.json
-```
-
-## 검증 명령
-
-```bash
 PYTHONPATH=01-cloud-security-core/04-iam-policy-analyzer/python/src .venv/bin/python -m pytest 01-cloud-security-core/04-iam-policy-analyzer/python/tests
 ```
 
-## 먼저 읽을 파일
+## 현재 상태
 
-- [problem/README.md](problem/README.md)
-- [docs/README.md](docs/README.md)
-- [python/README.md](python/README.md)
-- [notion/README.md](notion/README.md)
+- `verified`
+- broad admin, escalation, safe policy 0건 시나리오를 테스트로 고정했습니다.
+- 06번 remediation runner와 10번 캡스톤이 이 finding 구조를 그대로 재사용합니다.
 
-## 포트폴리오 확장 힌트
-
-정책이 위험하다는 결론만 적기보다, 어떤 패턴을 어떤 근거로 finding으로 만들었는지 예시 JSON과 함께 설명하면 훨씬 설득력 있습니다.
-
-## 알려진 한계
+## 한계와 다음 단계
 
 - SCP, permission boundary, condition-based privilege narrowing은 v1 범위 밖입니다.
-- 조직 전체의 권한 그래프까지 추적하지는 않습니다.
+- 조직 전체 권한 그래프 분석까지는 하지 않고, remediation과 control plane 연결에 필요한 finding layer까지만 다룹니다.
+
+## 더 깊게 읽을 문서
+
+- [problem/README.md](problem/README.md)
+- [python/README.md](python/README.md)
+- [docs/README.md](docs/README.md)
+- [notion/README.md](notion/README.md)

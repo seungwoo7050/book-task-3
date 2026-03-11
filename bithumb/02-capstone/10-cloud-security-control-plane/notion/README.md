@@ -1,6 +1,11 @@
 # 10 Cloud Security Control Plane notion 기록
 
-## 이 문서 묶음이 하는 일
+## 이 문서 묶음의 위치
+
+프로젝트 개요는 [../README.md](../README.md)에서 먼저 보고, 이 문서 묶음은 현재 통합 구조를 왜 그렇게 나눴는지,
+어떤 데모와 테스트가 근거인지, 어떻게 재현하는지를 보완하는 레이어로 읽습니다.
+
+## 이 문서 묶음이 보완하는 것
 
 이 `notion/`은 앞선 아홉 개 프로젝트의 판단 엔진과 데이터 모델이 하나의 서비스로 통합되는 과정을 현재 코드 기준으로 다시 정리한 기록입니다.
 특히 [05-reproduction-guide.md](05-reproduction-guide.md)는 이 저장소에서 가장 강한 end-to-end 재현 문서가 되도록 구성했습니다. 테스트, 데모, Docker/PostgreSQL 경로와 SQLite fallback, 산출물 위치를 모두 한 문서에서 확인할 수 있게 했습니다.

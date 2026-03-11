@@ -1,6 +1,11 @@
 # 04 IAM Policy Analyzer notion 기록
 
-## 이 문서 묶음이 하는 일
+## 이 문서 묶음의 위치
+
+프로젝트 개요는 [../README.md](../README.md)에서 먼저 보고, 이 문서 묶음은 현재 finding 기준을 왜 그렇게 잡았는지,
+어떤 테스트가 근거인지, 어떻게 재현하는지를 보완하는 레이어로 읽습니다.
+
+## 이 문서 묶음이 보완하는 것
 
 이 `notion/`은 과제 01의 policy evaluation 결과를 운영자가 읽는 finding 구조로 확장하는 과정을 정리합니다.
 현재 버전은 analyzer 코드와 테스트가 실제로 보장하는 broad permission, escalation risk, zero-finding safe policy 세 축을 중심으로 다시 썼습니다.

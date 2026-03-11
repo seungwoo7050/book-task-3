@@ -1,6 +1,11 @@
 # 07 Security Lake Mini notion 기록
 
-## 이 문서 묶음이 하는 일
+## 이 문서 묶음의 위치
+
+프로젝트 개요는 [../README.md](../README.md)에서 먼저 보고, 이 문서 묶음은 현재 detection query와 lake 구조를 왜 그렇게
+잡았는지, 어떻게 재현하고 어디서 막혔는지를 보완하는 레이어로 읽습니다.
+
+## 이 문서 묶음이 보완하는 것
 
 이 `notion/`은 로그를 적재하는 단계 위에 detection query를 얹어, alert 생성까지 이어지는 작은 security lake 흐름을 설명합니다.
 현재 버전은 `lake.py`, suspicious CloudTrail fixture, 테스트가 실제로 보장하는 다섯 개 alert를 중심으로 다시 정리했습니다.
