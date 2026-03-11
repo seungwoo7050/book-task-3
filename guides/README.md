@@ -15,6 +15,9 @@
 |------|----------------|
 | 알고리즘 문제 풀이 | [Python](language/python.md) → [C++](language/cpp.md) → [Makefile](tool/makefile.md) |
 | 시스템 프로그래밍 | [C](language/c.md) → [C++](language/cpp.md) → [CMake](tool/cmake.md) → [Makefile](tool/makefile.md) |
+| 운영체제 심화 | [Python](language/python.md) → [C](language/c.md) → [Operating Systems](cs/operating-systems.md) → [Makefile](tool/makefile.md) |
+| PL/컴파일러 입문 | [Python](language/python.md) → [Programming Languages And Compilers](cs/programming-languages-and-compilers.md) → [pytest](testing/pytest.md) |
+| 분산 시스템 심화 | [Go](language/go.md) → [Distributed Systems](cs/distributed-systems.md) → [gRPC](backend/grpc.md) → [Failure Injection](devops/failure-injection.md) |
 | 네트워크 실습 | [Python](language/python.md) → [C++](language/cpp.md) → [CMake](tool/cmake.md) → [Wireshark](tool/wireshark.md) |
 | Go 백엔드 | [Go](language/go.md) → [SQL](database/sql.md) → [gRPC](backend/grpc.md) → [Docker](devops/docker.md) → [Docker Compose](devops/docker-compose.md) → [Observability](devops/observability-reliability.md) → [Makefile](tool/makefile.md) |
 | Node 백엔드 | [TypeScript](language/typescript.md) → [Node.js](backend/nodejs.md) → [Express](backend/express.md) 또는 [NestJS](backend/nestjs.md) → [Drizzle ORM](database/drizzle-orm.md) → [Vitest](testing/vitest.md) → [Load Testing](testing/load-testing.md) |
@@ -23,12 +26,23 @@
 | 모바일 앱 | [TypeScript](language/typescript.md) → [React](frontend/react.md) → [React Native](frontend/react-native.md) → [Kotlin](language/kotlin.md) → [Swift](language/swift.md) |
 | Spring 백엔드 | [Java](language/java.md) → [Spring Boot](backend/spring-boot.md) → [Spring Data JPA](database/spring-data-jpa.md) → [Gradle](tool/gradle.md) → [Redis](database/redis.md) → [Kafka](backend/kafka.md) → [JUnit 5](testing/junit.md) → [GitHub Actions](devops/github-actions.md) |
 | C++ 서버 | [C++](language/cpp.md) → [CMake](tool/cmake.md) → [Makefile](tool/makefile.md) → [Load Testing](testing/load-testing.md) → [Failure Injection](devops/failure-injection.md) → [GitHub Actions](devops/github-actions.md) |
+| 보안 기초 | [Python](language/python.md) → [Crypto Primitives](security/crypto-primitives.md) → [Auth Threat Modeling](security/auth-threat-modeling.md) → [OWASP Backend Defense](security/owasp-backend-defense.md) → [Dependency Vulnerability Workflow](security/dependency-vulnerability-workflow.md) → [pytest](testing/pytest.md) → [Git](tool/git.md) |
 | 클라우드·보안 | [Python](language/python.md) → [Terraform](devops/terraform.md) → [Docker](devops/docker.md) → [Docker Compose](devops/docker-compose.md) → [Observability](devops/observability-reliability.md) → [Failure Injection](devops/failure-injection.md) → [Makefile](tool/makefile.md) |
 | **캡스톤 제출 공통** | [Observability](devops/observability-reliability.md) → [Load Testing](testing/load-testing.md) → [Failure Injection](devops/failure-injection.md) → [Capstone Path](submission/root-to-three-capstones.md) → [Submission Rubric](submission/submission-readiness-rubric.md) |
 
 ---
 
 ## 전체 문서 목록
+
+### CS
+
+운영체제, 컴퓨터 시스템, 분산 시스템, PL/컴파일러의 큰 그림을 잡는 선수 개념 문서.
+
+| 문서 | 한줄 요약 |
+|------|-----------|
+| [Operating Systems](cs/operating-systems.md) | scheduler, paging, filesystem, synchronization를 Python/C 예제와 함께 코드 수준으로 다루는 운영체제 완전 가이드 |
+| [Programming Languages And Compilers](cs/programming-languages-and-compilers.md) | lexer, parser, AST, type checker, bytecode VM 구현 코드로 PL 파이프라인 전체를 잇는 완전 가이드 |
+| [Distributed Systems](cs/distributed-systems.md) | replication, quorum, leader election, log replication을 Go 코드 예제로 풀어낸 분산 시스템 완전 가이드 |
 
 ### Language
 
@@ -75,6 +89,18 @@
 | [Celery](backend/celery.md) | Python 비동기 작업 큐 |
 | [Kafka](backend/kafka.md) | 분산 이벤트 스트리밍 플랫폼 |
 | [gRPC](backend/grpc.md) | Protocol Buffers 기반의 스키마 중심 RPC 프레임워크 |
+
+### Security
+
+보안 primitive와 위협 모델을 이해하기 위한 선수 개념 문서.
+
+| 문서 | 한줄 요약 |
+|------|-----------|
+| [Crypto Primitives](security/crypto-primitives.md) | hash·MAC·KDF의 역할과 사용 경계를 Python 코드(hashlib·hmac·bcrypt·HKDF)로 구분하는 완전 가이드 |
+| [Auth Threat Modeling](security/auth-threat-modeling.md) | CSRF 방어, JWT 검증 규칙, PKCE, refresh rotation을 Python 코드로 풀어낸 인증 위협 모델링 완전 가이드 |
+| [OWASP Backend Defense](security/owasp-backend-defense.md) | injection·access control·SSRF·error 노출·path traversal를 FastAPI/Python 예제로 정리한 방어 완전 가이드 |
+| [Dependency Vulnerability Workflow](security/dependency-vulnerability-workflow.md) | SBOM, CVE triage, reachability, exploitability, patch queue 결정을 데이터 모델까지 정리한 완전 가이드 |
+
 
 ### Database
 
