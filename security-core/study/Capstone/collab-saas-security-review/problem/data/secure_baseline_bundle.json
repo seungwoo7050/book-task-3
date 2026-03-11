@@ -1,0 +1,83 @@
+{
+  "title": "Secure baseline collaboration SaaS review bundle",
+  "service": {
+    "name": "workspace-api-secure",
+    "internet_exposed": true,
+    "data_sensitivity": "high",
+    "tenant_model": "multi-tenant"
+  },
+  "crypto_review": {
+    "name": "secure_crypto_baseline",
+    "surface": "session signing, password hashing, and rotation policy",
+    "controls": {
+      "message_auth": "hmac-sha256",
+      "constant_time_compare": true,
+      "password_kdf": "argon2id",
+      "password_kdf_hardened": true,
+      "key_separation": true,
+      "rotation_defined": true
+    },
+    "expected_control_ids": []
+  },
+  "auth_scenarios": [
+    {
+      "name": "secure_baseline",
+      "flow": {
+        "oauth_enabled": true,
+        "uses_jwt": true,
+        "uses_refresh_token": true,
+        "cookie_session_mutation": true,
+        "supports_recovery_codes": true
+      },
+      "controls": {
+        "token_storage": "httpOnly-cookie",
+        "access_ttl_minutes": 10,
+        "refresh_rotation": true,
+        "reuse_detection": true,
+        "issuer_validation": true,
+        "audience_validation": true,
+        "algorithm_pinning": true,
+        "state_required": true,
+        "pkce_required": true,
+        "csrf_protection": true,
+        "recovery_codes_hashed": true,
+        "rate_limit_mode": "per-account-and-ip"
+      },
+      "expected_control_ids": []
+    }
+  ],
+  "backend_cases": [
+    {
+      "name": "secure_baseline",
+      "surface": {
+        "route": "/api/v1/workspaces/export",
+        "method": "POST",
+        "database_touched": true,
+        "object_lookup": true,
+        "outbound_fetch": true,
+        "can_raise_debug": true,
+        "file_path_input": true
+      },
+      "controls": {
+        "parameterized_queries": true,
+        "ownership_scope_enforced": true,
+        "outbound_allowlist": true,
+        "private_ip_blocking": true,
+        "debug_stacktrace_hidden": true,
+        "safe_path_normalization": true
+      },
+      "expected_control_ids": []
+    }
+  ],
+  "dependency_bundle": {
+    "title": "Secure dependency queue",
+    "service_context": {
+      "internet_exposed": true,
+      "data_sensitivity": "high",
+      "has_compensating_waf": true
+    },
+    "packages": [],
+    "advisories": [],
+    "expected_items": []
+  }
+}

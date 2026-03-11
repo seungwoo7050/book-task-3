@@ -1,0 +1,25 @@
+{
+  "name": "oidc_cookie_hybrid_demo",
+  "flow": {
+    "oauth_enabled": true,
+    "uses_jwt": true,
+    "uses_refresh_token": true,
+    "cookie_session_mutation": true,
+    "supports_recovery_codes": true
+  },
+  "controls": {
+    "token_storage": "localStorage",
+    "access_ttl_minutes": 20,
+    "refresh_rotation": true,
+    "reuse_detection": false,
+    "issuer_validation": true,
+    "audience_validation": false,
+    "algorithm_pinning": true,
+    "state_required": false,
+    "pkce_required": true,
+    "csrf_protection": false,
+    "recovery_codes_hashed": false,
+    "rate_limit_mode": "none"
+  }
+}
+

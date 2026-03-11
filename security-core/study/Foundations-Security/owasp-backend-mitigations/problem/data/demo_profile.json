@@ -1,0 +1,21 @@
+{
+  "name": "batch_export_proxy",
+  "surface": {
+    "route": "/api/v1/reports/export-and-forward",
+    "method": "POST",
+    "database_touched": true,
+    "object_lookup": true,
+    "outbound_fetch": true,
+    "can_raise_debug": true,
+    "file_path_input": true
+  },
+  "controls": {
+    "parameterized_queries": false,
+    "ownership_scope_enforced": false,
+    "outbound_allowlist": false,
+    "private_ip_blocking": false,
+    "debug_stacktrace_hidden": false,
+    "safe_path_normalization": false
+  }
+}
+

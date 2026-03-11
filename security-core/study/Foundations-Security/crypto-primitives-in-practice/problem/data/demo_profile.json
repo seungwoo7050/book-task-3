@@ -1,0 +1,14 @@
+{
+  "profile": "auth-token-ish-demo",
+  "encoding": "utf-8",
+  "message": "authorize:alice@example.com",
+  "shared_secret": "service-secret-2026",
+  "password": "correct horse battery staple",
+  "salt": "demo-salt-2026",
+  "ikm": "workspace-signing-key",
+  "info": "session-token",
+  "pbkdf2_iterations": 1000,
+  "pbkdf2_length": 32,
+  "hkdf_length": 32
+}
+

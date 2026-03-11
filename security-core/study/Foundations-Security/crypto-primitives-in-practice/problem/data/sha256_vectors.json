@@ -1,0 +1,24 @@
+{
+  "title": "SHA-256 digest reference vectors",
+  "primitive": "sha256",
+  "encoding": "utf-8",
+  "vectors": [
+    {
+      "name": "empty-string",
+      "message": "",
+      "expected_hex": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "abc",
+      "message": "abc",
+      "expected_hex": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+    },
+    {
+      "name": "hex-00010203",
+      "encoding": "hex",
+      "message": "00010203",
+      "expected_hex": "054edec1d0211f624fed0cbca9d4f9400b0e491c43742af2c5b0abebf0c990d8"
+    }
+  ]
+}
+
