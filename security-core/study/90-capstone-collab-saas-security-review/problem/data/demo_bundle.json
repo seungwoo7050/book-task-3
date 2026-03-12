@@ -1,0 +1,148 @@
+{
+  "title": "협업 SaaS 보안 리뷰 데모",
+  "service": {
+    "name": "collab-saas-demo",
+    "internet_exposed": true,
+    "data_sensitivity": "medium",
+    "tenant_model": "multi-tenant"
+  },
+  "crypto_review": {
+    "name": "demo_crypto_rollout",
+    "surface": "bearer token signing and password reset",
+    "controls": {
+      "message_auth": "none",
+      "constant_time_compare": false,
+      "password_kdf": "sha256",
+      "password_kdf_hardened": false,
+      "key_separation": true,
+      "rotation_defined": false
+    },
+    "expected_control_ids": [
+      "CRYPTO-001",
+      "CRYPTO-002",
+      "CRYPTO-003",
+      "CRYPTO-004"
+    ]
+  },
+  "auth_scenarios": [
+    {
+      "name": "hybrid_auth_rollout",
+      "flow": {
+        "oauth_enabled": true,
+        "uses_jwt": true,
+        "uses_refresh_token": true,
+        "cookie_session_mutation": true,
+        "supports_recovery_codes": true
+      },
+      "controls": {
+        "token_storage": "localStorage",
+        "access_ttl_minutes": 20,
+        "refresh_rotation": true,
+        "reuse_detection": false,
+        "issuer_validation": true,
+        "audience_validation": false,
+        "algorithm_pinning": true,
+        "state_required": false,
+        "pkce_required": true,
+        "csrf_protection": false,
+        "recovery_codes_hashed": false,
+        "rate_limit_mode": "none"
+      },
+      "expected_control_ids": [
+        "AUTH-001",
+        "AUTH-003",
+        "AUTH-004",
+        "AUTH-005",
+        "AUTH-006",
+        "AUTH-007",
+        "AUTH-008"
+      ]
+    }
+  ],
+  "backend_cases": [
+    {
+      "name": "demo_export_proxy",
+      "surface": {
+        "route": "/api/v1/workspaces/demo-export",
+        "method": "POST",
+        "database_touched": false,
+        "object_lookup": true,
+        "outbound_fetch": true,
+        "can_raise_debug": true,
+        "file_path_input": true
+      },
+      "controls": {
+        "parameterized_queries": true,
+        "ownership_scope_enforced": false,
+        "outbound_allowlist": false,
+        "private_ip_blocking": true,
+        "debug_stacktrace_hidden": false,
+        "safe_path_normalization": false
+      },
+      "expected_control_ids": [
+        "OWASP-002",
+        "OWASP-003",
+        "OWASP-004",
+        "OWASP-005"
+      ]
+    }
+  ],
+  "dependency_bundle": {
+    "title": "데모 의존성 큐",
+    "service_context": {
+      "internet_exposed": true,
+      "data_sensitivity": "medium",
+      "has_compensating_waf": true
+    },
+    "packages": [
+      {
+        "name": "templating-engine",
+        "version": "2.0.0",
+        "scope": "runtime",
+        "direct": true,
+        "reachable": true
+      },
+      {
+        "name": "uuid-dev",
+        "version": "0.9.0",
+        "scope": "dev",
+        "direct": false,
+        "reachable": false
+      }
+    ],
+    "advisories": [
+      {
+        "id": "CVE-2026-1100",
+        "package": "templating-engine",
+        "affected_version": "2.0.0",
+        "severity": "high",
+        "public_exploit": true,
+        "fix_version": "2.1.0"
+      },
+      {
+        "id": "CVE-2026-1101",
+        "package": "uuid-dev",
+        "affected_version": "0.9.0",
+        "severity": "low",
+        "public_exploit": false,
+        "fix_version": null
+      }
+    ],
+    "expected_items": [
+      {
+        "package": "templating-engine",
+        "advisory_id": "CVE-2026-1100",
+        "priority": "P1",
+        "action": "upgrade-now",
+        "recommended_version": "2.1.0"
+      },
+      {
+        "package": "uuid-dev",
+        "advisory_id": "CVE-2026-1101",
+        "priority": "P4",
+        "action": "document-and-expire",
+        "recommended_version": null
+      }
+    ]
+  }
+}

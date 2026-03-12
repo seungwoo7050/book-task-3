@@ -1,25 +1,29 @@
 # Repository Docs
 
-루트 문서는 레거시 해석, 새 커리큘럼, 마이그레이션 정책을 저장소 수준에서 설명한다.
+루트 `docs/`는 저장소 전체에 적용되는 커리큘럼 설명과 검증 기준만 담는다.
+프로젝트별 구현 세부나 디버깅 로그는 각 프로젝트 `docs/`와 `notion/` 아래로 내린다.
 
-## Documents
+## 문서 목록
 
-- [curriculum-map.md](curriculum-map.md): `study/` 트랙 구성과 학습 순서
-- [junior-end-skill-bar.md](junior-end-skill-bar.md): 이 저장소가 증명해야 하는 RN 역량 기준
-- [repo-improvement-roadmap.md](repo-improvement-roadmap.md): 저장소를 실제 학습 경로로 완성하기 위한 우선순위
-- [legacy-audit.md](legacy-audit.md): `legacy/` 상태 감사와 설계 결함
+- [curriculum-map.md](curriculum-map.md): `study/` stage 구조와 읽는 순서
+- [junior-end-skill-bar.md](junior-end-skill-bar.md): 이 저장소가 증명하려는 RN 역량 기준
+- [repo-improvement-roadmap.md](repo-improvement-roadmap.md): 저장소 개선 맥락과 남은 정리 포인트
+- [legacy-audit.md](legacy-audit.md): 과거 구조의 흔적과 왜 현재 구조로 재편했는지
+- [path-migration-map.md](path-migration-map.md): old path -> new path 이행표
 
-## Verification
+## 문서 역할
+
+- 루트 README: 저장소 landing page
+- `study/README.md`: 전체 curriculum index
+- stage README: 단계 목적과 포함 프로젝트
+- 프로젝트 README: 문제와 답
+- 프로젝트 `docs/README.md`: 안정적인 개념 문서 인덱스
+- 프로젝트 `notion/README.md`: 장기 보관 학습 로그 인덱스
+
+## 검증
 
 ```bash
-bash ../scripts/report_study_status.sh
 bash ../scripts/check_study_docs.sh
 bash ../scripts/verify_study_structure.sh
+bash ../scripts/report_study_status.sh
 ```
-
-## Policy
-
-- 루트 문서는 `legacy/` 대신 `study/`를 기준으로 링크를 건다.
-- 구현 상태 표기는 `planned`, `in-progress`, `verified`, `archived`만 사용한다.
-- 추정이나 미검증 주장은 `legacy-audit.md`에 한정하고, `study/` 문서에는 재현 가능한 명령을 우선 기록한다.
-- 루트 문서는 현재 검증된 역량과 아직 비어 있는 역량을 둘 다 드러내야 한다.

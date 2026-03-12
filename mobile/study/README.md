@@ -1,53 +1,67 @@
 # Study Workspace
 
-`study/`는 이 저장소의 실제 학습 트리다.
-각 프로젝트는 문제 원문, 실행 가능한 구현, 공개 문서, 로컬 노트를 분리한다.
+`study/`는 이 저장소의 실제 학습 트리다. 새 구조는 기술 카테고리보다 학습 단계가 먼저 보이도록
+`foundations -> architecture -> product-systems -> capstone` 순서로 정리한다.
 
-## Tracks
+## 읽는 방법
 
-- [Mobile-Foundations/navigation](Mobile-Foundations/navigation/README.md)
-- [Mobile-Foundations/virtualized-list](Mobile-Foundations/virtualized-list/README.md)
-- [Mobile-Foundations/gestures](Mobile-Foundations/gestures/README.md)
-- [React-Native-Architecture/bridge-vs-jsi](React-Native-Architecture/bridge-vs-jsi/README.md)
-- [React-Native-Architecture/native-modules](React-Native-Architecture/native-modules/README.md)
-- [Chat-Product-Systems/offline-sync-foundations](Chat-Product-Systems/offline-sync-foundations/README.md)
-- [Chat-Product-Systems/realtime-chat](Chat-Product-Systems/realtime-chat/README.md)
-- [Chat-Product-Systems/app-distribution](Chat-Product-Systems/app-distribution/README.md)
-- [Incident-Ops-Capstone/incident-ops-mobile](Incident-Ops-Capstone/incident-ops-mobile/README.md)
-- [Incident-Ops-Capstone/incident-ops-mobile-client](Incident-Ops-Capstone/incident-ops-mobile-client/README.md)
+1. stage README에서 왜 이 단계가 필요한지 본다.
+2. 프로젝트 README에서 `문제 / 내 답 / 검증 / 읽는 순서`를 본다.
+3. 세부 요구사항은 `problem/README.md`, 구현 세부는 `react-native/README.md`와 `node-server/README.md`를 본다.
+4. 긴 시행착오는 `notion/README.md` 아래 문서를 본다.
 
-## Progress Snapshot
+## Stages
 
-### Verified Projects
+### [foundations](foundations/README.md)
 
-- `Mobile-Foundations/navigation`
-- `Mobile-Foundations/virtualized-list`
-- `Mobile-Foundations/gestures`
-- `React-Native-Architecture/bridge-vs-jsi`
-- `React-Native-Architecture/native-modules`
-- `Chat-Product-Systems/offline-sync-foundations`
-- `Chat-Product-Systems/realtime-chat`
-- `Chat-Product-Systems/app-distribution`
-- `Incident-Ops-Capstone/incident-ops-mobile`
-- `Incident-Ops-Capstone/incident-ops-mobile-client`
+- [01-navigation-patterns](foundations/01-navigation-patterns/README.md)
+- [02-virtualized-list-performance](foundations/02-virtualized-list-performance/README.md)
+- [03-gestures-and-reanimated](foundations/03-gestures-and-reanimated/README.md)
 
-현재 `study/`는 시작점, 중간 다리, 시스템 캡스톤, 제품 캡스톤까지 모두 검증된 상태다.
-루트 문서는 부족한 슬롯 보고서가 아니라, 검증된 학습 경로와 유지보수 기준을 설명한다.
+핵심 질문:
+- 화면 구조와 deep link state를 어떻게 통제하는가
+- 대량 리스트를 어떻게 측정하고 비교하는가
+- 제스처와 애니메이션을 UI thread 중심으로 어떻게 설계하는가
 
-## Project Shape
+### [architecture](architecture/README.md)
 
-각 프로젝트는 기본적으로 다음 구조를 따른다.
+- [01-bridge-vs-jsi](architecture/01-bridge-vs-jsi/README.md)
+- [02-native-modules](architecture/02-native-modules/README.md)
 
-- `problem/`: 원문 문제, 제공 자료, 스캐폴드 검증 스크립트
-- `react-native/`: 독립 React Native CLI 앱 또는 스택별 구현
-- `node-server/`: 캡스톤 전용 백엔드 구현
-- `docs/`: 저장소에 남길 짧은 개념 문서와 참고 자료
-- `notion/`: 로컬 전용 작업 노트
+핵심 질문:
+- RN runtime 경계의 비용 차이를 어떻게 계측하는가
+- JS/native 계약을 어떤 문서와 spec으로 고정하는가
 
-## Validation
+### [product-systems](product-systems/README.md)
+
+- [01-offline-sync-foundations](product-systems/01-offline-sync-foundations/README.md)
+- [02-realtime-chat](product-systems/02-realtime-chat/README.md)
+- [03-app-distribution](product-systems/03-app-distribution/README.md)
+
+핵심 질문:
+- local-first 제품 모델을 어떤 순서로 쌓아 올리는가
+- release rehearsal을 별도 과제로 분리하면 무엇이 선명해지는가
+
+### [capstone](capstone/README.md)
+
+- [01-incident-ops-mobile](capstone/01-incident-ops-mobile/README.md)
+- [02-incident-ops-mobile-client](capstone/02-incident-ops-mobile-client/README.md)
+
+핵심 질문:
+- system/contract 증명과 hiring-facing 제품 완성작을 어떻게 분리하는가
+- 동일 도메인을 두 번 구현할 때 어떤 학습 가치가 생기는가
+
+## 공통 규약
+
+- 프로젝트 README는 `문제 / 내 답 / 검증 / 읽는 순서 / 상태`를 반드시 가진다.
+- `problem/README.md`는 한국어 문제 정의의 단일 진입점이다.
+- `docs/`는 안정적인 개념 문서, `notion/`은 상세 학습 로그다.
+- 구현 디렉터리 이름은 `react-native/`, capstone 백엔드는 `node-server/`를 유지한다.
+
+## 검증
 
 ```bash
-bash ../scripts/report_study_status.sh
-bash ../scripts/verify_study_structure.sh
 bash ../scripts/check_study_docs.sh
+bash ../scripts/verify_study_structure.sh
+bash ../scripts/report_study_status.sh
 ```

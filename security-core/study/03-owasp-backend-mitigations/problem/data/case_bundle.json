@@ -1,0 +1,131 @@
+{
+  "title": "OWASP backend 방어 케이스 묶음",
+  "cases": [
+    {
+      "name": "secure_baseline",
+      "surface": {
+        "route": "/api/v1/profile/export",
+        "method": "POST",
+        "database_touched": true,
+        "object_lookup": true,
+        "outbound_fetch": true,
+        "can_raise_debug": true,
+        "file_path_input": true
+      },
+      "controls": {
+        "parameterized_queries": true,
+        "ownership_scope_enforced": true,
+        "outbound_allowlist": true,
+        "private_ip_blocking": true,
+        "debug_stacktrace_hidden": true,
+        "safe_path_normalization": true
+      },
+      "expected_control_ids": []
+    },
+    {
+      "name": "raw_sql_login",
+      "surface": {
+        "route": "/api/v1/login",
+        "method": "POST",
+        "database_touched": true,
+        "object_lookup": false,
+        "outbound_fetch": false,
+        "can_raise_debug": false,
+        "file_path_input": false
+      },
+      "controls": {
+        "parameterized_queries": false,
+        "ownership_scope_enforced": true,
+        "outbound_allowlist": true,
+        "private_ip_blocking": true,
+        "debug_stacktrace_hidden": true,
+        "safe_path_normalization": true
+      },
+      "expected_control_ids": ["OWASP-001"]
+    },
+    {
+      "name": "idor_profile_read",
+      "surface": {
+        "route": "/api/v1/users/{id}",
+        "method": "GET",
+        "database_touched": false,
+        "object_lookup": true,
+        "outbound_fetch": false,
+        "can_raise_debug": false,
+        "file_path_input": false
+      },
+      "controls": {
+        "parameterized_queries": true,
+        "ownership_scope_enforced": false,
+        "outbound_allowlist": true,
+        "private_ip_blocking": true,
+        "debug_stacktrace_hidden": true,
+        "safe_path_normalization": true
+      },
+      "expected_control_ids": ["OWASP-002"]
+    },
+    {
+      "name": "webhook_ssrf",
+      "surface": {
+        "route": "/api/v1/webhooks/probe",
+        "method": "POST",
+        "database_touched": false,
+        "object_lookup": false,
+        "outbound_fetch": true,
+        "can_raise_debug": false,
+        "file_path_input": false
+      },
+      "controls": {
+        "parameterized_queries": true,
+        "ownership_scope_enforced": true,
+        "outbound_allowlist": false,
+        "private_ip_blocking": false,
+        "debug_stacktrace_hidden": true,
+        "safe_path_normalization": true
+      },
+      "expected_control_ids": ["OWASP-003"]
+    },
+    {
+      "name": "debug_trace_leak",
+      "surface": {
+        "route": "/api/v1/admin/jobs/replay",
+        "method": "POST",
+        "database_touched": false,
+        "object_lookup": false,
+        "outbound_fetch": false,
+        "can_raise_debug": true,
+        "file_path_input": false
+      },
+      "controls": {
+        "parameterized_queries": true,
+        "ownership_scope_enforced": true,
+        "outbound_allowlist": true,
+        "private_ip_blocking": true,
+        "debug_stacktrace_hidden": false,
+        "safe_path_normalization": true
+      },
+      "expected_control_ids": ["OWASP-004"]
+    },
+    {
+      "name": "unsafe_file_download",
+      "surface": {
+        "route": "/api/v1/files/download",
+        "method": "GET",
+        "database_touched": false,
+        "object_lookup": false,
+        "outbound_fetch": false,
+        "can_raise_debug": false,
+        "file_path_input": true
+      },
+      "controls": {
+        "parameterized_queries": true,
+        "ownership_scope_enforced": true,
+        "outbound_allowlist": true,
+        "private_ip_blocking": true,
+        "debug_stacktrace_hidden": true,
+        "safe_path_normalization": false
+      },
+      "expected_control_ids": ["OWASP-005"]
+    }
+  ]
+}

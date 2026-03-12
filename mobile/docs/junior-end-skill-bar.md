@@ -18,16 +18,16 @@
 
 | Skill Area | What Must Be Proven | Primary Project | Current Status |
 | --- | --- | --- | --- |
-| Navigation and screen state | Stack, Tab, Drawer, typed params, deep linking | `Mobile-Foundations/navigation` | `verified` |
-| Large-list rendering | virtualization, window tuning, measurement, regression checks | `Mobile-Foundations/virtualized-list` | `verified` |
-| Interaction quality | gestures, transitions, interruptible animation | `Mobile-Foundations/gestures` | `verified` |
-| RN runtime model | Bridge vs JSI cost model and instrumentation | `React-Native-Architecture/bridge-vs-jsi` | `verified` |
-| Native boundary | small Swift/Kotlin module with documented JS contract | `React-Native-Architecture/native-modules` | `verified` |
-| Offline queue fundamentals | persistent outbox, retry, DLQ, replay baseline | `Chat-Product-Systems/offline-sync-foundations` | `verified` |
-| Realtime product flow | local-first chat sync, socket reconnect, duplicate safety | `Chat-Product-Systems/realtime-chat` | `verified` |
-| Release realism | build variants, signing/documented distribution path, release checklist | `Chat-Product-Systems/app-distribution` | `verified` |
-| System contract thinking | backend contract, seed/demo reproducibility, server boundary | `Incident-Ops-Capstone/incident-ops-mobile` | `verified` |
-| Product-level RN execution | auth, list/detail/create, offline recovery, demo-ready UX | `Incident-Ops-Capstone/incident-ops-mobile-client` | `verified` |
+| Navigation and screen state | Stack, Tab, Drawer, typed params, deep linking | `foundations/navigation` | `verified` |
+| Large-list rendering | virtualization, window tuning, measurement, regression checks | `foundations/virtualized-list` | `verified` |
+| Interaction quality | gestures, transitions, interruptible animation | `foundations/gestures` | `verified` |
+| RN runtime model | Bridge vs JSI cost model and instrumentation | `architecture/bridge-vs-jsi` | `verified` |
+| Native boundary | small Swift/Kotlin module with documented JS contract | `architecture/native-modules` | `verified` |
+| Offline queue fundamentals | persistent outbox, retry, DLQ, replay baseline | `product-systems/offline-sync-foundations` | `verified` |
+| Realtime product flow | local-first chat sync, socket reconnect, duplicate safety | `product-systems/realtime-chat` | `verified` |
+| Release realism | build variants, signing/documented distribution path, release checklist | `product-systems/app-distribution` | `verified` |
+| System contract thinking | backend contract, seed/demo reproducibility, server boundary | `capstone/incident-ops-mobile` | `verified` |
+| Product-level RN execution | auth, list/detail/create, offline recovery, demo-ready UX | `capstone/incident-ops-mobile-client` | `verified` |
 
 ## Current Verdict
 

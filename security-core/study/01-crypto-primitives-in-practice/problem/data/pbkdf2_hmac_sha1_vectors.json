@@ -1,0 +1,23 @@
+{
+  "title": "PBKDF2-HMAC-SHA1 기준 벡터",
+  "primitive": "pbkdf2-hmac-sha1",
+  "encoding": "utf-8",
+  "vectors": [
+    {
+      "name": "rfc-6070-case-1",
+      "password": "password",
+      "salt": "salt",
+      "iterations": 1,
+      "length": 20,
+      "expected_hex": "0c60c80f961f0e71f3a9b524af6012062fe037a6"
+    },
+    {
+      "name": "rfc-6070-case-2",
+      "password": "password",
+      "salt": "salt",
+      "iterations": 2,
+      "length": 20,
+      "expected_hex": "ea6c014dc72d6f8ccd1ed92ace1d41f0d8de8957"
+    }
+  ]
+}

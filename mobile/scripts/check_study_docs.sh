@@ -17,7 +17,6 @@ allowed_roots = [
 exclude_parts = [
     "/legacy/",
     "/node_modules/",
-    "/notion/",
     "/coverage/",
 ]
 link_re = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
@@ -36,9 +35,9 @@ for dirpath, _, filenames in os.walk(root):
     for name in filenames:
         path = os.path.join(dirpath, name)
         if not path.endswith(".md"):
-          continue
+            continue
         if not is_allowed(path):
-          continue
+            continue
         with open(path, "r", encoding="utf-8") as fh:
             in_fence = False
             for raw in fh:

@@ -322,7 +322,7 @@ Status: in-progress
 ## Build Command
 
 ```bash
-cd study/Incident-Ops-Capstone/incident-ops-mobile/node-server
+cd study/capstone/01-incident-ops-mobile/node-server
 npm install
 npm test
 ```
@@ -330,7 +330,7 @@ npm test
 ## Test Command
 
 ```bash
-cd study/Incident-Ops-Capstone/incident-ops-mobile/node-server
+cd study/capstone/01-incident-ops-mobile/node-server
 npm test
 ```
 
@@ -349,144 +349,144 @@ mkdir -p "$ROOT_DIR/docs" "$ROOT_DIR/study"
 
 copy_problem_dir \
   "$ROOT_DIR/legacy/01-foundation/navigation" \
-  "$ROOT_DIR/study/Mobile-Foundations/navigation"
+  "$ROOT_DIR/study/foundations/01-navigation-patterns"
 copy_problem_dir \
   "$ROOT_DIR/legacy/01-foundation/virtualized-list" \
-  "$ROOT_DIR/study/Mobile-Foundations/virtualized-list"
+  "$ROOT_DIR/study/foundations/02-virtualized-list-performance"
 copy_problem_dir \
   "$ROOT_DIR/legacy/01-foundation/gestures" \
-  "$ROOT_DIR/study/Mobile-Foundations/gestures"
+  "$ROOT_DIR/study/foundations/03-gestures-and-reanimated"
 copy_problem_dir \
   "$ROOT_DIR/legacy/02-architecture/bridge-vs-jsi" \
-  "$ROOT_DIR/study/React-Native-Architecture/bridge-vs-jsi"
+  "$ROOT_DIR/study/architecture/01-bridge-vs-jsi"
 copy_problem_dir \
   "$ROOT_DIR/legacy/02-architecture/native-modules" \
-  "$ROOT_DIR/study/React-Native-Architecture/native-modules"
+  "$ROOT_DIR/study/architecture/02-native-modules"
 copy_problem_dir \
   "$ROOT_DIR/legacy/03-chat-product/realtime-chat" \
-  "$ROOT_DIR/study/Chat-Product-Systems/realtime-chat"
+  "$ROOT_DIR/study/product-systems/02-realtime-chat"
 copy_problem_dir \
   "$ROOT_DIR/legacy/03-chat-product/app-distribution" \
-  "$ROOT_DIR/study/Chat-Product-Systems/app-distribution"
+  "$ROOT_DIR/study/product-systems/03-app-distribution"
 copy_problem_dir \
   "$ROOT_DIR/legacy/04-capstone/mobile-product-capstone" \
-  "$ROOT_DIR/study/Incident-Ops-Capstone/incident-ops-mobile"
+  "$ROOT_DIR/study/capstone/01-incident-ops-mobile"
 copy_problem_dir \
   "$ROOT_DIR/legacy/04-capstone/mobile-product-capstone" \
-  "$ROOT_DIR/study/Incident-Ops-Capstone/incident-ops-mobile-client"
+  "$ROOT_DIR/study/capstone/02-incident-ops-mobile-client"
 
 create_common_project_files \
-  "$ROOT_DIR/study/Mobile-Foundations/navigation" \
+  "$ROOT_DIR/study/foundations/01-navigation-patterns" \
   "Navigation Patterns" \
   "in-progress" \
   "Stack, Tab, Drawer, Deep Linking을 실제 React Native 앱으로 구현하는 파일럿 프로젝트다." \
   "legacy/01-foundation/navigation" \
-  "cd study/Mobile-Foundations/navigation/react-native && npm run verify" \
+  "cd study/foundations/01-navigation-patterns/react-native && npm run verify" \
   "actual app implementation included" \
   "Navigation lifecycle, nested navigator state, typed params를 다룬다." \
   "Legacy docs와 official React Navigation 자료를 정리한다."
 
 create_common_project_files \
-  "$ROOT_DIR/study/Mobile-Foundations/virtualized-list" \
+  "$ROOT_DIR/study/foundations/02-virtualized-list-performance" \
   "Virtualized List Performance" \
   "planned" \
   "대형 리스트 렌더링, virtualization 전략, 메모리/프레임 분석을 다룬다." \
   "legacy/01-foundation/virtualized-list" \
-  "cd study/Mobile-Foundations/virtualized-list/react-native && echo 'implementation pending'" \
+  "cd study/foundations/02-virtualized-list-performance/react-native && echo 'implementation pending'" \
   "planned" \
   "FlatList, FlashList, windowing, measurement를 정리한다." \
   "Legacy docs의 flashlist, memory-profiling 자료를 승격할 예정이다."
 
 create_common_project_files \
-  "$ROOT_DIR/study/Mobile-Foundations/gestures" \
+  "$ROOT_DIR/study/foundations/03-gestures-and-reanimated" \
   "Gestures And Reanimated" \
   "planned" \
   "Gesture Handler와 Reanimated 기반 인터랙션을 연습한다." \
   "legacy/01-foundation/gestures" \
-  "cd study/Mobile-Foundations/gestures/react-native && echo 'implementation pending'" \
+  "cd study/foundations/03-gestures-and-reanimated/react-native && echo 'implementation pending'" \
   "planned" \
   "gesture state machine, shared values, animation debugging을 정리한다." \
   "Legacy docs의 reanimated, performance-debugging 자료를 참조한다."
 
 create_common_project_files \
-  "$ROOT_DIR/study/React-Native-Architecture/bridge-vs-jsi" \
+  "$ROOT_DIR/study/architecture/01-bridge-vs-jsi" \
   "Bridge Vs JSI" \
   "planned" \
   "React Native Bridge와 JSI/TurboModules/Fabric 비용 구조를 비교한다." \
   "legacy/02-architecture/bridge-vs-jsi" \
-  "cd study/React-Native-Architecture/bridge-vs-jsi/react-native && echo 'implementation pending'" \
+  "cd study/architecture/01-bridge-vs-jsi/react-native && echo 'implementation pending'" \
   "planned" \
   "bridge serialization, host objects, Fabric rendering cost를 정리한다." \
   "Legacy docs의 jsi, fabric, turbomodules 자료를 참조한다."
 
 create_common_project_files \
-  "$ROOT_DIR/study/React-Native-Architecture/native-modules" \
+  "$ROOT_DIR/study/architecture/02-native-modules" \
   "Native Modules" \
   "planned" \
   "Swift/Kotlin 기반 커스텀 네이티브 모듈 설계를 다룬다." \
   "legacy/02-architecture/native-modules" \
-  "cd study/React-Native-Architecture/native-modules/react-native && echo 'implementation pending'" \
+  "cd study/architecture/02-native-modules/react-native && echo 'implementation pending'" \
   "planned" \
   "platform module API 설계, cross-platform boundary, new architecture readiness를 정리한다." \
   "Legacy docs의 swift-modules, kotlin-modules 자료를 참조한다."
 
 create_common_project_files \
-  "$ROOT_DIR/study/Chat-Product-Systems/offline-sync-foundations" \
+  "$ROOT_DIR/study/product-systems/01-offline-sync-foundations" \
   "Offline Sync Foundations" \
   "planned" \
   "오프라인 큐와 재시도 정책을 채팅 앱 전에 분리 학습하는 브리지 프로젝트다." \
   "study-designed project" \
-  "cd study/Chat-Product-Systems/offline-sync-foundations/react-native && echo 'implementation pending'" \
+  "cd study/product-systems/01-offline-sync-foundations/react-native && echo 'implementation pending'" \
   "planned" \
   "queue state machine, idempotency, replay order를 정리한다." \
   "새 프로젝트이므로 구현 과정에서 references를 추가한다."
 
 create_common_project_files \
-  "$ROOT_DIR/study/Chat-Product-Systems/realtime-chat" \
+  "$ROOT_DIR/study/product-systems/02-realtime-chat" \
   "Realtime Chat" \
   "planned" \
   "WebSocket, 로컬 저장소, offline-first sync를 통합하는 제품형 과제다." \
   "legacy/03-chat-product/realtime-chat" \
-  "cd study/Chat-Product-Systems/realtime-chat/react-native && echo 'implementation pending'" \
+  "cd study/product-systems/02-realtime-chat/react-native && echo 'implementation pending'" \
   "planned" \
   "message sync, optimistic update, presence, conflict resolution을 정리한다." \
   "Legacy docs의 websocket, offline-first, sync-conflict-resolution 자료를 참조한다."
 
 create_common_project_files \
-  "$ROOT_DIR/study/Chat-Product-Systems/app-distribution" \
+  "$ROOT_DIR/study/product-systems/03-app-distribution" \
   "App Distribution" \
   "planned" \
   "Fastlane, CodePush, CI/CD 기반 배포 자동화 과제다." \
   "legacy/03-chat-product/app-distribution" \
-  "cd study/Chat-Product-Systems/app-distribution/react-native && echo 'implementation pending'" \
+  "cd study/product-systems/03-app-distribution/react-native && echo 'implementation pending'" \
   "planned" \
   "build lanes, signing, OTA rollout policy를 정리한다." \
   "Legacy docs의 fastlane, codepush, secrets-management 자료를 참조한다."
 
 create_common_project_files \
-  "$ROOT_DIR/study/Incident-Ops-Capstone/incident-ops-mobile" \
+  "$ROOT_DIR/study/capstone/01-incident-ops-mobile" \
   "Incident Ops Mobile" \
   "in-progress" \
   "승인, 감사 로그, 오프라인 복구를 포함한 모바일 제품 캡스톤이다." \
   "legacy/04-capstone/mobile-product-capstone" \
-  "cd study/Incident-Ops-Capstone/incident-ops-mobile/node-server && npm test" \
+  "cd study/capstone/01-incident-ops-mobile/node-server && npm test" \
   "planned" \
   "approval flow, auditability, replayable demo를 정리한다." \
   "Legacy capstone docs와 demo artifacts를 참조하되, 재현 가능한 근거만 승격한다."
 
 create_common_project_files \
-  "$ROOT_DIR/study/Incident-Ops-Capstone/incident-ops-mobile-client" \
+  "$ROOT_DIR/study/capstone/02-incident-ops-mobile-client" \
   "Incident Ops Mobile Client" \
   "in-progress" \
   "기존 capstone 도메인을 유지하면서 RN 채용 제출용 완성작으로 다시 구성한 최종 과제다." \
-  "legacy/04-capstone/mobile-product-capstone + study/Incident-Ops-Capstone/incident-ops-mobile" \
-  "cd study/Incident-Ops-Capstone/incident-ops-mobile-client/react-native && npm run verify" \
+  "legacy/04-capstone/mobile-product-capstone + study/capstone/01-incident-ops-mobile" \
+  "cd study/capstone/02-incident-ops-mobile-client/react-native && npm run verify" \
   "runnable app implementation included" \
   "client architecture, outbox replay, testing pyramid를 정리한다." \
   "기존 capstone docs와 새 RN 구현 근거를 함께 참조한다."
 
 create_react_native_placeholder \
-  "$ROOT_DIR/study/Mobile-Foundations/virtualized-list" \
+  "$ROOT_DIR/study/foundations/02-virtualized-list-performance" \
   "대형 리스트 성능 분석" \
   "planned" \
   "echo 'implementation pending'" \
@@ -495,7 +495,7 @@ create_react_native_placeholder \
   "FlatList와 FlashList 비교용 독립 앱으로 구현할 예정이다."
 
 create_react_native_placeholder \
-  "$ROOT_DIR/study/Mobile-Foundations/gestures" \
+  "$ROOT_DIR/study/foundations/03-gestures-and-reanimated" \
   "Gesture/Reanimated 실험" \
   "planned" \
   "echo 'implementation pending'" \
@@ -504,7 +504,7 @@ create_react_native_placeholder \
   "swipe, drag, spring animation 예제를 포함할 예정이다."
 
 create_react_native_placeholder \
-  "$ROOT_DIR/study/React-Native-Architecture/bridge-vs-jsi" \
+  "$ROOT_DIR/study/architecture/01-bridge-vs-jsi" \
   "Bridge와 JSI 비교 앱" \
   "planned" \
   "echo 'implementation pending'" \
@@ -513,7 +513,7 @@ create_react_native_placeholder \
   "JS bridge serialization과 JSI direct call을 같은 기준으로 비교할 예정이다."
 
 create_react_native_placeholder \
-  "$ROOT_DIR/study/React-Native-Architecture/native-modules" \
+  "$ROOT_DIR/study/architecture/02-native-modules" \
   "Native Module 실습 앱" \
   "planned" \
   "echo 'implementation pending'" \
@@ -522,7 +522,7 @@ create_react_native_placeholder \
   "sensor, battery, vibration 성격의 모듈 후보를 나중에 정한다."
 
 create_react_native_placeholder \
-  "$ROOT_DIR/study/Chat-Product-Systems/offline-sync-foundations" \
+  "$ROOT_DIR/study/product-systems/01-offline-sync-foundations" \
   "Offline Sync 브리지 앱" \
   "planned" \
   "echo 'implementation pending'" \
@@ -531,7 +531,7 @@ create_react_native_placeholder \
   "queue visualizer와 deterministic tests를 우선 구현할 예정이다."
 
 create_react_native_placeholder \
-  "$ROOT_DIR/study/Chat-Product-Systems/realtime-chat" \
+  "$ROOT_DIR/study/product-systems/02-realtime-chat" \
   "Realtime Chat 제품 앱" \
   "planned" \
   "echo 'implementation pending'" \
@@ -540,7 +540,7 @@ create_react_native_placeholder \
   "WatermelonDB, WebSocket, optimistic UI를 분리된 단계로 구현할 예정이다."
 
 create_react_native_placeholder \
-  "$ROOT_DIR/study/Chat-Product-Systems/app-distribution" \
+  "$ROOT_DIR/study/product-systems/03-app-distribution" \
   "Distribution 학습 앱" \
   "planned" \
   "echo 'implementation pending'" \
@@ -549,7 +549,7 @@ create_react_native_placeholder \
   "배포 스크립트와 signing 문서를 함께 정리할 예정이다."
 
 create_react_native_placeholder \
-  "$ROOT_DIR/study/Incident-Ops-Capstone/incident-ops-mobile" \
+  "$ROOT_DIR/study/capstone/01-incident-ops-mobile" \
   "Incident Ops Mobile 클라이언트" \
   "planned" \
   "echo 'implementation pending'" \
@@ -558,7 +558,7 @@ create_react_native_placeholder \
   "클라이언트 구현은 navigation 파일럿 이후 별도로 이관한다."
 
 create_react_native_placeholder \
-  "$ROOT_DIR/study/Incident-Ops-Capstone/incident-ops-mobile-client" \
+  "$ROOT_DIR/study/capstone/02-incident-ops-mobile-client" \
   "Incident Ops Mobile 최종 클라이언트" \
   "in-progress" \
   "cd react-native && npm run typecheck" \
@@ -567,12 +567,12 @@ create_react_native_placeholder \
   "최종 저장소 상태에서는 이 placeholder 대신 완성된 RN 앱이 존재한다."
 
 create_offline_sync_problem \
-  "$ROOT_DIR/study/Chat-Product-Systems/offline-sync-foundations"
+  "$ROOT_DIR/study/product-systems/01-offline-sync-foundations"
 
 create_capstone_assets \
-  "$ROOT_DIR/study/Incident-Ops-Capstone/incident-ops-mobile"
+  "$ROOT_DIR/study/capstone/01-incident-ops-mobile"
 
 create_capstone_assets \
-  "$ROOT_DIR/study/Incident-Ops-Capstone/incident-ops-mobile-client"
+  "$ROOT_DIR/study/capstone/02-incident-ops-mobile-client"
 
 echo "study tree bootstrapped under $ROOT_DIR/study"

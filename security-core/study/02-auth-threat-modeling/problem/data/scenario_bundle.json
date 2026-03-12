@@ -1,0 +1,130 @@
+{
+  "title": "인증 위협 모델링 시나리오 묶음",
+  "scenarios": [
+    {
+      "name": "secure_baseline",
+      "flow": {
+        "oauth_enabled": true,
+        "uses_jwt": true,
+        "uses_refresh_token": true,
+        "cookie_session_mutation": true,
+        "supports_recovery_codes": true
+      },
+      "controls": {
+        "token_storage": "httpOnly-cookie",
+        "access_ttl_minutes": 10,
+        "refresh_rotation": true,
+        "reuse_detection": true,
+        "issuer_validation": true,
+        "audience_validation": true,
+        "algorithm_pinning": true,
+        "state_required": true,
+        "pkce_required": true,
+        "csrf_protection": true,
+        "recovery_codes_hashed": true,
+        "rate_limit_mode": "per-account-and-ip"
+      },
+      "expected_control_ids": []
+    },
+    {
+      "name": "oauth_missing_state_and_pkce",
+      "flow": {
+        "oauth_enabled": true,
+        "uses_jwt": false,
+        "uses_refresh_token": false,
+        "cookie_session_mutation": false,
+        "supports_recovery_codes": false
+      },
+      "controls": {
+        "token_storage": "memory",
+        "access_ttl_minutes": 5,
+        "refresh_rotation": true,
+        "reuse_detection": true,
+        "issuer_validation": true,
+        "audience_validation": true,
+        "algorithm_pinning": true,
+        "state_required": false,
+        "pkce_required": false,
+        "csrf_protection": true,
+        "recovery_codes_hashed": true,
+        "rate_limit_mode": "per-account-and-ip"
+      },
+      "expected_control_ids": ["AUTH-001", "AUTH-002"]
+    },
+    {
+      "name": "jwt_validation_gap",
+      "flow": {
+        "oauth_enabled": false,
+        "uses_jwt": true,
+        "uses_refresh_token": true,
+        "cookie_session_mutation": false,
+        "supports_recovery_codes": false
+      },
+      "controls": {
+        "token_storage": "localStorage",
+        "access_ttl_minutes": 60,
+        "refresh_rotation": false,
+        "reuse_detection": false,
+        "issuer_validation": false,
+        "audience_validation": true,
+        "algorithm_pinning": false,
+        "state_required": true,
+        "pkce_required": true,
+        "csrf_protection": true,
+        "recovery_codes_hashed": true,
+        "rate_limit_mode": "per-account-and-ip"
+      },
+      "expected_control_ids": ["AUTH-003", "AUTH-004", "AUTH-005"]
+    },
+    {
+      "name": "cookie_without_csrf",
+      "flow": {
+        "oauth_enabled": false,
+        "uses_jwt": false,
+        "uses_refresh_token": false,
+        "cookie_session_mutation": true,
+        "supports_recovery_codes": false
+      },
+      "controls": {
+        "token_storage": "server-session",
+        "access_ttl_minutes": 5,
+        "refresh_rotation": true,
+        "reuse_detection": true,
+        "issuer_validation": true,
+        "audience_validation": true,
+        "algorithm_pinning": true,
+        "state_required": true,
+        "pkce_required": true,
+        "csrf_protection": false,
+        "recovery_codes_hashed": true,
+        "rate_limit_mode": "per-account-and-ip"
+      },
+      "expected_control_ids": ["AUTH-006"]
+    },
+    {
+      "name": "recovery_and_rate_limit_gap",
+      "flow": {
+        "oauth_enabled": false,
+        "uses_jwt": false,
+        "uses_refresh_token": false,
+        "cookie_session_mutation": false,
+        "supports_recovery_codes": true
+      },
+      "controls": {
+        "token_storage": "memory",
+        "access_ttl_minutes": 5,
+        "refresh_rotation": true,
+        "reuse_detection": true,
+        "issuer_validation": true,
+        "audience_validation": true,
+        "algorithm_pinning": true,
+        "state_required": true,
+        "pkce_required": true,
+        "csrf_protection": true,
+        "recovery_codes_hashed": false,
+        "rate_limit_mode": "none"
+      },
+      "expected_control_ids": ["AUTH-007", "AUTH-008"]
+    }
+  ]
+}

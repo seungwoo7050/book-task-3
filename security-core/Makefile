@@ -4,13 +4,11 @@ PYTHON := $(VENV)/bin/python
 PIP := $(VENV)/bin/pip
 VENV_STAMP := $(VENV)/.deps-installed
 
-TRACK_ROOT := study/Foundations-Security
-CAPSTONE_TRACK_ROOT := study/Capstone
-CRYPTO_ROOT := $(TRACK_ROOT)/crypto-primitives-in-practice
-AUTH_ROOT := $(TRACK_ROOT)/auth-threat-modeling
-OWASP_ROOT := $(TRACK_ROOT)/owasp-backend-mitigations
-DEPENDENCY_ROOT := $(TRACK_ROOT)/dependency-vulnerability-workflow
-CAPSTONE_ROOT := $(CAPSTONE_TRACK_ROOT)/collab-saas-security-review
+CRYPTO_ROOT := study/01-crypto-primitives-in-practice
+AUTH_ROOT := study/02-auth-threat-modeling
+OWASP_ROOT := study/03-owasp-backend-mitigations
+DEPENDENCY_ROOT := study/04-dependency-vulnerability-workflow
+CAPSTONE_ROOT := study/90-capstone-collab-saas-security-review
 
 PROJECT_DIRS := \
 	$(CRYPTO_ROOT) \
@@ -22,7 +20,7 @@ PROJECT_DIRS := \
 
 $(VENV)/bin/python:
 	@test -n "$(PYTHON_BOOTSTRAP)" || (echo "python3.13 or python3 not found" && exit 1)
-	@if [ ! -x $(VENV)/bin/python ]; then $(PYTHON_BOOTSTRAP) -m venv $(VENV); fi
+	@if [ ! -x $(VENV)/bin/python ]; then rm -rf $(VENV); $(PYTHON_BOOTSTRAP) -m venv $(VENV); fi
 
 $(VENV_STAMP): pyproject.toml | $(VENV)/bin/python
 	@$(PIP) install --upgrade pip >/dev/null

@@ -1,74 +1,53 @@
-# React Native Study Archive
+# mobile
 
-이 저장소는 React Native 학습 트리를 `legacy/`와 `study/`로 분리해 관리하는 학습 아카이브다.
-`legacy/`는 읽기 전용 기준선이고, `study/`는 재구성된 학습 프로젝트와 실행 가능한 구현을 담는다.
+이 저장소는 React Native 학습 결과물을 모아 둔 아카이브다. 핵심은 앱 개수를 늘리는 것이 아니라,
+각 프로젝트가 "무슨 문제를 풀었는가", "어떤 답을 만들었는가", "어떻게 다시 검증하는가"를
+GitHub 표면에서 바로 읽히게 하는 데 있다.
 
-## Repository Layout
+공개 동선은 다음 순서를 기준으로 읽는다.
 
-- `legacy/`: 원본 레거시 트리. 링크 오류와 추정 문서를 포함한 기준선 보관용이다.
-- `study/`: 새 학습 트리. 문제, 구현, 문서, 로컬 노트를 분리한다.
-- `docs/`: 커리큘럼 해석, 레거시 감사, 저장소 공용 규칙.
-- `scripts/`: `study/` 구조와 문서 링크 검증 스크립트.
+1. `README.md`
+2. `study/README.md`
+3. stage README
+4. 각 프로젝트의 `problem/README.md -> 구현 README -> docs/README.md -> notion/README.md`
 
-## Study Tracks
+## 핵심 커리큘럼
 
-- `study/Mobile-Foundations`
-- `study/React-Native-Architecture`
-- `study/Chat-Product-Systems`
-- `study/Incident-Ops-Capstone`
+| 단계 | 프로젝트 | 문제 질문 | 내가 만든 답 | 검증 명령 | 상태 |
+| --- | --- | --- | --- | --- | --- |
+| foundations | [`01-navigation-patterns`](study/foundations/01-navigation-patterns/README.md) | Stack, Tab, Drawer, Deep Linking을 한 앱 안에서 어떻게 타입 안전하게 묶는가 | 중첩 navigator, custom header, badge, deep-link fallback을 갖춘 RN 파일럿 앱 | `make -C study/foundations/01-navigation-patterns/problem test`<br>`npm --prefix study/foundations/01-navigation-patterns/react-native run verify` | `verified` |
+| foundations | [`02-virtualized-list-performance`](study/foundations/02-virtualized-list-performance/README.md) | 같은 10k 데이터셋에서 baseline과 optimized list 전략의 차이를 어떻게 측정하는가 | `FlatList` baseline과 `FlashList v2` optimized path를 비교하는 benchmark 앱 | `make -C study/foundations/02-virtualized-list-performance/problem benchmark` | `verified` |
+| foundations | [`03-gestures-and-reanimated`](study/foundations/03-gestures-and-reanimated/README.md) | JS thread 개입 없이 제스처와 애니메이션 상호작용을 어떻게 설계하는가 | swipe card, reorder list, shared transition을 묶은 Reanimated 학습 앱 | `make -C study/foundations/03-gestures-and-reanimated/problem app-test` | `verified` |
+| architecture | [`01-bridge-vs-jsi`](study/architecture/01-bridge-vs-jsi/README.md) | async serialized surface와 sync direct-call surface의 비용 차이는 어떻게 비교하는가 | RN 0.84 기준 benchmark 대시보드와 JSON export를 갖춘 비교 앱 | `make -C study/architecture/01-bridge-vs-jsi/problem app-test` | `verified` |
+| architecture | [`02-native-modules`](study/architecture/02-native-modules/README.md) | JS/native 경계를 spec, codegen, consumer app으로 어떻게 설명하는가 | Battery, Haptics, Sensor 모듈 spec과 consumer screen을 묶은 boundary 예제 | `make -C study/architecture/02-native-modules/problem codegen` | `verified` |
+| product-systems | [`01-offline-sync-foundations`](study/product-systems/01-offline-sync-foundations/README.md) | outbox, retry, DLQ, idempotency를 제품 앱 전에 어떻게 분리 학습하는가 | deterministic fake sync service와 queue/replay 규칙을 갖춘 브리지 프로젝트 | `make -C study/product-systems/01-offline-sync-foundations/problem app-test` | `verified` |
+| product-systems | [`02-realtime-chat`](study/product-systems/02-realtime-chat/README.md) | offline send, ack reconcile, replay, presence를 local-first 모델로 어떻게 묶는가 | pending message와 replay-safe sync를 갖춘 채팅 앱 | `make -C study/product-systems/02-realtime-chat/problem app-test` | `verified` |
+| product-systems | [`03-app-distribution`](study/product-systems/03-app-distribution/README.md) | 동작하는 제품 앱을 release rehearsal 단계까지 어떻게 끌고 가는가 | env separation, Fastlane, GitHub Actions, local rehearsal을 갖춘 배포 리허설 | `make -C study/product-systems/03-app-distribution/problem release-rehearsal` | `verified` |
+| capstone | [`01-incident-ops-mobile`](study/capstone/01-incident-ops-mobile/README.md) | 모바일 클라이언트가 shared contract를 정확히 해석한다는 것을 어떻게 증명하는가 | DTO contract, Node backend, RN harness를 묶은 system/contract capstone | `make -C study/capstone/01-incident-ops-mobile/problem demo-e2e` | `verified` |
+| capstone | [`02-incident-ops-mobile-client`](study/capstone/02-incident-ops-mobile-client/README.md) | 같은 incident domain을 hiring-facing RN 완성작으로 어떻게 다시 구현하는가 | auth, feed, role action, persistent outbox, demo flow를 갖춘 최종 클라이언트 | `make -C study/capstone/02-incident-ops-mobile-client/problem demo-e2e` | `verified` |
 
-캡스톤 트랙의 마지막 두 과제는 역할이 다르다.
+## 검증 시작점
 
-1. `incident-ops-mobile`: 문제/계약/서버 중심 캡스톤
-2. `incident-ops-mobile-client`: RN 채용 제출용 완성작
-
-새 커리큘럼은 UI 기본기에서 아키텍처, 오프라인 동기화, 제품화, 캡스톤으로 이어지도록 재배열했다.
-특히 `offline-sync-foundations`를 추가해 `realtime-chat` 진입 전 브리지 프로젝트를 만든다.
-
-## Canonical Commands
+저장소 공통 검증은 아래 세 스크립트를 기준으로 본다.
 
 ```bash
-bash scripts/bootstrap_study_tree.sh
-bash scripts/report_study_status.sh
-bash scripts/verify_study_structure.sh
 bash scripts/check_study_docs.sh
+bash scripts/verify_study_structure.sh
+bash scripts/report_study_status.sh
 ```
 
-`navigation` 파일럿 구현 검증:
+각 프로젝트의 세부 검증 명령은 해당 프로젝트 README와 `problem/README.md`를 따른다.
 
-```bash
-cd study/Mobile-Foundations/navigation/react-native
-npm install
-npm run typecheck
-npm test
-npm run verify
-```
+## 의도적으로 범위 밖
 
-## Current Status
+- Expo managed workflow 중심 저장소로 재구성하지 않는다.
+- App Store / Play Store 실제 업로드나 signing secret 보관소로 쓰지 않는다.
+- `docs/`를 장문 작업 로그로 쓰지 않는다.
+- `notion/`을 숨기지 않지만, 메인 답안 본문으로도 쓰지 않는다.
 
-- 저장소 인터페이스와 `study/` 골격: `verified`
-- 학습 경로 10개 프로젝트: 모두 `verified`
-- 두 캡스톤 역할 분리: `incident-ops-mobile`는 contract harness, `incident-ops-mobile-client`는 portfolio client
-- 루트 검증 스크립트: `report_study_status`, `verify_study_structure`, `check_study_docs` 기준 유지 가능
+## 참고 문서
 
-## Repository Judgment
-
-현재 저장소는 React Native 학습 커리큘럼의 방향뿐 아니라,
-`초보자 -> 주니어 끝자락` 경로를 실제 프로젝트와 검증 명령으로 모두 채운 상태다.
-기초 UI, 성능, interaction, 아키텍처 경계, 오프라인/실시간 제품 시스템, 배포 리허설,
-계약 중심 캡스톤, 포트폴리오 클라이언트가 하나의 연속된 학습 경로로 정리돼 있다.
-
-## Reading Order
-
-1. `docs/README.md`
-2. `docs/curriculum-map.md`
-3. `docs/junior-end-skill-bar.md`
-4. `docs/repo-improvement-roadmap.md`
-5. `docs/legacy-audit.md`
-6. `study/README.md`
-
-## Notes
-
-- `legacy/`는 수정하지 않는다.
-- `study/**/notion/`은 로컬 전용이다.
-- 문서 링크는 `study/`와 루트의 실제 파일만 기준으로 검증한다.
+- [study/README.md](study/README.md)
+- [docs/README.md](docs/README.md)
+- [docs/curriculum-map.md](docs/curriculum-map.md)
+- [docs/path-migration-map.md](docs/path-migration-map.md)

@@ -1,28 +1,36 @@
 # study
 
-`study/`는 이 저장소의 실제 학습 작업 트리입니다. 아직 시작하지 않은 항목을 빈 디렉터리로 미리 늘리는 대신,
-현재 손에 잡히는 프로젝트를 `verified` 상태까지 닫아 두는 것을 우선합니다.
+`study/`는 이 저장소의 실제 학습 프로젝트 트리입니다. 상위 트랙 설명보다 프로젝트 번호 순서를 먼저 드러내서, 처음 방문한 사람이 바로 문제와 해답 위치를 찾을 수 있게 구성합니다.
 
-## 먼저 읽을 곳
+## 읽기 시작점
 
-1. [Foundations-Security/README.md](Foundations-Security/README.md)
-2. [Capstone/README.md](Capstone/README.md)
-3. 관심 있는 프로젝트의 `README.md`
-4. 프로젝트 안의 `problem/README.md`, `docs/README.md`, `notion/README.md`
+1. [../docs/project-catalog.md](../docs/project-catalog.md)
+2. 아래 번호형 프로젝트 README
+3. 각 프로젝트의 `problem/README.md`, `docs/README.md`, `python/README.md`, `notion/README.md`
 
 ## 디렉터리 구조
 
 ```text
 study/
-  README.md
-  Foundations-Security/
-  Capstone/
+  01-crypto-primitives-in-practice/
+  02-auth-threat-modeling/
+  03-owasp-backend-mitigations/
+  04-dependency-vulnerability-workflow/
+  90-capstone-collab-saas-security-review/
 ```
+
+## 번호형 읽기 순서
+
+| 번호 | 프로젝트 | 역할 |
+| --- | --- | --- |
+| `01` | [crypto-primitives-in-practice](01-crypto-primitives-in-practice/README.md) | secret input과 public input을 primitive 수준에서 분리합니다. |
+| `02` | [auth-threat-modeling](02-auth-threat-modeling/README.md) | auth control vocabulary를 고정 시나리오로 검증합니다. |
+| `03` | [owasp-backend-mitigations](03-owasp-backend-mitigations/README.md) | backend route defense를 endpoint fixture로 평가합니다. |
+| `04` | [dependency-vulnerability-workflow](04-dependency-vulnerability-workflow/README.md) | patch triage와 action 결정을 offline bundle로 재현합니다. |
+| `90` | [capstone-collab-saas-security-review](90-capstone-collab-saas-security-review/README.md) | 앞선 판단 기준을 하나의 remediation board로 다시 조합합니다. |
 
 ## 읽는 방법
 
-- `Foundations-Security/`는 필수 구간, `Capstone/`은 심화 구간으로 읽습니다.
-- 트랙 README로 순서와 상태를 먼저 파악합니다.
-- 프로젝트에 들어가면 `problem/README.md`로 범위와 fixture provenance를 먼저 확인합니다.
-- `docs/`에서 개념 구분을 맞춘 뒤, `python/`과 테스트를 읽습니다.
-- `notion/`에서 의도, 실패 사례, 재현 순서를 복기합니다.
+- 각 프로젝트는 `README.md -> problem/README.md -> docs/README.md -> python/README.md -> notion/README.md` 순서로 읽습니다.
+- `01`부터 `04`까지는 foundations 역할, `90`은 통합 capstone 역할을 맡지만 디렉터리 자체는 단일 시퀀스로 유지합니다.
+- 개별 프로젝트를 건너뛰더라도 루트 기준 검증 명령은 유지하므로, 먼저 실행해 보고 필요한 프로젝트로 내려가도 됩니다.
