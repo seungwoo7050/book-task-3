@@ -1,0 +1,262 @@
+package repository
+
+import (
+	"context"
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"time"
+
+	"github.com/google/uuid"
+
+	"github.com/woopinbell/go-backend/study/04-capstone/17-game-store-capstone/internal/domain"
+)
+
+// ErrConflict는 낙관적 잠금 충돌이 발생했을 때 반환된다.
+var ErrConflict = errors.New("optimistic locking conflict")
+
+// ErrIdempotencyKeyExists는 멱등 키를 중복 삽입하려 할 때 반환된다.
+var ErrIdempotencyKeyExists = errors.New("idempotency key already exists")
+
+// Store는 구매, 재고, 멱등 키, outbox에 대한 DB 접근을 담당한다.
+type Store struct {
+	db *sql.DB
+}
+
+// NewStore는 저장소를 생성한다.
+func NewStore(db *sql.DB) *Store {
+	return &Store{db: db}
+}
+
+// GetPlayer는 트랜잭션 안에서 플레이어 상태를 조회한다.
+func (s *Store) GetPlayer(ctx context.Context, tx *sql.Tx, playerID string) (domain.Player, error) {
+	var p domain.Player
+	err := tx.QueryRowContext(ctx,
+		`SELECT id, name, balance, version, created_at
+		 FROM players WHERE id = $1`,
+		playerID,
+	).Scan(&p.ID, &p.Name, &p.Balance, &p.Version, &p.CreatedAt)
+	if err != nil {
+		return domain.Player{}, err
+	}
+	return p, nil
+}
+
+// GetCatalogItem은 구매 대상 아이템을 조회한다.
+func (s *Store) GetCatalogItem(ctx context.Context, tx *sql.Tx, itemID string) (domain.CatalogItem, error) {
+	var item domain.CatalogItem
+	err := tx.QueryRowContext(ctx,
+		`SELECT id, sku, name, price, created_at
+		 FROM catalog_items WHERE id = $1`,
+		itemID,
+	).Scan(&item.ID, &item.SKU, &item.Name, &item.Price, &item.CreatedAt)
+	if err != nil {
+		return domain.CatalogItem{}, err
+	}
+	return item, nil
+}
+
+// DeductBalance는 잔액과 version을 함께 갱신해 낙관적 잠금을 적용한다.
+func (s *Store) DeductBalance(ctx context.Context, tx *sql.Tx, playerID string, amount int64, expectedVersion int64) (int64, int64, error) {
+	var newBalance int64
+	var newVersion int64
+	err := tx.QueryRowContext(ctx,
+		`UPDATE players
+		 SET balance = balance - $1, version = version + 1
+		 WHERE id = $2
+		   AND version = $3
+		   AND balance >= $1
+		 RETURNING balance, version`,
+		amount, playerID, expectedVersion,
+	).Scan(&newBalance, &newVersion)
+	if errors.Is(err, sql.ErrNoRows) {
+		return 0, 0, ErrConflict
+	}
+	if err != nil {
+		return 0, 0, err
+	}
+	return newBalance, newVersion, nil
+}
+
+// UpsertInventory는 플레이어 인벤토리 수량을 증가시킨다.
+func (s *Store) UpsertInventory(ctx context.Context, tx *sql.Tx, playerID, itemID string, qty int) error {
+	_, err := tx.ExecContext(ctx,
+		`INSERT INTO inventories (id, player_id, item_id, qty, updated_at)
+		 VALUES ($1, $2, $3, $4, now())
+		 ON CONFLICT (player_id, item_id)
+		 DO UPDATE
+		 SET qty = inventories.qty + EXCLUDED.qty,
+		     updated_at = now()`,
+		uuid.NewString(), playerID, itemID, qty,
+	)
+	return err
+}
+
+// CreatePurchase는 구매 레코드를 삽입하고 생성 결과를 반환한다.
+func (s *Store) CreatePurchase(ctx context.Context, tx *sql.Tx, purchaseID, playerID, itemID string, price int64) (domain.Purchase, error) {
+	var p domain.Purchase
+	err := tx.QueryRowContext(ctx,
+		`INSERT INTO purchases (id, player_id, item_id, price)
+		 VALUES ($1, $2, $3, $4)
+		 RETURNING id, player_id, item_id, price, created_at`,
+		purchaseID, playerID, itemID, price,
+	).Scan(&p.ID, &p.PlayerID, &p.ItemID, &p.Price, &p.CreatedAt)
+	if err != nil {
+		return domain.Purchase{}, err
+	}
+	return p, nil
+}
+
+// GetIdempotencyKey는 멱등 키에 저장된 응답을 조회한다.
+func (s *Store) GetIdempotencyKey(ctx context.Context, tx *sql.Tx, key string) (domain.IdempotencyRecord, error) {
+	var rec domain.IdempotencyRecord
+	err := tx.QueryRowContext(ctx,
+		`SELECT key, request_hash, response_json, created_at
+		 FROM idempotency_keys
+		 WHERE key = $1`,
+		key,
+	).Scan(&rec.Key, &rec.RequestHash, &rec.Response, &rec.CreatedAt)
+	if err != nil {
+		return domain.IdempotencyRecord{}, err
+	}
+	return rec, nil
+}
+
+// InsertIdempotencyKey는 요청 해시와 응답 페이로드를 저장한다.
+func (s *Store) InsertIdempotencyKey(ctx context.Context, tx *sql.Tx, key, requestHash string, response json.RawMessage) error {
+	_, err := tx.ExecContext(ctx,
+		`INSERT INTO idempotency_keys (key, request_hash, response_json)
+		 VALUES ($1, $2, $3)`,
+		key, requestHash, response,
+	)
+	if isUniqueViolation(err) {
+		return ErrIdempotencyKeyExists
+	}
+	return err
+}
+
+// InsertOutboxEvent는 트랜잭션 안에서 outbox 이벤트를 기록한다.
+func (s *Store) InsertOutboxEvent(ctx context.Context, tx *sql.Tx, eventID, aggregateID, eventType string, payload json.RawMessage) error {
+	_, err := tx.ExecContext(ctx,
+		`INSERT INTO outbox (id, aggregate_id, event_type, payload_json)
+		 VALUES ($1, $2, $3, $4)`,
+		eventID, aggregateID, eventType, payload,
+	)
+	return err
+}
+
+// GetPurchase는 구매 ID로 단건 조회한다.
+func (s *Store) GetPurchase(ctx context.Context, purchaseID string) (domain.Purchase, error) {
+	var p domain.Purchase
+	err := s.db.QueryRowContext(ctx,
+		`SELECT id, player_id, item_id, price, created_at
+		 FROM purchases
+		 WHERE id = $1`,
+		purchaseID,
+	).Scan(&p.ID, &p.PlayerID, &p.ItemID, &p.Price, &p.CreatedAt)
+	if err != nil {
+		return domain.Purchase{}, err
+	}
+	return p, nil
+}
+
+// ListInventory는 플레이어 인벤토리 목록을 최신 갱신 순으로 조회한다.
+func (s *Store) ListInventory(ctx context.Context, playerID string) ([]domain.InventoryItem, error) {
+	rows, err := s.db.QueryContext(ctx,
+		`SELECT i.item_id, c.sku, c.name, i.qty, i.updated_at
+		 FROM inventories i
+		 INNER JOIN catalog_items c ON c.id = i.item_id
+		 WHERE i.player_id = $1
+		 ORDER BY i.updated_at DESC`,
+		playerID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	items := make([]domain.InventoryItem, 0)
+	for rows.Next() {
+		var item domain.InventoryItem
+		if err := rows.Scan(&item.ItemID, &item.SKU, &item.Name, &item.Qty, &item.UpdatedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+// ListUnpublishedOutbox는 미발행 outbox 이벤트를 생성 시각 순으로 읽는다.
+func (s *Store) ListUnpublishedOutbox(ctx context.Context, limit int) ([]domain.OutboxEvent, error) {
+	rows, err := s.db.QueryContext(ctx,
+		`SELECT id, aggregate_id, event_type, payload_json, created_at, published_at
+		 FROM outbox
+		 WHERE published_at IS NULL
+		 ORDER BY created_at ASC
+		 LIMIT $1`,
+		limit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	events := make([]domain.OutboxEvent, 0)
+	for rows.Next() {
+		var e domain.OutboxEvent
+		if err := rows.Scan(&e.ID, &e.AggregateID, &e.EventType, &e.PayloadJSON, &e.CreatedAt, &e.PublishedAt); err != nil {
+			return nil, err
+		}
+		events = append(events, e)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return events, nil
+}
+
+// MarkOutboxPublished는 이벤트를 발행 완료 상태로 표시한다.
+func (s *Store) MarkOutboxPublished(ctx context.Context, eventID string) error {
+	result, err := s.db.ExecContext(ctx,
+		`UPDATE outbox SET published_at = now() WHERE id = $1`,
+		eventID,
+	)
+	if err != nil {
+		return err
+	}
+	n, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return fmt.Errorf("outbox event not found: %s", eventID)
+	}
+	return nil
+}
+
+// LastPublishedAt는 마지막으로 발행 완료된 outbox 시각을 반환한다.
+func (s *Store) LastPublishedAt(ctx context.Context) (*time.Time, error) {
+	var ts sql.NullTime
+	err := s.db.QueryRowContext(ctx, `SELECT max(published_at) FROM outbox`).Scan(&ts)
+	if err != nil {
+		return nil, err
+	}
+	if !ts.Valid {
+		return nil, nil
+	}
+	t := ts.Time
+	return &t, nil
+}
+
+func isUniqueViolation(err error) bool {
+	type sqlStateError interface {
+		error
+		SQLState() string
+	}
+	var se sqlStateError
+	return errors.As(err, &se) && se.SQLState() == "23505"
+}

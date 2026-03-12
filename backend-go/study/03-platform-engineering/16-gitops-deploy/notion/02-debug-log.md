@@ -16,10 +16,10 @@ exec /api: no such file or directory
 
 Dockerfile에서:
 ```dockerfile
-COPY 01-backend-core/06-go-api-standard/go/go.mod ./go.mod
+COPY 01-backend-core/06-go-api-standard/solution/go/go.mod ./go.mod
 ```
 
-이 경로는 `docker build -f infra/Dockerfile ../..` 처럼 상위 디렉토리를 빌드 컨텍스트로 지정해야 동작한다. `docker build .`로 실행하면 경로를 찾지 못한다.
+이 경로는 `docker build -f solution/infra/Dockerfile ../..` 처럼 상위 디렉토리를 빌드 컨텍스트로 지정해야 동작한다. `docker build .`로 실행하면 경로를 찾지 못한다.
 
 `.dockerignore`로 불필요한 파일을 제외해 빌드 컨텍스트 크기를 줄이는 것도 중요.
 
@@ -48,7 +48,7 @@ Helm 차트에 `secret.yaml`이 있지만, 실제 비밀번호를 values.yaml에
 2. External Secrets Operator로 Vault/AWS Secrets Manager에서 주입
 3. ArgoCD Vault Plugin
 
-이 프로젝트에서는 placeholder만 두고, 실 배포 시 `--set` 또는 sealed-secret으로 주입하는 방식.
+이 프로젝트에서는 플레이스홀더만 두고, 실 배포 시 `--set` 또는 sealed-secret으로 주입하는 방식.
 
 ## ArgoCD Sync 실패와 Retry
 

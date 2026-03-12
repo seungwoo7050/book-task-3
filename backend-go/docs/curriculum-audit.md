@@ -27,7 +27,7 @@
 - `01-backend-core`에 SQL, HTTP, auth, cache/observability 브리지 과제를 추가한다.
 - 기존 `concurrency-patterns`와 `rate-limiter`는 뒤로 이동한다.
 - `distributed-log`는 `distributed-log-core`로 이름을 바꿔 실제 구현 범위에 맞춘다.
-- `gitops-deploy`는 `go/` 대신 `infra/` 구조를 사용한다.
+- `gitops-deploy`는 `solution/infra` 구조를 사용한다.
 - `05-portfolio-projects`는 학습 순서를 유지하면서 채용용 대표작을 따로 두는 선택 트랙이다.
 
 ## Status Model

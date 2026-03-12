@@ -5,34 +5,34 @@ help: ## Show this help
 
 build: ## Build the server binary
 	mkdir -p ./bin
-	cd ../go && go build -o ../problem/bin/server ./cmd/server
+	cd ../solution/go && go build -o ../problem/bin/server ./cmd/server
 
 test: ## Run all tests
-	cd ../go && go test ./... -v -count=1 -race
+	cd ../solution/go && go test ./... -v -count=1 -race
 
 bench: ## Run benchmarks
-	cd ../go && go test ./... -bench=. -benchmem
+	cd ../solution/go && go test ./... -bench=. -benchmem
 
 run: build ## Build and run the server
 	./bin/server
 
 migrate: ## Apply schema (requires running CockroachDB)
-	cockroach sql --insecure --host=localhost:26257 < ../go/schema.sql
+	cockroach sql --insecure --host=localhost:26257 < ../solution/go/schema.sql
 
 up: ## Start CockroachDB for runtime verification
-	$(MAKE) -C ../go up
+	$(MAKE) -C ../solution/go up
 
 down: ## Stop CockroachDB
-	$(MAKE) -C ../go down
+	$(MAKE) -C ../solution/go down
 
 logs: ## Show CockroachDB logs
-	$(MAKE) -C ../go logs
+	$(MAKE) -C ../solution/go logs
 
 e2e: ## Run DB-backed end-to-end tests
-	$(MAKE) -C ../go e2e
+	$(MAKE) -C ../solution/go e2e
 
 smoke: ## Alias for runtime smoke verification
-	$(MAKE) -C ../go smoke
+	$(MAKE) -C ../solution/go smoke
 
 repro: ## Run the full reproducibility verification
-	$(MAKE) -C ../go repro
+	$(MAKE) -C ../solution/go repro

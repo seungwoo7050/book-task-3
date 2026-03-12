@@ -1,28 +1,24 @@
-# C-authorization-lab Notion 문서 가이드
+# C-authorization-lab 학습 노트 가이드
 
-이 폴더는 C-authorization-lab(인가 — RBAC, membership, ownership)의 개발 과정과 학습 내용을 기록한 문서 세트다.
+이 폴더는 인증과 인가를 분리해 RBAC, membership, ownership을 다룬 과정을 기록한 공개 학습 노트 세트다.
 
-## 어떤 문서를 읽어야 하는가
+## 먼저 읽을 문서
 
-### 처음 이 프로젝트를 접하는 경우
-1. **[00-problem-framing.md](./00-problem-framing.md)** — 인증과 인가를 왜 분리했는지, 이 랩의 범위를 이해한다.
-2. **[05-timeline.md](./05-timeline.md)** — 프로젝트를 처음부터 재현하고 싶다면 이 문서를 따라간다.
-3. **[01-approach-log.md](./01-approach-log.md)** — service logic vs method security 결정의 근거.
+1. [00-problem-framing.md](00-problem-framing.md): authorization 랩이 따로 필요한 이유
+2. [05-development-timeline.md](05-development-timeline.md): 처음부터 다시 따라 만들 때의 순서
+3. [01-approach-log.md](01-approach-log.md): service logic과 method security 사이에서 어떤 판단을 했는지
 
-### 특정 문제를 디버깅하는 경우
-- **[02-debug-log.md](./02-debug-log.md)** — authorization 문서화의 과장 방지.
+## 목적별 읽기
 
-### 학습 내용을 복습하는 경우
-- **[04-knowledge-index.md](./04-knowledge-index.md)** — RBAC, membership lifecycle, ownership check 개념 정리.
-- **[03-retrospective.md](./03-retrospective.md)** — 강점, 약점, 다음 단계.
+- 구현 깊이와 설명 범위의 간극을 보려면 [02-debug-log.md](02-debug-log.md)
+- RBAC, membership lifecycle, ownership check를 복습하려면 [04-knowledge-index.md](04-knowledge-index.md)
+- 다음 확장 방향을 보려면 [03-retrospective.md](03-retrospective.md)
 
 ## 문서 목록
 
-| 번호 | 파일 | 목적 |
-|------|------|------|
-| 00 | problem-framing | 인가 문제 정의와 성공 기준 |
-| 01 | approach-log | service logic 중심 설계 결정 근거 |
-| 02 | debug-log | 구현 깊이와 문서 설명의 간극 |
-| 03 | retrospective | 회고 — invite lifecycle, ownership 학습 |
-| 04 | knowledge-index | RBAC, method security 개념과 용어 |
-| 05 | timeline | 전체 개발 과정의 순차적 기록 |
+- `00-problem-framing.md`: 문제 정의와 성공 기준
+- `01-approach-log.md`: 설계 선택지와 최종 결정
+- `02-debug-log.md`: 실패와 문서화 교정 기록
+- `03-retrospective.md`: 강점, 약점, 다음 단계
+- `04-knowledge-index.md`: 재사용 개념과 용어
+- `05-development-timeline.md`: 재현 가능한 개발 순서 기록

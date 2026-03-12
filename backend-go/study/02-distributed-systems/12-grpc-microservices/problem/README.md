@@ -1,60 +1,27 @@
-# Problem: gRPC Microservices
+# 문제 정의
 
-## Objective
+Product Catalog 마이크로서비스를 gRPC와 Protocol Buffers로 설계하고 unary/streaming RPC를 구현한다.
 
-Build a **Product Catalog** microservice using gRPC with Protocol Buffers.
-The service supports CRUD operations, server-side streaming for listing products,
-and bidirectional streaming for real-time price updates.
+## 성공 기준
 
-## Service Definition
+- Product CRUD와 리스트/가격 감시용 RPC를 정의한다.
+- logging interceptor와 auth interceptor를 구현한다.
+- client retry interceptor와 round-robin 예제를 제공한다.
+- server-side streaming과 bidirectional streaming을 둘 다 보여 준다.
 
-```protobuf
-service ProductCatalog {
-  rpc GetProduct(GetProductRequest) returns (Product);
-  rpc CreateProduct(CreateProductRequest) returns (Product);
-  rpc UpdateProduct(UpdateProductRequest) returns (Product);
-  rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse);
-  rpc ListProducts(ListProductsRequest) returns (stream Product);
-  rpc PriceWatch(stream PriceWatchRequest) returns (stream PriceUpdate);
-}
-```
+## 제공 자료와 출처
 
-## Requirements
+- legacy `02-distributed-system/04-grpc-microservices` 문제를 한국어 canonical 형태로 정리한 문서다.
+- 원문 요구사항은 provenance로만 유지한다.
+- 공개 구현은 [`solution/README.md`](../solution/README.md)와 `solution/go`에 둔다.
 
-### Part 1: Proto Definition
+## 검증 기준
 
-1. Define the complete `.proto` file with all messages and the service.
-2. Messages must include proper field types, numbering, and documentation.
-3. Use `google.protobuf.Timestamp` for time fields.
+- `make -C problem build-server`
+- `make -C problem build-client`
+- `make -C problem test`
 
-### Part 2: Server Implementation
+## 제외 범위
 
-1. Implement all 6 RPC methods.
-2. Use an in-memory store (similar to Task 01).
-3. Implement a **logging interceptor** that logs every RPC call with:
-   - Method name, duration, and status code.
-4. Implement an **auth interceptor** that checks for a metadata key `authorization`.
-5. Handle errors using proper gRPC status codes:
-   - `NOT_FOUND`, `INVALID_ARGUMENT`, `ALREADY_EXISTS`, `UNAUTHENTICATED`.
-
-### Part 3: Client Implementation
-
-1. Implement a client that can call all 6 RPCs.
-2. Use client-side round-robin load balancing.
-3. Implement a **retry interceptor** with exponential backoff.
-
-### Part 4: Streaming
-
-1. `ListProducts` returns products one by one as a server stream.
-2. `PriceWatch` is bidirectional: client sends product IDs to watch,
-   server sends back price updates when prices change.
-
-## Evaluation Criteria
-
-| Criterion | Weight | Description |
-|-----------|--------|-------------|
-| Proto design | 20% | Well-structured proto file with proper types |
-| Server correctness | 25% | All RPCs work correctly |
-| Interceptors | 20% | Logging and auth interceptors work properly |
-| Streaming | 20% | Both streaming patterns work correctly |
-| Client + tests | 15% | Client works; integration tests pass |
+- 자동 generated code workflow
+- production service mesh

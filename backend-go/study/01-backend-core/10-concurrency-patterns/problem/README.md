@@ -1,72 +1,27 @@
-# Problem: Concurrency Patterns
+# 문제 정의
 
-## Objective
+Go의 핵심 동시성 패턴인 worker pool과 pipeline을 구현하고 goroutine lifecycle을 안전하게 관리한다.
 
-Implement two fundamental Go concurrency patterns and demonstrate mastery of
-goroutine lifecycle management, channel communication, and context-based
-cancellation.
+## 성공 기준
 
-## Part 1: Worker Pool
+- worker pool이 job 제출, 결과 수집, graceful shutdown을 지원한다.
+- pipeline이 Generator -> Filter -> Sink 3단계로 동작한다.
+- 모든 단계가 context cancellation을 존중한다.
+- goroutine leak 없이 종료된다.
+- benchmark로 throughput을 확인한다.
 
-### Requirements
+## 제공 자료와 출처
 
-1. Implement a `Pool` that manages `N` worker goroutines.
-2. The pool accepts `Job` values through a submission channel.
-3. Each worker processes jobs concurrently and sends results to a results channel.
-4. The pool must support:
-   - **Graceful shutdown**: `Stop()` waits for all in-flight jobs to complete.
-   - **Context cancellation**: If the context is cancelled, workers stop promptly.
-   - **Error propagation**: Failed jobs report errors without crashing the pool.
-5. The pool must not leak goroutines after `Stop()` returns.
+- legacy `01-foundation/02-concurrency-patterns` 문제를 한국어 canonical 형태로 다시 정리한 문서다.
+- 원문 세부 요구사항은 provenance로만 유지한다.
+- 공개 구현은 [`solution/README.md`](../solution/README.md)와 `solution/go`에 둔다.
 
-### Interface
+## 검증 기준
 
-```go
-type Job struct {
-    ID      int
-    Payload any
-}
+- `make -C problem test`
+- `make -C problem bench`
 
-type Result struct {
-    JobID int
-    Value any
-    Err   error
-}
+## 제외 범위
 
-type Pool struct { ... }
-
-func NewPool(ctx context.Context, workers int, handler func(Job) Result) *Pool
-func (p *Pool) Submit(job Job)
-func (p *Pool) Results() <-chan Result
-func (p *Pool) Stop()
-```
-
-## Part 2: Pipeline
-
-### Requirements
-
-1. Implement a three-stage pipeline: **Generator → Filter → Sink**.
-2. **Generator**: Produces integers from 1 to N.
-3. **Filter**: Passes through only values where `predicate(value)` returns true.
-4. **Sink**: Collects all values into a slice.
-5. Each stage runs in its own goroutine(s).
-6. All stages must respect context cancellation (early exit if cancelled).
-7. Channels must be properly closed when a stage completes.
-
-### Interface
-
-```go
-func Generate(ctx context.Context, start, end int) <-chan int
-func Filter(ctx context.Context, in <-chan int, predicate func(int) bool) <-chan int
-func Sink(ctx context.Context, in <-chan int) []int
-```
-
-## Evaluation Criteria
-
-| Criterion | Weight | Description |
-|-----------|--------|-------------|
-| Correctness | 30% | All patterns work as specified |
-| No goroutine leaks | 25% | All goroutines exit cleanly |
-| Context support | 20% | Cancellation and timeouts are respected |
-| Benchmarks | 15% | Benchmark tests demonstrate throughput |
-| Code clarity | 10% | Clean, idiomatic Go |
+- distributed queue
+- production backpressure policy

@@ -12,7 +12,7 @@ struct, interface, custom error를 처음 분리해 본 경험이 담겨 있다.
 | 3 | [02-debug-log.md](02-debug-log.md) | pointer receiver나 에러 비교에서 막혔을 때 참고할 때. |
 | 4 | [03-retrospective.md](03-retrospective.md) | 이 과제가 뒤 과제에 어떤 토대가 되는지 정리하고 싶을 때. |
 | 5 | [04-knowledge-index.md](04-knowledge-index.md) | interface, errors.As 등 특정 패턴을 빠르게 찾고 싶을 때. |
-| 6 | [05-timeline.md](05-timeline.md) | 전체 개발 과정을 시간순으로 재현하고 싶을 때. |
+| 6 | [05-development-timeline.md](05-development-timeline.md) | 전체 개발 과정을 시간순으로 재현하고 싶을 때. |
 
 ## 이 문서들의 성격
 

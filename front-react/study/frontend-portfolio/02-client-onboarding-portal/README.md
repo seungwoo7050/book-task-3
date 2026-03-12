@@ -2,43 +2,49 @@
 
 상태: `verified`
 
-`Client Onboarding Portal`은 SaaS 고객의 sign-in, workspace setup, member invite, review and submit 흐름을 다루는 고객-facing onboarding 앱이다.
+## 무슨 문제인가
 
-## 왜 주니어 경로에 필요한가
+고객-facing onboarding flow에서는 sign-in, session gate, workspace validation, draft restore, member invite, review, submit retry가 하나의 연속된 경험으로 이어져야 한다. 이 프로젝트는 multi-step onboarding을 제품처럼 설계하고 검증하는 문제를 푼다.
 
-`Ops Triage Console`은 내부도구형 UI에는 강하지만, 고객-facing form, validation, session gate, multi-step flow는 보여 주지 않는다. 이 프로젝트는 그 폭을 채워 "내부도구 + 고객-facing 제품" 두 축을 함께 갖춘 포트폴리오를 만든다.
+## 왜 필요한가
 
-## Prerequisite
+`Ops Triage Console`이 내부도구형 UI에 강하다면, 이 프로젝트는 고객-facing form과 route flow를 보여 준다. 두 축이 함께 있어야 "내부도구 + 고객-facing 제품" 포트폴리오가 완성된다.
 
-- `frontend-foundations` 트랙의 DOM/async 기초
-- React 컴포넌트와 라우팅 기초
-- form validation 개념
+## 내가 만든 답
 
-## 구조
+sign-in, onboarding wizard, workspace profile, invite, review and submit 흐름을 갖춘 Next.js App Router 기반 포털을 구현했다.
 
-- `problem/`: authored product brief와 입력/스크립트 자리
-- `next/`: Next.js App Router 구현 자리
-- `docs/`: 발표 자료와 flow/품질 문서
-- `notion/`: 로컬 전용 작업 로그
+- 문제 정의: [problem/README.md](problem/README.md)
+- 구현 상세: [next/README.md](next/README.md)
+- 공개 문서: [docs/README.md](docs/README.md)
 
-## Build/Test Command
+## 핵심 구현 포인트
+
+- `next/src/components/portal/client-onboarding-portal.tsx`에서 전체 onboarding 상태와 화면 구성을 묶는다.
+- `next/src/components/portal/onboarding-route.tsx`, `sign-in-panel.tsx`에서 session gate와 route step 전환을 분리한다.
+- `next/src/lib/guards.ts`, `schemas.ts`, `storage.ts`, `service.ts`에서 guard, validation, draft, mock service 경계를 나눈다.
+
+## 검증
 
 ```bash
 cd study
 npm run dev --workspace @front-react/client-onboarding-portal
-npm run typecheck --workspace @front-react/client-onboarding-portal
-npm run test --workspace @front-react/client-onboarding-portal
-npm run e2e --workspace @front-react/client-onboarding-portal
 npm run verify --workspace @front-react/client-onboarding-portal
 ```
 
-검증 범위는 아래와 같다.
+- 검증 기준일: 2026-03-08
+- `typecheck`: `next/tsconfig.json` 기준 타입 검사 통과
+- `vitest`: schema validation, draft storage, route guard, onboarding integration 확인
+- `playwright`: sign-in -> validation -> draft restore -> retry -> success 흐름 확인
 
-- sign-in / session gate
-- workspace validation과 draft restore
-- invite creation
-- review checklist와 submit failure -> retry -> success
+## 읽기 순서
 
-## 다음 단계로 이어지는 한계
+1. [problem/README.md](problem/README.md)
+2. [next/README.md](next/README.md)
+3. [docs/README.md](docs/README.md)
 
-이 프로젝트가 추가되면 `frontend-portfolio` 트랙은 내부도구형과 고객-facing 흐름을 모두 갖추게 된다. 그 이후 확장은 폭을 늘리기보다 문서와 polish를 다듬는 방향이 더 중요해진다.
+## 한계
+
+- 실제 auth backend, server database, email delivery는 다루지 않는다.
+- 도메인 범위는 onboarding에 집중하며, billing이나 organization admin까지 확장하지 않는다.
+- 포트폴리오 폭은 충분하므로 이후 확장은 새 앱보다 문서와 polish를 다듬는 쪽이 더 중요하다.

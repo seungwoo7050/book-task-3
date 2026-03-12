@@ -12,7 +12,7 @@
 | 3 | [02-debug-log.md](02-debug-log.md) | 비슷한 실수를 피하고 싶을 때. 어디서 막혔는지 궁금할 때. |
 | 4 | [03-retrospective.md](03-retrospective.md) | 프로젝트를 끝낸 뒤 무엇을 얻었는지 정리하고 싶을 때. |
 | 5 | [04-knowledge-index.md](04-knowledge-index.md) | 특정 개념이나 표준 라이브러리 사용법을 빠르게 찾고 싶을 때. |
-| 6 | [05-timeline.md](05-timeline.md) | 전체 개발 과정을 시간순으로 재현하고 싶을 때. |
+| 6 | [05-development-timeline.md](05-development-timeline.md) | 전체 개발 과정을 시간순으로 재현하고 싶을 때. |
 
 ## 이 문서들의 성격
 

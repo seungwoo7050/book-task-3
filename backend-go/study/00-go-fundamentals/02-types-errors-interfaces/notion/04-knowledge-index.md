@@ -32,12 +32,12 @@ ErrDuplicateSKU — sentinel error
 go mod init github.com/woopinbell/go-backend/study/00-go-fundamentals/02-types-errors-interfaces
 
 # 실행
-cd go
+cd solution/go
 go run ./cmd/inventorydemo
 # 출력: starter-pack final price: 2400 cents
 
 # 테스트
-cd go
+cd solution/go
 go test ./...
 go test -v ./domain/
 go test -run TestCatalogGetNotFound ./domain/

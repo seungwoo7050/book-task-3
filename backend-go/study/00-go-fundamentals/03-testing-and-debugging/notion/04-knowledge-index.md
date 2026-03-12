@@ -68,7 +68,7 @@ func (s *SafeStore) Snapshot() []Item {
 go mod init github.com/woopinbell/go-backend/study/00-go-fundamentals/03-testing-and-debugging
 
 # 실행
-cd go
+cd solution/go
 go run ./cmd/debugdemo
 
 # 테스트 (기본)

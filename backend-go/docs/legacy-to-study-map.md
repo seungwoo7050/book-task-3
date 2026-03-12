@@ -9,7 +9,7 @@
 | `02-distributed-system/05-distributed-log` | `02-distributed-systems/13-distributed-log-core` | replication 목표는 제외 |
 | `03-platform-engineering/06-cockroach-tx` | `03-platform-engineering/14-cockroach-tx` | transaction/idempotency 유지 |
 | `03-platform-engineering/07-event-pipeline` | `03-platform-engineering/15-event-pipeline` | outbox/Kafka 유지 |
-| `03-platform-engineering/08-gitops-deploy` | `03-platform-engineering/16-gitops-deploy` | `infra/` 구조로 이동 |
+| `03-platform-engineering/08-gitops-deploy` | `03-platform-engineering/16-gitops-deploy` | `solution/infra` 구조로 이동 |
 | `04-platform-capstone/09-game-store-capstone` | `04-capstone/17-game-store-capstone` | 최종 capstone 유지 |
 
 ## New Study-Only Projects

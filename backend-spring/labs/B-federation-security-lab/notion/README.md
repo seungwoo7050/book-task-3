@@ -1,28 +1,24 @@
-# B-federation-security-lab Notion 문서 가이드
+# B-federation-security-lab 학습 노트 가이드
 
-이 폴더는 B-federation-security-lab(인증 강화 — OAuth2 federation, 2FA, audit logging)의 개발 과정과 학습 내용을 기록한 문서 세트다.
+이 폴더는 federation, 2FA, audit를 한 랩으로 묶은 이유와 그 과정에서의 판단을 기록한 공개 학습 노트 세트다.
 
-## 어떤 문서를 읽어야 하는가
+## 먼저 읽을 문서
 
-### 처음 이 프로젝트를 접하는 경우
-1. **[00-problem-framing.md](./00-problem-framing.md)** — 왜 federation, 2FA, audit를 하나의 랩에 묶었는지 이해한다.
-2. **[05-timeline.md](./05-timeline.md)** — 프로젝트를 처음부터 재현하고 싶다면 이 문서를 따라간다.
-3. **[01-approach-log.md](./01-approach-log.md)** — 설계 결정의 이유가 궁금하면 이 문서를 본다.
+1. [00-problem-framing.md](00-problem-framing.md): 왜 federation, 2FA, audit를 함께 다루는가
+2. [05-development-timeline.md](05-development-timeline.md): 로컬에서 다시 재현할 때 따라갈 순서
+3. [01-approach-log.md](01-approach-log.md): real integration 대신 contract modeling을 먼저 택한 이유
 
-### 특정 문제를 디버깅하는 경우
-- **[02-debug-log.md](./02-debug-log.md)** — 보안 기능 문서화의 함정과 해결 과정.
+## 목적별 읽기
 
-### 학습 내용을 복습하는 경우
-- **[04-knowledge-index.md](./04-knowledge-index.md)** — external identity linking, TOTP, audit log 개념 정리.
-- **[03-retrospective.md](./03-retrospective.md)** — 무엇이 잘 됐고 무엇이 부족한지 돌아본다.
+- 보안 기능 과장과 문서화 함정을 보려면 [02-debug-log.md](02-debug-log.md)
+- external identity linking, TOTP, audit 개념을 복습하려면 [04-knowledge-index.md](04-knowledge-index.md)
+- 현재 한계와 다음 확장을 보려면 [03-retrospective.md](03-retrospective.md)
 
 ## 문서 목록
 
-| 번호 | 파일 | 목적 |
-|------|------|------|
-| 00 | problem-framing | 이 랩이 풀려는 문제와 성공 기준 |
-| 01 | approach-log | 설계 선택지와 최종 결정의 근거 |
-| 02 | debug-log | 보안 문서화의 과장 방지 |
-| 03 | retrospective | 완료 후 회고 — 강점, 약점, 다음 단계 |
-| 04 | knowledge-index | 재사용 가능한 개념과 용어 정리 |
-| 05 | timeline | 전체 개발 과정의 순차적 기록 (CLI, 설정, 구현) |
+- `00-problem-framing.md`: 문제 정의와 성공 기준
+- `01-approach-log.md`: 선택지 비교와 최종 방향
+- `02-debug-log.md`: 실패와 과장 방지 기록
+- `03-retrospective.md`: 강점, 약점, 다음 단계
+- `04-knowledge-index.md`: 핵심 개념과 용어
+- `05-development-timeline.md`: 재현 가능한 개발 순서 기록

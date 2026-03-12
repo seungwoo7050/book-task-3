@@ -1,25 +1,25 @@
 # Knowledge Index
 
-## Reusable concepts
+## 재사용 개념
 
-For each concept, capture:
+개념마다 아래를 기록합니다.
 
-- short name
-- one-sentence definition
-- where it appears in this lab
-- where it should reappear in later labs or the capstone
+- 짧은 이름
+- 한 문장 정의
+- 이 프로젝트에서 어디에 나타나는가
+- 이후 어떤 랩이나 capstone에서 다시 나타나야 하는가
 
-## Glossary
+## 용어집
 
-Define only the terms that were genuinely confusing or easy to misuse.
+정말 헷갈렸거나 오해하기 쉬운 용어만 정의합니다.
 
-## References
+## 참고 자료
 
-For each reference include:
+참고 자료마다 아래를 기록합니다.
 
-- title
-- URL or local path
-- checked date
-- why it was consulted
-- what was learned
-- what changed in the code or design because of it
+- 제목
+- URL 또는 로컬 경로
+- 확인 날짜
+- 왜 참고했는가
+- 무엇을 배웠는가
+- 그 참고가 코드나 설계에 어떤 변화를 만들었는가

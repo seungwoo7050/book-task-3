@@ -12,7 +12,7 @@
 | 3 | [02-debug-log.md](02-debug-log.md) | middleware 순서, PATCH 부분 업데이트, shutdown 문제에서 막혔을 때. |
 | 4 | [03-retrospective.md](03-retrospective.md) | 이 과제가 뒤 과제에 어떤 구조적 토대가 되는지 볼 때. |
 | 5 | [04-knowledge-index.md](04-knowledge-index.md) | middleware, JSON envelope, graceful shutdown 패턴을 빠르게 찾을 때. |
-| 6 | [05-timeline.md](05-timeline.md) | 전체 개발 과정을 시간순으로 재현하고 싶을 때. |
+| 6 | [05-development-timeline.md](05-development-timeline.md) | 전체 개발 과정을 시간순으로 재현하고 싶을 때. |
 
 ## 이 문서들의 성격
 

@@ -15,4 +15,4 @@ make test-infra
 
 ## Remaining Checks
 
-- `helm upgrade --install`과 `kubectl apply -f ../infra/k8s/argocd-app.yaml`는 로컬 클러스터가 있을 때만 추가 검증한다.
+- `helm upgrade --install`과 `kubectl apply -f ../solution/infra/k8s/argocd-app.yaml`는 로컬 클러스터가 있을 때만 추가 검증한다.

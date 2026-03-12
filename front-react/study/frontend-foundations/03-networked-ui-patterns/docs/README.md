@@ -1,6 +1,8 @@
-# Public Docs
+# 공개 문서
 
 상태: `verified`
+
+이 디렉터리는 request lifecycle과 query navigation을 어떤 규칙으로 설계했는지 설명한다. mock API를 썼더라도 비동기 UI 설계가 제품처럼 읽히도록 근거를 남긴다.
 
 ## 문서 목록
 

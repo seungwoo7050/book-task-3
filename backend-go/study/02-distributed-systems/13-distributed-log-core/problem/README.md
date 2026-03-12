@@ -1,77 +1,27 @@
-# Problem: Distributed Log
+# 문제 정의
 
-## Objective
+append-only distributed commit log의 핵심인 store, index, segment, log abstraction을 구현한다.
 
-Implement a **distributed commit log** — an append-only, ordered data structure
-that forms the backbone of systems like Kafka, NATS, and Pulsar.
+## 성공 기준
 
-## Part 1: Store
+- length-prefixed record store를 구현한다.
+- offset -> position을 매핑하는 fixed-width mmap index를 구현한다.
+- segment가 base offset과 next offset을 관리하며 full 상태를 판정한다.
+- log가 active segment rotation과 read/append/reset을 지원한다.
+- 파일 정리와 reopen 시나리오를 테스트로 검증한다.
 
-### Requirements
+## 제공 자료와 출처
 
-1. Implement a `Store` that wraps a file for storing record data.
-2. Records are stored with a **length prefix** (8 bytes, big-endian uint64).
-3. `Append(data []byte)` writes the record and returns `(n int, pos uint64, err error)`:
-   - `n`: total bytes written (including the length prefix).
-   - `pos`: the starting position of the record in the file.
-4. `Read(pos uint64)` reads the record at the given position.
-5. The store must be closeable and flushable.
+- legacy `02-distributed-system/05-distributed-log` 문제를 한국어 canonical 형태로 다시 정리한 문서다.
+- 원문 요구사항과 replication bonus는 provenance로만 유지한다.
+- 공개 구현은 [`solution/README.md`](../solution/README.md)와 `solution/go`에 둔다.
 
-### Format
+## 검증 기준
 
-```
-┌──────────┬──────────────────┐
-│ len (8B) │ data (len bytes) │
-├──────────┼──────────────────┤
-│ len (8B) │ data (len bytes) │
-└──────────┴──────────────────┘
-```
+- `make -C problem test`
+- `make -C problem bench`
 
-## Part 2: Index
+## 제외 범위
 
-### Requirements
-
-1. Implement an `Index` that maps **offsets to store positions**.
-2. Each index entry is a fixed `12 bytes`: `[offset (4B) | position (8B)]`.
-3. The index file should be pre-allocated (memory-mapped) for fast access.
-4. `Write(off uint32, pos uint64)` appends an entry.
-5. `Read(entryNum int64)` returns `(off uint32, pos uint64, err error)`.
-   - If `entryNum == -1`, read the last entry.
-
-## Part 3: Segment
-
-### Requirements
-
-1. A `Segment` pairs a `Store` and an `Index`.
-2. It has a `baseOffset` and `nextOffset`.
-3. `Append(record []byte)` stores the data and index entry.
-4. `Read(off uint64)` retrieves a record by its absolute offset.
-5. When the store or index exceeds `MaxBytes`, the segment is "full."
-
-## Part 4: Log
-
-### Requirements
-
-1. A `Log` manages an ordered list of segments.
-2. New records go to the **active segment** (last segment).
-3. When the active segment is full, a new one is created.
-4. `Append(record []byte)` returns the offset.
-5. `Read(offset uint64)` finds the right segment and reads from it.
-6. `Close()` closes all segments.
-7. `Reset()` removes all segments and data.
-
-## Part 5: Replicator (Bonus)
-
-1. Implement a basic replicator that reads from a leader log and appends
-   to a follower log.
-2. Tracks the last replicated offset.
-
-## Evaluation Criteria
-
-| Criterion | Weight | Description |
-|-----------|--------|-------------|
-| Store correctness | 20% | Append and read work with binary encoding |
-| Index correctness | 20% | Offset-to-position mapping is accurate |
-| Segment + Log | 25% | Multi-segment management works |
-| File cleanup | 15% | Close, truncate, and reset work properly |
-| Tests | 20% | Full test coverage for each component |
+- replication layer
+- networked consensus

@@ -1,30 +1,30 @@
 # Problem Framing
 
-## Goal
+## 목표
 
-Write one paragraph that answers all three:
+한 단락 안에서 아래 세 가지를 모두 답합니다.
 
-- what backend problem this lab is solving
-- why this problem matters in real Spring backend work
-- what the minimal successful outcome looks like
+- 이 랩이나 캡스톤이 풀려는 백엔드 문제는 무엇인가
+- 이 문제가 실제 Spring 백엔드 작업에서 왜 중요한가
+- 최소 성공 상태는 어디까지인가
 
-## Inputs and constraints
+## 입력과 제약
 
-- Java and Spring Boot versions used:
-- Datastores or external services involved:
-- Security or correctness requirements:
-- What the repository already gives you:
-- What you still had to decide yourself:
+- 사용한 Java / Spring Boot 버전:
+- 관련 datastore 또는 외부 서비스:
+- 보안 또는 정합성 요구사항:
+- 레포가 이미 제공하는 것:
+- 직접 결정해야 했던 것:
 
-## Success criteria
+## 성공 기준
 
-- Endpoints or flows that must work:
-- Commands that prove the current state:
-- Which failures must be prevented:
-- Which topics are intentionally out of scope:
+- 동작해야 하는 endpoint 또는 flow:
+- 현재 상태를 증명하는 명령:
+- 막아야 하는 실패 유형:
+- 의도적으로 범위 밖에 둔 것:
 
-## Uncertainty log
+## 불확실성 기록
 
-- What do you still not know?
-- What assumption are you making anyway?
-- How would you verify or disprove it later?
+- 아직 모르는 것은 무엇인가
+- 그래도 지금 두는 가정은 무엇인가
+- 나중에 어떻게 검증하거나 반증할 것인가

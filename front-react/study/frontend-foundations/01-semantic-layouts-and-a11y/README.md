@@ -2,25 +2,29 @@
 
 상태: `verified`
 
-이 프로젝트는 semantic HTML, form structure, responsive layout, keyboard navigation, accessible state 표현을 먼저 익히는 시작점이다.
+## 무슨 문제인가
 
-## 왜 주니어 경로에 필요한가
+설정/대시보드 성격의 화면을 만든다고 해도 semantic landmarks, form grouping, help/error text pairing, keyboard reachable interaction이 먼저 설계되어야 한다. 이 프로젝트는 "읽히는 구조"와 "탐색 가능한 상호작용"을 vanilla DOM만으로 구현하는 문제를 푼다.
 
-React나 디자인 시스템을 쓰더라도 의미 구조와 접근성이 약하면 제품 품질이 무너진다. 이 단계는 가장 기본적인 화면 셸에서 "읽히는 구조"와 "탐색 가능한 상호작용"을 직접 다루게 한다.
+## 왜 필요한가
 
-## Prerequisite
+React나 디자인 시스템을 쓰더라도 의미 구조와 접근성이 약하면 제품 품질이 바로 흔들린다. 이 단계는 이후 상태 관리나 비동기 UI로 넘어가기 전에, 브라우저가 기본적으로 제공하는 구조적 품질을 먼저 몸에 익히는 시작점이다.
 
-- HTML/CSS 기본 문법
-- 브라우저 개발자 도구 기초
+## 내가 만든 답
 
-## 구조
+semantic landmarks, labeled form, inline help/error, keyboard-friendly validation flow를 갖춘 설정형 UI shell을 `vanilla/`로 구현했다.
 
-- `problem/`: authored brief와 입력/스크립트 자리
-- `vanilla/`: 정적이지만 상호작용 가능한 UI shell 구현 자리
-- `docs/`: a11y와 시맨틱 구조에 대한 공개 문서
-- `notion/`: 로컬 전용 작업 로그
+- 문제 정의: [problem/README.md](problem/README.md)
+- 구현 상세: [vanilla/README.md](vanilla/README.md)
+- 공개 문서: [docs/README.md](docs/README.md)
 
-## Build/Test Command
+## 핵심 구현 포인트
+
+- `vanilla/src/app.ts`에서 semantic shell 마크업과 validation wiring을 함께 구성한다.
+- `vanilla/src/validation.ts`에서 field-level 검증 규칙을 순수 함수로 분리한다.
+- `vanilla/tests/semantic-layout.spec.ts`, `shell.test.ts`, `validation.test.ts`로 landmark, 구조, 검증 흐름을 나눠 확인한다.
+
+## 검증
 
 ```bash
 cd study
@@ -28,12 +32,18 @@ npm run dev --workspace @front-react/semantic-layouts-a11y
 npm run verify --workspace @front-react/semantic-layouts-a11y
 ```
 
-## 다음 단계로 이어지는 한계
+- 검증 기준일: 2026-03-08
+- `vitest`: shell 구조와 validation 규칙 `5`개 테스트 통과
+- `playwright`: landmark 탐색과 keyboard submission `2`개 시나리오 통과
 
-이 단계는 의미 구조와 상호작용 기초에 집중하므로 DOM 상태 동기화와 event orchestration은 깊게 다루지 않는다. 그 축은 `02-dom-state-and-events`가 이어받는다.
+## 읽기 순서
 
-## 검증 메모
+1. [problem/README.md](problem/README.md)
+2. [vanilla/README.md](vanilla/README.md)
+3. [docs/README.md](docs/README.md)
 
-- 검증 일시: 2026-03-08
-- `vitest`: `5`개 테스트 통과
-- `playwright`: `2`개 E2E 시나리오 통과
+## 한계
+
+- local persistence, 실제 라우팅, 데이터 fetching은 아직 없다.
+- keyboard interaction은 form과 navigation의 핵심 흐름까지만 다룬다.
+- 다음 단계인 `02-dom-state-and-events`에서 상태 동기화와 이벤트 orchestration을 본격적으로 다룬다.

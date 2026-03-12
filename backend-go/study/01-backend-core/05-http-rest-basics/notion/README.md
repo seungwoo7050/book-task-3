@@ -12,7 +12,7 @@ Go로 처음 JSON API를 만들어 본 경험이 담겨 있다.
 | 3 | [02-debug-log.md](02-debug-log.md) | 상태 코드 선택이나 pagination 경계에서 막혔을 때. |
 | 4 | [03-retrospective.md](03-retrospective.md) | REST API 설계 감각에 대한 정리를 읽고 싶을 때. |
 | 5 | [04-knowledge-index.md](04-knowledge-index.md) | net/http 패턴이나 httptest 사용법을 빠르게 찾을 때. |
-| 6 | [05-timeline.md](05-timeline.md) | 전체 개발 과정을 시간순으로 재현하고 싶을 때. |
+| 6 | [05-development-timeline.md](05-development-timeline.md) | 전체 개발 과정을 시간순으로 재현하고 싶을 때. |
 
 ## 이 문서들의 성격
 

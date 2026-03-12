@@ -12,7 +12,7 @@
 | 3 | [02-debug-log.md](02-debug-log.md) | race condition이나 테스트 실패에서 막혔을 때. |
 | 4 | [03-retrospective.md](03-retrospective.md) | Go 테스트 철학에 대한 정리를 읽고 싶을 때. |
 | 5 | [04-knowledge-index.md](04-knowledge-index.md) | `go test` 플래그나 sync 패턴을 빠르게 찾을 때. |
-| 6 | [05-timeline.md](05-timeline.md) | 전체 개발 과정을 시간순으로 재현하고 싶을 때. |
+| 6 | [05-development-timeline.md](05-development-timeline.md) | 전체 개발 과정을 시간순으로 재현하고 싶을 때. |
 
 ## 이 문서들의 성격
 

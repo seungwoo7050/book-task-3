@@ -55,7 +55,7 @@ if rr.Code != http.StatusCreated { ... }
 go mod init github.com/woopinbell/go-backend/study/01-backend-core/05-http-rest-basics
 
 # 서버 실행
-cd go
+cd solution/go
 go run ./cmd/server  # :4020에서 수신 대기
 
 # 테스트

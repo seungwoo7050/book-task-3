@@ -46,7 +46,7 @@ go mod init github.com/woopinbell/go-backend/study/01-backend-core/04-sql-and-da
 go get modernc.org/sqlite
 
 # 실행
-cd go
+cd solution/go
 go run ./cmd/schemawalk
 # 출력: alice owns 2 x potion
 

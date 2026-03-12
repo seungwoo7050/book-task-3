@@ -1,25 +1,25 @@
 # Debug Log
 
-## Failure
+## 실패 상황
 
-For each debugging entry, record:
+각 디버깅 항목마다 아래를 적습니다.
 
-- failing command or request:
-- exact symptom:
-- first incorrect assumption:
-- evidence collected:
+- 실패한 명령 또는 요청:
+- 정확한 증상:
+- 처음에 했던 틀린 가정:
+- 수집한 증거:
 
-## Root cause
+## 원인
 
-Write the narrowest explanation that fits the evidence. If there are multiple plausible causes, write why one was accepted.
+증거를 가장 좁게 설명하는 원인을 적습니다. 여러 가설이 있었다면 왜 하나를 채택했는지까지 남깁니다.
 
-## Fix and verification
+## 수정과 검증
 
-- code or config change made:
-- why that change addresses the cause:
-- command, test, or log line that proved the fix:
+- 바꾼 코드 또는 설정:
+- 왜 그 수정이 원인을 해결하는가:
+- 어떤 명령, 테스트, 로그가 수정 성공을 증명했는가:
 
-## Follow-up debt
+## 남은 부채
 
-- what brittle area remains even after the fix
-- what regression test should be added if time allows
+- 수정 후에도 취약한 부분은 무엇인가
+- 시간이 있으면 어떤 regression test를 추가해야 하는가

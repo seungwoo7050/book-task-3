@@ -1,6 +1,6 @@
 .PHONY: run test bench clean
 
-SRC_DIR := ../go
+SRC_DIR := ../solution/go
 
 test:
 	@echo "Running tests..."

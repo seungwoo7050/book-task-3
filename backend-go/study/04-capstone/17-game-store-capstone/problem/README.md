@@ -1,83 +1,28 @@
-# Problem — Game Store Capstone
+# 문제 정의
 
-## Target Position
+게임 상점 구매 흐름에서 트랜잭션, 멱등성, outbox, 운영 기본 요소를 통합한 단일 백엔드를 만든다.
 
-- Junior Backend Engineer (Go)
-- 평가 관점: "기술 과시"보다 "완성도 + 명확성 + 재현성"
+## 성공 기준
 
-## Product Scenario
+- `GET /v1/healthcheck`, `POST /v1/purchases`, 구매 조회, 인벤토리 조회 API를 제공한다.
+- `Idempotency-Key` 기반 중복 요청 안전 처리와 낙관적 잠금을 구현한다.
+- purchase 성공 시 outbox row를 기록하고 relay가 발행을 이어받는다.
+- 구조화 로그, rate limiting, graceful shutdown을 포함한다.
+- README 기준으로 build/test/repro가 가능해야 한다.
 
-플레이어가 아이템을 구매하면 시스템은 다음을 보장해야 한다.
+## 제공 자료와 출처
 
-1. 잔액 차감
-2. 인벤토리 반영
-3. 구매 기록 저장
-4. 이벤트 발행 예약(outbox)
+- legacy `04-platform-capstone/09-game-store-capstone` 문제를 한국어 canonical 형태로 다시 정리한 문서다.
+- 원문 세부 요구사항은 provenance로만 유지한다.
+- 공개 구현은 [`solution/README.md`](../solution/README.md)와 `solution/go`에 둔다.
 
-모든 단계는 중복 요청과 동시 요청에서도 일관성을 유지해야 한다.
+## 검증 기준
 
-## MVP Scope (필수)
+- `cd solution/go && mkdir -p ./bin && go build -o ./bin/api ./cmd/api`
+- `cd solution/go && go test ./...`
+- `cd solution/go && make repro`
 
-### A. API
+## 제외 범위
 
-1. `GET /v1/healthcheck`
-2. `POST /v1/purchases`
-3. `GET /v1/purchases/{id}`
-4. `GET /v1/players/{id}/inventory`
-
-### B. Consistency
-
-1. `Idempotency-Key` 헤더 기반 중복 요청 안전 처리
-2. 잔액 차감 시 낙관적 잠금(`version`)
-3. 직렬화 충돌(예: SQLSTATE `40001`) 재시도 정책
-
-### C. Event Flow
-
-1. purchase 성공 시 outbox row 기록
-2. relay worker가 미발행 이벤트를 읽어 publisher 호출
-3. 발행 성공 시 `published_at` 마킹
-
-### D. Ops Basics
-
-1. 요청/에러 구조화 로그(`log/slog`)
-2. 간단한 rate limiting 미들웨어
-3. graceful shutdown (API + relay)
-
-## Out of Scope (이번 과제 제외)
-
-- 서비스 분리(마이크로서비스)
-- 복잡한 권한/인증 체계(OAuth 등)
-- 분산 트레이싱/서비스 메시
-- 멀티 리전 운영
-
-## Data Model (MVP)
-
-1. `players(id, name, balance, version, created_at)`
-2. `catalog_items(id, sku, name, price, created_at)`
-3. `purchases(id, player_id, item_id, price, created_at)`
-4. `inventories(id, player_id, item_id, qty, updated_at)`
-5. `idempotency_keys(key, request_hash, response_json, created_at)`
-6. `outbox(id, aggregate_id, event_type, payload_json, created_at, published_at)`
-
-## Non-Functional Requirements (필수 3개)
-
-1. Reliability: 중복 요청 시 동일 결과 반환
-2. Maintainability: handler/service/repository 계층 분리
-3. Testability: 핵심 도메인 로직 table-driven tests
-
-## Evaluation Criteria
-
-| Criteria | Weight |
-|---|---:|
-| 트랜잭션/멱등성/잠금 정확성 | 35% |
-| Outbox 릴레이 안정성 | 20% |
-| 코드 구조/가독성 | 20% |
-| 테스트 품질 | 15% |
-| 문서/재현성 | 10% |
-
-## Delivery Checklist
-
-- [ ] 실행 가이드 (`README`)
-- [ ] API 예시 (`curl`)
-- [ ] 장애/재시도 동작 설명
-- [ ] 테스트 실행 결과
+- 마이크로서비스 분리
+- 복잡한 외부 인증

@@ -12,4 +12,4 @@
 | 3 | [02-debug-log.md](02-debug-log.md) | 401/403 구분, JWT 서명 검증, 쿠키 문제에서 막혔을 때. |
 | 4 | [03-retrospective.md](03-retrospective.md) | 세션 vs JWT 트레이드오프 정리를 읽고 싶을 때. |
 | 5 | [04-knowledge-index.md](04-knowledge-index.md) | bcrypt, JWT 구조, 인증 패턴을 빠르게 찾을 때. |
-| 6 | [05-timeline.md](05-timeline.md) | 전체 개발 과정을 시간순으로 재현하고 싶을 때. |
+| 6 | [05-development-timeline.md](05-development-timeline.md) | 전체 개발 과정을 시간순으로 재현하고 싶을 때. |

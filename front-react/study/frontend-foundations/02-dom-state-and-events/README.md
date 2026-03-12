@@ -2,25 +2,29 @@
 
 상태: `verified`
 
-이 프로젝트는 filterable task/workspace board를 통해 DOM state sync, event handling, event delegation, localStorage, URL query state를 직접 다룬다.
+## 무슨 문제인가
 
-## 왜 주니어 경로에 필요한가
+filter, sort, selection, inline edit, URL query state, local persistence를 한 화면에 올리면 상태를 어디에 저장하고 어떤 이벤트로 다시 그릴지가 금방 복잡해진다. 이 프로젝트는 task/workspace board를 예제로 삼아 브라우저 state 동기화 문제를 직접 푼다.
 
-프레임워크 state 관리 이전에 브라우저 상태와 상호작용이 실제로 어떻게 이어지는지 이해해야 한다. 이 단계는 "이벤트가 발생했을 때 어떤 상태를 어디에 저장하고 어떻게 다시 그릴 것인가"를 직접 풀게 한다.
+## 왜 필요한가
 
-## Prerequisite
+프레임워크 state 관리 이전에 브라우저 상태와 상호작용이 실제로 어떻게 이어지는지 이해해야 한다. 이 단계는 "이벤트가 발생했을 때 어떤 상태를 어디에 저장하고 어떻게 다시 그릴 것인가"를 직접 설명할 수 있게 만든다.
 
-- `01-semantic-layouts-and-a11y`
-- 기본적인 DOM API 이해
+## 내가 만든 답
 
-## 구조
+search, status filter, sort, row selection, inline edit, URL serialization, localStorage persistence를 함께 묶은 board UI를 `vanilla/`로 구현했다.
 
-- `problem/`: authored brief와 입력/스크립트 자리
-- `vanilla/`: filterable board 구현 자리
-- `docs/`: DOM/event/state reasoning 문서
-- `notion/`: 로컬 전용 작업 로그
+- 문제 정의: [problem/README.md](problem/README.md)
+- 구현 상세: [vanilla/README.md](vanilla/README.md)
+- 공개 문서: [docs/README.md](docs/README.md)
 
-## Build/Test Command
+## 핵심 구현 포인트
+
+- `vanilla/src/state.ts`에서 query parsing, serialization, persistence helper를 분리한다.
+- `vanilla/src/app.ts`에서 root-level `input`, `click`, `keydown` delegation으로 UI를 갱신한다.
+- rerender 뒤에도 검색과 selection 흐름이 끊기지 않도록 focus 복원을 명시적으로 처리한다.
+
+## 검증
 
 ```bash
 cd study
@@ -28,12 +32,18 @@ npm run dev --workspace @front-react/dom-state-and-events
 npm run verify --workspace @front-react/dom-state-and-events
 ```
 
-## 다음 단계로 이어지는 한계
+- 검증 기준일: 2026-03-08
+- `vitest`: state helper와 query serialization을 포함해 `6`개 테스트 통과
+- `playwright`: query -> select -> edit -> save 핵심 흐름 `2`개 시나리오 통과
 
-이 단계는 브라우저 내부 상태와 이벤트에 집중하므로 네트워크 지연, retry, abort 같은 비동기 UI 문제는 충분히 다루지 않는다. 그 축은 `03-networked-ui-patterns`로 이어진다.
+## 읽기 순서
 
-## 검증 메모
+1. [problem/README.md](problem/README.md)
+2. [vanilla/README.md](vanilla/README.md)
+3. [docs/README.md](docs/README.md)
 
-- 검증 일시: 2026-03-08
-- `vitest`: `6`개 테스트 통과
-- `playwright`: `2`개 E2E 시나리오 통과
+## 한계
+
+- 실제 network request와 server cache는 아직 없다.
+- multi-select, drag and drop, schema migration은 범위 밖이다.
+- 다음 단계인 `03-networked-ui-patterns`에서 비동기 요청 상태와 request race를 다룬다.

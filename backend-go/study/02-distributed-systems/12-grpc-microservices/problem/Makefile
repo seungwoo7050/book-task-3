@@ -1,6 +1,6 @@
 .PHONY: proto build-server build-client run-server run-client test clean
 
-SRC_DIR := ../go
+SRC_DIR := ../solution/go
 
 proto:
 	@echo "Generating protobuf code..."

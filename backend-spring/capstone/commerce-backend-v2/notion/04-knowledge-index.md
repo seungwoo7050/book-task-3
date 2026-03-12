@@ -73,4 +73,4 @@ DB 변경과 메시지 발행 사이의 불일치를 줄이기 위해, 이벤트
 - `docs/verification.md` — 검증 명령(`make test` 등)의 실행 전제 조건(Docker 필요)을 확인하기 위해 참고
 - `OrderService.java` — checkout 트랜잭션의 stock reserve + order/item/reservation 생성 규칙을 정확히 적기 위해 참고
 - `PaymentService.java` — idempotency, outbox insertion, notification fallback 로직 확인을 위해 참고
-- `compose_probe.sh` — Compose 검증이 health probe 수준이며 도메인 시나리오까지 자동 검증하지 않는다는 한계를 확인하기 위해 참고
+- Compose health 확인 절차 — Compose 검증이 health probe 수준이며 도메인 시나리오까지 자동 검증하지 않는다는 한계를 정리하기 위해 참고

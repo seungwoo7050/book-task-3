@@ -11,7 +11,7 @@
 | [02-debug-log.md](./02-debug-log.md) | 트랜잭션, 멱등성, Relay에서 만난 문제들 |
 | [03-retrospective.md](./03-retrospective.md) | 전체 커리큘럼의 귀결점으로서의 캡스톤 |
 | [04-knowledge-index.md](./04-knowledge-index.md) | 다룬 개념 정리 |
-| [05-timeline.md](./05-timeline.md) | CLI 명령어와 인프라 구성 타임라인 |
+| [05-development-timeline.md](./05-development-timeline.md) | CLI 명령어와 인프라 구성 타임라인 |
 
 ## 연관 프로젝트 (통합)
 

@@ -1,56 +1,46 @@
 # Node-Backend-Architecture
 
-이 트랙은 완전 초보를 Node.js 백엔드 주니어 준비 수준까지 끌어올리고,
-실무에서 자주 마주치는 운영과 아키텍처 트레이드오프를 미드 초입 수준으로 소개하는 학습 경로다.
+이 트랙은 완전 초보를 Node.js 백엔드 주니어 준비 수준까지 끌어올리고, 운영과 아키텍처 트레이드오프를 설명할 수 있는 applied 단계까지 이어지는 학습 경로다.
 
-## 트랙 운영 원칙
+## 이 트랙을 읽는 기준
 
-- Express는 원리 학습 레인으로 본다.
-- NestJS는 실무 적용 레인으로 본다.
-- `verified`는 이 디렉터리에서 실제로 다시 실행한 검증만 의미한다.
-- legacy 코드를 옮겨온 프로젝트라도 검증을 다시 하기 전까지는 `reference-only` 또는 `in-progress`다.
-- 공통 환경 복구 문서는 `docs/` 아래에 둔다.
+- `bridge`는 언어, 런타임, HTTP 기본기를 먼저 고정하는 단계다.
+- `core`는 Express와 NestJS를 나란히 두고 비교 학습하는 단계다.
+- `applied`는 운영성, capstone, recruiter-facing 서비스로 이어지는 적용 단계다.
+- 각 프로젝트 README는 `한 줄 문제 -> 내가 만든 답 -> 실행/검증` 순서로 읽히게 유지한다.
 
-## 프로젝트 목록
+## 그룹별 카탈로그
 
-| ID | 프로젝트 | 상태 | 구현 레인 |
-|---|---|---|---|
-| `00` | `00-language-and-typescript` | `verified` | `ts/` |
-| `01` | `01-node-runtime-and-tooling` | `verified` | `node/` |
-| `02` | `02-http-and-api-basics` | `verified` | `node/` |
-| `03` | `03-rest-api-foundations` | `verified` | `express/`, `nestjs/` |
-| `04` | `04-request-pipeline` | `verified` | `express/`, `nestjs/` |
-| `05` | `05-auth-and-authorization` | `verified` | `express/`, `nestjs/` |
-| `06` | `06-persistence-and-repositories` | `verified` | `express/`, `nestjs/` |
-| `07` | `07-domain-events` | `verified` | `express/`, `nestjs/` |
-| `08` | `08-production-readiness` | `verified` | `nestjs/` |
-| `09` | `09-platform-capstone` | `verified` | `nestjs/` |
-| `10` | `10-shippable-backend-service` | `verified` | `nestjs/` |
+| 그룹 | 프로젝트 | 한 줄 문제 | 답 형태 | 대표 검증 | 상태 |
+| --- | --- | --- | --- | --- | --- |
+| Bridge | [00-language-and-typescript](bridge/00-language-and-typescript/README.md) | Express와 NestJS로 넘어가기 전에 TypeScript, 비동기 흐름, 타입 모델링이 병목이 되지 않게 만드는 언어 브리지 문제다. | `ts/` | `pnpm run build && pnpm run test` | `verified` |
+| Bridge | [01-node-runtime-and-tooling](bridge/01-node-runtime-and-tooling/README.md) | Node.js 런타임에서 파일, env, stream, scripts를 직접 다루며 작은 운영성 감각을 익히는 런타임 브리지 문제다. | `node/` | `pnpm run build && pnpm run test` | `verified` |
+| Bridge | [02-http-and-api-basics](bridge/02-http-and-api-basics/README.md) | 프레임워크를 쓰기 전에 HTTP 요청/응답, status code, JSON 직렬화를 직접 구현하며 API의 최소 단위를 익히는 문제다. | `node/` | `pnpm run build && pnpm run test` | `verified` |
+| Core | [03-rest-api-foundations](core/03-rest-api-foundations/README.md) | 같은 Books CRUD 문제를 Express와 NestJS로 각각 풀며 계층 분리, DI, 테스트 기본을 비교하는 첫 비교 학습 문제다. | `express/`, `nestjs/` | `pnpm run build && pnpm run test` / `pnpm run build && pnpm run test && pnpm run test:e2e` | `verified` |
+| Core | [04-request-pipeline](core/04-request-pipeline/README.md) | validation, error handling, logging, response shaping을 요청 파이프라인 규약으로 묶어 이후 모든 API의 공통 기반을 만드는 문제다. | `express/`, `nestjs/` | `pnpm run build && pnpm run test && pnpm run test:e2e` / `pnpm run build && pnpm run test && pnpm run test:e2e` | `verified` |
+| Core | [05-auth-and-authorization](core/05-auth-and-authorization/README.md) | JWT 인증과 RBAC 인가를 Express middleware chain과 NestJS guard chain으로 비교하는 보안 기초 문제다. | `express/`, `nestjs/` | `pnpm run build && pnpm run test` / `pnpm run build && pnpm run test` | `verified` |
+| Core | [06-persistence-and-repositories](core/06-persistence-and-repositories/README.md) | in-memory 저장소를 SQLite 기반 영속 계층으로 교체하면서 raw SQL과 ORM, repository 패턴의 차이를 비교하는 문제다. | `express/`, `nestjs/` | `pnpm run build && pnpm run test && pnpm run test:e2e` / `pnpm run build && pnpm run test && pnpm run test:e2e` | `verified` |
+| Core | [07-domain-events](core/07-domain-events/README.md) | 도메인 이벤트로 side effect를 서비스 본문에서 분리하고 성공/실패 경계를 테스트로 고정하는 이벤트 설계 문제다. | `express/`, `nestjs/` | `pnpm run build && pnpm run test && pnpm run test:e2e` / `pnpm run build && pnpm run test && pnpm run test:e2e` | `verified` |
+| Applied | [08-production-readiness](applied/08-production-readiness/README.md) | 애플리케이션 코드 바깥의 Docker, config, health, logging, CI, cache, queue, rate limiting을 학습용 서비스에 붙이는 운영성 문제다. | `nestjs/` | `pnpm run build && pnpm run test && pnpm run test:e2e` | `verified` |
+| Applied | [09-platform-capstone](applied/09-platform-capstone/README.md) | REST, pipeline, auth, persistence, events, 운영성 규약을 단일 NestJS 서비스로 통합해 구조 일관성을 검증하는 capstone 문제다. | `nestjs/` | `pnpm run build && pnpm run test && pnpm run test:e2e` | `verified` |
+| Applied | [10-shippable-backend-service](applied/10-shippable-backend-service/README.md) | 학습용 capstone을 Postgres, Redis, Docker Compose, Swagger까지 포함한 채용 제출용 NestJS 서비스 표면으로 다시 패키징하는 문제다. | `nestjs/` | `pnpm run build && pnpm run test && pnpm run test:e2e` | `verified` |
 
-## 추천 학습 순서
+## 추천 읽기 순서
 
-1. `00-language-and-typescript`
-2. `01-node-runtime-and-tooling`
-3. `02-http-and-api-basics`
-4. `03-rest-api-foundations`
-5. `04-request-pipeline`
-6. `05-auth-and-authorization`
-7. `06-persistence-and-repositories`
-8. `07-domain-events`
-9. `08-production-readiness`
-10. `09-platform-capstone`
-11. `10-shippable-backend-service`
+1. `bridge/00-language-and-typescript`
+2. `bridge/01-node-runtime-and-tooling`
+3. `bridge/02-http-and-api-basics`
+4. `core/03-rest-api-foundations`
+5. `core/04-request-pipeline`
+6. `core/05-auth-and-authorization`
+7. `core/06-persistence-and-repositories`
+8. `core/07-domain-events`
+9. `applied/08-production-readiness`
+10. `applied/09-platform-capstone`
+11. `applied/10-shippable-backend-service`
 
-## 공개 상태 요약
+## 함께 보는 문서
 
-- 바로 학습 가능한 프로젝트: `00`, `01`, `02`, `03`, `04`, `05`, `08`
-- native dependency 준비 후 바로 학습 가능한 프로젝트: `06`, `07`, `09`
-- 포트폴리오 제출용으로 바로 읽히는 프로젝트: `10`
-- 전체 프로젝트는 새 경로 기준 build/test 재검증을 마쳤다.
-
-`06`, `07`, `09`는 `better-sqlite3`를 사용하므로 설치 뒤 `pnpm approve-builds`와
-`pnpm rebuild better-sqlite3`가 필요할 수 있다.
-처음 설치하거나 sqlite binding 오류가 나면 [native-sqlite-recovery.md](docs/native-sqlite-recovery.md)를 먼저 확인한다.
-
-`10-shippable-backend-service`는 sqlite가 아니라 `Postgres + Redis + Docker Compose`를 사용한다.
-이 프로젝트는 `09`를 대체하지 않고, 주니어 웹 백엔드 지원용 보강 과제로 추가된 포트폴리오 단계다.
+- [../../docs/project-catalog.md](../../docs/project-catalog.md)
+- [../../docs/verification-matrix.md](../../docs/verification-matrix.md)
+- [docs/README.md](docs/README.md)

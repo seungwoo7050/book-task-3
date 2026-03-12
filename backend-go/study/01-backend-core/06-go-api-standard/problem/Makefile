@@ -2,7 +2,7 @@
 
 # ─── Variables ──────────────────────────────────────────────
 APP_NAME    := api
-SRC_DIR     := ../go
+SRC_DIR     := ../solution/go
 CMD_DIR     := $(SRC_DIR)/cmd/api
 BINARY      := ./bin/$(APP_NAME)
 PORT        ?= 4000

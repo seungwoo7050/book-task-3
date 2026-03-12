@@ -1,20 +1,22 @@
-# commerce-backend-v2 Spring
+# commerce-backend-v2 Spring 워크스페이스
 
-- Status: `verified portfolio capstone`
-- Problem scope covered: persisted auth, catalog, cart, checkout, mock payment, outbox publishing, Kafka notification consumption, and ops surfaces in one Spring modular monolith
+- 상태: `verified portfolio capstone`
+- 현재 범위: persisted auth, catalog, cart, checkout, mock payment, outbox publishing, Kafka notification consumption, ops surface
 
-## Commands
+## 실행과 검증 명령
 
-- `cp .env.example .env`
-- `make run`
-- `make lint`
-- `make test`
-- `make smoke`
-- `docker compose up --build`
+```bash
+cp .env.example .env
+make run
+make lint
+make test
+make smoke
+docker compose up --build
+```
 
-`make test` now includes a Testcontainers-backed messaging test, so local Docker availability is assumed.
+`make test`에는 Testcontainers-backed messaging test가 포함되므로 로컬 Docker가 필요하다.
 
-## Implemented
+## 현재 구현 요소
 
 - `/api/v1/auth/register`, `login`, `refresh`, `logout`, mocked Google `authorize` and `callback`
 - `/api/v1/me`
@@ -26,19 +28,19 @@
 - `/api/v1/orders/{orderId}`
 - `/api/v1/payments/mock/confirm`
 - `/api/v1/admin/orders/{orderId}/status`
-- PostgreSQL schema via Flyway
-- Redis-backed cart and Redis-backed auth throttling under the Docker profile
-- Kafka/Redpanda-backed `order-paid` publication and notification consumption under the Docker profile
+- Flyway 기반 PostgreSQL schema
+- Docker profile에서의 Redis cart / auth throttling
+- Docker profile에서의 outbox publisher + Kafka consumer
 
-## Architecture
+## 아키텍처 요약
 
-- package layout: `auth`, `catalog`, `cart`, `order`, `payment`, `notification`, `global`
-- style: single Spring Boot modular monolith, not a microservice split
-- persistence: PostgreSQL in Docker, H2 for fast local tests, Redis for cart/rate-limit state
-- async: outbox table plus scheduled publisher plus Kafka consumer
+- 패키지 경계: `auth`, `catalog`, `cart`, `order`, `payment`, `notification`, `global`
+- 구조: microservice가 아니라 single Spring Boot modular monolith
+- persistence: Docker profile의 PostgreSQL, fast test를 위한 H2, 선택적 Redis 사용
+- async: outbox table + scheduled publisher + Kafka consumer
 
-## Known tradeoffs
+## 현재 한계
 
-- Google OAuth is contract-level and mocked rather than wired to a live Google console
-- payment is deliberately mock-only; the focus is idempotency and order-state control
-- the service is portfolio-grade for a junior application, not a production commerce platform
+- Google OAuth는 live provider가 아니라 contract-level mock이다
+- payment는 idempotency와 상태 전이 설명을 위한 mock-only다
+- 포트폴리오용 학습 결과물이지 production commerce platform을 주장하지 않는다

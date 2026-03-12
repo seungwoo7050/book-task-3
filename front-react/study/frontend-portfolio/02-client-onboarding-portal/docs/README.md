@@ -1,8 +1,8 @@
-# Public Docs
+# 공개 문서
 
 상태: `verified`
 
-이 디렉터리는 채용용으로 공개 가능한 onboarding flow 문서와 발표 자료를 둔다.
+이 디렉터리는 채용용으로 공개 가능한 onboarding flow 문서와 발표 자료를 둔다. route, validation, draft, retry를 어떤 UX 판단으로 묶었는지 설명하는 용도다.
 
 ## 문서 목록
 

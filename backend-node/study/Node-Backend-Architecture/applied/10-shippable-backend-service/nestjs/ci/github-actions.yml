@@ -1,0 +1,66 @@
+name: verify-10-shippable-backend-service
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - study/Node-Backend-Architecture/applied/10-shippable-backend-service/**
+  push:
+    paths:
+      - study/Node-Backend-Architecture/applied/10-shippable-backend-service/**
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: shippable_backend
+          POSTGRES_USER: backend
+          POSTGRES_PASSWORD: backend
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U backend -d shippable_backend"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    defaults:
+      run:
+        working-directory: study/Node-Backend-Architecture/applied/10-shippable-backend-service/nestjs
+    env:
+      APP_NAME: shippable-backend-service-ci
+      NODE_ENV: test
+      PORT: 3000
+      LOG_LEVEL: error
+      JWT_SECRET: ci-secret
+      DATABASE_URL: postgres://backend:backend@127.0.0.1:5432/shippable_backend
+      REDIS_URL: redis://127.0.0.1:6379
+      LOGIN_THROTTLE_MAX_ATTEMPTS: 5
+      LOGIN_THROTTLE_WINDOW_SECONDS: 60
+      BOOKS_CACHE_TTL_SECONDS: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+      - run: pnpm run db:migrate
+      - run: pnpm run db:seed
+      - run: pnpm run test
+      - run: pnpm run test:e2e

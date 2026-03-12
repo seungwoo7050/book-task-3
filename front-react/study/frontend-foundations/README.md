@@ -1,29 +1,20 @@
-# Frontend Foundations Track
+# Frontend Foundations
 
-이 트랙은 주니어 경로의 시작점이다. React 이전에 브라우저와 HTML/CSS, DOM 상태, 이벤트, 비동기 UI를 직접 다루며 제품형 프론트의 바닥 체력을 만든다.
+이 트랙은 React 이전에 브라우저 자체를 이해하는 단계다. 의미 구조, DOM 상태, 이벤트, 비동기 UI를 직접 다루면서 이후 React 학습의 바닥 체력을 만든다.
 
-## 왜 Vanilla Web부터 시작하는가
+## 프로젝트 인덱스
 
-- semantic HTML과 a11y는 프레임워크와 무관한 기초다.
-- DOM state와 event는 React가 추상화하기 전의 원형을 이해해야 한다.
-- async UI 상태는 fetch, retry, empty/error state를 직접 다룰 때 더 선명하게 보인다.
+| 프로젝트 | 문제 질문 | 내가 만든 답 | 검증 | 다음 단계 |
+| --- | --- | --- | --- | --- |
+| [01-semantic-layouts-and-a11y](01-semantic-layouts-and-a11y/README.md)<br>[problem](01-semantic-layouts-and-a11y/problem/README.md) · [vanilla](01-semantic-layouts-and-a11y/vanilla/README.md) · [docs](01-semantic-layouts-and-a11y/docs/README.md) | semantic 구조와 접근성을 갖춘 UI shell은 어떻게 설계하는가 | landmark, labeled form, inline validation, keyboard flow가 있는 vanilla 설정 화면 | `verify --workspace @front-react/semantic-layouts-a11y`<br>`vitest` + `playwright` | DOM state와 이벤트를 같은 화면에서 다루는 단계로 이동 |
+| [02-dom-state-and-events](02-dom-state-and-events/README.md)<br>[problem](02-dom-state-and-events/problem/README.md) · [vanilla](02-dom-state-and-events/vanilla/README.md) · [docs](02-dom-state-and-events/docs/README.md) | selection, filter, sort, edit, URL, local persistence를 어떻게 동기화하는가 | query state, local state, root delegation, focus 복원을 묶은 task board | `verify --workspace @front-react/dom-state-and-events`<br>`vitest` + `playwright` | 비동기 요청 상태와 navigation state를 다루는 단계로 이동 |
+| [03-networked-ui-patterns](03-networked-ui-patterns/README.md)<br>[problem](03-networked-ui-patterns/problem/README.md) · [vanilla](03-networked-ui-patterns/vanilla/README.md) · [docs](03-networked-ui-patterns/docs/README.md) | loading, empty, error, retry, abort를 제품처럼 다루려면 무엇이 필요한가 | mock API, request race 보호, query-driven navigation을 갖춘 explorer UI | `verify --workspace @front-react/networked-ui-patterns`<br>`vitest` + `playwright` | React rendering model을 직접 구현하는 `react-internals` 트랙으로 이동 |
 
-## 프로젝트 목록
+## 워크스페이스 명령
 
-| 순서 | 프로젝트 | 상태 | 설명 |
-| --- | --- | --- | --- |
-| 01 | [01-semantic-layouts-and-a11y](01-semantic-layouts-and-a11y/README.md) | verified | semantic HTML, responsive layout, forms, keyboard navigation |
-| 02 | [02-dom-state-and-events](02-dom-state-and-events/README.md) | verified | DOM state sync, event handling, localStorage, URL state |
-| 03 | [03-networked-ui-patterns](03-networked-ui-patterns/README.md) | verified | fetch, loading/error/retry, abort, query-driven navigation |
+```bash
+cd study
+npm run verify:foundations
+```
 
-## 구현 스택
-
-- Vanilla web
-- TypeScript
-- Vite
-- Vitest
-- Playwright
-
-## 검증 원칙
-
-현재 `verified` 상태인 foundations 프로젝트는 세 개 전부다. 루트에서는 `verify:foundations`가 전체 foundations 체인을 실행한다.
+개별 프로젝트를 실행하거나 검증할 때는 각 프로젝트 README의 workspace 명령을 그대로 사용한다.

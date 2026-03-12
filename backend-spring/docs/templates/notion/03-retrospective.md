@@ -1,19 +1,19 @@
 # Retrospective
 
-## What improved
+## 나아진 점
 
-- what is clearer now than when you started
-- which design choice held up under testing
-- which implementation detail became reusable
+- 시작할 때보다 지금 더 선명해진 것은 무엇인가
+- 테스트를 거친 뒤에도 유지된 설계 선택은 무엇인가
+- 재사용 가능해진 구현 디테일은 무엇인가
 
-## What is still weak
+## 아직 약한 점
 
-- what is only modeled, not fully implemented
-- what would break first under real load or real users
-- what documentation is still thinner than it should be
+- 모델링만 했고 완전히 구현하지 않은 것은 무엇인가
+- 실제 사용자나 부하가 오면 가장 먼저 깨질 부분은 무엇인가
+- 문서가 아직 얇은 부분은 어디인가
 
-## What to revisit
+## 다시 볼 것
 
-- one near-term follow-up
-- one deeper topic worth studying later
-- one thing you would redesign if you restarted the lab
+- 가까운 후속 작업 하나
+- 나중에 더 깊게 공부할 주제 하나
+- 다시 시작한다면 새로 설계하고 싶은 것 하나

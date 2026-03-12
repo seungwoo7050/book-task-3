@@ -1,21 +1,23 @@
-# commerce-backend Notes
+# commerce-backend 설계 메모
 
-## Implemented now
+이 문서는 baseline capstone이 현재 어디까지 구현되었고, 왜 일부 깊이를 남겼는지 요약한다.
 
-- login surface and `me` endpoint
-- admin product creation and public product listing
-- cart item creation and order placement
-- stock decrement through checkout
-- Compose stack with PostgreSQL, Redis, Mailpit, and Redpanda
+## 현재 구현 범위
 
-## Important simplifications
+- login surface와 `me` endpoint
+- admin product 생성과 public product listing
+- cart item 생성과 order placement
+- checkout 시 stock decrement
+- PostgreSQL, Redis, Mailpit, Redpanda가 포함된 Compose 환경
 
-- auth is contract-level only and not yet a full Spring Security commerce stack
-- payment is omitted entirely
-- notifications and event consumers are not fully wired into the capstone runtime
+## 의도적 단순화
 
-## Why the modular monolith choice matters
+- auth는 contract-level 중심이며 full persisted stack은 아니다
+- payment는 아직 없다
+- notification과 event consumer는 완전히 연결되지 않았다
 
-- the repository is for learning backend composition, not service choreography
-- the capstone should be understandable from one codebase without infrastructure sprawl
-- the labs can be recomposed without importing their code directly
+## 왜 baseline이 필요한가
+
+- 이 버전은 최종 답이 아니라 비교 기준점이다
+- modular monolith를 baseline으로 남겨야 `commerce-backend-v2`의 개선 축이 선명해진다
+- 랩 학습을 하나의 커머스 도메인으로 다시 묶는 첫 단계 역할을 한다

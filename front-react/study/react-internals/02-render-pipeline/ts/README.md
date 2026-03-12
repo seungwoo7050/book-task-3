@@ -1,8 +1,8 @@
-# TypeScript Implementation
+# TypeScript 구현
 
 상태: `verified`
 
-구현 범위:
+## 이 구현이 답하는 범위
 
 - tree diff and patch calculation
 - keyed/unkeyed child diff
@@ -10,24 +10,23 @@
 - cooperative work loop와 `flushSync`
 - pipeline ordering tests
 
-## Build Command
+## 핵심 파일
 
-```bash
-cd study/react-internals/02-render-pipeline
-npm install
-```
+- `src/diff.ts`: prop delta와 child diff
+- `src/patch.ts`: DOM patch 적용 순서
+- `src/scheduler.ts`: render phase, interrupted work, commit 시점
 
-## Test Command
+## 실행과 검증
 
 ```bash
 cd study
+npm run test --workspace @front-react/render-pipeline
+npm run typecheck --workspace @front-react/render-pipeline
 npm run verify --workspace @front-react/render-pipeline
 ```
 
-## Known Gaps
+## 현재 한계
 
-- function component와 hook state는 아직 없다
-- event delegation은 아직 없다
-- 실제 React의 우선순위/lanes 모델은 다루지 않는다
-
-이 단계는 `01-vdom-foundations`의 VNode 구조를 유지하면서 업데이트 파이프라인을 분리하는 것이 핵심이다.
+- function component와 hook state는 아직 없다.
+- event delegation은 아직 없다.
+- 실제 React의 우선순위/lanes 모델은 다루지 않는다.

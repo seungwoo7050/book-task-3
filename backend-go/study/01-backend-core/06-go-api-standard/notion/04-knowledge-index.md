@@ -60,7 +60,7 @@ PORT=8080 ENV=production go run ./cmd/api
 
 ```bash
 # 빌드
-cd go
+cd solution/go
 go build -o api ./cmd/api
 
 # 실행

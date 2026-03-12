@@ -1,8 +1,8 @@
-# Vanilla Implementation
+# Vanilla 구현
 
 상태: `verified`
 
-## problem scope covered
+## 이 구현이 답하는 범위
 
 - semantic landmarks
 - labeled form inputs
@@ -10,32 +10,22 @@
 - keyboard validation flow
 - responsive multi-column shell
 
-## build command
+## 핵심 파일
+
+- `src/app.ts`: semantic shell 마크업과 validation wiring
+- `src/validation.ts`: field-level 검증 규칙
+- `tests/semantic-layout.spec.ts`: landmark, responsive grid, keyboard submission smoke
+
+## 실행과 검증
 
 ```bash
 cd study
 npm run build --workspace @front-react/semantic-layouts-a11y
-```
-
-## test command
-
-```bash
-cd study
 npm run verify --workspace @front-react/semantic-layouts-a11y
 ```
 
-## current status
-
-- `verified`
-
-## known gaps
+## 현재 한계
 
 - local persistence는 없다.
 - 실제 라우팅이나 데이터 fetching은 없다.
-- keyboard interaction은 form과 nav 범위로 제한된다.
-
-## implementation notes
-
-- `vanilla/src/app.ts`가 semantic shell 마크업과 validation wiring을 담당한다.
-- `vanilla/src/validation.ts`는 field-level 검증 규칙만 분리한다.
-- `vanilla/tests/semantic-layout.spec.ts`는 landmark, responsive grid, keyboard-only submission을 확인한다.
+- keyboard interaction은 form과 navigation 범위로 제한된다.

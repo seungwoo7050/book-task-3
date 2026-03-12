@@ -1,24 +1,22 @@
-# Product Brief
+# 문제 정의
 
 프로비넌스: `authored`
 
-## 제품 정의
+## 문제
 
-`Ops Triage Console`은 여러 채널에서 들어오는 이슈를 한 명의 운영자가 빠르게 정리하고 우선순위를 지정하며 적절한 팀으로 라우팅하는 콘솔이다.
+`Ops Triage Console`은 여러 채널에서 들어오는 이슈를 한 명의 운영자가 빠르게 정리하고 우선순위를 지정하며 적절한 팀으로 라우팅하는 콘솔이다. 이 문제의 핵심은 data-heavy queue에서도 읽기 흐름, bulk 작업, failure recovery가 무너지지 않게 만드는 것이다.
 
-## 핵심 사용자
+## 제공 자산
 
-- support escalation을 정리하는 운영자
-- QA 결과를 triage하는 운영자
-- customer feedback와 monitoring alert를 함께 보는 운영자
+- 이 문서: 제품 정의와 품질 목표
+- `data/`: 별도 외부 fixture 없이 프로젝트 내부 mock data를 쓰기 위한 placeholder
+- `script/`: 공통 디렉터리 shape를 유지하기 위한 placeholder
 
-## 핵심 작업
+## 제약
 
-1. queue 상태를 빠르게 파악한다
-2. 문제가 큰 이슈를 먼저 찾는다
-3. 상태, 우선순위, 라벨, route team을 변경한다
-4. 여러 건을 한 번에 정리한다
-5. 실패 시 retry하고, 잘못된 변경은 undo한다
+- 실제 인증, 실제 DB, 실제 백엔드 API 없이 완결된 데모여야 한다.
+- 단일 운영자 시나리오를 기준으로 한다.
+- 실패 시 retry와 undo가 가능해야 하며, keyboard-only 주요 흐름도 지원해야 한다.
 
 ## 포함 범위
 
@@ -39,10 +37,19 @@
 - 멀티유저 실시간 협업
 - 실제 백엔드 API
 
-## 품질 기준
+## 요구 산출물
 
-- data-heavy UI라도 읽기 쉬워야 한다
-- keyboard-only 주요 흐름이 가능해야 한다
-- loading, empty, error, retry 상태가 모두 있어야 한다
-- unit, integration, E2E 검증을 갖춰야 한다
+- `next/`에 실행 가능한 운영 콘솔 구현
+- 제품 판단과 UX 흐름을 설명하는 공개 문서와 발표 자료
+- `typecheck`, unit, integration, E2E를 포함한 검증 체계
 
+## Canonical Verification
+
+```bash
+cd study
+npm run verify --workspace @front-react/ops-triage-console
+```
+
+- `typecheck`: Next.js 앱 타입 검사
+- `vitest`: query/filter/sort, optimistic update, integration 흐름 확인
+- `playwright`: dashboard, queue, detail, retry, keyboard flow 확인

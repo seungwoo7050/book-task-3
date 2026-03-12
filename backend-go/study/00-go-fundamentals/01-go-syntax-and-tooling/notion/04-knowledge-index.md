@@ -26,12 +26,12 @@
 go mod init github.com/woopinbell/go-backend/study/00-go-fundamentals/01-go-syntax-and-tooling
 
 # 실행
-cd go
+cd solution/go
 go run ./cmd/toolingdemo
 go run ./cmd/toolingdemo "custom input text here"
 
 # 테스트
-cd go
+cd solution/go
 go test ./...
 go test -v ./...          # 개별 테스트 이름 확인
 go test -run TestBuildSummary ./lesson/  # 특정 테스트만 실행

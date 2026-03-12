@@ -1,26 +1,50 @@
 # commerce-backend-v2
 
-- Status: `verified portfolio capstone`
-- Role: N+1 capstone that preserves `commerce-backend/` as the baseline scaffold and upgrades the same domain into a stronger junior Spring backend project
-- Spring workspace: [spring/README.md](/Users/woopinbell/work/web-pong/study2/capstone/commerce-backend-v2/spring/README.md#L1)
-- Notes and architecture docs: [docs/README.md](/Users/woopinbell/work/web-pong/study2/capstone/commerce-backend-v2/docs/README.md#L1)
+이 레포의 대표 결과물로, baseline capstone을 같은 도메인에서 더 깊게 구현한 portfolio-grade Spring 백엔드입니다.
 
-## Problem
+- 상태: `verified portfolio capstone`
+- 실행 진입점: [spring/README.md](spring/README.md)
 
-Build a backend-only commerce service that demonstrates the parts Korean junior Spring backend postings repeatedly ask for: persisted auth, JPA-backed domain modeling, PostgreSQL, Redis, idempotent payment handling, one complete Kafka-backed async event flow, Docker, tests, and AWS-oriented deployment notes.
+## 문제 요약
 
-## Scope
+- 한국 주니어 Spring 백엔드 채용 공고에서 반복되는 요구사항을 한 서비스 안에서 설명 가능한 수준으로 연결해야 합니다.
+- baseline capstone이 남긴 얕은 부분을 보강하되, 도메인을 바꾸지 않고 같은 커머스 문제를 더 깊게 풀어야 합니다.
+- 상세 성공 기준과 제약은 [problem/README.md](problem/README.md)에 둡니다.
 
-- local registration/login plus mocked Google OAuth callback linking
-- refresh-token rotation with HttpOnly cookie and CSRF header checks
-- admin category/product management and public catalog API
-- Redis-backed or in-memory cart, DB-backed orders, optimistic-lock stock reservation
-- mock payment confirmation with enforced idempotency keys
-- outbox publisher and Kafka consumer for `order-paid` notifications
-- health/readiness endpoints, JSON logs, Prometheus metrics, Compose stack, and CI wiring
+## 내 답
 
-## Why v2 exists
+- persisted auth, JPA + Flyway domain modeling, Redis cart/throttling, idempotent payment, outbox + Kafka notification을 한 modular monolith에 연결했습니다.
+- auth, catalog, cart, order, payment, notification, global 패키지로 경계를 나눴습니다.
+- baseline과 비교해 "무엇을 더 구현했고 무엇은 아직 남겼는가"를 README와 docs에서 바로 설명할 수 있게 했습니다.
 
-- `commerce-backend/` is kept intact as the original integrated scaffold
-- `commerce-backend-v2/` reuses the same capstone slot but raises the implementation depth to portfolio level
-- the goal is not a different domain, but a stronger proof of Spring Boot, JPA, Redis, and operational literacy
+## 핵심 설계 선택
+
+- 도메인은 유지하고 구현 깊이만 올려 baseline 대비 개선점을 명확히 했습니다.
+- microservices보다 modular monolith를 유지해 코드 탐색과 인터뷰 설명 난도를 낮췄습니다.
+- Redis와 Kafka는 키워드 장식이 아니라 cart, throttling, outbox handoff라는 구체적 문제에만 연결했습니다.
+
+## 검증
+
+```bash
+cd spring
+make lint
+make test
+make smoke
+docker compose up --build
+```
+
+`make test`에는 Testcontainers 기반 messaging test가 포함됩니다. 마지막 기록된 실제 검증 결과는 [../../docs/verification-report.md](../../docs/verification-report.md)에 있습니다.
+
+## 이번 단계에서 일부러 남긴 것
+
+- 실제 Google OAuth console integration
+- production payment provider integration
+- live AWS provisioning과 장기 Kafka 운영 검증
+
+## 다음에 읽을 문서
+
+- canonical problem statement: [problem/README.md](problem/README.md)
+- 실행과 검증: [spring/README.md](spring/README.md)
+- 아키텍처와 검증 메모: [docs/README.md](docs/README.md)
+- 학습 로그와 재현 기록: [notion/README.md](notion/README.md)
+- baseline capstone: [../commerce-backend/README.md](../commerce-backend/README.md)

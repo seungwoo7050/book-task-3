@@ -1,33 +1,13 @@
-# Frontend Portfolio Track
+# Frontend Portfolio
 
-이 트랙은 학습용 internals 구현과 별개로, 제품형 프론트 포지션 지원에 직접 사용할 메인 포트폴리오를 만드는 공간이다.
+이 트랙은 채용용으로 설명 가능한 제품형 결과물을 만드는 단계다. 내부도구형 UI와 고객-facing UI를 각각 한 프로젝트씩 두어, 서로 다른 프론트 문제를 어떻게 푸는지 보여 준다.
 
-## 목적
+## 프로젝트 인덱스
 
-- 실제 제품 UI 완성도
-- 데이터가 많은 운영 화면 설계
-- 상태 관리와 optimistic update
-- 접근성, 테스트, 문서 품질
-- 배포 가능한 결과물
-
-## 프로젝트 목록
-
-| 순서 | 프로젝트 | 상태 | 설명 |
-| --- | --- | --- | --- |
-| 01 | [01-ops-triage-console](01-ops-triage-console/README.md) | verified | 운영자가 많은 이슈를 빠르게 분류하고 조치하는 B2B triage console |
-| 02 | [02-client-onboarding-portal](02-client-onboarding-portal/README.md) | verified | SaaS 고객의 onboarding, workspace setup, invite, submission을 다루는 고객-facing 포털 |
-
-## internals 트랙과의 관계
-
-- `react-internals`는 보조 학습 근거다.
-- 이 트랙은 채용용 메인 결과물을 만드는 목적이므로, custom runtime을 전면에 내세우지 않는다.
-- 포트폴리오 앱은 실제 제품 UX, 데이터 흐름, 품질 기준을 우선한다.
-
-## 이 트랙이 커버하는 폭
-
-- 내부도구형, data-heavy UI
-- 고객-facing form / route / validation flow
-- 발표용 문서와 실제 캡처 기반 demo narrative
+| 프로젝트 | 문제 질문 | 내가 만든 답 | 검증 | 다음 단계 |
+| --- | --- | --- | --- | --- |
+| [01-ops-triage-console](01-ops-triage-console/README.md)<br>[problem](01-ops-triage-console/problem/README.md) · [next](01-ops-triage-console/next/README.md) · [docs](01-ops-triage-console/docs/README.md) | 데이터가 많은 운영 화면에서 triage workflow를 어떻게 설계하고 검증하는가 | dashboard, queue, saved view, bulk action, optimistic update를 갖춘 Next.js 운영 콘솔 | `verify --workspace @front-react/ops-triage-console`<br>`typecheck` + `vitest` + `playwright` | 고객-facing multi-step flow를 보여 주는 프로젝트로 이동 |
+| [02-client-onboarding-portal](02-client-onboarding-portal/README.md)<br>[problem](02-client-onboarding-portal/problem/README.md) · [next](02-client-onboarding-portal/next/README.md) · [docs](02-client-onboarding-portal/docs/README.md) | 고객-facing onboarding flow에서 validation, draft, route guard를 어떻게 묶는가 | sign-in, wizard, workspace setup, invite, submit retry를 갖춘 Next.js 포털 | `verify --workspace @front-react/client-onboarding-portal`<br>`typecheck` + `vitest` + `playwright` | 포트폴리오 폭은 충분하므로 이후에는 polish와 발표 품질을 다듬는다 |
 
 ## 워크스페이스 명령
 
@@ -37,4 +17,4 @@ npm run dev:portfolio
 npm run verify:portfolio
 ```
 
-`dev:portfolio`는 기본적으로 `01-ops-triage-console`을 연다. `verify:portfolio`는 두 앱을 모두 검증한다.
+`dev:portfolio`는 기본적으로 `01-ops-triage-console`을 연다. 개별 앱 실행과 검증은 각 프로젝트 README의 workspace 명령을 따른다.

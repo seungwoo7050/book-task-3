@@ -11,7 +11,7 @@
 | [02-debug-log.md](./02-debug-log.md) | JWT, Redis, RBAC, Worker에서 만난 문제들 |
 | [03-retrospective.md](./03-retrospective.md) | 포트폴리오 프로젝트로서의 회고 |
 | [04-knowledge-index.md](./04-knowledge-index.md) | 다룬 개념 정리 |
-| [05-timeline.md](./05-timeline.md) | CLI 명령어와 인프라 구성 타임라인 |
+| [05-development-timeline.md](./05-development-timeline.md) | CLI 명령어와 인프라 구성 타임라인 |
 
 ## 연관 프로젝트 (통합)
 

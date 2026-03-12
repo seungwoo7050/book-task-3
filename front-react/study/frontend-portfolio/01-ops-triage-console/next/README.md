@@ -1,19 +1,31 @@
-# Next App
+# Next.js 구현
 
-이 디렉터리는 `Ops Triage Console`의 실제 실행 가능한 앱과 테스트 코드를 담는다.
+상태: `verified`
 
-## 디렉터리
+## 이 구현이 답하는 범위
 
-- `app/`: Next App Router 엔트리와 라우트
-- `src/`: 컴포넌트, hooks, mock service, state helpers
-- `public/`: 정적 자산
-- `tests/`: unit, integration, E2E 테스트
+- dashboard summary와 triage queue
+- saved view, bulk action, detail action
+- optimistic update, rollback, retry
+- unit, integration, E2E 검증
 
-## 실행
+## 핵심 파일
 
-프로젝트 루트 패키지 스크립트를 통해 실행한다.
+- `app/`: App Router 엔트리와 route 구성
+- `src/components/console/ops-triage-console.tsx`: main console UI
+- `src/hooks/use-ops-triage.ts`: query/mutation/runtime orchestration
+- `tests/`: unit, integration, E2E 검증
+
+## 실행과 검증
 
 ```bash
 cd study
-npm run dev:portfolio
+npm run dev --workspace @front-react/ops-triage-console
+npm run verify --workspace @front-react/ops-triage-console
 ```
+
+## 현재 한계
+
+- mock API와 local persistence 기준 데모다.
+- 실제 인증, 실제 DB, 멀티유저 협업은 없다.
+- 도메인 폭은 운영 triage에 집중한다.

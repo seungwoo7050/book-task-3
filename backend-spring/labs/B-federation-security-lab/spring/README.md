@@ -1,15 +1,20 @@
-# B-federation-security-lab Spring
+# B-federation-security-lab Spring 워크스페이스
 
-- Status: `verified scaffold`
-- Problem scope covered: Google OAuth2 callback modeling, 2FA flows, audit log surface
-- Commands:
-  - `cp .env.example .env`
-  - `make run`
-  - `make lint`
-  - `make test`
-  - `make smoke`
-  - `docker compose up --build`
+- 상태: `verified scaffold`
+- 현재 범위: Google OAuth2 callback 모델링, 2FA 흐름, audit log surface
 
-- Known gaps:
-  - Google integration is simulated rather than tied to a real console app
-  - TOTP generation is simplified for study readability
+## 실행과 검증 명령
+
+```bash
+cp .env.example .env
+make run
+make lint
+make test
+make smoke
+docker compose up --build
+```
+
+## 현재 한계
+
+- Google integration은 실제 provider가 아니라 simulated contract다
+- TOTP 생성은 학습 가독성을 위한 단순화 버전이다

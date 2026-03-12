@@ -8,44 +8,46 @@
     code/
     data/
     script/
-  go/ or infra/
+  solution/
     README.md
-    ...
+    <go-or-infra>/  # Go 프로젝트면 go, GitOps 프로젝트면 infra
+      ...
   docs/
     README.md
     concepts/
     references/
   notion/
+    README.md
     00-problem-framing.md
     01-approach-log.md
     02-debug-log.md
     03-retrospective.md
     04-knowledge-index.md
+    05-development-timeline.md
 ```
 
-## Required README Sections
+## 프로젝트 README 섹션
 
-- Status
-- Legacy source
-- Problem scope
-- Build
-- Test
-- Verification
-- Known gaps
+- 한 줄 요약
+- 이 프로젝트가 푸는 문제
+- 내가 만든 답
+- 핵심 설계 선택
+- 검증
+- 제외 범위
+- 읽는 순서
+- 상태
 
-## 제출 준비 기준
+## 문제 문서 섹션
 
-캡스톤 또는 포트폴리오 제출 전 아래 루브릭으로 self-check 하고 결과를 README에 첨부한다.
+- 문제 정의
+- 성공 기준
+- 제공 자료와 출처
+- 검증 기준
+- 제외 범위
 
-→ [guides/submission/submission-readiness-rubric.md](../../guides/submission/submission-readiness-rubric.md)
+## 답안 문서 섹션
 
-최소 확인 항목:
-
-```
-[ ] docker compose up 한 줄 기동
-[ ] 단위·통합 테스트 전체 통과
-[ ] baseline 로드 테스트 결과 첨부
-[ ] 장애 주입 시나리오 1개 이상 실행 및 보고서
-[ ] Evidence Package (변경 전후 메트릭) README 포함
-```
-
+- 구현 위치
+- 핵심 범위
+- 구현 진입점
+- 현재 한계

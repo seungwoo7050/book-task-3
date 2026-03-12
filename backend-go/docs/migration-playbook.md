@@ -1,22 +1,17 @@
 # Migration Playbook
 
-## Sequence
+## 원칙
 
-1. `legacy/` 자산을 읽기 전용 기준으로 둔다.
-2. `study/`에 새 번호 체계와 상태 모델을 먼저 만든다.
-3. 문제 명세와 구현 코드를 옮긴다.
-4. README를 새 학습 목표와 검증 기준에 맞게 다시 쓴다.
-5. Makefile과 실행 명령을 새 경로에 맞게 고친다.
-6. `verified` 여부는 실제 명령 실행 결과로만 부여한다.
+1. 상위 커리큘럼 구조는 `study/<track>/<project>`로 유지한다.
+2. 프로젝트 내부는 `problem/`, `solution/`, `docs/`, `notion/`으로 분리한다.
+3. 구현 경로는 `solution/go` 또는 `solution/infra`로 통일한다.
+4. README는 GitHub 첫 방문자가 `문제`, `답`, `검증`을 바로 이해할 수 있게 작성한다.
+5. `verified` 상태는 실제 명령 실행을 근거로만 부여한다.
 
-## Public vs Private
+## 공개 문서와 보조 문서
 
-- tracked README/docs: 문제, 제약, 실행법, 상태, 학습 포인트
-- `notion/`: 시행착오, 긴 디버그 로그, 개인 학습 메모
-
-## Verification Rule
-
-- 적어도 1개 build/run 명령과 1개 test 명령이 실제로 통과해야 `verified`
-- 외부 인프라 의존이 큰 프로젝트는 `partial` 허용
-- 한계와 필요한 로컬 환경은 README에 명시
-
+- `README.md`: 문제 요약, 내 답, 검증, 읽는 순서
+- `problem/README.md`: canonical 문제 정의와 성공 기준
+- `solution/README.md`: 구현 범위와 진입 명령
+- `docs/`: 개념 설명, 참조 문서, 검증 메모
+- `notion/`: 접근 로그, 디버그 기록, 회고, 개발 타임라인

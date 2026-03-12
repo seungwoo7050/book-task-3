@@ -69,7 +69,7 @@ charts/go-backend/
 ```yaml
 spec:
   source:
-    path: 03-platform-engineering/16-gitops-deploy/infra/charts/go-backend
+    path: 03-platform-engineering/16-gitops-deploy/solution/infra/charts/go-backend
     helm:
       valueFiles:
         - values.yaml

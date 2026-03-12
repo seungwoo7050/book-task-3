@@ -1,29 +1,29 @@
 # Approach Log
 
-## Options considered
+## 검토한 선택지
 
-For each meaningful option, record:
+의미 있는 선택지마다 아래를 기록합니다.
 
-- option name
-- what would have been simpler
-- what would have become harder
-- why it stayed viable or was ruled out
+- 선택지 이름
+- 더 단순해지는 점
+- 더 어려워지는 점
+- 왜 유지되었는지 또는 왜 버렸는지
 
-## Chosen direction
+## 채택한 방향
 
-State the selected design in concrete terms:
+선택한 설계를 구체적으로 적습니다.
 
 - package structure:
 - persistence choice:
 - security boundary:
 - integration style:
-- why this is the right choice for this lab:
+- 왜 이 프로젝트에는 이 선택이 맞는가:
 
-## Rejected ideas
+## 버린 아이디어
 
-Record the approaches you explicitly rejected and give one defensible reason for each.
+실제로 검토했다가 버린 접근을 기록하고, 각 아이디어를 버린 방어 가능한 이유를 한 줄씩 남깁니다.
 
-## Evidence
+## 근거
 
-- Which code files reflect the decision?
-- Which test or manual verification proved the choice was workable?
+- 어떤 코드 파일이 이 결정을 반영하는가
+- 어떤 테스트나 수동 검증이 이 선택이 workable하다는 것을 보여줬는가
