@@ -27,7 +27,8 @@
 먼저 headless authoritative engine을 고정한 뒤, 같은 엔진을 TCP 서버에 연결하는 축이다. runtime보다 simulation을 먼저 분리해 보는 흐름이 중심에 있다.
 
 - [ticklab](game-track/01-ticklab/README.md)
-- [arenaserv](game-track/02-arenaserv/README.md)
+- [rollbacklab](game-track/02-rollbacklab/README.md)
+- [arenaserv](game-track/03-arenaserv/README.md)
 
 ## 공통 검증 규칙
 
@@ -38,4 +39,3 @@ make clean && make test
 ```
 
 본문 글과 evidence ledger는 이 명령의 실제 출력과 테스트 시나리오를 기준으로 정리했다. 그래서 글을 따라가다 궁금해지는 장면이 있으면, 같은 경로에서 같은 명령을 다시 돌려 바로 대조해 볼 수 있다.
-

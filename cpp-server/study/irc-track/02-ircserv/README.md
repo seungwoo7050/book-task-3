@@ -40,4 +40,4 @@ make clean && make test
 
 ## 다음 단계
 
-- 다른 도메인의 capstone과 비교하려면 [../../game-track/02-arenaserv/README.md](../../game-track/02-arenaserv/README.md)
+- 다른 도메인의 capstone과 비교하려면 [../../game-track/03-arenaserv/README.md](../../game-track/03-arenaserv/README.md)

@@ -42,7 +42,7 @@
 
 이 레포는 모든 DBMS 주제를 한 번에 다루지 않습니다. 다음 주제는 후속 확장 후보로 남깁니다.
 
-- query executor, planner, B-Tree 같은 상위 DBMS 주제
+- full SQL planner, join executor, delete rebalance 같은 더 큰 상위 DBMS 주제
 - dynamic membership, snapshotting, deployment automation 같은 운영 심화 주제
 - production-grade observability, benchmarking, large-scale chaos automation
 

@@ -20,7 +20,7 @@
 
 1. [01-roomlab/README.md](01-roomlab/README.md)
 2. [02-ircserv/README.md](02-ircserv/README.md)
-3. 다른 capstone과 비교하려면 [../game-track/02-arenaserv/README.md](../game-track/02-arenaserv/README.md)
+3. 다른 capstone과 비교하려면 [../game-track/03-arenaserv/README.md](../game-track/03-arenaserv/README.md)
 
 ## Source-First Blog
 

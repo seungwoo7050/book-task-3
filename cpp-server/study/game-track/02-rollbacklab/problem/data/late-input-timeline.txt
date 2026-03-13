@@ -1,0 +1,4 @@
+frame 1: alpha moves right, bravo moves left
+frame 2: bravo input is missing so the engine predicts "keep moving left"
+frame 3: bravo frame-2 input arrives late and says "actually idle"
+result: rollback to frame 2, replay frame 2 and frame 3, verify the corrected state converges

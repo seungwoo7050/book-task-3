@@ -11,7 +11,7 @@ Go 저장 엔진 정본 트랙입니다. 자료구조, 파일 포맷, durability
 ## 이 트랙이 답하는 질문
 
 - 정렬된 write structure와 immutable file format을 어떻게 이어 붙일 것인가
-- flush, recovery, compaction, buffer pool, MVCC가 저장 엔진 안에서 어떤 순서로 이어지는가
+- flush, recovery, compaction, buffer pool, B+Tree read path, MVCC가 저장 엔진 안에서 어떤 순서로 이어지는가
 
 ## 프로젝트 표
 
@@ -23,8 +23,9 @@ Go 저장 엔진 정본 트랙입니다. 자료구조, 파일 포맷, durability
 | [04 WAL Recovery](projects/04-wal-recovery/README.md) | PUT/DELETE는 memtable 반영 전에 WAL에 먼저 기록돼야 합니다. | acknowledged write를 잃지 않기 위한 append-before-apply 순서를 익힙니다. | `go test ./...`<br>`go run ./cmd/wal-recovery` | Leveled Compaction |
 | [05 Leveled Compaction](projects/05-leveled-compaction/README.md) | 입력 source 배열에서 newer-first 우선순위를 유지한 k-way merge를 수행해야 합니다. | newest-first 우선순위를 유지한 k-way merge를 구현합니다. | `go test ./...`<br>`go run ./cmd/leveled-compaction` | Index Filter |
 | [06 Index Filter](projects/06-index-filter/README.md) | Bloom filter를 직렬화·복원할 수 있어야 합니다. | Bloom filter가 negative lookup 비용을 어떻게 줄이는지 이해합니다. | `go test ./...`<br>`go run ./cmd/index-filter` | Buffer Pool |
-| [07 Buffer Pool](projects/07-buffer-pool/README.md) | page id로 file path와 page number를 안정적으로 분리해야 합니다. | 고정 크기 page를 메모리에 캐시하는 기본 구조를 익힙니다. | `go test ./...`<br>`go run ./cmd/buffer-pool` | MVCC |
-| [08 MVCC](projects/08-mvcc/README.md) | snapshot isolation 하에서 읽기 스냅샷과 write-write conflict를 관리해야 합니다. | snapshot timestamp가 어떤 version을 볼 수 있는지 판단하는 규칙을 익힙니다. | `go test ./...`<br>`go run ./cmd/mvcc` | 자체 확장 프로젝트 |
+| [07 Buffer Pool](projects/07-buffer-pool/README.md) | page id로 file path와 page number를 안정적으로 분리해야 합니다. | 고정 크기 page를 메모리에 캐시하는 기본 구조를 익힙니다. | `go test ./...`<br>`go run ./cmd/buffer-pool` | BTree Index And Query Scan |
+| [08 BTree Index And Query Scan](projects/08-btree-index-and-query-scan/README.md) | secondary index 위에서 point lookup, range scan, rule-based index 선택을 구현해야 합니다. | B+Tree leaf split, linked-leaf cursor, minimal query executor를 통해 read path를 한 단계 더 올립니다. | `go test ./...`<br>`go run ./cmd/btree-index-and-query-scan` | MVCC |
+| [09 MVCC](projects/09-mvcc/README.md) | snapshot isolation 하에서 읽기 스냅샷과 write-write conflict를 관리해야 합니다. | snapshot timestamp가 어떤 version을 볼 수 있는지 판단하는 규칙을 익힙니다. | `go test ./...`<br>`go run ./cmd/mvcc` | 자체 확장 프로젝트 |
 
 ## 다음 단계
 

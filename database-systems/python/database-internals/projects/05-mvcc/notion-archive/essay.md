@@ -196,7 +196,7 @@ def gc(self, min_snapshot: int) -> None:
 
 ## Go 버전과의 비교
 
-| 항목 | Go 08-mvcc | Python 05-mvcc |
+| 항목 | Go 09-mvcc | Python 05-mvcc |
 |------|-----------|----------------|
 | version chain | `[]Version` 삽입 정렬 | `list[Version]` 삽입 정렬 |
 | conflict 검사 | first-committer-wins | first-committer-wins |

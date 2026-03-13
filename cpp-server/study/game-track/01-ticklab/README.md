@@ -40,4 +40,4 @@ make clean && make test
 
 ## 다음 단계
 
-- 네트워크를 붙인 capstone은 [../02-arenaserv/README.md](../02-arenaserv/README.md)
+- 다음 단계는 [../02-rollbacklab/README.md](../02-rollbacklab/README.md)에서 late input correction과 rollback을 붙이는 것이다.

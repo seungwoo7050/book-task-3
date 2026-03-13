@@ -1,0 +1,10 @@
+frame	transport	endpoint	packet_type	packet_number	stream_id	connection_id	note
+31	UDP:443	client	Initial	0	-	8394c8f03e515708	ClientHello
+32	UDP:443	server	Initial	0	-	1f4a7b9c00112233	Server Initial
+33	UDP:443	client	Handshake	1	-	8394c8f03e515708	Client Finished
+34	UDP:443	server	Handshake	1	-	1f4a7b9c00112233	Server Handshake Ack
+35	UDP:443	client	1-RTT	2	0	8394c8f03e515708	control stream
+36	UDP:443	client	1-RTT	3	4	8394c8f03e515708	request /feed
+37	UDP:443	client	1-RTT	4	8	8394c8f03e515708	request /avatars/42.png
+38	UDP:443	server	1-RTT	5	4	1f4a7b9c00112233	response /feed chunk
+39	UDP:443	server	1-RTT	6	8	1f4a7b9c00112233	response /avatars/42.png chunk

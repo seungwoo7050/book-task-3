@@ -64,5 +64,4 @@ phase가 고정되면 authoritative 엔진의 진짜 성격은 입력 acceptance
 - 검증 신호: `ticklab tests passed.`
 - 핵심 코드 앵커: `rejoin_player()`, `expire_disconnected_players()`, `tests/test_ticklab.cpp`
 - 새로 배운 것: headless engine만으로도 reconnect grace, stale input, draw timeout을 모두 증명할 수 있다.
-- 다음: 같은 `MatchEngine`을 TCP 서버에 연결한 [`../02-arenaserv/README.md`](../02-arenaserv/README.md)로 넘어간다.
-
+- 다음: 같은 simulation을 rollback correction으로 확장한 [`../02-rollbacklab/README.md`](../02-rollbacklab/README.md)로 넘어간다.

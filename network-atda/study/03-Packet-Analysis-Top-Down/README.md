@@ -1,6 +1,6 @@
 # 03. Packet Analysis Top-Down
 
-HTTP에서 TLS까지 내려가며 Wireshark trace를 문제-증거-해설 구조로 읽는 단계입니다.
+HTTP에서 TLS를 지나 HTTP/2와 QUIC 비교까지 내려가며 Wireshark trace를 문제-증거-해설 구조로 읽는 단계입니다.
 
 ## 프로젝트 카탈로그
 
@@ -13,6 +13,7 @@ HTTP에서 TLS까지 내려가며 Wireshark trace를 문제-증거-해설 구조
 | [`Ethernet and ARP Packet Analysis`](ethernet-arp/README.md) | `Computer Networking: A Top-Down Approach`의 Ethernet/ARP Wireshark 랩을 현재 저장소 구조로 재정리한 프로젝트 | `analysis/src/` | `make -C study/03-Packet-Analysis-Top-Down/ethernet-arp/problem test` | `verified` | 네트워크 계층 랩 다음에 링크 계층 주소 해석을 보며, 상위 계층 IP 주소와 하위 계층 MAC 주소가 어떻게 연결되는지 확인하게 합니다. |
 | [`802.11 Wireless Packet Analysis`](wireless-802.11/README.md) | `Computer Networking: A Top-Down Approach`의 802.11 Wireshark 랩을 현재 저장소 구조로 재정리한 프로젝트 | `analysis/src/` | `make -C study/03-Packet-Analysis-Top-Down/wireless-802.11/problem test` | `verified` | Ethernet/ARP 다음에 무선 링크 계층의 차이를 관찰하며, 같은 링크 계층이라도 프레임 구조와 주소 의미가 크게 달라짐을 보여 줍니다. |
 | [`TLS Packet Analysis`](tls-ssl/README.md) | `Computer Networking: A Top-Down Approach`의 TLS/SSL Wireshark 랩을 현재 저장소 구조로 재정리한 프로젝트 | `analysis/src/` | `make -C study/03-Packet-Analysis-Top-Down/tls-ssl/problem test` | `verified` | top-down 순서의 마지막에서 보안 프로토콜이 transport 위에 어떻게 올라가는지 정리하며, 암호화 이후 무엇이 보이고 무엇이 보이지 않는지도 함께 보여 줍니다. |
+| [`HTTP/2 and QUIC Analysis`](http2-quic/README.md) | HTTP/2 frame sequence와 QUIC packet trace를 비교해 multiplexing, stream, connection ID를 읽는 이 저장소의 직접 보강 프로젝트 | `analysis/src/` | `make -C study/03-Packet-Analysis-Top-Down/http2-quic/problem test` | `verified` | HTTP/TCP/TLS를 읽은 뒤 최신 transport/application 경계가 어떻게 달라지는지 비교하기 좋습니다. |
 
 ## 공통 읽기 순서
 

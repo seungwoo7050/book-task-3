@@ -15,6 +15,7 @@
 | 07 | `react-internals` | `04-runtime-demo-app` | verified | 공유 런타임 위에서 실제 기능 조합은 어떻게 보이는가 |
 | 08 | `frontend-portfolio` | `01-ops-triage-console` | verified | 데이터가 많은 내부도구 UI를 어떻게 설계하고 검증하는가 |
 | 09 | `frontend-portfolio` | `02-client-onboarding-portal` | verified | 고객-facing form과 onboarding 흐름은 어떻게 구성하는가 |
+| 10 | `frontend-portfolio` | `03-realtime-collab-workspace` | verified | 실시간 협업 UI에서 optimistic patch와 reconnect replay를 어떻게 제품처럼 드러내는가 |
 
 ## Why These Three Tracks
 
@@ -37,7 +38,7 @@
 - `planned`: 구조와 문제 경계는 고정했지만 구현/검증은 아직 없는 프로젝트
 - `verify:core`: 현재 `verified` 상태인 핵심 프로젝트만 실행
 
-현재 기준 `verify:core`에 포함되는 것은 아래 아홉 단계다.
+현재 기준 `verify:core`에 포함되는 것은 아래 열 단계다.
 
 - `study/frontend-foundations/01-semantic-layouts-and-a11y`
 - `study/frontend-foundations/02-dom-state-and-events`
@@ -48,3 +49,4 @@
 - `study/react-internals/04-runtime-demo-app`
 - `study/frontend-portfolio/01-ops-triage-console`
 - `study/frontend-portfolio/02-client-onboarding-portal`
+- `study/frontend-portfolio/03-realtime-collab-workspace`

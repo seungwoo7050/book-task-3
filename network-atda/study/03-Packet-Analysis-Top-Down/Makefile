@@ -1,6 +1,6 @@
 # Packet Analysis 전체 검증용 Makefile
 
-LABS := http dns tcp-udp ip-icmp ethernet-arp wireless-802.11 tls-ssl
+LABS := http dns tcp-udp ip-icmp ethernet-arp wireless-802.11 tls-ssl http2-quic
 REQUIRED_TRACES := \
 	http/problem/data/http-basic.pcapng \
 	http/problem/data/http-conditional.pcapng \
@@ -14,7 +14,9 @@ REQUIRED_TRACES := \
 	ip-icmp/problem/data/ip-fragmentation.pcapng \
 	ethernet-arp/problem/data/ethernet-arp.pcapng \
 	wireless-802.11/problem/data/wireless-trace.pcap \
-	tls-ssl/problem/data/tls-trace.pcap
+	tls-ssl/problem/data/tls-trace.pcap \
+	http2-quic/problem/data/http2-trace.tsv \
+	http2-quic/problem/data/quic-trace.tsv
 
 .PHONY: help verify test check-traces
 

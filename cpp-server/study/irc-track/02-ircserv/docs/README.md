@@ -16,4 +16,4 @@
 
 ## 다음 단계
 
-- 다른 축의 capstone은 [../../../game-track/02-arenaserv/README.md](../../../game-track/02-arenaserv/README.md)
+- 다른 축의 capstone은 [../../../game-track/03-arenaserv/README.md](../../../game-track/03-arenaserv/README.md)

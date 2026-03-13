@@ -13,6 +13,6 @@
 - clock policy를 추가해 LRU와 비교하는 실험을 만들 수 있습니다.
 - dirty page background flusher를 넣으면 recovery와 더 자연스럽게 연결됩니다.
 
-## `08 MVCC`로 넘길 질문
+## `08 BTree Index And Query Scan`으로 넘길 질문
 - 같은 logical key라도 transaction 시점에 따라 다른 version이 보여야 할 때 page cache 위에는 무엇이 더 필요할까?
 - buffer pool과 MVCC가 함께 있을 때 garbage collection은 어떤 단위를 기준으로 해야 할까?

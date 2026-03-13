@@ -13,7 +13,7 @@
 1. [shared-core/01-eventlab/README.md](shared-core/01-eventlab/README.md)
 2. [shared-core/02-msglab/README.md](shared-core/02-msglab/README.md)
 3. 전체를 읽는다면 [irc-track/01-roomlab/README.md](irc-track/01-roomlab/README.md) -> [irc-track/02-ircserv/README.md](irc-track/02-ircserv/README.md)
-4. 그 다음 [game-track/01-ticklab/README.md](game-track/01-ticklab/README.md) -> [game-track/02-arenaserv/README.md](game-track/02-arenaserv/README.md)
+4. 그 다음 [game-track/01-ticklab/README.md](game-track/01-ticklab/README.md) -> [game-track/02-rollbacklab/README.md](game-track/02-rollbacklab/README.md) -> [game-track/03-arenaserv/README.md](game-track/03-arenaserv/README.md)
 
 게임 서버 축만 볼 때도 `shared-core`는 먼저 읽는 편이 좋다. `eventlab`의 런타임 기반과 `msglab`의 입력 경계가 뒤쪽 capstone 설명을 훨씬 단순하게 만든다.
 

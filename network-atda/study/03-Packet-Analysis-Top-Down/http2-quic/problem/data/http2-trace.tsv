@@ -1,0 +1,10 @@
+frame	transport	alpn	stream_id	frame_type	note
+11	TCP:443	h2	0	SETTINGS	client preface and settings
+15	TCP:443	h2	0	SETTINGS_ACK	server settings acknowledged
+18	TCP:443	h2	1	HEADERS	GET /feed
+19	TCP:443	h2	3	HEADERS	GET /avatars/42.png
+20	TCP:443	h2	1	DATA	feed chunk
+21	TCP:443	h2	3	DATA	avatar chunk
+22	TCP:443	h2	0	WINDOW_UPDATE	increment 32768
+23	TCP:443	h2	1	DATA	feed final chunk
+24	TCP:443	h2	3	DATA	avatar final chunk

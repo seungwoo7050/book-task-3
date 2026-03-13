@@ -11,7 +11,8 @@
     "react-internals/03-hooks-and-events",
     "react-internals/04-runtime-demo-app",
     "frontend-portfolio/01-ops-triage-console",
-    "frontend-portfolio/02-client-onboarding-portal"
+    "frontend-portfolio/02-client-onboarding-portal",
+    "frontend-portfolio/03-realtime-collab-workspace"
   ],
   "scripts": {
     "test:vdom": "npm run test --workspace @front-react/vdom-foundations",
@@ -20,10 +21,10 @@
     "verify:foundations": "npm run verify --workspace @front-react/semantic-layouts-a11y && npm run verify --workspace @front-react/dom-state-and-events && npm run verify --workspace @front-react/networked-ui-patterns",
     "verify:internals": "npm run verify:vdom && npm run verify --workspace @front-react/render-pipeline && npm run verify --workspace @front-react/hooks-and-events && npm run verify --workspace @front-react/runtime-demo-app",
     "dev:portfolio": "npm run dev --workspace @front-react/ops-triage-console",
-    "test:portfolio": "npm run test --workspace @front-react/ops-triage-console && npm run test --workspace @front-react/client-onboarding-portal",
-    "typecheck:portfolio": "npm run typecheck --workspace @front-react/ops-triage-console && npm run typecheck --workspace @front-react/client-onboarding-portal",
-    "e2e:portfolio": "npm run e2e --workspace @front-react/ops-triage-console && npm run e2e --workspace @front-react/client-onboarding-portal",
-    "verify:portfolio": "npm run verify --workspace @front-react/ops-triage-console && npm run verify --workspace @front-react/client-onboarding-portal",
+    "test:portfolio": "npm run test --workspace @front-react/ops-triage-console && npm run test --workspace @front-react/client-onboarding-portal && npm run test --workspace @front-react/realtime-collab-workspace",
+    "typecheck:portfolio": "npm run typecheck --workspace @front-react/ops-triage-console && npm run typecheck --workspace @front-react/client-onboarding-portal && npm run typecheck --workspace @front-react/realtime-collab-workspace",
+    "e2e:portfolio": "npm run e2e --workspace @front-react/ops-triage-console && npm run e2e --workspace @front-react/client-onboarding-portal && npm run e2e --workspace @front-react/realtime-collab-workspace",
+    "verify:portfolio": "npm run verify --workspace @front-react/ops-triage-console && npm run verify --workspace @front-react/client-onboarding-portal && npm run verify --workspace @front-react/realtime-collab-workspace",
     "verify:core": "npm run verify:foundations && npm run verify:internals && npm run verify:portfolio"
   }
 }

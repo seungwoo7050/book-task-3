@@ -27,8 +27,9 @@
 5. `ethernet-arp`
 6. `wireless-802.11`
 7. `tls-ssl`
+8. `http2-quic`
 
-HTTP에서 시작해 TLS까지 내려가며, 각 계층에서 어떤 field가 보이고 어떤 field는 보이지 않는지 trace 근거로 익힙니다. 이 단계는 이후 구현 프로젝트를 다시 읽을 때 강한 복습 도구가 됩니다.
+HTTP에서 시작해 TLS까지 내려가며, 각 계층에서 어떤 field가 보이고 어떤 field는 보이지 않는지 trace 근거로 익힙니다. 마지막의 `http2-quic`는 최신 프로토콜이 기존 TCP/TLS 경계와 어떻게 달라지는지 비교하는 보강 슬롯입니다. 이 단계는 이후 구현 프로젝트를 다시 읽을 때 강한 복습 도구가 됩니다.
 
 ## 4. Network Diagnostics and Routing
 

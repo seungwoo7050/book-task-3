@@ -16,4 +16,4 @@
 
 ## 다음 단계
 
-- 네트워크 책임이 추가된 버전은 [../../02-arenaserv/README.md](../../02-arenaserv/README.md)
+- rollback과 correction을 붙인 다음 단계는 [../../02-rollbacklab/README.md](../../02-rollbacklab/README.md)

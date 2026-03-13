@@ -9,7 +9,8 @@
 | `study/roomlab` | `study/irc-track/01-roomlab` | `irc-track` |
 | `study/ircserv` | `study/irc-track/02-ircserv` | `irc-track` |
 | `study/ticklab` | `study/game-track/01-ticklab` | `game-track` |
-| `study/arenaserv` | `study/game-track/02-arenaserv` | `game-track` |
+| `study/arenaserv` | `study/game-track/03-arenaserv` | `game-track` |
+| 신규 추가 | `study/game-track/02-rollbacklab` | `game-track` |
 
 ## 사용 규칙
 

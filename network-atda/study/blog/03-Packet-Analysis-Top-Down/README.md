@@ -1,6 +1,6 @@
 # 03. Packet Analysis Top-Down blog
 
-HTTP에서 TLS까지 내려가며 Wireshark trace를 문제-증거-해설 구조로 읽는 단계입니다.
+HTTP에서 TLS를 지나 HTTP/2와 QUIC 비교까지 내려가며 Wireshark trace를 문제-증거-해설 구조로 읽는 단계입니다.
 
 ## 이 트랙에서 무엇을 따라가면 되나
 
@@ -15,6 +15,7 @@ HTTP에서 TLS까지 내려가며 Wireshark trace를 문제-증거-해설 구조
 5. [Ethernet and ARP Packet Analysis](ethernet-arp/README.md) - Ethernet frame과 ARP 교환을 링크 계층 주소 관점에서 어떻게 읽었는가?
 6. [802.11 Wireless Packet Analysis](wireless-802.11/README.md) - 무선 링크 계층에서는 beacon, probe, association이 어떤 순서로 보이는가?
 7. [TLS Packet Analysis](tls-ssl/README.md) - 암호화 이후에도 TLS handshake에서 무엇은 보이고 무엇은 숨는가?
+8. [HTTP/2 and QUIC Analysis](http2-quic/README.md) - HTTP/2 frame interleaving과 QUIC packet trace를 비교해 multiplexing, connection ID, transport-level HOL 차이를 어디서 읽는가?
 
 ## 공통으로 보는 근거
 

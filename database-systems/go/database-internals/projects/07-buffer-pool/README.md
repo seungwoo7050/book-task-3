@@ -43,6 +43,6 @@ GOWORK=off go run ./cmd/buffer-pool
 ## 한계와 확장
 
 - 현재 범위 밖: concurrent latch, lock manager, asynchronous IO는 포함하지 않습니다.
-- 현재 범위 밖: buffer pool을 B-tree나 query executor와 연결하는 단계는 후속 범위로 남깁니다.
+- 다음 단계: [08-btree-index-and-query-scan](../08-btree-index-and-query-scan/README.md)에서 buffer pool 위에 B+Tree와 range scan을 올립니다.
 - 확장 아이디어: Clock replacer나 async flush worker를 추가하면 시스템 설계 폭이 넓어집니다.
 - 확장 아이디어: cache hit ratio, flush 횟수, pin 대기 같은 지표를 넣으면 운영 관점 이야기가 생깁니다.

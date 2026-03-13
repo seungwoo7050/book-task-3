@@ -20,5 +20,4 @@ make clean && make test
 ticklab tests passed.
 ```
 
-짧은 출력이지만 의미는 크다. authoritative 판단의 핵심, 즉 phase 전이, stale sequence, snapshot, reconnect grace, draw timeout은 이미 네트워크 없이 proof를 마쳤다는 뜻이기 때문이다. 다음 문서인 [`../02-arenaserv/README.md`](../02-arenaserv/README.md)은 바로 이 엔진을 거의 손대지 않은 채 TCP 서버에 올린다.
-
+짧은 출력이지만 의미는 크다. authoritative 판단의 핵심, 즉 phase 전이, stale sequence, snapshot, reconnect grace, draw timeout은 이미 네트워크 없이 proof를 마쳤다는 뜻이기 때문이다. 다음 문서인 [`../02-rollbacklab/README.md`](../02-rollbacklab/README.md)은 바로 이 엔진에 late input correction을 붙이고, 그 뒤 [`../03-arenaserv/README.md`](../03-arenaserv/README.md)에서 TCP 서버에 올린다.

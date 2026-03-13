@@ -64,5 +64,4 @@ capstone이라고 해서 registration 흐름이 완전히 새로워지지는 않
 - 검증 신호: `ircserv capstone smoke passed.`
 - 핵심 코드 앵커: `_execute_kick()`, `tests/test_irc_join.py`
 - 새로 배운 것: advanced command가 추가될수록 진짜 위험은 응답 포맷보다 state cleanup 누락이다.
-- 다음: 다른 도메인 capstone인 [`../../game-track/02-arenaserv/README.md`](../../game-track/02-arenaserv/README.md)와 비교할 수 있다.
-
+- 다음: 다른 도메인 capstone인 [`../../game-track/03-arenaserv/README.md`](../../game-track/03-arenaserv/README.md)와 비교할 수 있다.

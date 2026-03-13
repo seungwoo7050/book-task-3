@@ -7,7 +7,8 @@
 | Compaction | `05-leveled-compaction` | 해당 없음 | Go 심화 유지 | compaction은 입문 경로보다 심화 경로에 더 적합합니다. |
 | Index and Filter Optimization | `06-index-filter` | `03-index-filter` | 유지 | read-path 최적화 주제가 양쪽 트랙에서 모두 유효합니다. |
 | Buffer Pool | `07-buffer-pool` | `04-buffer-pool` | 유지 | page cache와 eviction 정책은 백엔드 학습자에게도 중요합니다. |
-| MVCC | `08-mvcc` | `05-mvcc` | 유지 | snapshot visibility와 conflict 규칙은 저장 엔진 마지막 단계로 적합합니다. |
+| Buffer Pool 위의 Index/Query Layer | `08-btree-index-and-query-scan` | 해당 없음 | Go 심화 신규 추가 | page cache 다음에 B+Tree와 minimal query scan을 붙이면 read path 상위 계층이 더 선명해집니다. |
+| MVCC | `09-mvcc` | `05-mvcc` | 위치 조정 | snapshot visibility와 conflict 규칙은 index/query layer 다음에 두는 편이 저장 엔진 후반부의 흐름이 더 자연스럽습니다. |
 | RPC Network | `01-rpc-framing` | `01-rpc-framing` | 유지 | 분산 트랙의 공통 transport 감각을 먼저 잡습니다. |
 | Replication | `02-leader-follower-replication` | `02-leader-follower-replication` | 유지 | log shipping과 follower apply 의미가 명확합니다. |
 | Sharding | `03-shard-routing` | `03-shard-routing` | 유지 | consistent hashing과 rebalance 비용을 독립적으로 보기 좋습니다. |

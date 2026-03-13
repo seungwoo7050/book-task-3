@@ -27,7 +27,8 @@
 | `irc-track` | [01-roomlab](study/irc-track/01-roomlab/README.md) | `verified` | [cpp/README.md](study/irc-track/01-roomlab/cpp/README.md) |
 | `irc-track` | [02-ircserv](study/irc-track/02-ircserv/README.md) | `verified` | [cpp/README.md](study/irc-track/02-ircserv/cpp/README.md) |
 | `game-track` | [01-ticklab](study/game-track/01-ticklab/README.md) | `verified` | [cpp/README.md](study/game-track/01-ticklab/cpp/README.md) |
-| `game-track` | [02-arenaserv](study/game-track/02-arenaserv/README.md) | `verified` | [cpp/README.md](study/game-track/02-arenaserv/cpp/README.md) |
+| `game-track` | [02-rollbacklab](study/game-track/02-rollbacklab/README.md) | `verified` | [cpp/README.md](study/game-track/02-rollbacklab/cpp/README.md) |
+| `game-track` | [03-arenaserv](study/game-track/03-arenaserv/README.md) | `verified` | [cpp/README.md](study/game-track/03-arenaserv/cpp/README.md) |
 
 ## 트랙 지도
 
@@ -35,7 +36,7 @@
 | --- | --- | --- | --- |
 | [shared-core](study/shared-core/README.md) | `01-eventlab`, `02-msglab` | 서버 런타임과 parser 책임을 어디서 끊어 설명할까 | 없음 |
 | [irc-track](study/irc-track/README.md) | `01-roomlab`, `02-ircserv` | IRC subset 서버를 어떻게 상태 전이와 capstone으로 확장할까 | `02-ircserv` |
-| [game-track](study/game-track/README.md) | `01-ticklab`, `02-arenaserv` | authoritative simulation과 TCP game server를 어떻게 분리해 검증할까 | `02-arenaserv` |
+| [game-track](study/game-track/README.md) | `01-ticklab`, `02-rollbacklab`, `03-arenaserv` | authoritative simulation, rollback correction, TCP game server를 어떻게 분리해 검증할까 | `03-arenaserv` |
 
 ## 먼저 읽을 순서
 

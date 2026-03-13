@@ -17,8 +17,9 @@
 | `03-Packet-Analysis-Top-Down/ethernet-arp` | `verified` | `make -C study/03-Packet-Analysis-Top-Down/ethernet-arp/problem test` | `analysis/src/` 답안 완결성을 확인합니다. |
 | `03-Packet-Analysis-Top-Down/wireless-802.11` | `verified` | `make -C study/03-Packet-Analysis-Top-Down/wireless-802.11/problem test` | `analysis/src/` 답안 완결성을 확인합니다. |
 | `03-Packet-Analysis-Top-Down/tls-ssl` | `verified` | `make -C study/03-Packet-Analysis-Top-Down/tls-ssl/problem test` | `analysis/src/` 답안 완결성을 확인합니다. |
+| `03-Packet-Analysis-Top-Down/http2-quic` | `verified` | `make -C study/03-Packet-Analysis-Top-Down/http2-quic/problem test` | `analysis/src/` 답안 완결성과 trace TSV 일치를 확인합니다. |
 | `04-Network-Diagnostics-and-Routing/icmp-pinger` | `verified` | `make -C study/04-Network-Diagnostics-and-Routing/icmp-pinger/problem test` | 공개 구현과 보조 테스트가 현재 범위 안에서 동작하는지 확인합니다. |
 | `04-Network-Diagnostics-and-Routing/traceroute` | `verified` | `make -C study/04-Network-Diagnostics-and-Routing/traceroute/problem test` | 공개 구현과 보조 테스트가 현재 범위 안에서 동작하는지 확인합니다. |
 | `04-Network-Diagnostics-and-Routing/routing` | `verified` | `make -C study/04-Network-Diagnostics-and-Routing/routing/problem test` | 공개 구현과 보조 테스트가 현재 범위 안에서 동작하는지 확인합니다. |
 | `05-Game-Server-Capstone/tactical-arena-server` | `verified` | `make -C study/05-Game-Server-Capstone/tactical-arena-server/problem test` | 공개 구현과 보조 테스트가 현재 범위 안에서 동작하는지 확인합니다. |
-| `03-Packet-Analysis-Top-Down (aggregate)` | `verified` | `make -C study/03-Packet-Analysis-Top-Down test` | 7개 랩 전체 검증 |
+| `03-Packet-Analysis-Top-Down (aggregate)` | `verified` | `make -C study/03-Packet-Analysis-Top-Down test` | 8개 랩 전체 검증 |

@@ -18,7 +18,8 @@
 3. [study/irc-track/01-roomlab](../study/irc-track/01-roomlab/README.md)
 4. [study/irc-track/02-ircserv](../study/irc-track/02-ircserv/README.md)
 5. [study/game-track/01-ticklab](../study/game-track/01-ticklab/README.md)
-6. [study/game-track/02-arenaserv](../study/game-track/02-arenaserv/README.md)
+6. [study/game-track/02-rollbacklab](../study/game-track/02-rollbacklab/README.md)
+7. [study/game-track/03-arenaserv](../study/game-track/03-arenaserv/README.md)
 
 게임 서버 축만 보려면 `shared-core`를 마친 뒤 `game-track`으로 바로 넘어가도 된다. 다만 저장소 전체를 읽을 때는 IRC 축을 먼저 두어 상태 전이와 capstone 통합 패턴을 한 번 더 본 뒤 게임 축으로 넘어가는 편이 설명이 더 잘 맞는다.
 
@@ -37,7 +38,8 @@
 ### `game-track`
 
 - `01-ticklab`: authoritative simulation을 transport 없이 먼저 어떻게 고정할 것인가
-- `02-arenaserv`: reconnect와 snapshot을 포함한 최소 authoritative TCP game server를 어떻게 보여 줄 것인가
+- `02-rollbacklab`: late input correction과 rollback replay를 headless로 어떻게 증명할 것인가
+- `03-arenaserv`: reconnect와 snapshot을 포함한 최소 authoritative TCP game server를 어떻게 보여 줄 것인가
 
 ## 이 구조가 주는 이점
 

@@ -20,6 +20,7 @@
 | `react-internals/04-runtime-demo-app` | yes | yes | shared runtime demo, metrics, limitation docs와 테스트 근거가 있다 |
 | `frontend-portfolio/01-ops-triage-console` | yes | yes | 구현, 테스트, 발표 문서와 연결된 실사용 근거가 있다 |
 | `frontend-portfolio/02-client-onboarding-portal` | yes | yes | sign-in, draft restore, route guard, submit retry에 대한 구현과 검증 근거가 있다 |
+| `frontend-portfolio/03-realtime-collab-workspace` | yes | yes | presence, reconnect replay, conflict surface에 대한 구현과 검증 근거가 있다 |
 
 ## 해석 원칙
 

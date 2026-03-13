@@ -15,7 +15,7 @@
 
 - [01. Application Protocols and Sockets](01-Application-Protocols-and-Sockets/README.md): TCP/UDP socket 위에서 HTTP, SMTP, ping, proxy를 직접 구현하며 응용 계층의 책임을 코드로 익히는 단계입니다.
 - [02. Reliable Transport](02-Reliable-Transport/README.md): 손실과 손상이 있는 채널에서 송신자와 수신자가 어떤 상태를 기억해야 하는지 시뮬레이션으로 확인하는 단계입니다.
-- [03. Packet Analysis Top-Down](03-Packet-Analysis-Top-Down/README.md): HTTP에서 TLS까지 내려가며 Wireshark trace를 문제-증거-해설 구조로 읽는 단계입니다.
+- [03. Packet Analysis Top-Down](03-Packet-Analysis-Top-Down/README.md): HTTP에서 HTTP/2와 QUIC 비교까지 내려가며 Wireshark trace를 문제-증거-해설 구조로 읽는 단계입니다.
 - [04. Network Diagnostics and Routing](04-Network-Diagnostics-and-Routing/README.md): ICMP 기반 진단 도구와 distance-vector routing 구현으로 네트워크 계층 감각을 확장하는 단계입니다.
 - [05. Game Server Capstone](05-Game-Server-Capstone/README.md): 소켓, 프로토콜, 상태 관리, persistence, 테스트 설계를 하나의 capstone으로 묶는 단계입니다.
 
@@ -39,6 +39,7 @@
 - [Ethernet and ARP Packet Analysis](03-Packet-Analysis-Top-Down/ethernet-arp/README.md): Ethernet frame과 ARP 교환을 링크 계층 주소 관점에서 어떻게 읽었는가?
 - [802.11 Wireless Packet Analysis](03-Packet-Analysis-Top-Down/wireless-802.11/README.md): 무선 링크 계층에서는 beacon, probe, association이 어떤 순서로 보이는가?
 - [TLS Packet Analysis](03-Packet-Analysis-Top-Down/tls-ssl/README.md): 암호화 이후에도 TLS handshake에서 무엇은 보이고 무엇은 숨는가?
+- [HTTP/2 and QUIC Analysis](03-Packet-Analysis-Top-Down/http2-quic/README.md): HTTP/2 frame interleaving과 QUIC packet trace를 비교해 multiplexing, connection ID, transport-level HOL 차이를 어디서 읽는가?
 
 ### 04. Network Diagnostics and Routing
 - [ICMP Pinger](04-Network-Diagnostics-and-Routing/icmp-pinger/README.md): ICMP echo request/reply를 raw socket 위에서 어디까지 직접 조립하고 해석했는가?

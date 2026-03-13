@@ -22,7 +22,7 @@
 | --- | --- | --- |
 | 공용 기초 | `shared-core/01-eventlab -> shared-core/02-msglab` | event loop, parser, validation, 검증 경계 |
 | IRC 서버 | `irc-track/01-roomlab -> irc-track/02-ircserv` | registration, room lifecycle, privilege, IRC capstone |
-| 게임 서버 | `game-track/01-ticklab -> game-track/02-arenaserv` | authoritative simulation, reconnect, snapshot, TCP capstone |
+| 게임 서버 | `game-track/01-ticklab -> game-track/02-rollbacklab -> game-track/03-arenaserv` | authoritative simulation, rollback correction, reconnect, snapshot, TCP capstone |
 
 ## 일부러 하지 않은 것
 

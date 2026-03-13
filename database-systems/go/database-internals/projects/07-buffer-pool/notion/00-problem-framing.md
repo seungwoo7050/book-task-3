@@ -6,7 +6,7 @@
 ## 커리큘럼 안에서의 위치
 - 트랙: Database Internals / Go
 - 이전 단계: 06 Index Filter
-- 다음 단계: 08 MVCC
+- 다음 단계: 08 BTree Index And Query Scan, 이후 09 MVCC
 - 지금 답하려는 질문: 같은 page를 여러 번 읽을 때 어떤 객체를 다시 써야 하고, 어떤 조건에서만 eviction을 허용해야 안전한가?
 
 ## 이번 구현에서 성공으로 보는 것

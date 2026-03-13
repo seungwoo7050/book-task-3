@@ -8,7 +8,7 @@
 | :--- | :--- | :--- | :--- |
 | [`01. Application Protocols and Sockets`](01-Application-Protocols-and-Sockets/README.md) | 소켓 위에서 애플리케이션 규칙을 직접 구현하면 어떤 계약이 드러나는가 | `4` | [`Web Server`](01-Application-Protocols-and-Sockets/web-server/README.md) |
 | [`02. Reliable Transport`](02-Reliable-Transport/README.md) | ACK, checksum, timer, sliding window가 신뢰 전송을 어떻게 만드는가 | `2` | [`RDT Protocol`](02-Reliable-Transport/rdt-protocol/README.md) |
-| [`03. Packet Analysis Top-Down`](03-Packet-Analysis-Top-Down/README.md) | 패킷 trace만으로 무엇을 근거 있게 설명할 수 있는가 | `7` | [`HTTP Packet Analysis`](03-Packet-Analysis-Top-Down/http/README.md) |
+| [`03. Packet Analysis Top-Down`](03-Packet-Analysis-Top-Down/README.md) | 패킷 trace만으로 무엇을 근거 있게 설명할 수 있는가 | `8` | [`HTTP Packet Analysis`](03-Packet-Analysis-Top-Down/http/README.md) |
 | [`04. Network Diagnostics and Routing`](04-Network-Diagnostics-and-Routing/README.md) | ICMP, TTL, Bellman-Ford가 진단 도구와 라우팅 알고리즘으로 어떻게 이어지는가 | `3` | [`ICMP Pinger`](04-Network-Diagnostics-and-Routing/icmp-pinger/README.md) |
 | [`05. Game Server Capstone`](05-Game-Server-Capstone/README.md) | 앞선 학습을 하나의 설명 가능한 서버 프로젝트로 어떻게 통합할 것인가 | `1` | [`Tactical Arena Server`](05-Game-Server-Capstone/tactical-arena-server/README.md) |
 

@@ -9,6 +9,7 @@ This validator does two things:
 
 from __future__ import annotations
 
+import csv
 import re
 import subprocess
 import sys
@@ -23,6 +24,7 @@ QUESTION_COUNTS = {
     "ethernet-arp": 17,
     "wireless-802.11": 18,
     "tls-ssl": 20,
+    "http2-quic": 12,
 }
 
 
@@ -109,6 +111,11 @@ def analysis_file_for(lab_dir: Path) -> Path:
     if len(files) != 1:
         raise ValidationError(f"Expected exactly one analysis markdown file under {lab_dir / 'analysis' / 'src'}")
     return files[0]
+
+
+def read_tsv(path: Path) -> list[dict[str, str]]:
+    with path.open(encoding="utf-8", newline="") as handle:
+        return list(csv.DictReader(handle, delimiter="\t"))
 
 
 def first(rows: list[dict[str, str]], predicate) -> dict[str, str]:
@@ -489,6 +496,43 @@ def verify_tls(lab_dir: Path, validator: Validator) -> None:
     validator.require_any("hybrid trace interpretation", [r"\bhybrid/minimal synthetic pattern\b", r"\bstrict 1\.2 vs 1\.3 comparison is limited\b"])
 
 
+def verify_http2_quic(lab_dir: Path, validator: Validator) -> None:
+    data_dir = lab_dir / "problem" / "data"
+    http2_rows = read_tsv(data_dir / "http2-trace.tsv")
+    quic_rows = read_tsv(data_dir / "quic-trace.tsv")
+
+    http2_headers = [row for row in http2_rows if row["frame_type"] == "HEADERS"]
+    http2_data = [row for row in http2_rows if row["frame_type"] == "DATA"]
+    http2_window_update = first(http2_rows, lambda row: row["frame_type"] == "WINDOW_UPDATE")
+    quic_client_rows = [row for row in quic_rows if row["endpoint"] == "client"]
+    quic_server_rows = [row for row in quic_rows if row["endpoint"] == "server"]
+
+    validator.require_literal("HTTP/2 transport", "TCP port 443")
+    validator.require_literal("HTTP/2 ALPN", "`h2`")
+    for row in http2_headers:
+        validator.require_literal("HTTP/2 stream id", f"stream {row['stream_id']}")
+        validator.require_literal("HTTP/2 frame number", f"Frame **{row['frame']}**")
+    validator.require_literal("HTTP/2 interleaved DATA frame #1", f"frames **{http2_data[0]['frame']}**")
+    validator.require_literal("HTTP/2 interleaved DATA frame #2", f"**{http2_data[1]['frame']}**")
+    validator.require_literal("HTTP/2 flow-control frame", f"Frame **{http2_window_update['frame']}**")
+    validator.require_literal("HTTP/2 WINDOW_UPDATE", "`WINDOW_UPDATE`")
+    validator.require_literal("HTTP/2 HOL note", "head-of-line blocking")
+
+    validator.require_literal("QUIC transport", "UDP port 443")
+    for packet_type in ["Initial", "Handshake", "1-RTT"]:
+        validator.require_literal("QUIC packet type", f"`{packet_type}`")
+    validator.require_literal("QUIC client connection ID", quic_client_rows[0]["connection_id"])
+    validator.require_literal("QUIC server connection ID", quic_server_rows[0]["connection_id"])
+    validator.require_literal("QUIC stream 4", "stream **4**")
+    validator.require_literal("QUIC stream 8", "stream **8**")
+    validator.require_literal("QUIC control stream 0", "stream **0**")
+    validator.require_literal("QUIC packet number sequence", "0, 1, 2, 3, 4")
+    validator.require_any(
+        "comparison mentions transport-level multiplexing",
+        [r"transport-level multiplexing", r"moves multiplexing into the transport"],
+    )
+
+
 LAB_VERIFIERS = {
     "http": verify_http,
     "dns": verify_dns,
@@ -497,6 +541,7 @@ LAB_VERIFIERS = {
     "ethernet-arp": verify_ethernet_arp,
     "wireless-802.11": verify_wireless,
     "tls-ssl": verify_tls,
+    "http2-quic": verify_http2_quic,
 }
 
 

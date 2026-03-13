@@ -32,6 +32,7 @@
 | 07 | `react-internals`<br>[04-runtime-demo-app](study/react-internals/04-runtime-demo-app/README.md) | 직접 만든 runtime을 실제 상호작용 앱 위에서 어디까지 설명할 수 있는가 | debounced search, load more, render metrics를 갖춘 runtime consumer app | [problem](study/react-internals/04-runtime-demo-app/problem/README.md) · [ts](study/react-internals/04-runtime-demo-app/ts/README.md) · [docs](study/react-internals/04-runtime-demo-app/docs/README.md) |
 | 08 | `frontend-portfolio`<br>[01-ops-triage-console](study/frontend-portfolio/01-ops-triage-console/README.md) | 데이터가 많은 운영 화면에서 triage workflow를 어떻게 설계하고 검증하는가 | dashboard, queue, bulk action, optimistic update를 갖춘 Next.js 운영 콘솔 | [problem](study/frontend-portfolio/01-ops-triage-console/problem/README.md) · [next](study/frontend-portfolio/01-ops-triage-console/next/README.md) · [docs](study/frontend-portfolio/01-ops-triage-console/docs/README.md) |
 | 09 | `frontend-portfolio`<br>[02-client-onboarding-portal](study/frontend-portfolio/02-client-onboarding-portal/README.md) | 고객-facing onboarding flow에서 validation, draft, route guard를 어떻게 묶는가 | sign-in, wizard, invite, retry를 갖춘 Next.js onboarding 앱 | [problem](study/frontend-portfolio/02-client-onboarding-portal/problem/README.md) · [next](study/frontend-portfolio/02-client-onboarding-portal/next/README.md) · [docs](study/frontend-portfolio/02-client-onboarding-portal/docs/README.md) |
+| 10 | `frontend-portfolio`<br>[03-realtime-collab-workspace](study/frontend-portfolio/03-realtime-collab-workspace/README.md) | 실시간 협업 UI에서 optimistic patch, reconnect replay, conflict surface를 어떻게 설명 가능하게 만들 것인가 | shared board, doc blocks, presence, conflict banner를 갖춘 Next.js 협업 워크스페이스 | [problem](study/frontend-portfolio/03-realtime-collab-workspace/problem/README.md) · [next](study/frontend-portfolio/03-realtime-collab-workspace/next/README.md) · [docs](study/frontend-portfolio/03-realtime-collab-workspace/docs/README.md) |
 
 ## 검증 시작점
 
@@ -53,7 +54,7 @@ npm run verify:core
 
 이 저장소는 주니어 끝자락까지를 목표로 하며, 아래 범위는 의도적으로 다루지 않는다.
 
-- 실시간 협업과 복잡한 동시성 충돌 해결
+- production-grade CRDT/OT와 대규모 협업 병합 해결
 - 대규모 SSR caching 전략
 - micro-frontends
 - production backend 운영
