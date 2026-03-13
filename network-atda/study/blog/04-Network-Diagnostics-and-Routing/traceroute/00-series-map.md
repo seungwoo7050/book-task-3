@@ -1,33 +1,28 @@
-# Traceroute 시리즈 지도
+# Traceroute series map
 
-이 프로젝트를 한 줄로: TTL을 단계적으로 올려 보내는 UDP probe와 ICMP reply 안에 박힌 embedded port를 매칭해서 경로를 추적하는 도구를 raw socket부터 직접 구현한 기록.
+이 프로젝트를 읽을 때 붙들 질문은 하나다. UDP probe와 ICMP 응답을 엮어 hop 단위 경로를 어떻게 복원했는가?
 
-## 파일 구성
+## 무엇을 근거로 복원했는가
 
-| 파일 | 역할 |
-|------|------|
-| `problem/code/traceroute_skeleton.py` | 제공된 스켈레톤 |
-| `python/src/traceroute.py` | 직접 작성한 구현 |
-| `python/tests/test_traceroute.py` | 비권한 합성 경로 테스트 |
-| `problem/Makefile` | `test` / `run-solution` 진입점 |
+- 프로젝트 README: `study/04-Network-Diagnostics-and-Routing/traceroute/README.md`
+- 문제 문서와 실행 표면: `study/04-Network-Diagnostics-and-Routing/traceroute/problem/README.md`, `study/04-Network-Diagnostics-and-Routing/traceroute/problem/Makefile`
+- 핵심 구현과 테스트: `study/04-Network-Diagnostics-and-Routing/traceroute/python/src/traceroute.py`, `study/04-Network-Diagnostics-and-Routing/traceroute/python/tests/test_traceroute.py`
+- 정식 검증 출력: `make -C study/04-Network-Diagnostics-and-Routing/traceroute/problem test`
 
-## canonical verification
+## 어떤 순서로 읽으면 되는가
 
-```bash
-# 비권한 단위 테스트
-make -C study/04-Network-Diagnostics-and-Routing/traceroute/problem test
+1. `problem/README.md`로 문제 조건과 성공 기준을 확인한다.
+2. 이 문서에서 어떤 입력을 근거로 썼는지 먼저 본다.
+3. `01-evidence-ledger.md`로 세 단계 흐름을 짧게 파악한다.
+4. `10-development-timeline.md`에서 코드나 trace, CLI를 따라간다.
 
-# live 경로 추적 (root 권한 필요)
-sudo make -C study/04-Network-Diagnostics-and-Routing/traceroute/problem run-solution HOST=8.8.8.8
-```
+## 이번 리라이트에서 의도적으로 제외한 입력
 
-## 이 시리즈에서 따라갈 질문
+- 현재 `study/blog/**`의 이전 본문
+- `notion/`, `notion-archive/` 아래의 서술형 메모
 
-1. `build_probe_port(ttl, probe_index, probes_per_hop, base_port)`는 어떤 공식으로 port를 결정하며, probe마다 다른 port가 필요한 이유는 무엇인가?
-2. ICMP `Time Exceeded` 패킷 안에 들어 있는 embedded IP + embedded UDP header는 어느 offset에서 꺼내는가?
-3. `Time Exceeded (11/0)`와 `Port Unreachable (3/3)`을 각각 어떻게 처리하며, 루프 종료 조건은 무엇인가?
-4. `FakeRecvSocket` / `FakeSendSocket`은 무엇을 대체하고, 어떤 테스트를 가능하게 하는가?
+## 짧은 판정 메모
 
-## 글 파일
-
-- [10-development-timeline.md](10-development-timeline.md)
+- 독립 프로젝트로 본 이유: `Traceroute`는 자기 README와 정식 검증 명령으로 범위를 독립적으로 설명할 수 있다.
+- 보관본 위치: `study/blog/_legacy`
+- 이번 글의 중심 답: TTL 증가와 `ICMP Time Exceeded`를 이용해 hop-by-hop 경로를 드러내는 bridge 프로젝트입니다.

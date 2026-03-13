@@ -5,7 +5,7 @@
     "path": "/auth/login",
     "status": 200,
     "latencyMs": 3,
-    "traceId": "0cdfbf4d-ac17-4b96-b2bd-8e5852004070",
+    "traceId": "a56c60fd-c148-4a1d-8bf5-1935775fdca7",
     "detail": "ok"
   },
   {
@@ -14,7 +14,7 @@
     "path": "/auth/login",
     "status": 200,
     "latencyMs": 1,
-    "traceId": "ab123ab7-d36b-42b4-92e2-23f3168f487c",
+    "traceId": "39157557-e59c-4c8d-b49e-f6ea356b01af",
     "detail": "ok"
   },
   {
@@ -23,7 +23,7 @@
     "path": "/auth/login",
     "status": 200,
     "latencyMs": 0,
-    "traceId": "829628ff-d225-4ebb-884f-d2bfb6ff1720",
+    "traceId": "7ab61c16-e261-4c0e-a7b7-f9a6da9fd4e6",
     "detail": "ok"
   },
   {
@@ -31,8 +31,8 @@
     "method": "POST",
     "path": "/incidents",
     "status": 201,
-    "latencyMs": 1,
-    "traceId": "dbc33c72-b713-432e-8a49-54b90763b469",
+    "latencyMs": 2,
+    "traceId": "05779c0c-fe38-413a-a883-c4d6415b2109",
     "detail": "ok"
   },
   {
@@ -40,35 +40,35 @@
     "method": "GET",
     "path": "/incidents",
     "status": 200,
-    "latencyMs": 1,
-    "traceId": "794a7e9e-9114-4131-8bec-134e76d97d89",
+    "latencyMs": 0,
+    "traceId": "eb19f299-70d6-459f-a308-8222571c6fc5",
     "detail": "ok"
   },
   {
     "level": "info",
     "method": "POST",
-    "path": "/incidents/af198910-6686-4513-9fd1-91ef579e432a/ack",
-    "status": 200,
-    "latencyMs": 1,
-    "traceId": "f819aed2-9053-4580-af16-fdd601bf47d7",
-    "detail": "ok"
-  },
-  {
-    "level": "info",
-    "method": "POST",
-    "path": "/incidents/af198910-6686-4513-9fd1-91ef579e432a/request-resolution",
+    "path": "/incidents/04e70731-2d05-4b63-bbea-2560baad12a8/ack",
     "status": 200,
     "latencyMs": 0,
-    "traceId": "a9d1a63b-2295-441a-846c-e62f2401a605",
+    "traceId": "5d58a936-38f0-430b-880e-e8674e192fc9",
     "detail": "ok"
   },
   {
     "level": "info",
     "method": "POST",
-    "path": "/approvals/089ad138-1690-4e8a-910d-5d2691a0cb53/decision",
+    "path": "/incidents/04e70731-2d05-4b63-bbea-2560baad12a8/request-resolution",
     "status": 200,
-    "latencyMs": 0,
-    "traceId": "c6bfc6b9-a5b0-45da-a5d2-c192425d75c4",
+    "latencyMs": 1,
+    "traceId": "6195ec38-27bc-4412-8688-bd84666a35ee",
+    "detail": "ok"
+  },
+  {
+    "level": "info",
+    "method": "POST",
+    "path": "/approvals/3c38a199-b765-419d-b484-afe9a4de301a/decision",
+    "status": 200,
+    "latencyMs": 1,
+    "traceId": "f7fc1379-061a-4c27-82f8-3e4deb4d7ac2",
     "detail": "ok"
   },
   {
@@ -77,34 +77,34 @@
     "path": "/incidents",
     "status": 201,
     "latencyMs": 1,
-    "traceId": "06f8dd05-70e7-4dad-badd-6d85270e4f0c",
+    "traceId": "61d32b25-bf51-47ac-af9c-511be3974f99",
     "detail": "ok"
   },
   {
     "level": "info",
     "method": "POST",
-    "path": "/incidents/19eea3b1-91da-449a-9a27-b98c0bdf0fd3/ack",
+    "path": "/incidents/48126e64-186a-44a5-8167-cd557d9bced9/ack",
     "status": 200,
-    "latencyMs": 0,
-    "traceId": "07c45530-ca0a-40e8-acdd-82e62cbb63e6",
+    "latencyMs": 1,
+    "traceId": "d39e5393-1803-4728-bf5c-7cfb8d33f7a9",
     "detail": "ok"
   },
   {
     "level": "info",
     "method": "POST",
-    "path": "/incidents/19eea3b1-91da-449a-9a27-b98c0bdf0fd3/request-resolution",
+    "path": "/incidents/48126e64-186a-44a5-8167-cd557d9bced9/request-resolution",
     "status": 200,
-    "latencyMs": 0,
-    "traceId": "043ba9ff-3f90-48c8-b6cf-b896a37f262c",
+    "latencyMs": 2,
+    "traceId": "e7d74ba8-70f0-4d9d-8507-647d48f8d0ef",
     "detail": "ok"
   },
   {
     "level": "info",
     "method": "POST",
-    "path": "/approvals/185c2329-f1cf-4022-9557-ea4bca53a36b/decision",
+    "path": "/approvals/228416fd-0c3d-4be8-9488-f1f9326fa8c4/decision",
     "status": 200,
     "latencyMs": 0,
-    "traceId": "5f96180f-b5ed-4249-8f2e-2e60f60caf2f",
+    "traceId": "d801edb2-400c-4518-9662-95e25f8d48f3",
     "detail": "ok"
   },
   {
@@ -113,7 +113,7 @@
     "path": "/incidents",
     "status": 201,
     "latencyMs": 0,
-    "traceId": "e9a93e94-88ed-4095-b82e-6993b85ebded",
+    "traceId": "c21360e4-d7a8-41db-89e9-df89d80491c5",
     "detail": "ok"
   },
   {
@@ -122,7 +122,7 @@
     "path": "/audit",
     "status": 200,
     "latencyMs": 0,
-    "traceId": "56218373-7265-4241-b0b8-4bb87e354740",
+    "traceId": "7b3cbd62-c834-4273-995e-0cbbab461908",
     "detail": "ok"
   }
 ]

@@ -1,20 +1,28 @@
-# RDT Protocol 시리즈 지도
+# RDT Protocol series map
 
-## 이 프로젝트를 한 줄로
+이 프로젝트를 읽을 때 붙들 질문은 하나다. rdt3.0과 Go-Back-N의 핵심 차이를 같은 채널 모델 위에서 어떻게 드러냈는가?
 
-불신 채널 위에서 "packet을 하나씩 확실하게 보낸다"는 게 실제로 무슨 코드인지를 rdt3.0(stop-and-wait)과 GBN(Go-Back-N)으로 직접 구현한다. UDP Pinger에서 "timeout이 없으면 손실을 모른다"를 배웠다면, 여기서는 "timeout이 있어도 어떤 packet을 다시 보내야 하느냐"가 핵심 문제가 된다.
+## 무엇을 근거로 복원했는가
 
-## 문제 구조
-- 제공물: `problem/code/channel.py`, `problem/code/packet.py`, skeleton 파일들
-- 답안: `python/src/rdt3.py` (stop-and-wait), `python/src/gbn.py` (Go-Back-N)
-- 검증: `make -C study/02-Reliable-Transport/rdt-protocol/problem test`
+- 프로젝트 README: `study/02-Reliable-Transport/rdt-protocol/README.md`
+- 문제 문서와 실행 표면: `study/02-Reliable-Transport/rdt-protocol/problem/README.md`, `study/02-Reliable-Transport/rdt-protocol/problem/Makefile`
+- 핵심 구현과 테스트: `study/02-Reliable-Transport/rdt-protocol/python/src/gbn.py`, `study/02-Reliable-Transport/rdt-protocol/python/tests/test_rdt.py`
+- 정식 검증 출력: `make -C study/02-Reliable-Transport/rdt-protocol/problem test`
 
-## 이 시리즈에서 따라갈 질문
-1. alternating bit라는 간단한 아이디어가 sender 상태 기계로 바뀔 때 무엇이 복잡해지는가
-2. GBN이 timeout 시 window 전체를 다시 보내는 게 왜 "비효율"이면서도 "교육적"인가
-3. `channel.py`와 `packet.py`라는 제공 도구가 구현의 경계를 어떻게 정하는가
+## 어떤 순서로 읽으면 되는가
 
-## 글 목록
-| 번호 | 파일 | 범위 |
-| :--- | :--- | :--- |
-| `10` | [`10-development-timeline.md`](10-development-timeline.md) | rdt3.0 구현부터 GBN window 검증까지 |
+1. `problem/README.md`로 문제 조건과 성공 기준을 확인한다.
+2. 이 문서에서 어떤 입력을 근거로 썼는지 먼저 본다.
+3. `01-evidence-ledger.md`로 세 단계 흐름을 짧게 파악한다.
+4. `10-development-timeline.md`에서 코드나 trace, CLI를 따라간다.
+
+## 이번 리라이트에서 의도적으로 제외한 입력
+
+- 현재 `study/blog/**`의 이전 본문
+- `notion/`, `notion-archive/` 아래의 서술형 메모
+
+## 짧은 판정 메모
+
+- 독립 프로젝트로 본 이유: `RDT Protocol`는 자기 README와 정식 검증 명령으로 범위를 독립적으로 설명할 수 있다.
+- 보관본 위치: `study/blog/_legacy`
+- 이번 글의 중심 답: rdt3.0`과 `Go-Back-N`을 같은 채널 모델 위에서 비교하는 신뢰 전송 과제입니다.

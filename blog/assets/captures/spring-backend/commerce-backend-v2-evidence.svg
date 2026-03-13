@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#171717" />
+  <rect x="48" y="48" width="1104" height="624" rx="24" fill="#111827" stroke="#65a30d" />
+  <text x="80" y="118" fill="#f8fafc" font-size="34" font-family="Menlo, Monaco, Consolas, monospace">commerce-backend-v2</text>
+  <text x="80" y="158" fill="#bef264" font-size="18" font-family="Menlo, Monaco, Consolas, monospace">Spring portfolio capstone verification snapshot</text>
+
+  <text x="80" y="220" fill="#cbd5e1" font-size="17" font-family="Menlo, Monaco, Consolas, monospace">Source: commerce-backend-v2/docs/verification.md</text>
+  <text x="80" y="284" fill="#a7f3d0" font-size="20" font-family="Menlo, Monaco, Consolas, monospace">./gradlew testClasses  PASS</text>
+  <text x="80" y="322" fill="#a7f3d0" font-size="20" font-family="Menlo, Monaco, Consolas, monospace">make lint              PASS</text>
+  <text x="80" y="360" fill="#a7f3d0" font-size="20" font-family="Menlo, Monaco, Consolas, monospace">make test              PASS</text>
+  <text x="80" y="398" fill="#a7f3d0" font-size="20" font-family="Menlo, Monaco, Consolas, monospace">make smoke             PASS</text>
+  <text x="80" y="436" fill="#a7f3d0" font-size="20" font-family="Menlo, Monaco, Consolas, monospace">compose health         PASS</text>
+
+  <text x="80" y="498" fill="#f8fafc" font-size="18" font-family="Menlo, Monaco, Consolas, monospace">Verified scope</text>
+  <text x="80" y="534" fill="#cbd5e1" font-size="17" font-family="Menlo, Monaco, Consolas, monospace">MockMvc suite + Testcontainers-backed messaging test + smoke route checks</text>
+
+  <text x="80" y="596" fill="#fca5a5" font-size="15" font-family="Menlo, Monaco, Consolas, monospace">Intentional gaps: Google OAuth callback contract is mocked, payment provider is mock-only, AWS deploy is out of scope.</text>
+</svg>

@@ -1,54 +1,43 @@
-# 10 Cloud Security Control Plane - Series Map
+# 10 Cloud Security Control Plane 읽기 지도
 
-이 시리즈는 `notion/` 없이 `README.md`, `problem/README.md`, `python/README.md`, `docs/concepts/architecture.md`, `docs/demo-walkthrough.md`, `app.py`, `workers.py`, `db.py`, `scanners.py`, `reporting.py`, `remediation.py`, `demo_capture.py`, `test_api.py`, 실제 재검증 명령만으로 다시 읽은 학습 로그입니다.
+앞선 아홉 개 프로젝트의 판단 로직을 scan, ingestion, exception, remediation, report 흐름으로 묶어 내는 통합 capstone이다.
 
-## 이 시리즈가 답하는 질문
+이 문서는 본문으로 바로 들어가기 전에 무엇을 붙들고 읽어야 하는지 정리해 두는 입구다. 먼저 질문과 흐름을 잡고 내려가면 phase 사이 점프가 훨씬 덜 갑작스럽다.
 
-- Terraform, IAM, CloudTrail, Kubernetes 입력을 어떤 API와 worker 경계로 통합해야 하는가
-- finding, exception, remediation, report를 어떤 상태 저장소 위에 올려야 local control plane으로 설명할 수 있는가
-- end-to-end demo가 어디까지 실제 운영 흐름을 대체하고 무엇을 일부러 비워 두는가
+## 먼저 붙들 질문
+- 통합 capstone에서 먼저 세워야 할 경계는 API인가, scanner 로직인가?
+- 왜 worker 계층을 따로 두고 pending/completed 상태를 만들었는가?
+- demo capture와 fallback 경로가 왜 capstone의 신뢰도를 높였는가?
 
-## 실제 구현 표면
+## 이 글은 이렇게 흘러간다
+1. 시작점: 문제 정의와 이 프로젝트가 고정하려는 입력/출력 경계
+2. Phase 1. API 표면과 상태 저장소 경계를 먼저 세웠다: 여러 보안 입력이 한 서비스 안으로 들어오는 기본 통로를 만든다.
+3. Phase 2. worker가 scanner와 저장소를 연결했다: scan 요청과 remediation 요청이 상태 전이를 거쳐 결과를 저장하게 만든다.
+4. Phase 3. remediation과 report로 운영 흐름을 닫았다: finding이 예외와 조치안과 보고서까지 이어지는 마지막 경로를 만든다.
+5. Phase 4. demo capture와 fallback으로 재현성을 마감했다: 사람이 수동으로 API를 두드리지 않아도 end-to-end 시나리오를 다시 만들 수 있게 한다.
+6. 마무리: 다음 프로젝트로 이어지는 질문과 남은 한계
 
-- `/v1/scans`, `/v1/ingestions/cloudtrail`, `/v1/ingestions/k8s`, `/v1/findings`, `/v1/exceptions`, `/v1/remediations/{finding_id}/dry-run`, `/v1/reports/latest`, `/v1/workers/scans/run` API를 제공합니다.
-- SQLAlchemy 기반 `findings`, `exceptions`, `audit_events`, `scan_jobs`, `remediation_requests`, `remediation_plans` 테이블을 사용합니다.
-- CloudTrail은 DuckDB + Parquet lake에 적재하고, findings는 별도 상태 DB에 저장합니다.
-- `make demo-capstone`은 demo JSON/Markdown 산출물을 `.artifacts/capstone/demo`에 남깁니다.
+## 특히 눈여겨볼 장면
+- API 표면과 session factory를 먼저 보여 주고, 왜 control plane이 얇은 통합 계층인지 설명한다.
+- worker가 scan/remediation 요청을 처리하는 구조를 중간 축으로 둔다.
+- demo capture와 report 생성을 마지막에 두어 end-to-end 검증이 어떻게 남는지 보여 준다.
 
-## 대표 검증 엔트리
+## 먼저 열 문서
+- [10-development-timeline.md](10-development-timeline.md): 아홉 개의 판단 로직을 control plane으로 묶기
 
-- `PYTHONPATH=02-capstone/10-cloud-security-control-plane/python/src .venv/bin/python -m cloud_security_control_plane.cli scan terraform-plan 02-capstone/10-cloud-security-control-plane/problem/data/insecure_plan.json`
-- `make test-capstone`
-- `make demo-capstone`
-
-## 읽는 순서
-
-1. [프로젝트 README](../../../02-capstone/10-cloud-security-control-plane/README.md)
-2. [문제 정의](../../../02-capstone/10-cloud-security-control-plane/problem/README.md)
-3. [실행 진입점](../../../02-capstone/10-cloud-security-control-plane/python/README.md)
-4. [아키텍처 개요](../../../02-capstone/10-cloud-security-control-plane/docs/concepts/architecture.md)
-5. [대표 테스트](../../../02-capstone/10-cloud-security-control-plane/python/tests/test_api.py)
-6. [입력과 API chronology](10-chronology-inputs-and-api-surface.md)
-7. [worker와 상태 chronology](20-chronology-workers-state-and-reporting.md)
-8. [demo와 검증 chronology](30-chronology-demo-verification-and-boundaries.md)
-
-## 근거 파일
-
-- [README.md](../../../02-capstone/10-cloud-security-control-plane/README.md)
-- [problem/README.md](../../../02-capstone/10-cloud-security-control-plane/problem/README.md)
-- [python/README.md](../../../02-capstone/10-cloud-security-control-plane/python/README.md)
-- [architecture.md](../../../02-capstone/10-cloud-security-control-plane/docs/concepts/architecture.md)
-- [demo-walkthrough.md](../../../02-capstone/10-cloud-security-control-plane/docs/demo-walkthrough.md)
-- [app.py](../../../02-capstone/10-cloud-security-control-plane/python/src/cloud_security_control_plane/app.py)
-- [workers.py](../../../02-capstone/10-cloud-security-control-plane/python/src/cloud_security_control_plane/workers.py)
-- [db.py](../../../02-capstone/10-cloud-security-control-plane/python/src/cloud_security_control_plane/db.py)
-- [scanners.py](../../../02-capstone/10-cloud-security-control-plane/python/src/cloud_security_control_plane/scanners.py)
-- [reporting.py](../../../02-capstone/10-cloud-security-control-plane/python/src/cloud_security_control_plane/reporting.py)
-- [remediation.py](../../../02-capstone/10-cloud-security-control-plane/python/src/cloud_security_control_plane/remediation.py)
-- [demo_capture.py](../../../02-capstone/10-cloud-security-control-plane/python/src/cloud_security_control_plane/demo_capture.py)
-- [test_api.py](../../../02-capstone/10-cloud-security-control-plane/python/tests/test_api.py)
-
-## Git Anchor
-
-- `2026-03-10 a4b4aae docs: enhance bithumb`
-- `2026-03-11 a9c65b3 Track 2에 대한 전반적인 개선 완료 (infobank, bithumb, game-server)`
+## 근거로 삼은 파일
+- `README.md`
+- `problem/README.md`
+- `python/README.md`
+- `docs/concepts/architecture.md`
+- `docs/demo-walkthrough.md`
+- `python/src/cloud_security_control_plane/app.py`
+- `python/src/cloud_security_control_plane/cli.py`
+- `python/src/cloud_security_control_plane/db.py`
+- `python/src/cloud_security_control_plane/workers.py`
+- `python/src/cloud_security_control_plane/scanners.py`
+- `python/src/cloud_security_control_plane/reporting.py`
+- `python/src/cloud_security_control_plane/demo_capture.py`
+- `python/tests/test_api.py`
+- `.artifacts/capstone/demo/02-worker-response.json`
+- `.artifacts/capstone/demo/08-report.md`

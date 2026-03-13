@@ -1,34 +1,28 @@
-# HTTP Packet Analysis 시리즈 지도
+# HTTP Packet Analysis series map
 
-## 이 프로젝트를 한 줄로
+이 프로젝트를 읽을 때 붙들 질문은 하나다. HTTP trace에서 질문 하나마다 어떤 frame과 header를 근거로 답해야 하는가?
 
-HTTP를 "텍스트 프로토콜"로만 외우지 않고, GET 한 줄과 응답 한 줄이 TCP 위에서 어떻게 증거로 남는지 네 개의 trace로 좁혀 가는 기록이다.
+## 무엇을 근거로 복원했는가
 
-## 시작 전에 고정한 자료
+- 프로젝트 README: `study/03-Packet-Analysis-Top-Down/http/README.md`
+- 문제 문서와 실행 표면: `study/03-Packet-Analysis-Top-Down/http/problem/README.md`, `study/03-Packet-Analysis-Top-Down/http/problem/Makefile`
+- 분석 본문: `study/03-Packet-Analysis-Top-Down/http/analysis/src/http-analysis.md`
+- 정식 검증 출력: `make -C study/03-Packet-Analysis-Top-Down/http/problem test`
 
-- 제공 trace: `problem/data/http-basic.pcapng`, `http-conditional.pcapng`, `http-long-document.pcapng`, `http-embedded-objects.pcapng`
-- 실행 진입점: `problem/Makefile`
-- 사용자 답안: `study/03-Packet-Analysis-Top-Down/http/analysis/src/http-analysis.md`
-- 보조 개념 문서: `docs/concepts/wireshark-http.md`
+## 어떤 순서로 읽으면 되는가
 
-## 이 시리즈에서 따라갈 질문
+1. `problem/README.md`로 문제 조건과 성공 기준을 확인한다.
+2. 이 문서에서 어떤 입력을 근거로 썼는지 먼저 본다.
+3. `01-evidence-ledger.md`로 세 단계 흐름을 짧게 파악한다.
+4. `10-development-timeline.md`에서 코드나 trace, CLI를 따라간다.
 
-1. 기본 GET/응답 한 쌍만으로도 HTTP 버전, 상태 코드, `Content-Length`, `Connection`까지 어디서 확정할 수 있는가.
-2. `If-Modified-Since`가 붙은 두 번째 요청은 첫 번째 요청과 무엇이 다르고, 왜 응답 본문이 사라지는가.
-3. 긴 문서 trace에서 `Content-Length: 9000`이라는 숫자를 TCP data segment 개수와 어떻게 연결해야 하는가.
-4. embedded object trace에서 이미지 요청이 직렬인지 병렬인지 어떤 frame 순서로 판단하는가.
+## 이번 리라이트에서 의도적으로 제외한 입력
 
-## 검증 명령
+- 현재 `study/blog/**`의 이전 본문
+- `notion/`, `notion-archive/` 아래의 서술형 메모
 
-- 기본 시나리오: `make -C study/03-Packet-Analysis-Top-Down/http/problem filter-basic`
-- 조건부 요청: `make -C study/03-Packet-Analysis-Top-Down/http/problem filter-conditional`
-- 긴 문서 전송: `make -C study/03-Packet-Analysis-Top-Down/http/problem filter-long`
-- embedded object: `make -C study/03-Packet-Analysis-Top-Down/http/problem filter-embedded`
-- 답안 검증: `make -C study/03-Packet-Analysis-Top-Down/http/problem test`
+## 짧은 판정 메모
 
-## 글 구성
-
-| 파일 | 역할 |
-| :--- | :--- |
-| `00-series-map.md` | 어떤 trace를 어떤 순서로 읽을지 먼저 고정한다. |
-| `10-development-timeline.md` | 기본 GET → conditional GET → 긴 문서 → embedded object 순서로 evidence를 쌓아 간다. |
+- 독립 프로젝트로 본 이유: `HTTP Packet Analysis`는 자기 README와 정식 검증 명령으로 범위를 독립적으로 설명할 수 있다.
+- 보관본 위치: `study/blog/_legacy`
+- 이번 글의 중심 답: 기본 GET, conditional GET, 긴 문서 전송, embedded object 요청을 패킷 수준에서 추적하는 랩입니다.

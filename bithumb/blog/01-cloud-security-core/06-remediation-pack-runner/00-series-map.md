@@ -1,42 +1,34 @@
-# 06 Remediation Pack Runner - Series Map
+# 06 Remediation Pack Runner 읽기 지도
 
-이 시리즈는 `notion/` 없이 `README.md`, `problem/README.md`, `python/README.md`, `runner.py`, `cli.py`, `test_runner.py`, 실제 재검증 명령만으로 다시 읽은 학습 로그입니다.
+finding을 곧바로 실행하는 대신, 사람이 검토할 수 있는 dry-run 조치안으로 바꾸는 단계다.
 
-## 이 시리즈가 답하는 질문
+이 문서는 본문으로 바로 들어가기 전에 무엇을 붙들고 읽어야 하는지 정리해 두는 입구다. 먼저 질문과 흐름을 잡고 내려가면 phase 사이 점프가 훨씬 덜 갑작스럽다.
 
-- finding 이후 조치안을 어떻게 바로 실행이 아니라 dry-run remediation plan으로 설명할까
-- 자동 패치 가능 케이스와 사람 승인 중심 케이스를 어떤 경계로 나눌까
+## 먼저 붙들 질문
+- 왜 remediation의 첫 산출물을 실행 결과가 아닌 plan 문서로 봤는가?
+- control별 remediation mode 분리가 왜 중요했는가?
+- approval 상태 전이를 별도 함수로 분리한 이유는 무엇인가?
 
-## 실제 구현 표면
+## 이 글은 이렇게 흘러간다
+1. 시작점: 문제 정의와 이 프로젝트가 고정하려는 입력/출력 경계
+2. Phase 1. remediation 출력 shape부터 고정했다: finding을 받아 사람이 검토할 plan 문서로 바꾸는 최소 구조를 세운다.
+3. Phase 2. remediation mode를 control별로 갈랐다: 위험 종류에 따라 조치 전략이 달라진다는 점을 코드로 드러낸다.
+4. Phase 3. approval 상태 전이를 별도 함수로 분리했다: plan 생성과 승인 처리를 분리해 추후 orchestration에 연결하기 쉽게 만든다.
+5. 마무리: 다음 프로젝트로 이어지는 질문과 남은 한계
 
-- `control_id`에 따라 remediation mode를 `auto_patch_available`, `manual_approval_required`, `manual_review`로 나눕니다.
-- 출력은 patch 초안이나 CLI 명령을 포함한 `RemediationPlan` JSON입니다.
-- 승인 단계는 plan 자체를 다시 만들어 `status=approved`로 바꾸는 간단한 흐름으로 유지합니다.
+## 특히 눈여겨볼 장면
+- 실행 대신 제안이라는 목표 전환을 처음에 분명히 잡는다.
+- control별 remediation mode 분기와 사람이 읽을 patch/command 초안에 집중한다.
+- approval 상태 전이를 마지막에 붙여 capstone worker 연결점을 보여 준다.
 
-## 대표 검증 엔트리
+## 먼저 열 문서
+- [10-development-timeline.md](10-development-timeline.md): finding을 실행이 아닌 조치안으로 바꾸기
 
-- `PYTHONPATH=01-cloud-security-core/06-remediation-pack-runner/python/src .venv/bin/python -m remediation_pack_runner.cli 01-cloud-security-core/06-remediation-pack-runner/problem/data/sample_finding.json`
-- `PYTHONPATH=01-cloud-security-core/06-remediation-pack-runner/python/src .venv/bin/python -m pytest 01-cloud-security-core/06-remediation-pack-runner/python/tests`
-
-## 읽는 순서
-
-1. [프로젝트 README](../../../01-cloud-security-core/06-remediation-pack-runner/README.md)
-2. [문제 정의](../../../01-cloud-security-core/06-remediation-pack-runner/problem/README.md)
-3. [실행 진입점](../../../01-cloud-security-core/06-remediation-pack-runner/python/README.md)
-4. [대표 테스트](../../../01-cloud-security-core/06-remediation-pack-runner/python/tests/test_runner.py)
-5. [핵심 구현](../../../01-cloud-security-core/06-remediation-pack-runner/python/src/remediation_pack_runner/runner.py)
-6. [개발 타임라인](10-development-timeline.md)
-
-## 근거 파일
-
-- [README.md](../../../01-cloud-security-core/06-remediation-pack-runner/README.md)
-- [problem/README.md](../../../01-cloud-security-core/06-remediation-pack-runner/problem/README.md)
-- [python/README.md](../../../01-cloud-security-core/06-remediation-pack-runner/python/README.md)
-- [runner.py](../../../01-cloud-security-core/06-remediation-pack-runner/python/src/remediation_pack_runner/runner.py)
-- [cli.py](../../../01-cloud-security-core/06-remediation-pack-runner/python/src/remediation_pack_runner/cli.py)
-- [test_runner.py](../../../01-cloud-security-core/06-remediation-pack-runner/python/tests/test_runner.py)
-
-## Git Anchor
-
-- `2026-03-10 a4b4aae docs: enhance bithumb`
-- `2026-03-11 a9c65b3 Track 2에 대한 전반적인 개선 완료 (infobank, bithumb, game-server)`
+## 근거로 삼은 파일
+- `README.md`
+- `problem/README.md`
+- `python/README.md`
+- `docs/concepts/dry-run-remediation.md`
+- `python/src/remediation_pack_runner/runner.py`
+- `python/src/remediation_pack_runner/cli.py`
+- `python/tests/test_runner.py`

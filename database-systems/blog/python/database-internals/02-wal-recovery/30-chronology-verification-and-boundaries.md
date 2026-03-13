@@ -1,40 +1,103 @@
-# 30 Verification And Boundaries
+# 30 02 WAL Recovery를 다시 돌려 보며 검증 신호와 경계를 정리하기
 
-## Day 1
-### Session 5
+이 시리즈의 마지막 글이다. 구현 설명을 닫고, 테스트와 demo가 약속하는 범위를 다시 확인한다. 이때 남는 한계도 함께 적어 둔다.
 
-마지막 확인은 "실제로 reopen 복구가 되는가"였다.
+## Phase 3 — 검증 신호와 한계를 확인하는 구간
+
+이번 글에서는 먼저 테스트가 남긴 회귀 신호를 다시 읽고, 이어서 demo가 공개하는 표면과 README가 남겨 둔 한계를 함께 정리한다.
+
+### Session 1 — 테스트가 남긴 회귀 신호 다시 보기
+
+이번 세션의 목표는 테스트 명령을 다시 돌려 핵심 invariant가 실제 회귀 신호로 남아 있는지 확인하는 것이었다. 초기 가설은 pass 수치만 확인하면 충분할 거라고 생각했다.
+
+막상 다시 펼쳐 보니 `PYTHONPATH=src .venv/bin/python -m pytest`를 다시 실행하고, 어떤 테스트가 있는지 이미 알고 있는 상태에서 pass 신호를 다시 읽었다. 특히 `7 passed`가 이번 판단을 굳혀 줬다.
+
+변경 단위:
+- `database-systems/python/database-internals/projects/02-wal-recovery/tests/test_wal_recovery.py`
 
 CLI:
 
 ```bash
-cd python/database-internals/projects/02-wal-recovery
-PYTHONPATH=src python3 -m pytest
-PYTHONPATH=src python3 -m wal_recovery
+$ PYTHONPATH=src .venv/bin/python -m pytest
+============================= test session starts ==============================
+platform darwin -- Python 3.12.6, pytest-9.0.2, pluggy-1.6.0
+rootdir: /Users/woopinbell/work/book-task-3/database-systems/python/database-internals/projects/02-wal-recovery
+configfile: pyproject.toml
+collected 7 items
+
+tests/test_wal_recovery.py .......                                       [100%]
+
+============================== 7 passed in 0.02s ===============================
 ```
 
 검증 신호:
+- `7 passed`
+- `test_force_flush_rotates_wal`가 실제로 회귀 테스트 묶음 안에 남아 있다는 점이 중요했다.
 
-- `7 passed in ...`
-- `{'recovered': True, 'value': '1'}`
+핵심 코드:
 
-demo는 `put("alpha", "1")` 후 close/reopen으로 recovery가 되는 가장 짧은 경로를 보여 준다. 테스트는 그 주변 경계를 채운다.
+```python
+def test_force_flush_rotates_wal(tmp_path):
+    store = DurableStore(tmp_path, 4096, False)
+    store.open()
+    store.put("alpha", "1")
+    store.force_flush()
+    wal_path = Path(tmp_path) / "active.wal"
+    assert wal_path.stat().st_size == 0
+    reopened = DurableStore(tmp_path, 4096, False)
+    reopened.open()
+    value, found = reopened.get("alpha")
+    assert found is True
+    assert value == "1"
+```
 
-- `test_store_recovers_from_wal_after_reopen`: flush 없이 종료해도 WAL replay로 복구되는가
-- `test_stop_at_corrupted_record`: 손상 tail을 신뢰하지 않고 중단하는가
-- `test_force_flush_rotates_wal`: flush 후 active WAL이 회전되어 replay 범위가 줄었는가
+왜 여기서 판단이 바뀌었는가:
 
-이 시점의 boundary를 명확히 적어 두면:
+`test_force_flush_rotates_wal`는 구현의 뒷부분에서 생길 수 있는 붕괴 지점을 문장보다 정확하게 고정한다. pass 숫자보다 더 중요했던 건, 어떤 경계가 계속 회귀 테스트로 남아 있느냐였다.
 
-- 다루는 것:
-  - append-before-apply
-  - CRC 기반 손상 감지
-  - flush 시 WAL rotation
-- 의도적으로 다루지 않는 것:
-  - group commit / fsync policy 튜닝
-  - partial write 복구를 위한 segment-level repair
-  - compaction 시 WAL와 SSTable의 고급 상호작용
+이번 구간에서 새로 이해한 것:
+- 테스트는 단순 성공 여부보다, 어떤 invariant를 공개적으로 약속하는지 보여 주는 문서에 가깝다.
 
-다음 단계 연결:
+다음으로 넘긴 질문:
+- demo entry point를 다시 실행해 테스트보다 얇은 표면에서 무엇을 보여 주는지 확인한다.
 
-`03-index-filter`는 여기서 만든 "durable state" 위에서 point lookup 비용을 줄이는 단계다. WAL 복구가 write-path 안정성이라면, index/filter는 read-path 비용 제어다.
+### Session 2 — demo가 공개하는 표면과 한계 정리하기
+
+이 구간에서 먼저 붙잡으려 한 것은 demo 출력과 README의 한계를 함께 읽어, 공개 표면과 내부 경계를 분리하는 것이었다. 처음 읽을 때는 demo는 테스트의 축약판일 뿐이라고 생각했다.
+
+그런데 `PYTHONPATH=src .venv/bin/python -m wal_recovery`를 다시 실행해 마지막 한 줄을 확인하고, README의 `한계와 확장` bullet과 나란히 읽었다. 특히 demo 핵심 줄: `{'recovered': True, 'value': '1'}`라는 출력이 마지막 확인 지점이 됐다.
+
+변경 단위:
+- `database-systems/python/database-internals/projects/02-wal-recovery/src/wal_recovery/__main__.py`
+
+CLI:
+
+```bash
+$ PYTHONPATH=src .venv/bin/python -m wal_recovery
+{'recovered': True, 'value': '1'}
+```
+
+검증 신호:
+- demo 핵심 줄: `{'recovered': True, 'value': '1'}`
+- 경계 메모: 현재 범위 밖: group commit, fsync batching, 압축 로그 세그먼트는 포함하지 않습니다.
+- 경계 메모: 현재 범위 밖: 복수 writer와 distributed recovery는 다루지 않습니다.
+
+핵심 코드:
+
+```python
+from .store import demo
+
+
+if __name__ == "__main__":
+    demo()
+```
+
+왜 여기서 판단이 바뀌었는가:
+
+demo entry point는 내부 구현을 전부 보여 주지는 않지만, 독자가 처음 마주치는 공개 표면을 결정한다. 테스트가 invariant를 지키는 장치라면, demo는 그중 무엇을 밖으로 보여 줄지 고르는 자리였다.
+
+이번 구간에서 새로 이해한 것:
+- `Recovery Policy`에서 정리한 요점처럼, header가 13바이트보다 짧으면 truncated header로 보고 중단한다.
+
+다음으로 넘긴 질문:
+- 이 프로젝트 이후에는 다음 트랙/다음 슬롯으로 넘어가더라도, 지금 고정한 invariant를 더 큰 저장 엔진이나 분산 경로 안에서 다시 만날 수 있다.

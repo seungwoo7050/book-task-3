@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#08111d" />
+  <rect x="48" y="48" width="1104" height="624" rx="24" fill="#0f172a" stroke="#60a5fa" />
+  <text x="80" y="118" fill="#f8fafc" font-size="34" font-family="Menlo, Monaco, Consolas, monospace">arenaserv</text>
+  <text x="80" y="158" fill="#93c5fd" font-size="18" font-family="Menlo, Monaco, Consolas, monospace">Pure TCP game server capstone evidence snapshot</text>
+
+  <text x="80" y="220" fill="#cbd5e1" font-size="17" font-family="Menlo, Monaco, Consolas, monospace">Source: cpp-server/study/game-track/02-arenaserv/README.md</text>
+
+  <text x="80" y="286" fill="#f8fafc" font-size="18" font-family="Menlo, Monaco, Consolas, monospace">Server responsibilities</text>
+  <text x="80" y="322" fill="#cbd5e1" font-size="17" font-family="Menlo, Monaco, Consolas, monospace">HELLO / QUEUE / READY / INPUT / REJOIN / LEAVE</text>
+  <text x="80" y="356" fill="#cbd5e1" font-size="17" font-family="Menlo, Monaco, Consolas, monospace">room queue / countdown / in-round / finished state machine</text>
+  <text x="80" y="390" fill="#cbd5e1" font-size="17" font-family="Menlo, Monaco, Consolas, monospace">snapshot / hit / elimination / round end / reconnect grace</text>
+
+  <text x="80" y="452" fill="#a7f3d0" font-size="20" font-family="Menlo, Monaco, Consolas, monospace">status                  verified</text>
+  <text x="80" y="490" fill="#a7f3d0" font-size="20" font-family="Menlo, Monaco, Consolas, monospace">canonical command       cd cpp &amp;&amp; make clean &amp;&amp; make test</text>
+
+  <text x="80" y="552" fill="#fca5a5" font-size="15" font-family="Menlo, Monaco, Consolas, monospace">Out of scope: UDP, client prediction, rollback, sharding, persistence, matchmaking.</text>
+</svg>

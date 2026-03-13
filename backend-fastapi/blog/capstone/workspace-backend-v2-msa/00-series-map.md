@@ -1,45 +1,27 @@
-# workspace-backend-v2-msa 시리즈 지도
+# workspace-backend-v2-msa
 
-이 시리즈는 `workspace-backend` 기준선을 유지한 채, 같은 협업형 도메인을 `gateway + identity-service + workspace-service + notification-service`로 다시 나눈 capstone을 source-first로 다시 읽습니다.
+이 글은 v1과 같은 협업형 도메인을 MSA로 다시 풀었을 때 무엇이 단순해지고 무엇이 더 복잡해지는가를 묻는다. v2 capstone의 목표는 public API는 익숙하게 유지하면서도, 내부 경계와 분산 실패 경로가 어떻게 늘어나는지를 숨기지 않고 드러내는 데 있다.
 
-## 이 시리즈가 보는 문제
+## 이 글이 붙잡는 질문
+같은 public 협업 흐름을 유지한 채 identity, workspace, notification, gateway로 분해하면 어떤 복잡성과 장애 복구 문제가 새로 생기며, 그 사실을 어떤 검증 기록으로 솔직하게 남길 수 있는가가 이 글의 핵심 질문이다.
 
-- public `/api/v1/auth/*`, `/api/v1/platform/*` shape를 유지하면서 내부 서비스 경계를 분리할 수 있는가
-- 댓글 생성 성공과 notification delivery 성공을 분리해도, 복구 후 websocket 알림까지 다시 이어 붙일 수 있는가
+## 왜 이 프로젝트를 따로 읽어야 하나
+capstone README와 docs, compose, system test, verification report가 gateway 아래의 public flow와 notification-service 장애 복구를 독립적으로 설명한다. 그래서 이 프로젝트는 "MSA 버전"이 아니라 단일 백엔드 기준선과 직접 비교하는 최종 비교판이 된다.
 
-## 실제 구현 표면
+## 이번 글에서 따라갈 흐름
+1. v1 단일 백엔드 기준선을 다시 분해한다.
+2. gateway와 세 서비스의 runtime scope를 compose로 고정한다.
+3. public flow와 recovery를 system test 하나로 묶어 본다.
+4. 재검증 기록에서 성공과 미완료를 구분해 남긴다.
 
-- gateway의 public auth / platform route와 websocket edge
-- `identity-service`, `workspace-service`, `notification-service`의 DB ownership
-- `comment.created.v1` 이벤트 계약과 Redis Streams relay
-- notification-service 장애 후 recovery drain 시나리오
+## 마지막에 확인할 근거
+- 코드: `capstone/workspace-backend-v2-msa/fastapi/compose.yaml::__compose__`
+- 테스트/런타임: `capstone/workspace-backend-v2-msa/fastapi/tests/test_system.py::test_v2_system_flow_and_notification_recovery`
+- CLI: `make test`, `docker compose up --build -d`, `docker build --progress=plain -t workspace-v2-identity-fresh ./services/identity-service`, `docker pull python:3.12-slim`, `docker compose -p workspace-backend-v2-msa-dd63448c -f compose.yaml up -d --no-build`, `inline Python end-to-end flow for register -> verify -> login -> invite -> comment -> drain -> recovery -> websocket`
 
-## 대표 검증 엔트리
-
-- `python -m pytest tests/test_system.py -q`
-- `make smoke`
-- `docker compose up --build`
-
-## 읽는 순서
-
-1. [프로젝트 README](../../../capstone/workspace-backend-v2-msa/README.md)
-2. [문제 정의](../../../capstone/workspace-backend-v2-msa/problem/README.md)
-3. [실행 진입점](../../../capstone/workspace-backend-v2-msa/fastapi/README.md)
-4. [gateway README](../../../capstone/workspace-backend-v2-msa/fastapi/gateway/README.md)
-5. [계약 문서](../../../capstone/workspace-backend-v2-msa/fastapi/contracts/README.md)
-6. [대표 system test](../../../capstone/workspace-backend-v2-msa/fastapi/tests/test_system.py)
-7. [workspace-service route](../../../capstone/workspace-backend-v2-msa/fastapi/services/workspace-service/app/api/v1/routes/platform.py)
-8. [notification-service route](../../../capstone/workspace-backend-v2-msa/fastapi/services/notification-service/app/api/v1/routes/notifications.py)
-9. [개발 타임라인](10-development-timeline.md)
-
-## 근거 파일
-
-- [README.md](../../../capstone/workspace-backend-v2-msa/README.md)
-- [problem/README.md](../../../capstone/workspace-backend-v2-msa/problem/README.md)
-- [fastapi/README.md](../../../capstone/workspace-backend-v2-msa/fastapi/README.md)
-- [gateway/README.md](../../../capstone/workspace-backend-v2-msa/fastapi/gateway/README.md)
-- [contracts/README.md](../../../capstone/workspace-backend-v2-msa/fastapi/contracts/README.md)
-- [tests/test_system.py](../../../capstone/workspace-backend-v2-msa/fastapi/tests/test_system.py)
-- [services/workspace-service/app/api/v1/routes/platform.py](../../../capstone/workspace-backend-v2-msa/fastapi/services/workspace-service/app/api/v1/routes/platform.py)
-- [services/notification-service/app/api/v1/routes/notifications.py](../../../capstone/workspace-backend-v2-msa/fastapi/services/notification-service/app/api/v1/routes/notifications.py)
-- [docs/verification-report.md](../../../docs/verification-report.md)
+## 이 글을 다 읽고 나면
+- 브라우저 경계가 왜 gateway에 남아야 하는지 더 분명해진다.
+- 서비스별 DB ownership과 bearer claims 규칙이 어떻게 함께 작동하는지 이해하게 된다.
+- 이벤트, recovery, websocket이 분산 환경에서 어떤 추가 비용을 만드는지 보게 된다.
+- 검증 기록: 2026-03-10에 service unit tests는 통과했고, fresh build 경로는 Docker Desktop 문제로 성공 기록을 남기지 못했지만 prebuilt image 기준 Compose runtime과 end-to-end 협업 흐름 검증은 완료했다.
+- 다음으로 이어 볼 대상: 비교 기준선은 workspace-backend

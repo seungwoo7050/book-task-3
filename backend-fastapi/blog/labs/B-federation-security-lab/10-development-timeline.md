@@ -1,153 +1,64 @@
-# B-federation-security-lab 개발 타임라인
+# B-federation-security-lab: 로컬 인증 위에 OIDC와 2FA를 덧씌우되, 단계는 더 잘게 쪼개기
 
-## 2026-03-09
-### Session 1
+이 글은 `labs/B-federation-security-lab/README.md`, `problem/README.md`, `docs/README.md`, `labs/B-federation-security-lab/fastapi/app/api/v1/routes/auth.py::google_callback`, `labs/B-federation-security-lab/fastapi/tests/integration/test_two_factor.py::test_two_factor_setup_and_recovery_code_login`, `backend-fastapi/docs/verification-report.md`를 바탕으로 실제 구현 순서를 다시 복원한다.
 
-- 목표: A-auth-lab에서 로컬 인증을 끝낸 뒤, 외부 로그인을 어떻게 덧붙이는지 확인한다. 처음엔 "Google OAuth를 그대로 붙이면 되는 거 아닌가"라고 생각했다.
-- 진행: `problem/README.md`를 먼저 읽었다. 외부 로그인뿐 아니라 2FA, recovery code, 감사 로그까지 같은 랩에 들어 있다. 단순 OAuth 연동이 아니라 "계정 진입 경로를 단단하게 만드는" 전체 보안 강화 흐름이다.
-- 이슈: 처음엔 Google 로그인 = 새 계정 생성이라고 단순하게 봤는데, 기존 로컬 계정과 같은 이메일을 쓰는 Google 사용자가 들어오면 어떻게 해야 하나? 새 계정을 또 만들면 한 사람이 두 계정을 갖게 된다.
-- 판단: 이 문제를 먼저 풀어야 Google 로그인의 실제 구조를 잡을 수 있다.
+B 랩은 A 랩 위에 기능을 덧붙이는 글처럼 보이기 쉽지만, 소스를 보면 관점이 조금 다르다. problem/README.md는 Google 스타일 로그인, TOTP, recovery code, audit log를 한꺼번에 내세우지만, docs/README.md는 외부 계정과 내부 계정 연결, 2FA 삽입 위치, recovery code 평문 금지처럼 전혀 다른 질문을 먼저 던진다. 즉 이 프로젝트는 기능 추가가 아니라 인증 상태 기계를 한 단계 더 잘게 쪼개는 실험이다.
 
-CLI:
+## 1. 외부 공급자 계정과 내부 사용자 계정의 연결 문제로 다시 시작하기
+처음에는 공급자 계정과 내부 사용자 계정을 어떻게 붙일지가 중심이었다. README.md와 problem/README.md는 모두 'Google 로그인 추가'보다 'provider-linked identity 관리'를 먼저 적는다. 그래서 chronology의 출발점도 route 수를 늘리는 게 아니라, 어떤 데이터가 공급자에서 오고 어떤 상태가 우리 서비스에서 생성되는지 구분하는 일로 보는 편이 자연스럽다.
 
-```bash
-$ cd labs/B-federation-security-lab/fastapi
-$ python3 -m venv .venv
-$ source .venv/bin/activate
-$ make install
-```
-
-### Session 2
-
-- 목표: `sync_google_user`를 구현하면서 외부 계정과 내부 계정의 연결 로직을 설계한다.
-- 진행: 첫 번째 시도는 단순했다. external identity 테이블에서 google subject로 먼저 찾고, 없으면 새 유저를 만드는 것. 그런데 이렇게 하면 "이미 로컬 가입된 이메일"을 가진 Google 계정이 들어올 때 중복이 생긴다.
-- 조치: email_verified인 Google 계정이라면 기존 이메일 사용자를 찾아 연결하는 중간 단계를 넣었다.
+## 2. OIDC callback을 세션 발급 경계로 세우기
+그 전환점이 google_callback이다. 이 함수는 query의 code, state를 받고, cookie에 저장된 signed state가 없으면 즉시 실패한다. 즉 callback은 외부 공급자 응답을 그대로 통과시키는 곳이 아니라, state cookie와 code verifier를 확인해 내부 세션으로 번역하는 경계다.
 
 ```python
-user = self.user_repository.get_by_external_identity("google", subject)
-if user is None:
-    if email_verified:
-        user = self.user_repository.get_by_email(email)
-    if user is None:
-        handle_seed = str(profile.get("preferred_username") or email.split("@")[0])
+def google_callback(
+    request: Request,
+    code: str,
+    state: str,
+    auth_service: Annotated[AuthService, Depends(get_auth_service)],
+    oidc_service: Annotated[GoogleOIDCService, Depends(get_google_oidc_service)],
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> JSONResponse:
+    signed_state = request.cookies.get(settings.oauth_state_cookie_name)
+    if not signed_state:
+        raise AppError(
+            code="OAUTH_STATE_REQUIRED",
 ```
 
-처음엔 `email_verified` 체크 없이 이메일만으로 연결하려 했는데, 그러면 email_verified=False인 외부 계정이 다른 사람의 로컬 계정을 탈취할 수 있다. 이 검사 하나가 보안상 결정적이다.
+눈여겨볼 부분은 provider state 확인, code 교환, 내부 세션 발급이 한 callback 안에서 이어진다는 점이다.
 
-- 이슈: Google 로그인 테스트를 어떻게 쓸지 고민했다. 실제 Google 서버를 호출할 수는 없다.
-- 판단: `monkeypatch`로 OIDC 서비스의 `exchange_code_for_tokens`, `validate_id_token`, `fetch_userinfo`를 모두 교체하기로 했다. 테스트가 확인하는 건 Google의 실제 응답이 아니라, 우리 코드가 프로필을 받아서 세션을 만드는 흐름이니까.
-- 검증: mock callback으로 로그인하면 쿠키 세 개(`access_token`, `refresh_token`, `csrf_token`)가 발급되고, `/auth/me`로 사용자 정보를 확인할 수 있다.
-
-CLI:
-
-```bash
-$ pytest tests/integration/test_google_callback.py -q
-```
-
-```
-1 passed
-```
-
-### Session 3
-
-- 목표: 2FA를 추가한다. 처음엔 "로그인 성공 후 TOTP 코드를 한 번 더 확인하면 끝"이라고 생각했다.
-- 진행: `TwoFactorService`를 만들면서 TOTP secret 생성과 provisioning URI 발급을 먼저 구현했다. pyotp를 직접 감싸는 얇은 레이어다.
-- 이슈: 2FA가 켜진 사용자가 Google 로그인으로 들어오면 어떤 시점에서 challenge를 걸어야 하나? 처음엔 callback에서 바로 TOTP를 물어보려 했는데, callback 시점엔 아직 완전한 세션이 아니다.
-- 판단: callback에서 2FA가 필요한 사용자에게는 `pending_auth_token`을 발급하고, 2FA 검증이 끝난 뒤에야 진짜 세션(cookie)을 만들기로 했다. 두 단계를 명확히 분리하는 게 핵심이다.
+## 3. 2FA와 recovery code를 별도 단계로 검증하기
+그 다음부터 인증은 더 이상 한 번에 끝나지 않는다. tests/integration/test_two_factor.py를 보면 Google 로그인 직후 2FA setup과 confirm을 마친 뒤, 다시 로그인했을 때 곧바로 me가 통과하지 않는다. 대신 recovery code나 TOTP code를 한 번 더 통과해야 authenticated가 된다. 이 테스트가 중요한 이유는, 2FA를 '로그인 성공 뒤 부가 기능'이 아니라 '인증을 한 번 더 완결시키는 후속 단계'로 고정하기 때문이다.
 
 ```python
-def start_pending_second_factor(self, *, user: User, ip_address, user_agent) -> str:
-    self.auth_repository.store_audit_event(
-        event_type="auth.login.challenge_required",
-        user_id=user.id,
-        details={"provider": "google"},
-        ip_address=ip_address,
-        user_agent=user_agent,
+def test_two_factor_setup_and_recovery_code_login(client: TestClient, monkeypatch) -> None:
+    _mock_google(
+        monkeypatch, subject="google-subject-2", email="twofa@example.com", name="Two Factor"
     )
-    self.session.commit()
-    return build_pending_auth_token(user.id, self.settings)
+    _complete_google_login(client)
+
+    csrf_token = client.cookies["csrf_token"]
+    setup_response = client.post("/api/v1/auth/2fa/setup", headers={"X-CSRF-Token": csrf_token})
+    assert setup_response.status_code == 200
+    secret = setup_response.json()["secret"]
+
+    confirm_response = client.post(
 ```
 
-이 시점에서 "challenge_required" 이벤트를 감사 로그에 남기는 것도 같이 넣었다. 나중에 보면 누가 2FA challenge를 받았는지 추적할 수 있다.
+테스트는 2FA 등록, 재로그인 challenge, recovery code 소진을 하나의 상태 기계로 묶는다.
 
-- 진행: recovery code 생성도 같이 구현했다. 처음엔 단순 UUID를 쓰려 했는데, 사용자가 직접 적어 둬야 하는 코드이므로 읽기 쉬운 `XXXX-XXXX` 포맷으로 바꿨다.
-
-```python
-def generate_recovery_codes(self, count: int = 8) -> list[str]:
-    alphabet = string.ascii_uppercase + string.digits
-    codes: list[str] = []
-    for _ in range(count):
-        left = "".join(secrets.choice(alphabet) for _ in range(4))
-        right = "".join(secrets.choice(alphabet) for _ in range(4))
-        codes.append(f"{left}-{right}")
-    return codes
-```
-
-- 다음: 2FA 확인 후 recovery code로 로그인하는 전체 흐름을 테스트로 고정해야 한다.
-
-### Session 4
-
-- 목표: 2FA setup → confirm → 재로그인 시 challenge → recovery code 로그인까지 전체 흐름을 테스트로 묶는다.
-- 진행: `test_two_factor.py`를 작성했다. Google 로그인으로 먼저 세션을 만들고, 2FA setup → confirm을 거친 뒤, 다시 Google 로그인을 시도한다.
-- 이슈: 2FA confirm 후 다시 Google 로그인을 했는데 `/auth/me`가 200을 돌려보냈다. 왜? 이전 세션 쿠키가 아직 살아 있어서 challenge를 건너뛴 것이다.
-- 조치: 재로그인 테스트에서 이전 쿠키가 있어도 2FA 사용자는 `pending_auth_token`만 받고, 완전한 세션은 2FA 검증 후에야 발급되도록 흐름을 확인했다. 테스트에서 `assert client.get("/api/v1/auth/me").status_code == 401`로 이 경계를 고정시켰다.
-
-```python
-_complete_google_login(client)
-assert client.get("/api/v1/auth/me").status_code == 401  # pending challenge
-
-challenge_csrf = client.cookies["csrf_token"]
-verify_response = client.post(
-    "/api/v1/auth/2fa/verify",
-    json={"recovery_code": recovery_codes[0]},
-    headers={"X-CSRF-Token": challenge_csrf},
-)
-assert verify_response.status_code == 200
-assert client.get("/api/v1/auth/me").status_code == 200  # now authenticated
-```
-
-나중에 보니 이 테스트가 이 랩에서 가장 중요한 경계를 잡는다. "Google 로그인 성공"과 "완전한 세션 획득"은 2FA 사용자에게는 별개의 단계다.
-
-- 검증: Google callback + 2FA setup + recovery code 로그인까지 전체가 하나의 테스트에서 확인된다.
-
-CLI:
+## 4. 2026-03-09 재검증으로 mock 기반 보안 surface를 고정하기
+마지막 검증은 mock 경계를 분명히 남긴다. 보고서에는 2026-03-09에 compile, lint, test, smoke, Compose probe가 통과했다고 적혀 있고, 실제 Google 통신 대신 monkeypatch 기반 OIDC 경로를 사용한다. 그래서 이 글도 일부러 'Google 연동이 완성됐다'고 쓰지 않고, 'OIDC callback과 내부 세션 발급 경계가 mock 기반으로 재현된다'고 적는 편이 더 사실에 가깝다.
 
 ```bash
-$ pytest tests/integration/test_two_factor.py -q
+python3 -m compileall app tests
+make lint
+make test
+make smoke
+./tools/compose_probe.sh labs/B-federation-security-lab/fastapi 8000
 ```
 
-```
-1 passed
-```
+2026-03-09에 compile, lint, test, smoke, Compose live/ready probe가 통과했고, PostgreSQL 데이터베이스 이름을 DATABASE_URL과 맞춘 뒤 재검증했다. 실제 Google end-to-end는 범위 밖이므로, 글에서도 mock OIDC 경계를 명시적으로 유지한다.
 
-```bash
-$ pytest tests/integration/ -q
-```
-
-```
-2 passed
-```
-
-### Session 5
-
-- 목표: 전체 검증 루프를 돌리고 Compose 환경에서 서비스가 뜨는지 확인한다.
-- 이슈: compose 실행 중 PostgreSQL 데이터베이스 이름이 `DATABASE_URL` 환경변수와 맞지 않는 문제가 있었다. compose.yaml의 `POSTGRES_DB`와 `.env`의 `DATABASE_URL`이 가리키는 DB 이름을 맞춘 뒤 해결됐다.
-- 검증: compile, lint, test, smoke, Compose live/ready probe 모두 통과.
-- 다음: 이 랩은 인증 방식 강화까지만 잡고, "누가 무엇을 할 수 있는가"라는 권한 문제는 C-authorization-lab으로 넘긴다.
-
-CLI:
-
-```bash
-$ python3 -m compileall app tests
-$ make lint
-$ make test
-```
-
-```
-2 passed
-```
-
-```bash
-$ make smoke
-$ docker compose up --build
-```
+## 정리
+B 랩이 남기는 가장 큰 변화는 인증 성공의 단계를 늘렸다는 점이다. 외부 로그인과 2FA를 붙였지만, 더 중요한 건 각 단계가 내부 상태 기계에서 어디에 놓이는지 분리했다는 사실이다. 다음 C 랩이 인증 자체를 비워 두고 인가 규칙만 다룰 수 있는 것도, 여기까지 오면서 '누가 들어왔는가'와 '들어온 뒤 무엇을 할 수 있는가'가 확실히 갈라졌기 때문이다.

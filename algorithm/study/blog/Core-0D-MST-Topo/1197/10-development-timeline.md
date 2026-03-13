@@ -1,21 +1,98 @@
-# BOJ 1197 — 개발 타임라인 (전반)
+# 최소 스패닝 트리: 문제 계약에서 첫 구현까지
+
+이 문서의 초점은 정답 설명보다 출발점이다. `Phase 1`에서 실행 계약을 세우고, `Phase 2`에서 그 계약이 어떤 상태와 루프로 바뀌는지 이어서 본다.
+
+## 구현 순서 요약
+
+- `problem/README.md`와 starter skeleton으로 입출력 계약을 먼저 잡는다.
+- `python/src/solution.py`에서 `간선 가중치 정렬 + 유니온파인드로 MST를 구성하는 Kruskal`를 실제 상태 전이로 옮긴다.
+- 첫 실행을 다시 돌려 fixture가 바로 닫히는지 확인한다.
 
 ## Phase 1
 ### Session 1
-- 목표: 가중치 무방향 그래프에서 최소 스패닝 트리(MST)의 가중치 합을 구한다.
-- 진행: Kruskal과 Prim 중에 고민했다. 간선 정렬 + 유니온파인드로 구현하는 Kruskal이 더 직관적이었다.
-- 이슈: 유니온파인드를 제대로 구현해야 한다. path compression과 union by rank를 둘 다 쓰면 거의 O(α(N))이다.
-- 판단: 간선을 가중치 순 정렬 → 사이클이 안 생기면(같은 집합이 아니면) 선택 → V-1개 간선을 고르면 종료.
 
-### Session 2
-- 목표: Kruskal을 구현한다.
+- 당시 목표: 문제 전문을 다시 요약하기보다, 구현을 바로 시작할 수 있는 최소 계약을 세운다.
+- 변경 단위: `problem/README.md`, `problem/code/starter.py`
+- 처음 가설: starter가 비어 있어도 괜찮다. 대신 `run/test` 진입점이 먼저 고정돼 있어야 구현 순서를 잃지 않는다.
+- 실제 조치: `problem/README.md`의 기준 명령과 fixture 위치를 먼저 읽고, starter의 빈 `main/solve`를 실제 구현이 들어갈 자리로 잡았다.
 
-이 시점의 핵심 코드:
+CLI 1:
+
+```bash
+$ make -C study/Core-0D-MST-Topo/1197/problem run-py
+```
+
+검증 신호:
+
+- `3`가 그대로 나왔다.
+- 첫 실행이 바로 돌아간다는 사실만으로도, 이후 구현을 어디에 붙일지 범위가 크게 줄어들었다.
+
+핵심 코드 1:
 
 ```python
-def find(parent, x):
+import sys
+
+def main():
+    # 할 일: 풀이를 구현한다
+    pass
+
+if __name__ == "__main__":
+    main()
+```
+
+왜 이 코드가 중요했는가:
+
+문제의 핵심 아이디어가 아직 등장하지 않아도 괜찮다. 이 빈 skeleton이 있어야 뒤의 구현이 어떤 약속 위에 올라갔는지 설명할 수 있다.
+
+새로 배운 것:
+
+- 실행 계약을 먼저 고정하면 구현 설명도 훨씬 짧고 정확해진다.
+
+다음:
+
+- Python 구현에서 어떤 상태와 반복이 먼저 굳었는지 본다.
+
+## Phase 2
+### Session 2
+
+- 당시 목표: `간선 가중치 정렬 + 유니온파인드로 MST를 구성하는 Kruskal`를 Python 한 파일에서 바로 읽히는 상태 전이로 만든다.
+- 변경 단위: `python/src/solution.py`
+- 처음 가설: `그래프 전체 구조를 만들거나 순서를 고정하는 규칙을 설명하는 연습`라면, 핵심 자료구조와 메인 루프를 먼저 정해야 다른 분기도 자연스럽게 따라온다.
+- 실제 조치: setup에서 입력과 상태를 정리하고, 중심 루프에서 전이 순서와 guard를 함께 굳혔다.
+
+CLI 2 (비교 구현 실행):
+
+```bash
+$ make -C study/Core-0D-MST-Topo/1197/problem run-cpp
+```
+
+검증 신호:
+
+- `3`가 그대로 나왔다.
+- 이 단계의 관심사는 성능보다, 첫 구현이 fixture의 기대 출력과 곧바로 맞물리는지 확인하는 데 있었다.
+
+핵심 코드 2:
+
+```python
     while parent[x] != x:
-        parent[x] = parent[parent[x]]  # path compression
+        parent[x] = parent[parent[x]]
+        x = parent[x]
+    return x
+
+def union(parent, rank, a, b):
+    a, b = find(parent, a), find(parent, b)
+    if a == b:
+```
+
+왜 이 코드가 중요했는가:
+
+문제를 단순하게 만든 건 화려한 알고리즘 이름보다 setup였다. 어떤 값을 오래 들고 갈지 정하는 순간 `간선 가중치 정렬 + 유니온파인드로 MST를 구성하는 Kruskal`의 뼈대가 이미 보인다.
+
+핵심 코드 3:
+
+```python
+    while parent[x] != x:
+        parent[x] = parent[parent[x]]
         x = parent[x]
     return x
 
@@ -24,23 +101,16 @@ def union(parent, rank, a, b):
     if a == b:
         return False
     if rank[a] < rank[b]:
-        a, b = b, a
-    parent[b] = a
-    if rank[a] == rank[b]:
-        rank[a] += 1
-    return True
 ```
 
-path compression을 재귀 대신 "할아버지 포인터(parent[x] = parent[parent[x]])"로 구현한 게 반복적 방식이다. 처음엔 재귀로 했는데 Python 재귀 제한이 걱정되어 바꿨다.
+왜 이 코드가 중요했는가:
 
-CLI:
+핵심은 아이디어 이름이 아니라 순서다. 이 블록을 보면 왜 `find 경로압축 누락으로 성능 저하` 같은 실수가 같은 자리에서 함께 걸러지는지도 바로 드러난다.
 
-```bash
-$ make -C study/Core-0D-MST-Topo/1197/problem run-py
-```
+새로 배운 것:
 
-```text
-3
-```
+- 개념 문서를 다시 읽으면서, `간선 가중치 정렬 + 유니온파인드로 MST를 구성하는 Kruskal`가 정답 공식이 아니라 상태 설계 규칙이라는 점이 또렷해졌다. 그래서 `find 경로압축 누락으로 성능 저하` 같은 실수도 같은 자리에서 함께 막을 수 있었다.
 
-- 다음: 간선 수가 V-1개에 못 미치는 경우(비연결 그래프)는 이 문제에서 없는지 확인한다.
+다음:
+
+- 이제 `find 경로압축 누락으로 성능 저하` 같은 실수 포인트가 실제로 어디서 막히는지 fixture 전체를 돌려 확인한다.

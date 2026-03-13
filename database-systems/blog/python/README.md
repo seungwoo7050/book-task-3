@@ -1,20 +1,15 @@
 # Python Blog Index
 
-Python 트랙 블로그는 "완성된 답안 설명"이 아니라 "코드를 다시 읽으며 판단을 복원한 기록"이다. 같은 프로젝트라도 README에서 보이던 이해와 실제 소스를 뜯어본 뒤의 이해가 어떻게 달라졌는지에 집중한다.
+Python 시리즈는 작은 구현을 빠르게 따라가며 핵심 invariant를 붙잡기 좋게 구성되어 있습니다. 현재 공개된 프로젝트는 9개다.
 
-## 공통 근거
+## 여기서 바로 들어가기 좋은 트랙
 
-- `src/`와 `tests/`를 1순위 근거로 사용
-- `README`, `problem/README`, `docs/`로 용어와 범위를 교차 확인
-- 최종적으로 재검증 CLI를 다시 실행해 pass 신호 확인
+- [Database Internals](database-internals/README.md) — 메모리 자료구조에서 시작해 flush, recovery, compaction, buffer, MVCC까지 저장 엔진 내부 규칙을 한 단계씩 넓혀 갑니다.
+- [DDIA Distributed Systems](ddia-distributed-systems/README.md) — RPC framing에서 출발해 replication, shard routing, leader election, clustered KV까지 분산 경로를 순서대로 잇습니다.
 
-## 트랙 인덱스
+## 읽는 순서
 
-- [Database Internals](database-internals/README.md)
-- [DDIA Distributed Systems](ddia-distributed-systems/README.md)
-
-## 읽는 방법
-
-1. 트랙 인덱스에서 프로젝트를 고른다.
-2. `00-series-map.md`에서 질문과 범위를 먼저 확인한다.
-3. `10 -> 20 -> 30/40` chronology를 순서대로 읽는다.
+1. 먼저 트랙 README에서 어떤 질문을 다루는지 확인한다.
+2. 관심 있는 프로젝트의 `00-series-map.md`로 들어가 시리즈 전체 흐름과 재검증 명령을 잡는다.
+3. 본문은 `10 -> 20 -> 30` 순서로 읽는다.
+4. 더 촘촘한 작업 메모가 필요할 때만 `_evidence-ledger.md`, `_structure-outline.md`를 펼친다.

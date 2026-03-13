@@ -1,37 +1,26 @@
 # 02 챗봇 상담 품질 관리 blog
 
-이 디렉터리는 `02-chat-qa-ops`를 `source-first` 방식으로 다시 읽는 project-level blog 시리즈다. chronology는 현재 `projects/02-chat-qa-ops` 아래의 capstone 버전, FastAPI/CLI 코드, React 페이지, demo 문서, 테스트, 실제 검증 명령만으로 복원했다.
+이 시리즈는 `projects/02-chat-qa-ops`가 어떻게 하나의 평가 파이프라인에서 출발해, regression proof와 self-hosted review ops까지 갖춘 프로젝트로 자랐는지 따라가는 기록이다. 최종 결과를 짧게 소개하는 대신, 어떤 품질 기준을 먼저 세웠고 어떤 검증과 운영 화면이 그 뒤에 붙었는지 차례대로 복원한다.
 
-## source set
+이번 리라이트에서는 기존 blog를 입력으로 쓰지 않았다. 예전 시리즈는 [`../../_legacy/2026-03-13-isolate-and-rewrite/projects/02-chat-qa-ops/`](../../_legacy/2026-03-13-isolate-and-rewrite/projects/02-chat-qa-ops/)에 보관했고, 이번 글은 현재 코드와 CLI, proof artifact만으로 다시 썼다.
 
-- [`../../../projects/02-chat-qa-ops/README.md`](../../../projects/02-chat-qa-ops/README.md)
-- [`../../../projects/02-chat-qa-ops/capstone/README.md`](../../../projects/02-chat-qa-ops/capstone/README.md)
-- [`../../../projects/02-chat-qa-ops/capstone/v0-initial-demo/README.md`](../../../projects/02-chat-qa-ops/capstone/v0-initial-demo/README.md)
-- [`../../../projects/02-chat-qa-ops/capstone/v1-regression-hardening/README.md`](../../../projects/02-chat-qa-ops/capstone/v1-regression-hardening/README.md)
-- [`../../../projects/02-chat-qa-ops/capstone/v2-submission-polish/README.md`](../../../projects/02-chat-qa-ops/capstone/v2-submission-polish/README.md)
-- [`../../../projects/02-chat-qa-ops/capstone/v2-submission-polish/python/Makefile`](../../../projects/02-chat-qa-ops/capstone/v2-submission-polish/python/Makefile)
-- [`../../../projects/02-chat-qa-ops/capstone/v2-submission-polish/python/backend/src/evaluator/pipeline.py`](../../../projects/02-chat-qa-ops/capstone/v2-submission-polish/python/backend/src/evaluator/pipeline.py)
-- [`../../../projects/02-chat-qa-ops/capstone/v2-submission-polish/python/tests/mp3/test_retrieval_v2.py`](../../../projects/02-chat-qa-ops/capstone/v2-submission-polish/python/tests/mp3/test_retrieval_v2.py)
-- [`../../../projects/02-chat-qa-ops/capstone/v2-submission-polish/react/src/pages/Overview.tsx`](../../../projects/02-chat-qa-ops/capstone/v2-submission-polish/react/src/pages/Overview.tsx)
-- [`../../../projects/02-chat-qa-ops/capstone/v3-self-hosted-oss/python/backend/src/api/routes/auth.py`](../../../projects/02-chat-qa-ops/capstone/v3-self-hosted-oss/python/backend/src/api/routes/auth.py)
-- [`../../../projects/02-chat-qa-ops/capstone/v3-self-hosted-oss/python/backend/src/api/routes/datasets.py`](../../../projects/02-chat-qa-ops/capstone/v3-self-hosted-oss/python/backend/src/api/routes/datasets.py)
-- [`../../../projects/02-chat-qa-ops/capstone/v3-self-hosted-oss/python/backend/src/services/jobs.py`](../../../projects/02-chat-qa-ops/capstone/v3-self-hosted-oss/python/backend/src/services/jobs.py)
+## 어떤 근거로 썼는가
+
+- 프로젝트 경계: `projects/02-chat-qa-ops/README.md`, `problem/README.md`
+- 흐름 복원 기준: `docs/stage-catalog.md`, `docs/verification-matrix.md`
+- 핵심 구현: `python/backend/src/evaluator/pipeline.py`, `python/backend/src/api/routes/dashboard.py`, `python/backend/src/cli/main.py`
+- proof 자료: `docs/demo/demo-runbook.md`, `docs/demo/phase1-vs-phase2-diff-matrix.md`, `docs/demo/proof-artifacts/improvement-report.json`, `docs/demo/proof-artifacts/cli-report.txt`, `docs/demo/proof-artifacts/cli-compare.txt`
+- 확장 버전 핵심: `v3 python/backend/src/core/auth.py`, `v3 python/backend/src/api/routes/jobs.py`, `v3 python/backend/src/services/jobs.py`, `v3 react/src/App.tsx`, `v3 react/src/pages/Jobs.tsx`
+- 실제 검증: `UV_PYTHON=python3.12 make gate-all`, `UV_PYTHON=python3.12 make smoke-postgres`, `v3 UV_PYTHON=python3.12 make gate-all`
+
+## supporting doc
+
+1. [`_evidence-ledger.md`](_evidence-ledger.md)
+2. [`_structure-outline.md`](_structure-outline.md)
 
 ## 읽는 순서
 
-1. [`00-series-map.md`](00-series-map.md)
-2. [`10-development-timeline.md`](10-development-timeline.md)
-3. [`../../../projects/02-chat-qa-ops/README.md`](../../../projects/02-chat-qa-ops/README.md)
-
-## 검증 진입점
-
-- `cd projects/02-chat-qa-ops/capstone/v2-submission-polish/python`
-- `UV_PYTHON=python3.12 uv sync --extra dev`
-- `UV_PYTHON=python3.12 make gate-all`
-- `UV_PYTHON=python3.12 make smoke-postgres`
-
-## chronology 메모
-
-- 이 프로젝트도 git history가 stage/capstone 재배치 중심이라 실제 세션 시각을 복원하기 어렵다.
-- 그래서 `Day / Session` 형식을 쓰고, 각 세션은 `v0 -> v1 -> v2 -> v3` 버전 사다리로 고정한다.
-- 실제 검증 기준은 `make gate-all`이다. 현재 환경에서 `ruff`, `mypy`, MP1~MP5 backend tests, frontend tests가 모두 통과했고, optional `make smoke-postgres`도 `PostgreSQL smoke verification passed`를 반환했다.
+1. [`00-series-map.md`](./00-series-map.md)에서 이 프로젝트를 어떤 질문으로 읽을지 먼저 잡는다.
+2. [`10-first-qa-evaluation-loop.md`](./10-first-qa-evaluation-loop.md)에서 평가 파이프라인의 출발점을 본다.
+3. [`20-regression-hardening-and-proof.md`](./20-regression-hardening-and-proof.md)에서 golden regression과 proof artifact를 본다.
+4. [`30-self-hosted-review-ops.md`](./30-self-hosted-review-ops.md)에서 self-hosted review ops로 확장되는 단계를 본다.

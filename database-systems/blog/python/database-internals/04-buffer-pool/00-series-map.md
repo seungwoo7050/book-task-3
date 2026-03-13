@@ -1,39 +1,39 @@
-# 04 Buffer Pool — Series Map
+# 04 Buffer Pool 시리즈 맵
 
-이 시리즈는 "캐시는 빠르면 된다"라는 흔한 오해를 깨는 데 집중한다. 실제로는 `pin_count`와 `dirty` 때문에, 언제 내보낼 수 있는지가 hit rate만큼 중요했다.
+이 시리즈는 Database Internals 트랙의 4번째 프로젝트 `04 Buffer Pool`를 따라간다. disk-backed page를 메모리에 캐시하고 pin count와 dirty write-back 정책을 포함한 buffer pool manager를 구현합니다. 기능 목록보다 먼저, 어떤 순서로 경계를 고정했는지 읽는 쪽에 무게를 두었다.
 
-## 이 프로젝트가 답하는 질문
+## 먼저 보고 갈 질문
 
-- LRU는 단독으로 충분하지 않다. pinned page를 만나면 eviction은 어떻게 실패해야 하는가
-- dirty page write-back을 `flush_page/close`에 묶는 단순화가 학습 단계에서 어떤 장단점을 만드는가
+- page id로 file path와 page number를 안정적으로 분리해야 합니다.
+- fetch 시 cache hit면 pin count를 올리고, miss면 disk read 후 캐시에 올려야 합니다.
 
 ## 읽는 순서
 
-1. [10-chronology-setup-and-surface.md](10-chronology-setup-and-surface.md)
-2. [20-chronology-core-mechanics.md](20-chronology-core-mechanics.md)
-3. [30-chronology-integration-and-tradeoffs.md](30-chronology-integration-and-tradeoffs.md)
-4. [40-chronology-verification-and-boundaries.md](40-chronology-verification-and-boundaries.md)
-
-## 참조한 실제 파일
-
-- `python/database-internals/projects/04-buffer-pool/src/buffer_pool/core.py`
-- `python/database-internals/projects/04-buffer-pool/src/buffer_pool/__main__.py`
-- `python/database-internals/projects/04-buffer-pool/tests/test_buffer_pool.py`
-- `python/database-internals/projects/04-buffer-pool/README.md`
-- `python/database-internals/projects/04-buffer-pool/problem/README.md`
-- `python/database-internals/projects/04-buffer-pool/docs/concepts/lru-eviction.md`
-- `python/database-internals/projects/04-buffer-pool/docs/concepts/pin-and-dirty.md`
-- `python/database-internals/projects/04-buffer-pool/pyproject.toml`
+1. [10-chronology-scope-and-surface.md](10-chronology-scope-and-surface.md) — 테스트 이름과 파일 배치부터 훑으면서 문제의 테두리를 다시 좁히는 글
+2. [20-chronology-core-invariants.md](20-chronology-core-invariants.md) — 핵심 함수와 상태 전이에서 invariant가 실제로 어디서 잠기는지 따라가는 글
+3. [30-chronology-verification-and-boundaries.md](30-chronology-verification-and-boundaries.md) — 테스트와 demo를 다시 돌려 약속 범위와 남는 한계를 정리하는 글
 
 ## 재검증 명령
 
 ```bash
-cd python/database-internals/projects/04-buffer-pool
-PYTHONPATH=src python3 -m pytest
-PYTHONPATH=src python3 -m buffer_pool
+PYTHONPATH=src .venv/bin/python -m pytest
+PYTHONPATH=src .venv/bin/python -m buffer_pool
 ```
+
+## 이번 시리즈가 근거로 삼은 파일
+
+- `database-systems/python/database-internals/projects/04-buffer-pool/src/buffer_pool/core.py`
+- `database-systems/python/database-internals/projects/04-buffer-pool/tests/test_buffer_pool.py`
+- `database-systems/python/database-internals/projects/04-buffer-pool/README.md`
+- `database-systems/python/database-internals/projects/04-buffer-pool/problem/README.md`
+- `database-systems/python/database-internals/projects/04-buffer-pool/docs/README.md`
+- `database-systems/python/database-internals/projects/04-buffer-pool/src/buffer_pool/__main__.py`
+
+## 보조 메모
+
+작업 메모가 꼭 필요할 때만 [_evidence-ledger.md](_evidence-ledger.md)와 [_structure-outline.md](_structure-outline.md)를 보면 된다. 공개 시리즈는 `00 -> 10 -> 20 -> 30`만 따라가면 충분하다.
 
 ## Git Anchor
 
+- `2026-03-13 abeead6 docs: TRACK 1 에대한 blog/ 작업 1차 완료`
 - `2026-03-11 bbb6673 Track 1에 대한 전반적인 개선 완료`
-- `2026-03-11 74d5b11 feat: add new project in database-systems`

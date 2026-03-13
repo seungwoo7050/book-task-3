@@ -1,82 +1,79 @@
-# I-event-integration-lab 개발 타임라인
+# I-event-integration-lab: 동기 API 뒤에 outbox와 idempotent consumer를 붙여 eventual consistency를 드러내기
 
-## 2026-03-10
-### Session 1
+이 글은 `labs/I-event-integration-lab/README.md`, `problem/README.md`, `docs/README.md`, `labs/I-event-integration-lab/fastapi/compose.yaml::__compose__`, `labs/I-event-integration-lab/fastapi/tests/test_system.py::test_outbox_and_idempotent_consumer_flow`, `backend-fastapi/docs/verification-report.md`를 바탕으로 실제 구현 순서를 다시 복원한다.
 
-- 목표: H에서 workspace-service와 identity-service를 분리했다. 이제 "알림을 보내야 하는데, 같은 DB에 있지 않다"는 문제가 생겼다. 처음엔 "workspace-service에서 직접 알림을 보내면 되지 않나?"라고 생각했다.
-- 진행: 하지만 그러면 workspace-service가 알림 발송까지 책임지게 된다. 알림 서비스가 다운되면 댓글 저장도 실패한다. 저장과 전달을 분리해야 한다.
-- 판단: E-async-jobs-lab에서 배운 outbox 패턴을 서비스 경계로 옮기기로 했다. workspace-service는 댓글을 저장하면서 outbox에 이벤트를 적재하고, notification-service가 그 이벤트를 소비한다.
+I 랩은 H 랩보다 더 많은 서비스를 자랑하려는 프로젝트가 아니다. 오히려 focus는 더 뚜렷하다. problem/README.md는 comment 저장이 outbox에 기록되고, relay 후 notification-service가 consume하며, 같은 consume를 두 번 돌려도 결과가 중복되지 않아야 한다고 말한다. 즉 이 랩의 주인공은 API 호출보다 이벤트 전달 경로다.
 
-CLI:
+## 1. 서비스 통합을 동기 API 대신 이벤트 전달 문제로 보기
+처음에는 무엇을 늦게 끝내도 되는지부터 정해야 했다. README는 workspace outbox 적재, Redis Streams relay, notification consume와 dedupe를 한 답으로 묶는다. docs/README.md도 'outbox가 왜 여전히 필요한가'와 'idempotent consumer는 어떤 실패를 흡수하는가'를 먼저 묻는다. 이 프로젝트가 알림 기능보다 전달 경계에 초점을 둔다는 뜻이다.
 
-```bash
-$ cd labs/I-event-integration-lab/fastapi
-$ make install
+## 2. compose runtime을 workspace + notification + redis로 좁히기
+실제 runtime도 그 경계를 따라간다. compose에는 workspace-service, notification-service, redis만 올라오고, identity나 gateway는 일부러 빠진다. 그래서 이 랩은 MSA 전체가 아니라 producer와 consumer가 stream을 사이에 두고 만나는 최소 모델로 읽어야 한다.
+
+```yaml
+services:
+  workspace-service:
+    build:
+      context: ./services/workspace-service
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${WORKSPACE_DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      REDIS_STREAM_NAME: ${REDIS_STREAM_NAME}
+      SECRET_KEY: ${SECRET_KEY}
+      TOKEN_ISSUER: ${TOKEN_ISSUER}
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "8012:8000"
+    command: >
+      sh -c "python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    volumes:
+      - ./services/workspace-service:/app
+      - workspace_data:/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health/live')\"",
+        ]
 ```
 
-### Session 2
+여기서 분명해지는 건 runtime이 workspace-service, notification-service, redis 셋으로만 구성된다는 점이다.
 
-- 목표: outbox relay와 consume 경로를 구현한다.
-- 진행: workspace-service 쪽에 `/events/relay`와 `/debug/outbox/pending` route를 만들었다. relay가 호출되면 pending 이벤트를 Redis Streams로 보내고, notification-service의 `/consume`이 그걸 읽는다.
-- 이슈: 처음엔 relay를 주기적으로 자동 실행하려 했다. 하지만 이 랩에서는 "relay가 언제 불리는지"를 관찰 가능하게 만드는 것이 더 중요하다. 명시적 API 호출로 남겼다.
+## 3. system test로 relay와 dedupe를 고정하기
+system test가 특히 좋다. comment를 생성한 직후 pending_outbox가 1인지 확인하고, relay를 한 번 수행한 뒤 notification-service consume를 두 번 호출한다. 첫 번째는 processed == 1, 두 번째는 processed == 0이어야 한다. 마지막에는 collaborator 알림이 정확히 1건 저장됐는지 본다. 이 흐름 하나로 eventual consistency와 dedupe가 동시에 설명된다.
 
 ```python
-@router.post("/events/relay", response_model=dict[str, int])
-def relay_outbox(service: Annotated[WorkspaceService, Depends(get_workspace_service)]) -> dict[str, int]:
-    return {"relayed": service.relay_outbox()}
+def test_outbox_and_idempotent_consumer_flow() -> None:
+    with compose_stack():
+        owner_token = _token("00000000-0000-4000-8000-000000000011", "owner", "owner@example.com")
+        collaborator_token = _token("00000000-0000-4000-8000-000000000012", "collab", "collab@example.com")
+        workspace = httpx.Client(base_url="http://127.0.0.1:8012/api/v1", timeout=10.0)
+        notifications = httpx.Client(base_url="http://127.0.0.1:8112/api/v1", timeout=10.0)
 
-@router.get("/debug/outbox/pending", response_model=dict[str, int])
-def pending_outbox(service: Annotated[WorkspaceService, Depends(get_workspace_service)]) -> dict[str, int]:
-    return {"pending": service.pending_outbox()}
+        created_workspace = workspace.post(
+            "/internal/workspaces",
+            json={"name": "Alpha"},
+            headers={"Authorization": f"Bearer {owner_token}"},
+        ).json()
 ```
 
-이 route 두 개 덕분에 "댓글을 저장했지만 아직 relay하지 않은 상태"를 관찰할 수 있다. 저장과 전달 사이에 실제로 중간 상태가 존재한다는 걸 눈으로 확인하는 것이 이 랩의 목적이다.
+테스트는 comment 저장, relay, 두 번 consume, notification dedupe가 한 흐름으로 이어짐을 고정한다.
 
-### Session 3
-
-- 목표: notification-service의 idempotent consumer를 구현한다.
-- 진행: consume은 처리한 이벤트 수를 반환한다.
-- 이슈: 같은 이벤트가 두 번 consume되면 알림이 두 번 가야 하나? 처음엔 "그냥 처리하면 되지"라고 생각했는데, 네트워크 재시도로 같은 이벤트가 중복 도착할 수 있다.
-- 조치: 이미 처리한 이벤트는 다시 처리하지 않는 idempotent consumer를 만들었다.
-
-```python
-@router.post("/consume", response_model=dict[str, int])
-def consume(service: Annotated[NotificationService, Depends(get_notification_service)]) -> dict[str, int]:
-    return {"processed": service.consume()}
-```
-
-테스트에서 첫 consume 후 `processed == 1`, 두 번째 consume 후 `processed == 0`을 확인한다. 두 번째 호출에서 0이 나온다는 건, 같은 이벤트를 다시 처리하지 않았다는 뜻이다.
-
-```python
-first_consume = notifications.post("/internal/notifications/consume")
-second_consume = notifications.post("/internal/notifications/consume")
-assert first_consume.json()["processed"] == 1
-assert second_consume.json()["processed"] == 0
-```
-
-나중에 보니 이 두 줄이 이 랩의 핵심 증거다. eventual consistency에서 "최소 한 번 전달"과 "정확히 한 번 처리"의 차이가 여기에 있다.
-
-### Session 4
-
-- 목표: 전체 시스템 흐름을 system test로 묶고 검증한다.
-- 진행: owner가 workspace → invite → project → task → comment를 만들고, outbox pending이 1이 되는지 확인하고, relay → consume → 알림 저장까지 전체 경로를 하나의 테스트에 넣었다.
-- 이슈: system test 작성 중 토큰 생성 문제가 있었다. H와 달리 이 랩에서는 identity-service를 올리지 않고 JWT를 직접 만들어야 했다. 테스트 안에서 `_token()` 헬퍼를 만들어 해결.
-- 검증: lint, test, smoke 모두 통과.
-- 다음: 이 랩은 outbox와 consumer까지만 잡고, public API를 유지하면서 이 내부 경계를 감추는 gateway는 J-edge-gateway-lab으로 넘긴다.
-
-CLI:
+## 4. 2026-03-10 재검증으로 eventual consistency surface를 닫기
+보고서 기준으로 2026-03-10에 lint, service unit test, system test, smoke가 다시 통과했다. 이 기록 덕분에 I 랩은 단순 개념 설명이 아니라, 실제로 다시 돌려 볼 수 있는 producer-consumer 실험실이 된다. 다음 J 랩에서 gateway를 얹어도 이벤트 경계 설명이 흐려지지 않는 이유가 바로 여기에 있다.
 
 ```bash
-$ python -m pytest tests/test_system.py -q
+make lint
+make test
+make smoke
+docker compose up --build
 ```
 
-```
-1 passed
-```
+2026-03-10에 lint, service unit test, system test, smoke가 통과했다. 이 랩의 독립성은 gateway 없이도 producer-consumer 경로가 설명되고 실행된다는 데 있다.
 
-```bash
-$ make lint
-$ make test
-$ make smoke
-$ docker compose up --build
-```
+## 정리
+I 랩이 남기는 핵심은 '댓글 생성 성공'과 '알림 생성 완료'를 같은 의미로 보지 않는 태도다. 그 차이를 outbox와 dedupe로 고정했기 때문에, 이후 gateway나 운영성을 붙여도 어떤 지연과 실패를 허용하는지 더 분명하게 설명할 수 있다.

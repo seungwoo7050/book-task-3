@@ -1,33 +1,28 @@
-# Ethernet and ARP Packet Analysis 시리즈 지도
+# Ethernet and ARP Packet Analysis series map
 
-## 이 프로젝트를 한 줄로
+이 프로젝트를 읽을 때 붙들 질문은 하나다. Ethernet frame과 ARP 교환을 링크 계층 주소 관점에서 어떻게 읽었는가?
 
-단 세 frame짜리 trace로 broadcast, unicast, EtherType, ARP 해석, 그리고 "없는 packet은 없다고 쓰기"를 배우는 기록이다.
+## 무엇을 근거로 복원했는가
 
-## 시작 전에 고정한 자료
+- 프로젝트 README: `study/03-Packet-Analysis-Top-Down/ethernet-arp/README.md`
+- 문제 문서와 실행 표면: `study/03-Packet-Analysis-Top-Down/ethernet-arp/problem/README.md`, `study/03-Packet-Analysis-Top-Down/ethernet-arp/problem/Makefile`
+- 분석 본문: `study/03-Packet-Analysis-Top-Down/ethernet-arp/analysis/src/ethernet-arp-analysis.md`
+- 정식 검증 출력: `make -C study/03-Packet-Analysis-Top-Down/ethernet-arp/problem test`
 
-- 제공 trace: `problem/data/ethernet-arp.pcapng`
-- 실행 진입점: `problem/Makefile`
-- 사용자 답안: `study/03-Packet-Analysis-Top-Down/ethernet-arp/analysis/src/ethernet-arp-analysis.md`
-- 보조 개념 문서: `docs/concepts/wireshark-link.md`
+## 어떤 순서로 읽으면 되는가
 
-## 이 시리즈에서 따라갈 질문
+1. `problem/README.md`로 문제 조건과 성공 기준을 확인한다.
+2. 이 문서에서 어떤 입력을 근거로 썼는지 먼저 본다.
+3. `01-evidence-ledger.md`로 세 단계 흐름을 짧게 파악한다.
+4. `10-development-timeline.md`에서 코드나 trace, CLI를 따라간다.
 
-1. Ethernet destination MAC만 보고도 broadcast와 unicast를 어디서 가를 수 있는가.
-2. ARP request와 reply는 opcode, target MAC, Ethernet destination이 어떻게 달라지는가.
-3. ARP reply 직후 다음 IPv4 frame이 resolved MAC을 실제로 쓰는지 어떻게 확인하는가.
-4. trace에 HTTP packet이 없을 때, 그 사실 자체를 어떻게 evidence로 남길 것인가.
+## 이번 리라이트에서 의도적으로 제외한 입력
 
-## 검증 명령
+- 현재 `study/blog/**`의 이전 본문
+- `notion/`, `notion-archive/` 아래의 서술형 메모
 
-- ARP 전체: `make -C study/03-Packet-Analysis-Top-Down/ethernet-arp/problem filter-arp`
-- Ethernet 헤더: `make -C study/03-Packet-Analysis-Top-Down/ethernet-arp/problem filter-ethernet`
-- broadcast frame: `make -C study/03-Packet-Analysis-Top-Down/ethernet-arp/problem filter-broadcast`
-- 답안 검증: `make -C study/03-Packet-Analysis-Top-Down/ethernet-arp/problem test`
+## 짧은 판정 메모
 
-## 글 구성
-
-| 파일 | 역할 |
-| :--- | :--- |
-| `00-series-map.md` | 매우 짧은 trace를 어떤 순서로 읽어야 하는지 정한다. |
-| `10-development-timeline.md` | broadcast request → unicast reply → resolved MAC 사용 확인 순으로 진행한다. |
+- 독립 프로젝트로 본 이유: `Ethernet and ARP Packet Analysis`는 자기 README와 정식 검증 명령으로 범위를 독립적으로 설명할 수 있다.
+- 보관본 위치: `study/blog/_legacy`
+- 이번 글의 중심 답: 링크 계층 프레임과 IP-MAC 주소 해석 과정을 ARP request/reply 쌍으로 읽는 랩입니다.

@@ -1,21 +1,28 @@
-# Web Proxy 시리즈 지도
+# Web Proxy series map
 
-## 이 프로젝트를 한 줄로
+이 프로젝트를 읽을 때 붙들 질문은 하나다. 클라이언트 요청, origin fetch, cache 저장을 프록시 안에서 어떻게 이어 붙였는가?
 
-한 프로그램 안에서 클라이언트와 서버 역할을 동시에 하는 중개자를 만드는 과제다. Web Server에서 "요청을 받아 응답한다"만 했다면, 이번에는 "요청을 받아 → 다른 서버에 대신 요청하고 → 받은 응답을 다시 원래 클라이언트에 넘기는" 전체 흐름을 구현한다. 캐시까지 붙이면 proxy의 가치가 분명해진다.
+## 무엇을 근거로 복원했는가
 
-## 문제 구조
-- 제공물: `problem/code/proxy_skeleton.py`, `problem/script/test_proxy.sh`
-- 답안: `python/src/web_proxy.py`, `python/tests/test_web_proxy.py`
-- 검증: `make -C study/01-Application-Protocols-and-Sockets/web-proxy/problem test`
+- 프로젝트 README: `study/01-Application-Protocols-and-Sockets/web-proxy/README.md`
+- 문제 문서와 실행 표면: `study/01-Application-Protocols-and-Sockets/web-proxy/problem/README.md`, `study/01-Application-Protocols-and-Sockets/web-proxy/problem/Makefile`
+- 핵심 구현과 테스트: `study/01-Application-Protocols-and-Sockets/web-proxy/python/src/web_proxy.py`, `study/01-Application-Protocols-and-Sockets/web-proxy/python/tests/test_web_proxy.py`
+- 정식 검증 출력: `make -C study/01-Application-Protocols-and-Sockets/web-proxy/problem test`
 
-## 이 시리즈에서 따라갈 질문
-1. proxy가 받는 요청 라인은 왜 absolute URL인가
-2. URL을 `hostname:port/path`로 분해하지 않으면 무엇이 깨지는가
-3. cache hit를 origin fetch보다 먼저 검사해야 하는 이유는 무엇인가
-4. proxy 고유 오류 코드 `502`와 `504`는 언제 쓰이는가
+## 어떤 순서로 읽으면 되는가
 
-## 글 목록
-| 번호 | 파일 | 범위 |
-| :--- | :--- | :--- |
-| `10` | [`10-development-timeline.md`](10-development-timeline.md) | URL 파싱부터 cache hit 검증까지 |
+1. `problem/README.md`로 문제 조건과 성공 기준을 확인한다.
+2. 이 문서에서 어떤 입력을 근거로 썼는지 먼저 본다.
+3. `01-evidence-ledger.md`로 세 단계 흐름을 짧게 파악한다.
+4. `10-development-timeline.md`에서 코드나 trace, CLI를 따라간다.
+
+## 이번 리라이트에서 의도적으로 제외한 입력
+
+- 현재 `study/blog/**`의 이전 본문
+- `notion/`, `notion-archive/` 아래의 서술형 메모
+
+## 짧은 판정 메모
+
+- 독립 프로젝트로 본 이유: `Web Proxy`는 자기 README와 정식 검증 명령으로 범위를 독립적으로 설명할 수 있다.
+- 보관본 위치: `study/blog/_legacy`
+- 이번 글의 중심 답: 클라이언트 요청을 중계하고 파일 기반 캐시로 재사용하는 간단한 HTTP 프록시 구현입니다.

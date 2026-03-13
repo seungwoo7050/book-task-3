@@ -1,35 +1,28 @@
-# Distance-Vector Routing 시리즈 지도
+# Distance-Vector Routing series map
 
-이 프로젝트를 한 줄로: JSON topology를 읽어 node마다 자신의 distance vector를 유지하게 하고, Bellman-Ford로 이웃 DV를 반영해 수렴까지 돌리는 분산 라우팅 시뮬레이션을 구현한 기록.
+이 프로젝트를 읽을 때 붙들 질문은 하나다. distance-vector가 topology 입력에서 최종 routing table로 수렴하는 과정을 어떻게 보여 줬는가?
 
-## 파일 구성
+## 무엇을 근거로 복원했는가
 
-| 파일 | 역할 |
-|------|------|
-| `problem/code/dv_skeleton.py` | 제공된 스켈레톤 |
-| `problem/data/topology.json` | 3노드 삼각형 |
-| `problem/data/topology_5node.json` | 5노드 링 구조 |
-| `python/src/dv_routing.py` | 직접 작성한 구현 |
-| `python/tests/test_dv_routing.py` | 수렴 결과 단언 테스트 |
-| `problem/Makefile` | `test` / `run-solution` 진입점 |
+- 프로젝트 README: `study/04-Network-Diagnostics-and-Routing/routing/README.md`
+- 문제 문서와 실행 표면: `study/04-Network-Diagnostics-and-Routing/routing/problem/README.md`, `study/04-Network-Diagnostics-and-Routing/routing/problem/Makefile`
+- 핵심 구현과 테스트: `study/04-Network-Diagnostics-and-Routing/routing/python/src/dv_routing.py`, `study/04-Network-Diagnostics-and-Routing/routing/python/tests/test_dv_routing.py`
+- 정식 검증 출력: `make -C study/04-Network-Diagnostics-and-Routing/routing/problem test`
 
-## canonical verification
+## 어떤 순서로 읽으면 되는가
 
-```bash
-# 비권한 단위 테스트
-make -C study/04-Network-Diagnostics-and-Routing/routing/problem test
+1. `problem/README.md`로 문제 조건과 성공 기준을 확인한다.
+2. 이 문서에서 어떤 입력을 근거로 썼는지 먼저 본다.
+3. `01-evidence-ledger.md`로 세 단계 흐름을 짧게 파악한다.
+4. `10-development-timeline.md`에서 코드나 trace, CLI를 따라간다.
 
-# 시뮬레이션 실행
-make -C study/04-Network-Diagnostics-and-Routing/routing/problem run-solution
-```
+## 이번 리라이트에서 의도적으로 제외한 입력
 
-## 이 시리즈에서 따라갈 질문
+- 현재 `study/blog/**`의 이전 본문
+- `notion/`, `notion-archive/` 아래의 서술형 메모
 
-1. `DVNode.__init__()`은 자신 / 이웃 / 나머지 노드에 각각 어떤 초기값을 넣는가?
-2. `receive_dv()`의 Bellman-Ford는 `cost_via_v = link_cost + neighbor_dv.get(dest, INF)`를 어떻게 `best_hop`까지 연결하는가?
-3. 2-phase simulate()는 메시지를 먼저 수집하고 나서 적용하는데, 이 순서가 중요한 이유는 무엇인가?
-4. convergence 판정은 단순 라운드 수 제한인가, DV가 실제 변하지 않는 지점 판단인가?
+## 짧은 판정 메모
 
-## 글 파일
-
-- [10-development-timeline.md](10-development-timeline.md)
+- 독립 프로젝트로 본 이유: `Distance-Vector Routing`는 자기 README와 정식 검증 명령으로 범위를 독립적으로 설명할 수 있다.
+- 보관본 위치: `study/blog/_legacy`
+- 이번 글의 중심 답: Bellman-Ford 식을 분산 라우팅 테이블 갱신으로 옮기는 시뮬레이션 과제입니다.

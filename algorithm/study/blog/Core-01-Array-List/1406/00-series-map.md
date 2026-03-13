@@ -1,27 +1,30 @@
-# BOJ 1406 — 에디터
+# 에디터 시리즈 맵
 
-> `Core-01-Array-List` 트랙의 Silver 프로젝트.
+`에디터` 시리즈는 `Core-01-Array-List`의 `Silver` 프로젝트를 다시 읽기 좋게 묶은 입구다. 코드만 보는 대신, 이 풀이가 어떤 근거와 검증 위에서 정리됐는지 한 번에 따라가도록 구성했다. 세부 timestamp 대신 `Phase 1..4` 순서로 흐름만 복원했고, 기존 초안은 `_legacy`에 따로 보관했다.
 
-## 이 시리즈가 다루는 질문
+## 프로젝트 전체에서 어디쯤인가
 
-- 문제: `에디터`
-- 트랙: `Core-01-Array-List`
-- 한 줄 답: `커서 기준 좌/우 스택 두 개를 유지하는 editor simulation`
+- 트랙 질문: `순차 자료구조 선택이 편집과 이동 비용을 어떻게 바꾸는가?`
+- 이 프로젝트의 한 줄 답: `커서를 기준으로 좌/우 스택(또는 리스트) 두 개를 유지하는 editor simulation`
+- 기본 검증 명령: `make -C study/Core-01-Array-List/1406/problem test`
+- 시간/공간 복잡도: `O(N+M)`, `O(N+M)`
 
-## Source-of-truth
+## 먼저 볼 파일
 
-- 프로젝트 README: [../../../Core-01-Array-List/1406/README.md](../../../Core-01-Array-List/1406/README.md)
-- 접근 근거: [../../../Core-01-Array-List/1406/docs/references/approach.md](../../../Core-01-Array-List/1406/docs/references/approach.md)
-- Python 구현: [../../../Core-01-Array-List/1406/python/src/solution.py](../../../Core-01-Array-List/1406/python/src/solution.py)
+1. [01-evidence-ledger.md](01-evidence-ledger.md)
+2. [05-structure-plan.md](05-structure-plan.md)
+3. [10-development-timeline.md](10-development-timeline.md)
+4. [20-development-timeline.md](20-development-timeline.md)
 
-## 읽는 순서
+## 이번 시리즈를 따라가는 순서
 
-1. [10-development-timeline.md](10-development-timeline.md) — 문제 이해부터 첫 구현까지
-2. [20-development-timeline.md](20-development-timeline.md) — 검증, edge case, 정리까지
+1. `problem/README.md`와 `problem/code/starter.py`에서 입출력 계약과 실행 진입점을 먼저 본다.
+2. `python/src/solution.py`에서 `커서를 기준으로 좌/우 스택(또는 리스트) 두 개를 유지하는 editor simulation`가 실제 상태 전이로 어떻게 굳는지 따라간다.
+3. `make -C study/Core-01-Array-List/1406/problem test`와 `problem/script/test.sh`로 fixture 전체가 어떻게 닫히는지 확인한다.
+4. `docs/concepts/*.md`를 붙여 마지막 판단 기준을 다시 읽는다.
 
-## 고정 검증 명령
+## 읽는 동안 붙잡을 질문
 
-```bash
-$ make -C study/Core-01-Array-List/1406/problem run-py
-$ make -C study/Core-01-Array-List/1406/problem test
-```
+- `순차 자료구조 선택이 편집과 이동 비용을 어떻게 바꾸는가?`가 이 문제에서는 어떤 상태 설계로 바뀌는가?
+- `빈 좌측 버퍼에서 B/L 명령 처리 누락`를 막기 위해 가장 먼저 고정한 줄은 어디인가?
+- `Two-Stack Editor & Linked List — Concept & Background`를 다시 읽고 나면 어떤 코드 조각이 핵심으로 남는가?

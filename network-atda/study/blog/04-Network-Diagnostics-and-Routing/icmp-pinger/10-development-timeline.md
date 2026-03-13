@@ -1,94 +1,129 @@
-# ICMP Pinger 개발 타임라인
+# ICMP Pinger development timeline
 
-## Day 1 — checksum부터 잡고, packet을 조립한다
+`ICMP Pinger`를 읽을 때 먼저 잡아야 하는 것은 기능 목록이 아니라, 어디서부터 구현이나 분석이 무거워졌는가이다.
 
-### Session 1
+그래서 이 문서는 문제 문서, 핵심 파일, 테스트, CLI 출력만 남기고 나머지 군더더기는 걷어 냈다.
 
-- 목표: live ping을 바로 실행하려는 충동을 억제하고, 먼저 packet build와 checksum을 비권한 환경에서 고정한다.
-- 진행: skeleton을 열어 빈 구간을 보고, `test_icmp_pinger.py`를 먼저 읽었다. `TestInternetChecksum`과 `TestPacketBuilding` 두 클래스가 각각 RFC 1071과 ICMP header 포맷을 독립적으로 따진다.
-- 이슈: 처음에는 `socket.SOCK_RAW`를 열면 프로젝트 절반이 해결된다고 생각했다. 하지만 checksum이 틀리면 OS가 패킷을 버리거나 응답이 아예 오지 않아 무엇이 문제인지 알 수 없다. 그래서 live 실행보다 checksum 정확성이 먼저였다.
+## 구현 순서 한눈에 보기
 
-핵심 코드:
+1. `study/04-Network-Diagnostics-and-Routing/icmp-pinger/problem`의 문제 문서와 실행 target으로 출발점을 고정했다.
+2. `study/04-Network-Diagnostics-and-Routing/icmp-pinger/python/src/icmp_pinger.py`의 핵심 구간에서 동작 규칙을 설명할 수 있는 최소 앵커를 골랐다.
+3. `make -C study/04-Network-Diagnostics-and-Routing/icmp-pinger/problem test`와 테스트/verify 파일을 연결해 통과 신호와 남은 경계를 정리했다.
 
-```py
-# checksum 없이 임시 header 조립
-header = struct.pack(
-    ICMP_HEADER_FORMAT,
-    ICMP_ECHO_REQUEST,
-    0,
-    0,            # checksum placeholder
-    identifier,
-    sequence,
-)
-payload = struct.pack("!d", time.time())
-checksum = internet_checksum(header + payload)
+## 1. 실행 표면과 entrypoint를 먼저 고정하기
 
-# checksum을 넣고 최종 header 재조립
-header = struct.pack(
-    ICMP_HEADER_FORMAT,
-    ICMP_ECHO_REQUEST,
-    0,
-    checksum,
-    identifier,
-    sequence,
-)
+이 단계에서는 구현 세부로 바로 내려가지 않았다. 먼저 어떤 파일이 진입점이고 어떤 명령이 검증 기준인지 고정하는 일이 더 급했다.
+
+- 당시 목표: `ICMP Pinger`를 읽는 출발점과 성공 기준을 고정한다.
+- 실제 진행: `problem/README.md`와 `problem/Makefile`을 먼저 확인한 뒤, `def internet_checksum`가 있는 파일로 내려갔다.
+- 검증 신호: `make help`에 보이는 target만으로도 이 프로젝트가 어떤 명령으로 열리고 닫히는지 설명할 수 있었다.
+- 새로 배운 것: RFC 1071 인터넷 체크섬
+
+핵심 코드/trace:
+
+```python
+def internet_checksum(data: bytes) -> int:
+    """Internet checksum(RFC 1071)을 계산한다.
+
+    Args:
+        data: checksum을 계산할 bytes.
+
+    Returns:
+        16-bit checksum 값.
+    """
+    if len(data) % 2 != 0:
 ```
 
-- 메모: 이 two-pass assembly 패턴이 없으면, checksum을 계산하기 위해 checksum 자리가 0이어야 한다는 RFC 1071 요건을 위반한다. 테스트 `test_checksum_valid`는 완성 packet 전체로 재계산했을 때 0이 나와야 한다고 단언한다.
+왜 이 코드가 중요했는가:
 
-### Session 2
+문제 사양을 읽은 뒤 바로 이 지점으로 내려오면, 말로 적힌 요구가 실제 파일 구조와 어떻게 만나는지 곧바로 보인다.
 
-- 목표: raw reply에서 ICMP payload를 정확히 잘라 내는 로직을 완성한다.
-- 진행: raw socket reply는 IPv4 header + ICMP header + payload 형태로 온다. IHL(header length)은 첫 바이트 하위 4비트에 4를 곱해 구한다.
-- 이슈: 처음에는 reply 바이트를 바로 ICMP 헤더로 파싱했다가, 앞에 IP header가 붙어 있어서 type/code가 엉뚱한 값이 나왔다. `ip_header_len = (data[0] & 0x0F) * 4`가 유일한 이유로 맨 처음 해야 할 계산이다.
-- 이슈 2: RTT를 재려면 보낸 시각이 payload에 담겨 있어야 한다. payload 첫 8바이트를 `struct.pack("!d", time.time())`으로 묻고, reply에서 꺼내어 `recv_time - send_time`으로 계산한다.
-
-핵심 코드:
-
-```py
-ip_header_len = (data[0] & 0x0F) * 4
-icmp_data = data[ip_header_len:]
-icmp_type, code, checksum, pkt_id, sequence = struct.unpack(
-    ICMP_HEADER_FORMAT, icmp_data[:ICMP_HEADER_SIZE]
-)
-if icmp_type != ICMP_ECHO_REPLY or pkt_id != identifier:
-    return None
-send_time = struct.unpack("!d", icmp_data[ICMP_HEADER_SIZE:ICMP_HEADER_SIZE + 8])[0]
-```
+CLI:
 
 ```bash
-$ PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q \
-    study/04-Network-Diagnostics-and-Routing/icmp-pinger/python/tests/test_icmp_pinger.py
-# 7 passed
+$ make -C study/04-Network-Diagnostics-and-Routing/icmp-pinger/problem help
+  run-client           Run the skeleton ICMP pinger (requires sudo)
+  run-solution         Run the solution ICMP pinger (requires sudo)
+  test                 Run deterministic ICMP tests without raw sockets
+  test-live            Run the live raw-socket ICMP check (requires sudo)
 ```
 
-### Session 3
+## 2. checksum, packet build, reply parse를 ping 흐름으로 연결하기
 
-- 목표: live 실행 경계를 정리하고, 최종 통계 출력을 완성한다.
-- 진행: live raw socket은 root/admin 권한이 필요하다. `PermissionError`를 잡아서 안내 메시지를 띄운다. 1초 간격 ping 흐름에서 마지막 ping 이후 sleep이 필요 없다는 점은 `FakeClock` 기반 테스트에서 검증됐다. RTT 통계(`min/avg/max`)는 loss가 있을 때 skip된다.
+중간 단계의 핵심은 '무엇을 만들었나'보다 '어느 줄에서 규칙이 드러나는가'를 잡는 일이었다.
+
+- 당시 목표: `Raw socket으로 ICMP Echo Request/Reply를 직접 구현하는 진단 도구 과제입니다.`를 실제 근거에 붙인다.
+- 실제 진행: `def ping` 주변을 중심으로 symbol이나 trace 결과를 다시 좁혀 읽었다.
+- 검증 신호: 짧은 `rg`/filter 출력만으로도 어느 줄이 설명의 중심인지 바로 드러났다.
+- 새로 배운 것: raw socket 권한 모델
+
+핵심 코드/trace:
+
+```python
+def ping(host: str, count: int = 4, timeout: float = 1.0) -> None:
+    """ICMP Echo Request를 보내고 결과를 출력한다.
+
+    Args:
+        host: 대상 hostname 또는 IP address.
+        count: 보낼 ping 횟수.
+        timeout: 각 ping의 timeout 초.
+    """
+    # hostname을 IP로 해석한다.
+    try:
+```
+
+왜 이 코드가 중요했는가:
+
+핵심은 함수 이름 자체가 아니라, 이 줄 주변에서 어떤 입력이 어떤 결과로 바뀌는지가 한 번에 드러난다는 점이다.
+
+CLI:
+
+```bash
+$ rg -n -e 'def internet_checksum' -e 'def build_echo_request' -e 'def parse_echo_reply' -e 'def ping' 'study/04-Network-Diagnostics-and-Routing/icmp-pinger/python/src/icmp_pinger.py' 'study/04-Network-Diagnostics-and-Routing/icmp-pinger/python/tests/test_icmp_pinger.py'
+study/04-Network-Diagnostics-and-Routing/icmp-pinger/python/src/icmp_pinger.py:25:def internet_checksum(data: bytes) -> int:
+study/04-Network-Diagnostics-and-Routing/icmp-pinger/python/src/icmp_pinger.py:49:def build_echo_request(identifier: int, sequence: int) -> bytes:
+study/04-Network-Diagnostics-and-Routing/icmp-pinger/python/src/icmp_pinger.py:88:def parse_echo_reply(
+study/04-Network-Diagnostics-and-Routing/icmp-pinger/python/src/icmp_pinger.py:125:def ping(host: str, count: int = 4, timeout: float = 1.0) -> None:
+```
+
+## 3. 테스트와 남은 범위를 정리하기
+
+마지막 단계에서는 단순히 테스트가 통과했다는 사실만 적지 않으려고 했다. 어디까지 확인됐고 무엇이 아직 범위 밖인지 같이 남겨야 글이 정직해진다.
+
+- 당시 목표: 검증 결과와 남은 경계를 함께 정리한다.
+- 실제 진행: `make -C study/04-Network-Diagnostics-and-Routing/icmp-pinger/problem test`를 다시 실행하고, `def test_ping_prints_successful_reply_and_loss_stats`가 남아 있는 파일을 본문 마지막 근거로 삼았다.
+- 검증 신호: 현재 공개 답안이 재현된다는 출력과, README limitation이 동시에 확인됐다.
+- 새로 배운 것: IP header length(`IHL`) 파싱
+
+핵심 코드/trace:
+
+```python
+def test_ping_prints_successful_reply_and_loss_stats(monkeypatch, capsys):
+    fake_socket = FakeRawSocket({1})
+    fake_clock = FakeClock(1000.0, 1000.0, 1000.05, 1000.10, 1001.0, 1001.0)
+
+    monkeypatch.setattr(icmp_pinger.socket, "gethostbyname", lambda host: "203.0.113.10")
+    monkeypatch.setattr(icmp_pinger.socket, "socket", lambda *args, **kwargs: fake_socket)
+    monkeypatch.setattr(icmp_pinger.select, "select", _fake_select)
+    monkeypatch.setattr(icmp_pinger.os, "getpid", lambda: 0x1234)
+    monkeypatch.setattr(icmp_pinger.time, "time", fake_clock.time)
+    monkeypatch.setattr(icmp_pinger.time, "sleep", fake_clock.sleep)
+```
+
+왜 이 코드가 중요했는가:
+
+마지막에 이 파일을 남겨 두는 이유는, 이 프로젝트가 실제로 무엇을 통과해야 끝나는지 가장 직접적으로 보여 주기 때문이다.
 
 CLI:
 
 ```bash
 $ make -C study/04-Network-Diagnostics-and-Routing/icmp-pinger/problem test
-7 passed
+...........                                                              [100%]
+11 passed in 0.01s
 ```
 
-```bash
-$ sudo make -C study/04-Network-Diagnostics-and-Routing/icmp-pinger/problem run-solution HOST=8.8.8.8
-PING 8.8.8.8 (8.8.8.8): 16 bytes of data
+## 남은 경계
 
-16 bytes from 8.8.8.8: icmp_seq=1  RTT=12.345 ms
-16 bytes from 8.8.8.8: icmp_seq=2  RTT=11.876 ms
-16 bytes from 8.8.8.8: icmp_seq=3  RTT=12.123 ms
-16 bytes from 8.8.8.8: icmp_seq=4  RTT=12.001 ms
-
---- 8.8.8.8 ping statistics ---
-4 packets sent, 4 received, 0.0% loss
-RTT min/avg/max = 11.876/12.086/12.345 ms
-```
-
-- 정리:
-  - checksum은 packet build와 분리해서 구현하면 안 된다. two-pass assembly가 RFC 1071의 요구 사항을 자연스럽게 충족한다.
-  - raw reply에서 IP header를 먼저 건너뛰는 것이 ICMP parsing의 첫 번째 규칙이다.
-  - live 실행과 fake-socket 테스트는 각각 다른 것을 검증한다. live는 "OS와 네트워크가 반응하는가", fake는 "packet 조립/파싱이 계약대로 동작하는가"다.
+- IPv6/ICMPv6는 지원하지 않습니다.
+- 시스템 `ping` 수준의 상세 통계는 제공하지 않습니다.
+- live raw-socket 실행은 OS와 방화벽 정책에 영향을 받습니다.

@@ -1,0 +1,40 @@
+# 01 RPC Framing — Series Map
+
+length-prefixed framing과 correlation id 기반 pending map으로 최소 RPC 계층을 구현합니다. 이 시리즈는 기존 초안의 말투를 따라가지 않고, 실제 코드와 검증 신호를 다시 읽으면서 판단이 어디서 바뀌는지에만 집중한다.
+
+## 이 프로젝트가 답하는 질문
+
+- 4-byte big-endian length prefix framing을 구현해야 합니다.
+- split chunk와 multi-frame chunk를 모두 decode해야 합니다.
+
+## 작업 산출물
+
+- [_evidence-ledger.md](_evidence-ledger.md)
+- [_structure-outline.md](_structure-outline.md)
+
+## 읽는 순서
+
+1. [10-chronology-scope-and-surface.md](10-chronology-scope-and-surface.md) — 파일 구조와 테스트 이름으로 범위를 다시 잡는 구간
+2. [20-chronology-core-invariants.md](20-chronology-core-invariants.md) — 핵심 invariant를 코드 조각으로 고정하는 구간
+3. [30-chronology-verification-and-boundaries.md](30-chronology-verification-and-boundaries.md) — 실제 pass 신호와 남은 경계를 정리하는 구간
+
+## 참조한 실제 파일
+
+- `database-systems/go/ddia-distributed-systems/projects/01-rpc-framing/internal/rpc/rpc.go`
+- `database-systems/go/ddia-distributed-systems/projects/01-rpc-framing/tests/rpc_test.go`
+- `database-systems/go/ddia-distributed-systems/projects/01-rpc-framing/README.md`
+- `database-systems/go/ddia-distributed-systems/projects/01-rpc-framing/problem/README.md`
+- `database-systems/go/ddia-distributed-systems/projects/01-rpc-framing/docs/README.md`
+- `database-systems/go/ddia-distributed-systems/projects/01-rpc-framing/internal/framing/framing.go`
+- `database-systems/go/ddia-distributed-systems/projects/01-rpc-framing/cmd/rpc-framing/main.go`
+
+## 재검증 명령
+
+```bash
+GOWORK=off go test ./...
+GOWORK=off go run ./cmd/rpc-framing
+```
+
+## Git Anchor
+
+- `2026-03-11 bbb6673 Track 1에 대한 전반적인 개선 완료`

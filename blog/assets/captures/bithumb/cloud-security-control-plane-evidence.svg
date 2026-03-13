@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#0f172a" />
+  <rect x="48" y="48" width="1104" height="624" rx="24" fill="#111827" stroke="#fb7185" />
+  <text x="80" y="118" fill="#f8fafc" font-size="34" font-family="Menlo, Monaco, Consolas, monospace">Cloud Security Control Plane</text>
+  <text x="80" y="158" fill="#fda4af" font-size="18" font-family="Menlo, Monaco, Consolas, monospace">Bithumb track demo evidence snapshot</text>
+
+  <text x="80" y="220" fill="#cbd5e1" font-size="17" font-family="Menlo, Monaco, Consolas, monospace">Source: docs/demo-assets/report-excerpt.md</text>
+
+  <text x="80" y="286" fill="#f8fafc" font-size="18" font-family="Menlo, Monaco, Consolas, monospace">Findings</text>
+  <text x="80" y="322" fill="#fca5a5" font-size="17" font-family="Menlo, Monaco, Consolas, monospace">CSPM-002 HIGH open ssh_open</text>
+  <text x="80" y="356" fill="#fca5a5" font-size="17" font-family="Menlo, Monaco, Consolas, monospace">IAM-001 HIGH open BroadAdmin</text>
+  <text x="80" y="390" fill="#fca5a5" font-size="17" font-family="Menlo, Monaco, Consolas, monospace">K8S-003 HIGH open insecure-api</text>
+  <text x="80" y="424" fill="#fdba74" font-size="17" font-family="Menlo, Monaco, Consolas, monospace">LAKE-004 MEDIUM open DeleteTrail</text>
+
+  <text x="80" y="486" fill="#f8fafc" font-size="18" font-family="Menlo, Monaco, Consolas, monospace">Governance flow</text>
+  <text x="80" y="522" fill="#cbd5e1" font-size="17" font-family="Menlo, Monaco, Consolas, monospace">exception suppression preserved for CSPM-001</text>
+  <text x="80" y="556" fill="#cbd5e1" font-size="17" font-family="Menlo, Monaco, Consolas, monospace">dry-run remediation narrows public ingress before destructive apply</text>
+
+  <text x="80" y="620" fill="#93c5fd" font-size="15" font-family="Menlo, Monaco, Consolas, monospace">Control plane integrates scan, ingestion, exception, remediation, report, and audit trail in one local flow.</text>
+</svg>

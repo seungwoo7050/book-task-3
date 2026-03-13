@@ -1,31 +1,22 @@
-# 01 Cloud Security Core blog
+# 01 Cloud Security Core 읽기 안내
 
-이 트랙의 블로그는 기초 입력 위에 실제 운영자가 읽을 수 있는 finding, remediation, detection, governance 흐름을 어떻게 쌓았는지 추적합니다.
+이 트랙은 foundation에서 만든 입력 계약을 실제 finding, remediation, detection, governance 흐름으로 확장하는 구간이다. 각 프로젝트는 독립적으로 작동하지만, 순서대로 읽으면 “설명 가능한 입력 -> triage finding -> 조치안 -> detection query -> governance state”가 하나의 언어로 묶이는 과정이 보인다.
 
-## 이 트랙이 다루는 질문
+특히 이 구간은 false positive를 줄이는 기준이 계속 반복해서 등장한다. broad permission 분해, secure fixture 0건, approval/expiry 판정 같은 장면을 이어서 읽으면 왜 작은 rule 하나도 테스트와 상태 모델 위에 서야 하는지 감이 빨리 잡힌다.
 
-- broad permission과 misconfiguration을 어떤 finding 구조로 바꿔야 triage 가능한가
-- finding 이후의 조치 제안과 승인 경계를 어떻게 분리해야 하는가
-- 로그 기반 detection, 컨테이너 guardrail, 예외와 증적 흐름을 왜 별도 프로젝트로 분리해야 하는가
+| 프로젝트 | 시리즈 지도 | evidence | outline | 최종 글 | 대표 검증 |
+| --- | --- | --- | --- | --- | --- |
+| 04 IAM Policy Analyzer | [00-series-map](04-iam-policy-analyzer/00-series-map.md) | [05-evidence-ledger](04-iam-policy-analyzer/05-evidence-ledger.md) | [_structure-outline](04-iam-policy-analyzer/_structure-outline.md) | [10-development-timeline](04-iam-policy-analyzer/10-development-timeline.md) | `pytest 01-cloud-security-core/04-iam-policy-analyzer/python/tests` |
+| 05 CSPM Rule Engine | [00-series-map](05-cspm-rule-engine/00-series-map.md) | [05-evidence-ledger](05-cspm-rule-engine/05-evidence-ledger.md) | [_structure-outline](05-cspm-rule-engine/_structure-outline.md) | [10-development-timeline](05-cspm-rule-engine/10-development-timeline.md) | `pytest 01-cloud-security-core/05-cspm-rule-engine/python/tests` |
+| 06 Remediation Pack Runner | [00-series-map](06-remediation-pack-runner/00-series-map.md) | [05-evidence-ledger](06-remediation-pack-runner/05-evidence-ledger.md) | [_structure-outline](06-remediation-pack-runner/_structure-outline.md) | [10-development-timeline](06-remediation-pack-runner/10-development-timeline.md) | `pytest 01-cloud-security-core/06-remediation-pack-runner/python/tests` |
+| 07 Security Lake Mini | [00-series-map](07-security-lake-mini/00-series-map.md) | [05-evidence-ledger](07-security-lake-mini/05-evidence-ledger.md) | [_structure-outline](07-security-lake-mini/_structure-outline.md) | [10-development-timeline](07-security-lake-mini/10-development-timeline.md) | `pytest 01-cloud-security-core/07-security-lake-mini/python/tests` |
+| 08 Container Guardrails | [00-series-map](08-container-guardrails/00-series-map.md) | [05-evidence-ledger](08-container-guardrails/05-evidence-ledger.md) | [_structure-outline](08-container-guardrails/_structure-outline.md) | [10-development-timeline](08-container-guardrails/10-development-timeline.md) | `pytest 01-cloud-security-core/08-container-guardrails/python/tests` |
+| 09 Exception and Evidence Manager | [00-series-map](09-exception-and-evidence-manager/00-series-map.md) | [05-evidence-ledger](09-exception-and-evidence-manager/05-evidence-ledger.md) | [_structure-outline](09-exception-and-evidence-manager/_structure-outline.md) | [10-development-timeline](09-exception-and-evidence-manager/10-development-timeline.md) | `pytest 01-cloud-security-core/09-exception-and-evidence-manager/python/tests` |
 
-## 프로젝트 인덱스
+## 읽을 때 먼저 볼 포인트
 
-1. [04 IAM Policy Analyzer](04-iam-policy-analyzer/00-series-map.md)
-2. [05 CSPM Rule Engine](05-cspm-rule-engine/00-series-map.md)
-3. [06 Remediation Pack Runner](06-remediation-pack-runner/00-series-map.md)
-4. [07 Security Lake Mini](07-security-lake-mini/00-series-map.md)
-5. [08 Container Guardrails](08-container-guardrails/00-series-map.md)
-6. [09 Exception and Evidence Manager](09-exception-and-evidence-manager/00-series-map.md)
+- 04와 05에서는 finding을 잘 뽑는 기준이 무엇인지 본다.
+- 06과 09에서는 finding 이후 상태를 어떻게 안전하게 다루는지 본다.
+- 07과 08은 detection과 guardrail이 서로 다른 입력을 어떻게 같은 언어로 설명하는지 이어서 본다.
 
-## 권장 읽기 순서
-
-1. 04와 05를 먼저 읽어 finding 생성 경로를 두 갈래로 잡습니다.
-2. 06에서 finding 이후의 dry-run remediation 경계를 확인합니다.
-3. 07과 08에서 로그와 컨테이너 입력이 각각 어떤 alert/finding으로 바뀌는지 읽습니다.
-4. 09에서 suppression, evidence, audit trail이 왜 별도 모델이어야 하는지 봅니다.
-
-## 공통 검증 경로
-
-```bash
-make test-unit
-```
+legacy 격리 원칙은 [`../_legacy/2026-03-13-isolate-and-rewrite/01-cloud-security-core`](../_legacy/2026-03-13-isolate-and-rewrite/01-cloud-security-core)에서 확인할 수 있다.

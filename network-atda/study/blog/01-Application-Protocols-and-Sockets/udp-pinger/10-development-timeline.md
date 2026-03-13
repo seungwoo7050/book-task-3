@@ -1,91 +1,134 @@
-# UDP Pinger 개발 타임라인
+# UDP Pinger development timeline
 
-## Day 1
+`UDP Pinger`의 핵심은 완성 결과보다, 어떤 순서로 범위를 좁히고 검증까지 닫았는가에 있다.
 
-### Session 1
+본문은 코드나 trace를 한 번에 길게 복붙하지 않고, 판단이 바뀐 지점만 골라 이어 붙인다.
 
-- 목표: Web Server 바로 뒤라 TCP 감각이 남아 있는 상태. UDP가 코드 수준에서 어디서부터 다른지를 skeleton과 제공 서버로 먼저 잡는다.
-- 진행: `udp_pinger_server.py`를 열어 보니 `random.randint(0, 10) < 4`일 때 응답을 안 보내는 구조였다. 즉 서버가 30% 확률로 packet을 씹는다. Web Server에서는 서버 코드를 내가 짰는데, 이번에는 서버가 일부러 망가져 있고 클라이언트 쪽에서 버텨야 한다.
-- 이슈: 당시 첫 의문은 "TCP에서는 `connect()`를 했는데 UDP는 왜 안 하지?"였다. `SOCK_DGRAM`은 연결이 없으니 `sendto()`에 주소를 매번 넘긴다는 걸 skeleton에서 보고 나서야 이해됐다.
+## 구현 순서 한눈에 보기
 
-```py
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+1. `study/01-Application-Protocols-and-Sockets/udp-pinger/problem`의 문제 문서와 실행 target으로 출발점을 고정했다.
+2. `study/01-Application-Protocols-and-Sockets/udp-pinger/python/src/udp_pinger_client.py`의 핵심 구간에서 동작 규칙을 설명할 수 있는 최소 앵커를 골랐다.
+3. `make -C study/01-Application-Protocols-and-Sockets/udp-pinger/problem test`와 테스트/verify 파일을 연결해 통과 신호와 남은 경계를 정리했다.
+
+## 1. 실행 표면과 entrypoint를 먼저 고정하기
+
+처음에는 `UDP Pinger`를 어디서부터 설명해야 할지부터 정리해야 했다. 그래서 문제 문서와 `make help` 출력으로 공개된 실행 표면을 먼저 잡았다.
+
+- 당시 목표: `UDP Pinger`를 읽는 출발점과 성공 기준을 고정한다.
+- 실제 진행: `problem/README.md`와 `problem/Makefile`을 먼저 확인한 뒤, `PING_COUNT = 10`가 있는 파일로 내려갔다.
+- 검증 신호: `make help`에 보이는 target만으로도 이 프로젝트가 어떤 명령으로 열리고 닫히는지 설명할 수 있었다.
+- 새로 배운 것: UDP의 connectionless socket 사용법
+
+핵심 코드/trace:
+
+```python
+PING_COUNT = 10
+TIMEOUT = 1  # 초
+
+
+def main(host: str = "127.0.0.1", port: int = 12000) -> None:
+    """ping을 보내고 RTT 통계를 수집한다.
+
+    Args:
+        host: server hostname 또는 IP address.
+        port: server UDP port 번호.
 ```
 
-이 한 줄이 TCP와 전부 다르다. `listen()`, `accept()`, `connect()` 없이 바로 `sendto()`로 간다.
+왜 이 코드가 중요했는가:
 
-### Session 2
+이 부분을 먼저 보여 주는 이유는, 이 프로젝트의 진입점과 실행 표면이 여기서 한 번에 정리되기 때문이다.
 
-- 목표: timeout 없이 먼저 보내고 받아 본다.
-- 진행: skeleton에 `sendto()` → `recvfrom()`을 넣고 서버를 띄운 뒤 돌려 봤다.
-- 이슈: 서버가 packet을 버리는 순간 `recvfrom()`이 영원히 멈췄다. Ctrl+C를 누르기 전까지 프로그램이 돌아오질 않았다. TCP에서는 서버가 끊으면 `recv()`가 빈 문자열을 리턴했는데, UDP는 "모르겠고 기다린다"가 기본이었다.
-- 판단: `settimeout()`을 반드시 걸어야 한다. 이게 없으면 손실을 감지할 방법 자체가 없다.
+CLI:
 
-```py
-client_socket.settimeout(TIMEOUT)  # 1초
+```bash
+$ make -C study/01-Application-Protocols-and-Sockets/udp-pinger/problem help
+  run-server         Start the UDP ping server on port $(PORT)
+  run-client         Run the skeleton ping client
+  run-solution       Run the solution ping client
+  test               Run the test script with a temporary UDP server
 ```
 
-이때부터 "UDP에서 timeout은 선택이 아니라 생존 조건"이라는 확신이 생겼다.
+## 2. 반복 ping, timeout, RTT 통계를 한 루프로 붙들기
 
-### Session 3
+이제부터는 설명을 추상적으로 유지할 수 없었다. 실제 분기나 frame evidence가 모이는 지점을 찾아야 글이 살아났다.
 
-- 목표: 10번 루프와 RTT 측정, timeout 판정을 한 흐름으로 묶는다.
-- 진행: `send_time = time.time()` → `sendto()` → `recvfrom()` → `recv_time = time.time()` → RTT 계산. `socket.timeout` 예외가 나면 그 ping은 "Request timed out"으로 기록.
-- 이슈: 초기 버전에서 timeout이 났을 때 루프를 `break`해 버려서 10번을 다 못 돌았다. "응답이 없으면 끝"이 아니라 "응답이 없어도 다음 시도를 계속한다"가 이 과제의 핵심이었다.
-- 조치: `except socket.timeout` 안에서 `continue`가 아니라 출력만 하고 루프를 자연스럽게 돌게 했다.
+- 당시 목표: `UDP의 비연결성과 timeout 기반 손실 처리를 RTT 측정 과제로 묶은 구현입니다.`를 실제 근거에 붙인다.
+- 실제 진행: `for seq in range(1, PING_COUNT + 1):` 주변을 중심으로 symbol이나 trace 결과를 다시 좁혀 읽었다.
+- 검증 신호: 짧은 `rg`/filter 출력만으로도 어느 줄이 설명의 중심인지 바로 드러났다.
+- 새로 배운 것: 1초 timeout을 손실 판정으로 바꾸는 방법
 
-```py
-try:
-    client_socket.sendto(message.encode(), server_address)
-    data, addr = client_socket.recvfrom(1024)
-    rtt_ms = (recv_time - send_time) * 1000
-    rtt_list.append(rtt_ms)
-    print(f"Ping {seq:2d}: Reply from {addr[0]}  RTT = {rtt_ms:.3f} ms")
-except socket.timeout:
-    print(f"Ping {seq:2d}: Request timed out")
+핵심 코드/trace:
+
+```python
+for seq in range(1, PING_COUNT + 1):
+        # sequence 번호와 timestamp를 포함한 ping 메시지를 만든다.
+        send_time = time.time()
+        message = f"Ping {seq} {send_time}"
+
+        try:
+            # ping datagram을 전송한다.
+            client_socket.sendto(message.encode(), server_address)
+
+            # 응답을 기다린다.
 ```
 
-이 구조가 만들어지니 성공/실패에 관계없이 10번을 반드시 완주하는 클라이언트가 됐다.
+왜 이 코드가 중요했는가:
 
-### Session 4
+여기서는 구현이나 분석의 무게중심이 바뀐다. 그래서 파일 전체보다 이 좁은 구간을 먼저 보는 편이 훨씬 정확하다.
 
-- 목표: 통계 요약까지 마무리하고 `make test`를 돌린다.
-- 진행:
+CLI:
 
-```py
-sent = PING_COUNT
-received = len(rtt_list)
-lost = sent - received
-loss_pct = (lost / sent) * 100
+```bash
+$ rg -n -e 'PING_COUNT = 10' -e 'for seq in range' -e 'socket.timeout' -e 'loss_pct =' 'study/01-Application-Protocols-and-Sockets/udp-pinger/python/src/udp_pinger_client.py' 'study/01-Application-Protocols-and-Sockets/udp-pinger/python/tests/test_udp_pinger.py'
+study/01-Application-Protocols-and-Sockets/udp-pinger/python/src/udp_pinger_client.py:15:PING_COUNT = 10
+study/01-Application-Protocols-and-Sockets/udp-pinger/python/src/udp_pinger_client.py:35:    for seq in range(1, PING_COUNT + 1):
+study/01-Application-Protocols-and-Sockets/udp-pinger/python/src/udp_pinger_client.py:54:        except socket.timeout:
+study/01-Application-Protocols-and-Sockets/udp-pinger/python/src/udp_pinger_client.py:61:    loss_pct = (lost / sent) * 100
+study/01-Application-Protocols-and-Sockets/udp-pinger/python/tests/test_udp_pinger.py:29:        for seq in range(1, 11):
+study/01-Application-Protocols-and-Sockets/udp-pinger/python/tests/test_udp_pinger.py:35:            except socket.timeout:
 ```
 
-- 이슈: `rtt_list`가 비어 있으면(100% loss) `min(rtt_list)`에서 `ValueError`가 난다. 별도 분기를 넣어야 했다.
-- 검증:
+## 3. 테스트와 남은 범위를 정리하기
+
+끝맺음에서 중요한 건 멋진 회고가 아니라 경계선이다. 통과한 범위와 남겨 둔 범위를 같은 문맥 안에 두려고 했다.
+
+- 당시 목표: 검증 결과와 남은 경계를 함께 정리한다.
+- 실제 진행: `make -C study/01-Application-Protocols-and-Sockets/udp-pinger/problem test`를 다시 실행하고, `def test_server_responds_to_ping`가 남아 있는 파일을 본문 마지막 근거로 삼았다.
+- 검증 신호: 현재 공개 답안이 재현된다는 출력과, README limitation이 동시에 확인됐다.
+- 새로 배운 것: RTT 최소값/평균값/최대값과 손실률 계산
+
+핵심 코드/trace:
+
+```python
+def test_server_responds_to_ping(self):
+        """server는 여러 ping 중 일부에는 응답해야 한다."""
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.settimeout(1)
+        replies = 0
+
+        for seq in range(1, 11):
+            msg = f"Ping {seq} {time.time()}"
+            sock.sendto(msg.encode(), (HOST, PORT))
+            try:
+```
+
+왜 이 코드가 중요했는가:
+
+최종 단계에서 중요한 것은 '잘 됐다'가 아니라 '무엇을 확인했고 무엇은 아직 안 했다'인데, 그 기준이 이 파일에 가장 잘 남아 있다.
 
 CLI:
 
 ```bash
 $ make -C study/01-Application-Protocols-and-Sockets/udp-pinger/problem test
-Starting UDP Pinger Server on port 12000...
-Running UDP Pinger Client...
-Ping  1: Reply from 127.0.0.1  RTT = 0.284 ms
-Ping  2: Request timed out
-Ping  3: Reply from 127.0.0.1  RTT = 0.198 ms
-Ping  4: Reply from 127.0.0.1  RTT = 0.312 ms
-Ping  5: Request timed out
-Ping  6: Reply from 127.0.0.1  RTT = 0.156 ms
-Ping  7: Reply from 127.0.0.1  RTT = 0.247 ms
-Ping  8: Request timed out
-Ping  9: Reply from 127.0.0.1  RTT = 0.189 ms
-Ping 10: Reply from 127.0.0.1  RTT = 0.221 ms
---- Ping Statistics ---
-10 packets sent, 7 received, 30.0% loss
-RTT min/avg/max = 0.156/0.230/0.312 ms
-All tests passed!
+10 packets sent, 6 received, 40.0% loss
+TEST: Output contains Ping lines               [PASS]
+TEST: Output contains statistics               [PASS]
+TEST: At least one RTT measurement             [PASS]
+ Results: 3 passed, 0 failed
 ```
 
-- 정리:
-  - 이 프로젝트에서 가장 중요한 한 줄은 `settimeout(1)`이었다. 이게 없으면 나머지 코드가 전부 무의미하다.
-  - TCP에서는 "연결 → 전송 → 종료"라는 구조가 보장됐지만, UDP에서는 "보냈지만 돌아올지 모른다"를 코드로 직접 처리해야 했다.
-  - 통계 계산은 최종 출력용으로만 보였지만, 실제로는 이 요약부가 UDP 특성을 학습 결과로 묶는 결정적인 지점이었다.
-  - 다음은 SMTP — TCP 위의 또 다른 프로토콜이지만, HTTP와 달리 상태 전이가 더 길다.
+## 남은 경계
+
+- 패킷 순서 역전은 별도 처리하지 않습니다.
+- 분위수 같은 고급 통계는 계산하지 않습니다.
+- `pytest` 단독 실행은 제공 서버 선기동이 필요합니다.

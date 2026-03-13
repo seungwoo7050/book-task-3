@@ -1,33 +1,28 @@
-# IP and ICMP Packet Analysis 시리즈 지도
+# IP and ICMP Packet Analysis series map
 
-## 이 프로젝트를 한 줄로
+이 프로젝트를 읽을 때 붙들 질문은 하나다. IP header, fragmentation, ICMP 메시지를 trace 안에서 어디까지 설명할 수 있는가?
 
-IP header 필드가 "교과서 정의"가 아니라 traceroute와 fragmentation 같은 실제 현상으로 어떻게 드러나는지 두 개의 trace로 묶어 보는 기록이다.
+## 무엇을 근거로 복원했는가
 
-## 시작 전에 고정한 자료
+- 프로젝트 README: `study/03-Packet-Analysis-Top-Down/ip-icmp/README.md`
+- 문제 문서와 실행 표면: `study/03-Packet-Analysis-Top-Down/ip-icmp/problem/README.md`, `study/03-Packet-Analysis-Top-Down/ip-icmp/problem/Makefile`
+- 분석 본문: `study/03-Packet-Analysis-Top-Down/ip-icmp/analysis/src/ip-icmp-analysis.md`
+- 정식 검증 출력: `make -C study/03-Packet-Analysis-Top-Down/ip-icmp/problem test`
 
-- 제공 trace: `problem/data/ip-traceroute.pcapng`, `ip-fragmentation.pcapng`
-- 실행 진입점: `problem/Makefile`
-- 사용자 답안: `study/03-Packet-Analysis-Top-Down/ip-icmp/analysis/src/ip-icmp-analysis.md`
-- 보조 개념 문서: `docs/concepts/wireshark-ip.md`
+## 어떤 순서로 읽으면 되는가
 
-## 이 시리즈에서 따라갈 질문
+1. `problem/README.md`로 문제 조건과 성공 기준을 확인한다.
+2. 이 문서에서 어떤 입력을 근거로 썼는지 먼저 본다.
+3. `01-evidence-ledger.md`로 세 단계 흐름을 짧게 파악한다.
+4. `10-development-timeline.md`에서 코드나 trace, CLI를 따라간다.
 
-1. traceroute trace에서 TTL 증가와 `ICMP Time Exceeded` 응답을 어떤 frame 쌍으로 읽어야 하는가.
-2. `ip.id`, `flags`, `frag_offset`은 fragmentation을 설명할 때 어떻게 같이 써야 하는가.
-3. Echo Request와 Echo Reply는 어떤 identifier/sequence 조합으로 매칭하는가.
-4. reassembly가 어디서 일어나는지 trace evidence로 어디까지 말할 수 있는가.
+## 이번 리라이트에서 의도적으로 제외한 입력
 
-## 검증 명령
+- 현재 `study/blog/**`의 이전 본문
+- `notion/`, `notion-archive/` 아래의 서술형 메모
 
-- ICMP 전체: `make -C study/03-Packet-Analysis-Top-Down/ip-icmp/problem filter-icmp`
-- TTL 증가 확인: `make -C study/03-Packet-Analysis-Top-Down/ip-icmp/problem filter-ttl`
-- fragmentation 확인: `make -C study/03-Packet-Analysis-Top-Down/ip-icmp/problem filter-fragments`
-- 답안 검증: `make -C study/03-Packet-Analysis-Top-Down/ip-icmp/problem test`
+## 짧은 판정 메모
 
-## 글 구성
-
-| 파일 | 역할 |
-| :--- | :--- |
-| `00-series-map.md` | traceroute와 fragmentation을 한 프로젝트 안에서 어떻게 나눠 읽을지 정한다. |
-| `10-development-timeline.md` | TTL 실험 → ICMP 응답 해석 → fragmentation/reassembly 순으로 이해를 쌓는다. |
+- 독립 프로젝트로 본 이유: `IP and ICMP Packet Analysis`는 자기 README와 정식 검증 명령으로 범위를 독립적으로 설명할 수 있다.
+- 보관본 위치: `study/blog/_legacy`
+- 이번 글의 중심 답: IPv4 header, fragmentation, TTL, ICMP 메시지를 traceroute/ping 맥락에서 읽는 네트워크 계층 랩입니다.

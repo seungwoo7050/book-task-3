@@ -1,31 +1,26 @@
 # Tactical Arena Server blog
 
-이 디렉터리는 `Tactical Arena Server`를 `strict source-only` 기준으로 다시 읽는 capstone blog 시리즈다. chronology는 `problem/README.md`, `problem/Makefile`, `cpp/src/`, `cpp/tests/`, `problem/script/*.py`를 바탕으로, 일반적인 개발자라면 밟았을 구현 순서를 추론해 세 구간으로 나눠 정리했다.
+`Tactical Arena Server` 문서 묶음은 제어 채널, authoritative simulation, persistence, 검증 하네스를 한 서버 안에서 어떻게 맞물리게 했는가?라는 질문에 답하기 위해 준비한 읽기 경로다. 결과만 요약하지 않고, 어디서부터 구현이나 분석이 무거워졌는지 따라갈 수 있게 구성했다.
 
-## source set
-- [`../../../05-Game-Server-Capstone/tactical-arena-server/README.md`](../../../05-Game-Server-Capstone/tactical-arena-server/README.md)
-- [`../../../05-Game-Server-Capstone/tactical-arena-server/problem/README.md`](../../../05-Game-Server-Capstone/tactical-arena-server/problem/README.md)
-- [`../../../05-Game-Server-Capstone/tactical-arena-server/problem/Makefile`](../../../05-Game-Server-Capstone/tactical-arena-server/problem/Makefile)
-- [`../../../05-Game-Server-Capstone/tactical-arena-server/cpp/README.md`](../../../05-Game-Server-Capstone/tactical-arena-server/cpp/README.md)
-- [`../../../05-Game-Server-Capstone/tactical-arena-server/cpp/src/protocol.cpp`](../../../05-Game-Server-Capstone/tactical-arena-server/cpp/src/protocol.cpp)
-- [`../../../05-Game-Server-Capstone/tactical-arena-server/cpp/src/arena_server.cpp`](../../../05-Game-Server-Capstone/tactical-arena-server/cpp/src/arena_server.cpp)
-- [`../../../05-Game-Server-Capstone/tactical-arena-server/cpp/src/state.cpp`](../../../05-Game-Server-Capstone/tactical-arena-server/cpp/src/state.cpp)
-- [`../../../05-Game-Server-Capstone/tactical-arena-server/cpp/src/repository.cpp`](../../../05-Game-Server-Capstone/tactical-arena-server/cpp/src/repository.cpp)
-- [`../../../05-Game-Server-Capstone/tactical-arena-server/cpp/tests/test_protocol.cpp`](../../../05-Game-Server-Capstone/tactical-arena-server/cpp/tests/test_protocol.cpp)
-- [`../../../05-Game-Server-Capstone/tactical-arena-server/cpp/tests/test_state.cpp`](../../../05-Game-Server-Capstone/tactical-arena-server/cpp/tests/test_state.cpp)
-- [`../../../05-Game-Server-Capstone/tactical-arena-server/cpp/tests/test_repository.cpp`](../../../05-Game-Server-Capstone/tactical-arena-server/cpp/tests/test_repository.cpp)
-- [`../../../05-Game-Server-Capstone/tactical-arena-server/problem/script/integration_test.py`](../../../05-Game-Server-Capstone/tactical-arena-server/problem/script/integration_test.py)
-- [`../../../05-Game-Server-Capstone/tactical-arena-server/problem/script/load_smoke_test.py`](../../../05-Game-Server-Capstone/tactical-arena-server/problem/script/load_smoke_test.py)
+이 프로젝트의 본문은 `C++20 + Boost.Asio + SQLite + CMake/CTest` 기반으로 구현한 `2~4인 authoritative tactical arena server`입니다.`라는 한 줄 설명을 실제 파일, CLI, 테스트 신호로 다시 풀어 쓰는 데 초점을 둔다.
 
-## 읽는 순서
-1. [`00-series-map.md`](00-series-map.md)
-2. [`10-development-timeline.md`](10-development-timeline.md)
-3. [`20-development-timeline.md`](20-development-timeline.md)
-4. [`30-development-timeline.md`](30-development-timeline.md)
-5. [`../../../05-Game-Server-Capstone/tactical-arena-server/README.md`](../../../05-Game-Server-Capstone/tactical-arena-server/README.md)
+## 이 폴더에서 기대할 수 있는 것
 
-## 검증 진입점
-- `make -C study/05-Game-Server-Capstone/tactical-arena-server/problem test`
+- 문제 경계와 읽는 순서: [00-series-map.md](00-series-map.md)
+- 단계별 근거 압축본: [01-evidence-ledger.md](01-evidence-ledger.md)
+- 글의 편집 개요: [02-structure.md](02-structure.md)
+- 실제 서사형 기록: [10-development-timeline.md](10-development-timeline.md)
 
-## chronology 메모
-- capstone은 source set이 넓기 때문에 `build/setup`, `protocol/state`, `integration/verification` 세 구간으로 나눴다.
+## 근거로 사용한 source set
+
+- 프로젝트 루트: `study/05-Game-Server-Capstone/tactical-arena-server`
+- 정식 검증 명령: `make -C study/05-Game-Server-Capstone/tactical-arena-server/problem test`
+- 구현 파일: `study/05-Game-Server-Capstone/tactical-arena-server/cpp/src`
+- 테스트 파일: `study/05-Game-Server-Capstone/tactical-arena-server/cpp/tests`
+- 제외한 입력: 기존 `study/blog/**`, `notion/**`, `notion-archive/**`
+
+## 먼저 읽을 순서
+
+1. `00-series-map.md`에서 질문과 근거를 먼저 잡는다.
+2. `01-evidence-ledger.md`에서 세 단계 흐름을 짧게 본다.
+3. `10-development-timeline.md`에서 코드/trace와 CLI를 따라 내려간다.

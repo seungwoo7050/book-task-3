@@ -1,28 +1,29 @@
 # infobank blog
 
-`blog/`는 `infobank/`의 공개 blog layer다. 이 디렉터리는 기존 `README.md`, `docs/`, `problem/`, `capstone/`을 대체하지 않고, 두 과제를 `source-first reconstructed timeline`으로 다시 읽기 위한 긴 학습 로그만 모아 둔다.
+`infobank/blog/`는 두 인포뱅크 프로젝트를 "무엇을 만들었는가"보다 "어떻게 여기까지 왔는가" 중심으로 다시 읽는 레이어다. 최종 결과물만 보는 대신, 설계가 어디서 갈렸고 어떤 검증을 거쳐 지금 형태가 되었는지 차례대로 따라가게 만드는 것이 이 디렉터리의 목적이다.
 
-## 이 레이어의 기준
+이 버전은 2026-03-13에 `isolate-and-rewrite` 방식으로 다시 썼다. 직전 시리즈는 [`_legacy/2026-03-13-isolate-and-rewrite/`](./_legacy/2026-03-13-isolate-and-rewrite/)에 보관했고, 이번 글에서는 예전 blog를 입력 근거로 사용하지 않았다. 근거는 `projects/*` 아래의 소스코드, `README.md`, `problem/`, `docs/`, 테스트, 실제 CLI 재실행 결과만 사용했다.
 
-- 적용 단위는 `projects/*` 아래의 독립 프로젝트다.
-- 기본 원천은 `README.md`, `problem/README.md`, `capstone/*/README.md`, 실제 구현 코드, 테스트, runbook, `docker-compose.yml`, `Makefile`, `package.json`, `pyproject.toml`, `git log -- projects/...`다.
-- `notion/`과 `notion-archive/`는 읽지 않는다.
-- 현재 구조의 source of truth는 `projects/01-mcp-recommendation-demo`와 `projects/02-chat-qa-ops`다. legacy redirect인 `mcp-recommendation-demo/`, `chat-qa-ops/`는 source set에 포함하지 않는다.
-- chronology는 세밀한 시각 대신 `Day / Session` 형식을 기본으로 쓴다.
-- 세션 경계는 현재 소스가 보여 주는 버전 사다리 `v0 -> v1 -> v2 -> v3`로 고정한다.
-- 코드는 판단이 갈린 짧은 조각만 inline으로 남기고, CLI는 세션별 전체 재현 경로를 묶어 적는다.
+## 여기서 다루는 독립 프로젝트
 
-## 현재 범위
+이번 Batch Mode에서 실제로 처리한 독립 프로젝트는 `projects/*` 아래 두 개다.
 
-| 프로젝트 | blog 입구 | 원 프로젝트 | 대표 검증 신호 |
+- `projects/01-mcp-recommendation-demo`: MCP 추천 시스템이 catalog 계약, 추천 로직, release gate, self-hosted 운영 표면까지 어떻게 확장됐는지 끝까지 보여 준다.
+- `projects/02-chat-qa-ops`: 챗봇 품질 평가가 rule/evidence/judge 파이프라인에서 시작해 regression proof와 self-hosted review ops로 어떻게 자랐는지 보여 준다.
+
+반대로 `mcp-recommendation-demo/`, `chat-qa-ops/`는 pre-migration redirect만 남은 경로라 입력 프로젝트에서 제외했다. `docs/`, `.github/`, `blog/`, `projects/` 루트는 공용 문서나 인덱스 레이어라 독립 프로젝트로 보지 않았다.
+
+## 지금 읽을 수 있는 시리즈
+
+| 프로젝트 | 시리즈 입구 | 이 시리즈가 보여 주는 것 | 대표 검증 신호 |
 | --- | --- | --- | --- |
-| `01 MCP 추천 최적화` | [`projects/01-mcp-recommendation-demo/README.md`](projects/01-mcp-recommendation-demo/README.md) | [`../projects/01-mcp-recommendation-demo/README.md`](../projects/01-mcp-recommendation-demo/README.md) | `Seeded 12 catalog entries`, `9 passed`, `release gate passed: true` |
-| `02 챗봇 상담 품질 관리` | [`projects/02-chat-qa-ops/README.md`](projects/02-chat-qa-ops/README.md) | [`../projects/02-chat-qa-ops/README.md`](../projects/02-chat-qa-ops/README.md) | `gate-all passed`, `PostgreSQL smoke verification passed` |
+| `01 MCP 추천 최적화` | [`projects/01-mcp-recommendation-demo/README.md`](./projects/01-mcp-recommendation-demo/README.md) | catalog contract에서 시작한 추천 시스템이 compare, release gate, operator UI까지 연결되는 흐름 | `Seeded 12 catalog entries...`, `top3Recall 0.9583`, `release gate passed: true`, `v3 tests 8 passed \| 2 skipped` |
+| `02 챗봇 상담 품질 관리` | [`projects/02-chat-qa-ops/README.md`](./projects/02-chat-qa-ops/README.md) | 상담 품질 평가가 golden regression과 self-hosted review surface로 이어지는 흐름 | `gate-all: 3+5+15+5+16 passed`, `PostgreSQL smoke verification passed`, `84.06 -> 87.76`, `v3 gate-all passed` |
 
 ## 읽는 순서
 
-1. 루트 [`../README.md`](../README.md)에서 공식 답과 확장 답의 위치를 먼저 확인한다.
-2. [`projects/README.md`](projects/README.md)에서 원하는 과제의 blog 시리즈 입구를 고른다.
-3. 각 프로젝트의 `README.md`에서 source set과 검증 진입점을 확인한다.
-4. `00-series-map.md`로 문제 경계와 실제 구현 표면을 고정한다.
-5. `10-development-timeline.md`에서 버전 사다리를 chronology로 따라간다.
+1. 루트 [`../README.md`](../README.md)에서 두 과제의 공식 답과 확장 답을 먼저 확인한다.
+2. [`projects/README.md`](./projects/README.md)에서 원하는 프로젝트의 시리즈 입구를 고른다.
+3. 각 프로젝트의 `README.md`와 `00-series-map.md`로 전체 흐름과 읽는 기준을 잡는다.
+4. `_evidence-ledger.md`에서 이 시리즈가 어떤 근거로 복원됐는지 확인한다.
+5. `10 -> 20 -> 30` 문서 순서로 구현, 검증, productization 흐름을 따라간다.

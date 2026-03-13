@@ -470,3 +470,6 @@ thumb
 sketch
 
 # End of https://www.toptal.com/developers/gitignore/api/c,c++,python,java,go,node,react,nextjs
+
+# Terraform generated providers and working directories
+.terraform/

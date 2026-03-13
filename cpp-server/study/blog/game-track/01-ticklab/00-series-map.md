@@ -1,45 +1,12 @@
 # ticklab series map
 
-이 시리즈는 `ticklab`을 "게임 로직 일부"가 아니라 transport 없이 authoritative simulation을 먼저 고정하는 lab으로 다시 읽기 위한 지도다.
+`ticklab`을 세 편으로 나눈 이유는 간단하다. 이 lab은 게임 규칙을 많이 설명하려는 문서가 아니라, authoritative engine이 먼저 무엇을 고정해야 하는지 보여 주는 문서이기 때문이다. 그래서 시리즈도 "공개 표면과 phase machine -> input과 tick 처리 -> reconnect와 proof" 순서로 흘러간다.
 
-## 이 프로젝트가 답하는 질문
+첫 글은 `MatchEngine`이 어떤 상수와 타입, 어떤 room phase를 갖는지부터 잡는다. 둘째 글은 stale sequence, 이동 제약, projectile, snapshot 같은 실제 authoritative 메커니즘을 따라간다. 마지막 글은 reconnect grace, draw timeout, transcript fixture를 묶어서 이 엔진이 어디까지 이미 검증됐는지 보여 준다.
 
-- room queue, ready, countdown, in-round, finished 같은 상태 전이를 network 없이 먼저 어떻게 검증할까
-- stale input rejection, projectile hit, reconnect grace를 엔진 레벨에서 먼저 막으면 서버 capstone은 무엇에 집중할 수 있을까
+## 글 순서
 
-## 읽는 순서
-
-1. [10-chronology-engine-surface-and-room-phases.md](10-chronology-engine-surface-and-room-phases.md)
-2. [20-chronology-input-ticks-and-projectiles.md](20-chronology-input-ticks-and-projectiles.md)
-3. [30-chronology-rejoin-timeout-and-verification.md](30-chronology-rejoin-timeout-and-verification.md)
-
-## 참조한 실제 파일
-
-- `study/game-track/01-ticklab/README.md`
-- `study/game-track/01-ticklab/problem/README.md`
-- `study/game-track/01-ticklab/problem/data/arena-transcript.txt`
-- `study/game-track/01-ticklab/cpp/README.md`
-- `study/game-track/01-ticklab/cpp/Makefile`
-- `study/game-track/01-ticklab/cpp/include/inc/MatchEngine.hpp`
-- `study/game-track/01-ticklab/cpp/src/MatchEngine.cpp`
-- `study/game-track/01-ticklab/cpp/tests/test_ticklab.cpp`
-- `study/game-track/01-ticklab/docs/README.md`
-
-## Canonical CLI
-
-```bash
-cd study/game-track/01-ticklab/cpp
-make clean && make test
-```
-
-## Git Anchor
-
-- `2026-03-09 73372bd Add project: backend-fastapi, backend-spring, cpp-server`
-- `2026-03-10 7dc71a8 docs: enhance cpp-server`
-- `2026-03-11 a9c65b3 Track 2에 대한 전반적인 개선 완료 (infobank, bithumb, game-server)`
-
-## 추론 원칙
-
-- chronology는 `MatchEngine` public API와 transcript fixture가 먼저 드러내는 room phase를 기준으로 잡고, 이후 input validation, projectile/hit 처리, rejoin grace로 확장한다.
-- 이 문서는 socket이나 event loop를 설명하지 않고, 엔진이 혼자서 어디까지 authoritative rule을 고정하는지에만 집중한다.
+1. [10-engine-surface-and-room-phases.md](10-engine-surface-and-room-phases.md)
+2. [20-input-ticks-and-projectiles.md](20-input-ticks-and-projectiles.md)
+3. [30-rejoin-timeout-and-verification.md](30-rejoin-timeout-and-verification.md)
 

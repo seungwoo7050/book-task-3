@@ -1,77 +1,101 @@
-# 30 reopen이 되는 이유, 그리고 WAL 없는 세계의 한계
+# 30 01 Mini LSM Store를 다시 돌려 보며 검증 신호와 경계를 정리하기
 
-## Day 2
-### Session 1
+이 시리즈의 마지막 글이다. 구현 설명을 닫고, 테스트와 demo가 약속하는 범위를 다시 확인한다. 이때 남는 한계도 함께 적어 둔다.
 
-어제 끝에 남겼던 질문 — `open()`으로 다시 열 때도 newest-first 순서가 유지되는가. 코드를 열어봤다.
+## Phase 3 — 검증 신호와 한계를 확인하는 구간
+
+이번 글에서는 먼저 테스트가 남긴 회귀 신호를 다시 읽고, 이어서 demo가 공개하는 표면과 README가 남겨 둔 한계를 함께 정리한다.
+
+### Session 1 — 테스트가 남긴 회귀 신호 다시 보기
+
+이번 세션의 목표는 테스트 명령을 다시 돌려 핵심 invariant가 실제 회귀 신호로 남아 있는지 확인하는 것이었다. 초기 가설은 pass 수치만 확인하면 충분할 거라고 생각했다.
+
+막상 다시 펼쳐 보니 `PYTHONPATH=src .venv/bin/python -m pytest`를 다시 실행하고, 어떤 테스트가 있는지 이미 알고 있는 상태에서 pass 신호를 다시 읽었다. 특히 `9 passed`가 이번 판단을 굳혀 줬다.
+
+변경 단위:
+- `database-systems/python/database-internals/projects/01-mini-lsm-store/tests/test_mini_lsm_store.py`
+
+CLI:
+
+```bash
+$ PYTHONPATH=src .venv/bin/python -m pytest
+============================= test session starts ==============================
+platform darwin -- Python 3.12.6, pytest-9.0.2, pluggy-1.6.0
+rootdir: /Users/woopinbell/work/book-task-3/database-systems/python/database-internals/projects/01-mini-lsm-store
+configfile: pyproject.toml
+collected 9 items
+
+tests/test_mini_lsm_store.py .........                                   [100%]
+
+============================== 9 passed in 0.02s ===============================
+```
+
+검증 신호:
+- `9 passed`
+- `test_persistence_after_reopen`가 실제로 회귀 테스트 묶음 안에 남아 있다는 점이 중요했다.
+
+핵심 코드:
 
 ```python
-def open(self) -> None:
-    self.data_dir.mkdir(parents=True, exist_ok=True)
-    self.sstables = []
-    sequences: list[int] = []
-    for path in sorted(self.data_dir.glob("*.sst")):
-        table = SSTable(path)
-        table.load()
-        self.sstables.append(table)
-        sequences.append(int(path.stem))
-    self.sstables.reverse()
+def test_persistence_after_reopen(tmp_path):
+    store = open_store(tmp_path, 1024)
+    store.put("persist", "me")
+    store.close()
+
+    reopened = MiniLSMStore(tmp_path, 1024)
+    reopened.open()
+    value, found = reopened.get("persist")
+    assert found is True
+    assert value == "me"
 ```
 
-파일명이 `000001.sst`, `000002.sst` 같은 sequence 번호다. `sorted()` → `append()` → `reverse()`. 오름차순으로 읽은 다음 뒤집으니까 결국 높은 sequence가 앞에 온다. flush할 때 `insert(0, ...)` 했던 것과 같은 newest-first 순서가 reopen 후에도 복원된다.
+왜 여기서 판단이 바뀌었는가:
 
-이 시점에서 `test_persistence_after_reopen`을 실행해서 확인했다.
+`test_persistence_after_reopen`는 구현의 뒷부분에서 생길 수 있는 붕괴 지점을 문장보다 정확하게 고정한다. pass 숫자보다 더 중요했던 건, 어떤 경계가 계속 회귀 테스트로 남아 있느냐였다.
+
+이번 구간에서 새로 이해한 것:
+- 테스트는 단순 성공 여부보다, 어떤 invariant를 공개적으로 약속하는지 보여 주는 문서에 가깝다.
+
+다음으로 넘긴 질문:
+- demo entry point를 다시 실행해 테스트보다 얇은 표면에서 무엇을 보여 주는지 확인한다.
+
+### Session 2 — demo가 공개하는 표면과 한계 정리하기
+
+이 구간에서 먼저 붙잡으려 한 것은 demo 출력과 README의 한계를 함께 읽어, 공개 표면과 내부 경계를 분리하는 것이었다. 처음 읽을 때는 demo는 테스트의 축약판일 뿐이라고 생각했다.
+
+그런데 `PYTHONPATH=src .venv/bin/python -m mini_lsm_store`를 다시 실행해 마지막 한 줄을 확인하고, README의 `한계와 확장` bullet과 나란히 읽었다. 특히 demo 핵심 줄: `{'key': 'alpha', 'found': True, 'value': '3', 'sstables': 1}`라는 출력이 마지막 확인 지점이 됐다.
+
+변경 단위:
+- `database-systems/python/database-internals/projects/01-mini-lsm-store/src/mini_lsm_store/__main__.py`
+
+CLI:
 
 ```bash
-cd python/database-internals/projects/01-mini-lsm-store
-PYTHONPATH=src python3 -m pytest tests/test_mini_lsm_store.py::test_persistence_after_reopen -v
-```
-
-```text
-tests/test_mini_lsm_store.py::test_persistence_after_reopen PASSED
-```
-
-통과는 하는데, 여기서 한 가지 불편한 점이 보인다. `close()`가 `force_flush()`를 호출한다. 즉, `close()` 없이 프로세스가 죽으면? memtable에만 있던 데이터는 사라진다. WAL이 없으니까.
-
-이건 버그가 아니라 이 프로젝트의 의도적인 경계다. persistence는 "flush된 것까지만" 보장한다. 다음 프로젝트(02-wal-recovery)가 이 빈자리를 메꿔줘야 하는 이유가 여기서 나온다.
-
-### Session 2
-
-전체 테스트를 한번 돌렸다.
-
-```bash
-cd python/database-internals/projects/01-mini-lsm-store
-PYTHONPATH=src python3 -m pytest -v
-```
-
-```text
-tests/test_mini_lsm_store.py::test_put_and_get PASSED
-tests/test_mini_lsm_store.py::test_missing_key PASSED
-tests/test_mini_lsm_store.py::test_update PASSED
-tests/test_mini_lsm_store.py::test_delete PASSED
-tests/test_mini_lsm_store.py::test_flush_creates_sstable PASSED
-tests/test_mini_lsm_store.py::test_read_after_force_flush PASSED
-tests/test_mini_lsm_store.py::test_memtable_wins_over_sstable PASSED
-tests/test_mini_lsm_store.py::test_tombstone_across_levels PASSED
-tests/test_mini_lsm_store.py::test_persistence_after_reopen PASSED
-
-9 passed in 0.03s
-```
-
-demo도 확인했다.
-
-```bash
-PYTHONPATH=src python3 -m mini_lsm_store
-```
-
-```text
+$ PYTHONPATH=src .venv/bin/python -m mini_lsm_store
 {'key': 'alpha', 'found': True, 'value': '3', 'sstables': 1}
 ```
 
-demo가 보여주는 것: `alpha`에 먼저 `"1"`을 넣고 flush한 뒤 `"3"`을 memtable에 덮어쓴다. `get("alpha")`가 `"3"`을 반환한다. memtable이 SSTable보다 우선한다는 규칙이 demo 한 줄에 압축돼 있다.
+검증 신호:
+- demo 핵심 줄: `{'key': 'alpha', 'found': True, 'value': '3', 'sstables': 1}`
+- 경계 메모: 현재 범위 밖: background compaction과 concurrent flush는 다루지 않습니다.
+- 경계 메모: 현재 범위 밖: range query와 compression 같은 production 기능은 후속 확장 항목으로 남깁니다.
 
-이 프로젝트를 닫으면서 정리하면:
-- 한 파일이라서 얕아 보이지만, `get`의 조회 순서 하나가 LSM read path의 본질을 담고 있다
-- tombstone은 `None`으로 표현하고, `found=True`로 하위 계층 차단
-- newest-first는 flush 시 `insert(0, ...)`, reopen 시 `reverse()`로 유지
-- 이 프로젝트의 durability 경계는 flush까지. crash 전 memtable은 날아간다
+핵심 코드:
+
+```python
+from .store import demo
+
+
+if __name__ == "__main__":
+    demo()
+```
+
+왜 여기서 판단이 바뀌었는가:
+
+demo entry point는 내부 구현을 전부 보여 주지는 않지만, 독자가 처음 마주치는 공개 표면을 결정한다. 테스트가 invariant를 지키는 장치라면, demo는 그중 무엇을 밖으로 보여 줄지 고르는 자리였다.
+
+이번 구간에서 새로 이해한 것:
+- `Flush Lifecycle`에서 정리한 요점처럼, active MemTable은 write를 받는 유일한 구조다.
+
+다음으로 넘긴 질문:
+- 이 프로젝트 이후에는 다음 트랙/다음 슬롯으로 넘어가더라도, 지금 고정한 invariant를 더 큰 저장 엔진이나 분산 경로 안에서 다시 만날 수 있다.

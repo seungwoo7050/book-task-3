@@ -1,49 +1,47 @@
-# 01 MCP 추천 최적화 시리즈 지도
+# MCP 추천 최적화 시리즈 맵
 
-이 시리즈는 `MCP 추천 시스템`을 단순 검색 데모가 아니라, `catalog contract -> rerank/compare -> release gate -> self-hosted 운영 흐름`으로 읽어야 한다는 점을 실제 소스 기준으로 다시 고정한다.
+이 시리즈는 `projects/01-mcp-recommendation-demo`를 "추천 결과가 어떤가"가 아니라 "추천 시스템이 어떤 순서로 단단해졌는가"라는 질문으로 다시 읽는다. 처음에는 catalog와 manifest 계약을 고정하고, 그다음 추천과 rerank를 붙이고, 마지막에는 release 판단과 self-hosted 운영 표면으로 확장되는 흐름을 따라간다.
 
-## 이 시리즈가 보는 문제
+이번 버전은 2026-03-13에 `isolate-and-rewrite` 방식으로 다시 썼다. 예전 blog는 [`../../_legacy/2026-03-13-isolate-and-rewrite/projects/01-mcp-recommendation-demo/`](../../_legacy/2026-03-13-isolate-and-rewrite/projects/01-mcp-recommendation-demo/)에 옮겨 두었고, 이번 시리즈는 현재 소스와 실제 CLI 결과만 사용했다.
 
-- catalog와 manifest를 어떤 계약으로 고정해야 추천 결과를 검증 가능한 제품 설명으로 바꿀 수 있는가
-- baseline recommendation을 어떤 신호까지 포함해야 `candidate` 개선과 `compare`가 의미를 갖는가
-- compatibility gate, release gate, artifact export를 어디까지 묶어야 제출 가능한 답이 되는가
-- `v3`에서 auth, job worker, audit log, Compose packaging을 더하면 어디서부터 productization으로 넘어가는가
+## 왜 독립 프로젝트로 보았는가
 
-## 실제 구현 표면
+`projects/01-mcp-recommendation-demo`는 하나의 완결된 문제를 스스로 설명할 수 있다. 이 프로젝트는 "MCP 추천 시스템을 어떻게 설계하고, 그 결과를 어떻게 운영 승인 가능한 형태로 증명할 것인가"라는 질문에 답한다. 진입점도 분명하고, 검증 명령도 따로 있으며, `v0 -> v3` 버전 사다리도 다른 디렉터리와 섞이지 않는다.
 
-- `shared/src/contracts.ts`, `shared/src/catalog.ts`, `shared/src/eval.ts`가 manifest와 eval fixture 계약을 고정한다.
-- `node/src/services/recommendation-service.ts`, `rerank-service.ts`, `compare-service.ts`, `compatibility-service.ts`, `release-gate-service.ts`, `artifact-service.ts`가 추천에서 제출 증빙까지의 핵심 로직을 이룬다.
-- `node/tests/routes.integration.test.ts`는 catalog, recommendation, eval, compare, compatibility, release gate, artifact export가 한 DB 준비 경로에서 연결되는지 확인한다.
-- `react/components/mcp-dashboard.tsx`와 각 버전의 presentation assets는 추천 UI와 compare/release surface를 보여 준다.
-- `v3-oss-hardening`의 `auth-service.ts`, `job-service.ts`, `audit-service.ts`, `worker.ts`는 로그인, background job, audit trail, worker 분리를 추가한다.
+반면 루트 redirect인 `mcp-recommendation-demo/`는 현재 위치를 가리키는 README만 남아 있어, 독립 프로젝트 기준에는 맞지 않았다.
 
-## 대표 검증 엔트리
+## 이번에 사용한 근거
 
-- `pnpm db:up`
-- `pnpm migrate`
-- `pnpm seed`
-- `pnpm test`
-- `pnpm eval`
-- `pnpm compatibility rc-release-check-bot-1-5-0`
-- `pnpm release:gate rc-release-check-bot-1-5-0`
-- `pnpm artifact:export rc-release-check-bot-1-5-0`
+- 프로젝트 경계: `README.md`, `problem/README.md`
+- 흐름 복원 기준: `docs/stage-catalog.md`, `docs/verification-matrix.md`
+- 공식 답: `capstone/v2-submission-polish/README.md`
+- 확장 답: `capstone/v3-oss-hardening/README.md`
+- 핵심 코드:
+  - `shared/src/catalog.ts`
+  - `node/src/services/recommendation-service.ts`
+  - `node/src/services/rerank-service.ts`
+  - `node/src/services/release-gate-service.ts`
+  - `node/src/scripts/export-artifact.ts`
+  - `v3 node/src/services/job-service.ts`
+  - `v3 react/components/mcp-dashboard.tsx`
+- 실제 검증:
+  - `pnpm seed`
+  - `pnpm test`
+  - `pnpm eval`
+  - `pnpm compatibility rc-release-check-bot-1-5-0`
+  - `pnpm release:gate rc-release-check-bot-1-5-0`
+  - `pnpm artifact:export rc-release-check-bot-1-5-0`
+  - `v3 pnpm test`
 
-## 읽는 순서
+## 챕터 구성
 
-1. [원 프로젝트 README](../../../projects/01-mcp-recommendation-demo/README.md)
-2. [capstone 개요](../../../projects/01-mcp-recommendation-demo/capstone/README.md)
-3. [v2 제출 버전 README](../../../projects/01-mcp-recommendation-demo/capstone/v2-submission-polish/README.md)
-4. [runbook](../../../projects/01-mcp-recommendation-demo/capstone/v2-submission-polish/docs/runbook.md)
-5. [route integration test](../../../projects/01-mcp-recommendation-demo/capstone/v2-submission-polish/node/tests/routes.integration.test.ts)
-6. [개발 타임라인](10-development-timeline.md)
+1. [`10-catalog-contracts-and-first-ranking-loop.md`](./10-catalog-contracts-and-first-ranking-loop.md)  
+   왜 추천 로직보다 먼저 catalog 계약을 세웠는지, 그리고 baseline과 rerank가 어디서 갈리는지 본다.
+2. [`20-ranking-proof-and-release-gates.md`](./20-ranking-proof-and-release-gates.md)  
+   점수 개선이 compare, compatibility, release gate, artifact export까지 이어지는 과정을 본다.
+3. [`30-self-hosted-operator-surface.md`](./30-self-hosted-operator-surface.md)  
+   이미 만든 proof pipeline이 `v3`에서 RBAC와 async job을 가진 운영 표면으로 어떻게 바뀌는지 본다.
 
-## 근거 파일
+## 이 시리즈를 읽을 때의 핵심 질문
 
-- [recommendation-service.ts](../../../projects/01-mcp-recommendation-demo/capstone/v0-initial-demo/node/src/services/recommendation-service.ts)
-- [manifest-validation.test.ts](../../../projects/01-mcp-recommendation-demo/capstone/v0-initial-demo/node/tests/manifest-validation.test.ts)
-- [rerank-service.ts](../../../projects/01-mcp-recommendation-demo/capstone/v1-ranking-hardening/node/src/services/rerank-service.ts)
-- [compare-service.ts](../../../projects/01-mcp-recommendation-demo/capstone/v1-ranking-hardening/node/src/services/compare-service.ts)
-- [release-gate-service.ts](../../../projects/01-mcp-recommendation-demo/capstone/v2-submission-polish/node/src/services/release-gate-service.ts)
-- [routes.integration.test.ts](../../../projects/01-mcp-recommendation-demo/capstone/v2-submission-polish/node/tests/routes.integration.test.ts)
-- [auth-service.ts](../../../projects/01-mcp-recommendation-demo/capstone/v3-oss-hardening/node/src/services/auth-service.ts)
-- [job-service.ts](../../../projects/01-mcp-recommendation-demo/capstone/v3-oss-hardening/node/src/services/job-service.ts)
+이 프로젝트를 따라갈 때 중요한 건 "추천이 잘 되는가"만이 아니다. 더 중요한 질문은 `metadata 계약 -> 추천 trace -> compare와 gate -> 운영자 UI`가 어떤 순서로 서로 기대게 되었는가다.

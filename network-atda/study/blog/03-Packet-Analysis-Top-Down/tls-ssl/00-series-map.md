@@ -1,35 +1,28 @@
-# TLS Packet Analysis 시리즈 지도
+# TLS Packet Analysis series map
 
-## 이 프로젝트를 한 줄로
+이 프로젝트를 읽을 때 붙들 질문은 하나다. 암호화 이후에도 TLS handshake에서 무엇은 보이고 무엇은 숨는가?
 
-TLS를 "복잡한 암호 프로토콜"로 뭉개지 않고, capture에 실제로 보이는 handshake 순서와 보이지 않는 certificate detail의 경계를 기록한 글이다.
+## 무엇을 근거로 복원했는가
 
-## 시작 전에 고정한 자료
+- 프로젝트 README: `study/03-Packet-Analysis-Top-Down/tls-ssl/README.md`
+- 문제 문서와 실행 표면: `study/03-Packet-Analysis-Top-Down/tls-ssl/problem/README.md`, `study/03-Packet-Analysis-Top-Down/tls-ssl/problem/Makefile`
+- 분석 본문: `study/03-Packet-Analysis-Top-Down/tls-ssl/analysis/src/tls-ssl-analysis.md`
+- 정식 검증 출력: `make -C study/03-Packet-Analysis-Top-Down/tls-ssl/problem test`
 
-- 제공 trace: `problem/data/tls-trace.pcap`
-- 실행 진입점: `problem/Makefile`
-- 사용자 답안: `study/03-Packet-Analysis-Top-Down/tls-ssl/analysis/src/tls-ssl-analysis.md`
-- 보조 개념 문서: `docs/concepts/wireshark-tls.md`
+## 어떤 순서로 읽으면 되는가
 
-## 이 시리즈에서 따라갈 질문
+1. `problem/README.md`로 문제 조건과 성공 기준을 확인한다.
+2. 이 문서에서 어떤 입력을 근거로 썼는지 먼저 본다.
+3. `01-evidence-ledger.md`로 세 단계 흐름을 짧게 파악한다.
+4. `10-development-timeline.md`에서 코드나 trace, CLI를 따라간다.
 
-1. ClientHello, ServerHello, Certificate, ChangeCipherSpec, Application Data는 어떤 frame 순서로 등장하는가.
-2. ClientHello와 ServerHello에서 TLS version, cipher suite, extension 존재 여부를 어디까지 확정할 수 있는가.
-3. Certificate가 malformed로 보일 때 subject, issuer, validity를 어디서 멈춰야 하는가.
-4. 암호화 이후에도 packet에서 여전히 보이는 메타데이터는 무엇이고, 더 이상 볼 수 없는 것은 무엇인가.
+## 이번 리라이트에서 의도적으로 제외한 입력
 
-## 검증 명령
+- 현재 `study/blog/**`의 이전 본문
+- `notion/`, `notion-archive/` 아래의 서술형 메모
 
-- handshake 전체: `make -C study/03-Packet-Analysis-Top-Down/tls-ssl/problem handshake`
-- ClientHello: `make -C study/03-Packet-Analysis-Top-Down/tls-ssl/problem client-hello`
-- ServerHello: `make -C study/03-Packet-Analysis-Top-Down/tls-ssl/problem server-hello`
-- Certificate: `make -C study/03-Packet-Analysis-Top-Down/tls-ssl/problem certs`
-- record 요약: `make -C study/03-Packet-Analysis-Top-Down/tls-ssl/problem records`
-- 답안 검증: `make -C study/03-Packet-Analysis-Top-Down/tls-ssl/problem test`
+## 짧은 판정 메모
 
-## 글 구성
-
-| 파일 | 역할 |
-| :--- | :--- |
-| `00-series-map.md` | handshake 순서와 관찰 한계를 먼저 선언한다. |
-| `10-development-timeline.md` | Hello 메시지 확인 → certificate 한계 인식 → encrypted record 해석 순으로 진행한다. |
+- 독립 프로젝트로 본 이유: `TLS Packet Analysis`는 자기 README와 정식 검증 명령으로 범위를 독립적으로 설명할 수 있다.
+- 보관본 위치: `study/blog/_legacy`
+- 이번 글의 중심 답: TLS handshake, certificate, cipher suite, 버전 차이를 record/message 수준에서 읽는 보안 랩입니다.

@@ -1,27 +1,30 @@
-# BOJ 10816 — 숫자 카드 2
+# 숫자 카드 2 시리즈 맵
 
-> `Core-07-Binary-Search-Hash` 트랙의 Silver 프로젝트.
+이 시리즈는 `Core-07-Binary-Search-Hash`의 `숫자 카드 2` 문제를 어떤 순서로 다듬어 갔는지 따라가기 위한 안내서다. 정답 요약보다, 문제 계약과 구현 판단이 어디서 맞물렸는지를 보여 주는 데 초점을 둔다. 세부 timestamp 대신 `Phase 1..4` 순서로 흐름만 복원했고, 기존 초안은 `_legacy`에 따로 보관했다.
 
-## 이 시리즈가 다루는 질문
+## 프로젝트 전체에서 어디쯤인가
 
-- 문제: `숫자 카드 2`
-- 트랙: `Core-07-Binary-Search-Hash`
-- 한 줄 답: `빈도 해시맵(Counter)으로 카드 개수를 누적하고 질의별 출력`
+- 트랙 질문: `탐색 대상을 어떻게 재정의해 선형 탐색을 벗어날까?`
+- 이 프로젝트의 한 줄 답: `빈도 해시맵(counter)으로 카드 개수를 누적하고 질의별 출력`
+- 기본 검증 명령: `make -C study/Core-07-Binary-Search-Hash/10816/problem test`
+- 시간/공간 복잡도: `O(N+M)`, `O(N)`
 
-## Source-of-truth
+## 먼저 볼 파일
 
-- 프로젝트 README: [../../../Core-07-Binary-Search-Hash/10816/README.md](../../../Core-07-Binary-Search-Hash/10816/README.md)
-- 접근 근거: [../../../Core-07-Binary-Search-Hash/10816/docs/references/approach.md](../../../Core-07-Binary-Search-Hash/10816/docs/references/approach.md)
-- Python 구현: [../../../Core-07-Binary-Search-Hash/10816/python/src/solution.py](../../../Core-07-Binary-Search-Hash/10816/python/src/solution.py)
+1. [01-evidence-ledger.md](01-evidence-ledger.md)
+2. [05-structure-plan.md](05-structure-plan.md)
+3. [10-development-timeline.md](10-development-timeline.md)
+4. [20-development-timeline.md](20-development-timeline.md)
 
-## 읽는 순서
+## 이번 시리즈를 따라가는 순서
 
-1. [10-development-timeline.md](10-development-timeline.md) — 문제 이해부터 첫 구현까지
-2. [20-development-timeline.md](20-development-timeline.md) — 검증, edge case, 정리까지
+1. `problem/README.md`와 `problem/code/starter.py`에서 입출력 계약과 실행 진입점을 먼저 본다.
+2. `python/src/solution.py`에서 `빈도 해시맵(counter)으로 카드 개수를 누적하고 질의별 출력`가 실제 상태 전이로 어떻게 굳는지 따라간다.
+3. `make -C study/Core-07-Binary-Search-Hash/10816/problem test`와 `problem/script/test.sh`로 fixture 전체가 어떻게 닫히는지 확인한다.
+4. `docs/concepts/*.md`를 붙여 마지막 판단 기준을 다시 읽는다.
 
-## 고정 검증 명령
+## 읽는 동안 붙잡을 질문
 
-```bash
-$ make -C study/Core-07-Binary-Search-Hash/10816/problem run-py
-$ make -C study/Core-07-Binary-Search-Hash/10816/problem test
-```
+- `탐색 대상을 어떻게 재정의해 선형 탐색을 벗어날까?`가 이 문제에서는 어떤 상태 설계로 바뀌는가?
+- `기본값 0 처리 누락(KeyError)`를 막기 위해 가장 먼저 고정한 줄은 어디인가?
+- `Counter / 해시맵 개념 정리 — 숫자 카드 2`를 다시 읽고 나면 어떤 코드 조각이 핵심으로 남는가?

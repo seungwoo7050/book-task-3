@@ -1,109 +1,130 @@
-# SMTP Client 개발 타임라인
+# SMTP Client development timeline
 
-## Day 1
+`SMTP Client`의 핵심은 완성 결과보다, 어떤 순서로 범위를 좁히고 검증까지 닫았는가에 있다.
 
-### Session 1
+본문은 코드나 trace를 한 번에 길게 복붙하지 않고, 판단이 바뀐 지점만 골라 이어 붙인다.
 
-- 목표: HTTP와 SMTP가 코드 수준에서 어떻게 다른지 먼저 잡는다. 둘 다 텍스트 프로토콜인데 왜 SMTP가 더 까다로운지.
-- 진행: `problem/script/mock_smtp_server.py`를 먼저 열어 봤다. 이 모의 서버가 `HELO`, `MAIL FROM`, `RCPT TO`, `DATA`, `QUIT` 각각에 대해 정해진 응답 코드(`220`, `250`, `354`, `250`, `221`)를 보내주는 구조였다.
-- 이슈: 당시 의문은 "왜 `HELO`부터 보내야 하지? TCP 연결이 됐으면 바로 DATA 가면 안 되나?"였다. mock 서버를 직접 연결해 보니 `HELO` 없이 `DATA`를 보내면 `503 Bad sequence` 같은 응답이 돌아왔다. SMTP는 단계를 건너뛸 수 없다.
+## 구현 순서 한눈에 보기
+
+1. `study/01-Application-Protocols-and-Sockets/smtp-client/problem`의 문제 문서와 실행 target으로 출발점을 고정했다.
+2. `study/01-Application-Protocols-and-Sockets/smtp-client/python/src/smtp_client.py`의 핵심 구간에서 동작 규칙을 설명할 수 있는 최소 앵커를 골랐다.
+3. `make -C study/01-Application-Protocols-and-Sockets/smtp-client/problem test`와 테스트/verify 파일을 연결해 통과 신호와 남은 경계를 정리했다.
+
+## 1. 실행 표면과 entrypoint를 먼저 고정하기
+
+처음에는 `SMTP Client`를 어디서부터 설명해야 할지부터 정리해야 했다. 그래서 문제 문서와 `make help` 출력으로 공개된 실행 표면을 먼저 잡았다.
+
+- 당시 목표: `SMTP Client`를 읽는 출발점과 성공 기준을 고정한다.
+- 실제 진행: `problem/README.md`와 `problem/Makefile`을 먼저 확인한 뒤, `def recv_reply`가 있는 파일로 내려갔다.
+- 검증 신호: `make help`에 보이는 target만으로도 이 프로젝트가 어떤 명령으로 열리고 닫히는지 설명할 수 있었다.
+- 새로 배운 것: 3자리 SMTP 응답 코드에 따른 제어 흐름
+
+핵심 코드/trace:
+
+```python
+def recv_reply(sock: socket.socket) -> str:
+    """SMTP server의 응답을 읽어 반환한다.
+
+    Args:
+        sock: SMTP server에 연결된 TCP socket.
+
+    Returns:
+        decode된 server 응답 문자열.
+    """
+    reply = sock.recv(4096).decode()
+```
+
+왜 이 코드가 중요했는가:
+
+이 부분을 먼저 보여 주는 이유는, 이 프로젝트의 진입점과 실행 표면이 여기서 한 번에 정리되기 때문이다.
 
 CLI:
 
 ```bash
-$ make -C study/01-Application-Protocols-and-Sockets/smtp-client/problem run-debug-server
-SMTP Debug Server running on localhost:1025
+$ make -C study/01-Application-Protocols-and-Sockets/smtp-client/problem help
+  run-debug-server       Start a local SMTP debug server on port $(PORT)
+  run-client             Run the skeleton SMTP client
+  run-solution           Run the solution SMTP client
+  test                   Run the test script with a temporary SMTP mock server
 ```
 
-### Session 2
+## 2. 명령 전송과 응답 확인을 대화 단계에 맞춰 정리하기
 
-- 목표: `send_command()`와 `check_reply()` 두 helper를 먼저 만들어 프로토콜 대화의 뼈대를 잡는다.
-- 진행: HTTP에서는 한 번 보내고 한 번 받으면 끝이었는데, SMTP는 매 명령마다 응답 코드를 확인해야 했다. 그래서 "보내고 → 받고 → 확인"을 반복하는 구조가 필요했다.
+이제부터는 설명을 추상적으로 유지할 수 없었다. 실제 분기나 frame evidence가 모이는 지점을 찾아야 글이 살아났다.
 
-```py
+- 당시 목표: `텍스트 기반 명령-응답 프로토콜을 TCP 위에서 직접 수행하는 메일 클라이언트 과제입니다.`를 실제 근거에 붙인다.
+- 실제 진행: `def send_command` 주변을 중심으로 symbol이나 trace 결과를 다시 좁혀 읽었다.
+- 검증 신호: 짧은 `rg`/filter 출력만으로도 어느 줄이 설명의 중심인지 바로 드러났다.
+- 새로 배운 것: `CRLF`와 `DATA` 종료 구분자 처리
+
+핵심 코드/trace:
+
+```python
 def send_command(sock: socket.socket, command: str) -> str:
-    print(f"C: {command}")
-    sock.sendall(f"{command}\r\n".encode())
-    return recv_reply(sock)
+    """SMTP command를 보내고 server 응답을 반환한다.
 
-def check_reply(reply: str, expected_code: str) -> None:
-    if not reply.startswith(expected_code):
-        raise RuntimeError(f"Expected {expected_code}, got: {reply.strip()}")
+    Args:
+        sock: SMTP server에 연결된 TCP socket.
+        command: CRLF를 제외한 SMTP command 문자열.
+
+    Returns:
+        decode된 server 응답 문자열.
+    """
 ```
 
-- 이슈: `check_reply()`를 처음에는 경고 로그만 남기게 만들었는데, 그러면 이전 단계가 실패해도 다음 명령이 나가 버렸다. 서버 쪽에서 "아까 HELO 응답이 잘못됐는데 왜 MAIL FROM이 오지?"라는 상태가 되면 전체 대화가 엉켰다.
-- 판단: `RuntimeError`로 즉시 중단하는 fail-fast 방식이 SMTP에는 맞았다. 이 프로토콜은 "한 단계라도 틀리면 나머지가 전부 무의미"하다.
+왜 이 코드가 중요했는가:
 
-### Session 3
+여기서는 구현이나 분석의 무게중심이 바뀐다. 그래서 파일 전체보다 이 좁은 구간을 먼저 보는 편이 훨씬 정확하다.
 
-- 목표: 실제 대화 시퀀스를 완성한다 — greeting부터 QUIT까지.
-- 진행: mock 서버를 띄워 놓고 한 단계씩 추가하면서 돌렸다.
+CLI:
 
 ```bash
-$ make -C study/01-Application-Protocols-and-Sockets/smtp-client/problem run-solution
-Connecting to localhost:1025 ...
-
-S: 220 localhost SMTP Mock Server Ready
-C: HELO woopinbell-macbook
-S: 250 Hello woopinbell-macbook
-C: MAIL FROM:<alice@example.com>
-S: 250 OK
-C: RCPT TO:<bob@example.com>
-S: 250 OK
-C: DATA
-S: 354 End data with <CR><LF>.<CR><LF>
-C: (sending message body — 127 bytes)
-S: 250 OK: Message accepted
-C: QUIT
-S: 221 Bye
-
-Email sent successfully!
+$ rg -n -e 'def recv_reply' -e 'def send_command' -e 'def check_reply' -e 'client_socket.sendall(message.encode())' 'study/01-Application-Protocols-and-Sockets/smtp-client/python/src/smtp_client.py' 'study/01-Application-Protocols-and-Sockets/smtp-client/python/tests/test_smtp_client.py'
+study/01-Application-Protocols-and-Sockets/smtp-client/python/src/smtp_client.py:17:def recv_reply(sock: socket.socket) -> str:
+study/01-Application-Protocols-and-Sockets/smtp-client/python/src/smtp_client.py:31:def send_command(sock: socket.socket, command: str) -> str:
+study/01-Application-Protocols-and-Sockets/smtp-client/python/src/smtp_client.py:46:def check_reply(reply: str, expected_code: str) -> None:
 ```
 
-- 이슈: 본문 전송에서 가장 헷갈렸던 건 종료 구분자였다. `\r\n.\r\n`이 본문 끝을 알린다는 규칙인데, 처음에 `.\r\n`만 보내고 그 앞에 `\r\n`을 빠뜨렸더니 mock 서버가 본문이 끝나지 않았다고 판단해서 계속 기다렸다.
+## 3. 테스트와 남은 범위를 정리하기
 
-```py
-message = (
-    f"From: {sender}\r\n"
-    f"To: {recipient}\r\n"
-    f"Subject: {subject}\r\n"
-    f"\r\n"
-    f"{body}\r\n"
-    f".\r\n"
-)
+끝맺음에서 중요한 건 멋진 회고가 아니라 경계선이다. 통과한 범위와 남겨 둔 범위를 같은 문맥 안에 두려고 했다.
+
+- 당시 목표: 검증 결과와 남은 경계를 함께 정리한다.
+- 실제 진행: `make -C study/01-Application-Protocols-and-Sockets/smtp-client/problem test`를 다시 실행하고, `def test_full_smtp_dialogue`가 남아 있는 파일을 본문 마지막 근거로 삼았다.
+- 검증 신호: 현재 공개 답안이 재현된다는 출력과, README limitation이 동시에 확인됐다.
+- 새로 배운 것: envelope 주소와 헤더 주소의 차이
+
+핵심 코드/trace:
+
+```python
+def test_full_smtp_dialogue(self):
+        """전체 SMTP dialogue가 정상적으로 완료되어야 한다."""
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(5)
+        try:
+            sock.connect((HOST, PORT))
+            greeting = sock.recv(1024).decode()
+            assert greeting.startswith("220")
+
+            sock.sendall(b"HELO localhost\r\n")
 ```
 
-나중에 보니 `body` 마지막에 개행이 있으면 `\r\n.\r\n`이 되고, 없으면 `body.\r\n`이 돼서 구분자로 인식이 안 된다. 이 1바이트가 프로토콜의 성패를 갈랐다.
+왜 이 코드가 중요했는가:
 
-### Session 4
-
-- 목표: 테스트를 돌려 전체 시퀀스가 안정적인지 확인한다.
-- 검증:
+최종 단계에서 중요한 것은 '잘 됐다'가 아니라 '무엇을 확인했고 무엇은 아직 안 했다'인데, 그 기준이 이 파일에 가장 잘 남아 있다.
 
 CLI:
 
 ```bash
 $ make -C study/01-Application-Protocols-and-Sockets/smtp-client/problem test
-Starting SMTP Mock Server on port 1025...
-Running SMTP Client...
-✓ Connection established (220 greeting)
-✓ HELO accepted (250)
-✓ MAIL FROM accepted (250)
-✓ RCPT TO accepted (250)
-✓ DATA entered (354)
-✓ Message body accepted (250)
-✓ QUIT acknowledged (221)
-All tests passed!
+TEST: Client completes SMTP dialogue           [PASS]
+TEST: Output indicates success                 [PASS]
+TEST: Output shows SMTP dialogue               [PASS]
+ Results: 3 passed, 0 failed
 ```
 
-```bash
-$ cd study/01-Application-Protocols-and-Sockets/smtp-client/python/tests
-$ python3 -m pytest test_smtp_client.py -v
-===== 4 passed =====
-```
+## 남은 경계
 
-- 정리:
-  - 이 프로젝트에서 가장 중요한 함수는 화려한 게 아니라 `check_reply()`라는 3줄짜리 검사였다. 이게 없으면 대화 전체가 불안정해진다.
-  - HTTP는 "요청 한 번 → 응답 한 번"이었지만, SMTP는 "매 단계 허가를 기다리는 상태 머신"이었다. 같은 TCP인데 프로토콜이 부여하는 리듬이 완전히 다르다.
-  - `.\r\n` 앞에 `\r\n`이 빠지는 실수는 당시에 한참 헤맸다. 결국 SMTP의 핵심은 wire format의 바이트 하나하나였다.
-  - 다음은 Web Proxy — 서버와 클라이언트를 한 프로그램 안에서 동시에 해야 하는 구조다.
+- `STARTTLS`는 구현하지 않았습니다.
+- `AUTH LOGIN`은 구현하지 않았습니다.
+- 외부 SMTP 서버 정책과의 차이는 검증하지 않았습니다.

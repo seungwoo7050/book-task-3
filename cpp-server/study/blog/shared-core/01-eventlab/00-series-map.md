@@ -1,46 +1,12 @@
 # eventlab series map
 
-이 시리즈는 별도 노트 계층 없이 `eventlab`의 런타임 경계를 다시 읽기 위한 지도다. 설명이 비는 부분은 현재 소스와 테스트를 읽는 일반적인 수준의 개발자가 자연스럽게 도달할 수 있는 범위까지만 추론한다.
+`eventlab`을 세 편으로 나눈 이유는 기능 목록을 잘라 놓기 위해서가 아니다. 이 lab은 작은 대신, 뒤의 모든 서버 문서가 재사용할 runtime 감각을 먼저 만들어 준다. 그래서 시리즈도 "event loop 뼈대 -> line protocol과 keep-alive -> 실제 검증과 경계" 순서로 읽히도록 나눴다.
 
-## 이 프로젝트가 답하는 질문
+첫 글은 서버가 어떤 순서로만 움직이게 만들었는지에 집중한다. 둘째 글은 그 뼈대 위에 `PING`/`PONG`, `ECHO`, idle keep-alive 같은 최소 계약이 어떻게 올라가는지 다룬다. 마지막 글은 smoke test가 무엇을 진짜로 증명하는지, 그리고 parser나 상태 전이 같은 문제는 왜 아직 일부러 남겨 두는지를 정리한다.
 
-- non-blocking TCP 서버의 최소 runtime surface를 parser 없이 어디까지 설명할 수 있을까
-- keep-alive와 disconnect cleanup을 application contract로 잡으면 어떤 코드 경계가 생길까
+## 글 순서
 
-## 읽는 순서
+1. [10-runtime-surface-and-event-loop.md](10-runtime-surface-and-event-loop.md)
+2. [20-line-protocol-and-keepalive.md](20-line-protocol-and-keepalive.md)
+3. [30-smoke-verification-and-boundaries.md](30-smoke-verification-and-boundaries.md)
 
-1. [10-chronology-runtime-and-socket-surface.md](10-chronology-runtime-and-socket-surface.md)
-2. [20-chronology-protocol-loop-and-keepalive.md](20-chronology-protocol-loop-and-keepalive.md)
-3. [30-chronology-smoke-verification-and-boundaries.md](30-chronology-smoke-verification-and-boundaries.md)
-
-## 참조한 실제 파일
-
-- `study/shared-core/01-eventlab/README.md`
-- `study/shared-core/01-eventlab/problem/README.md`
-- `study/shared-core/01-eventlab/cpp/README.md`
-- `study/shared-core/01-eventlab/cpp/Makefile`
-- `study/shared-core/01-eventlab/cpp/include/inc/EventManager.hpp`
-- `study/shared-core/01-eventlab/cpp/include/inc/Server.hpp`
-- `study/shared-core/01-eventlab/cpp/src/EventManager.cpp`
-- `study/shared-core/01-eventlab/cpp/src/Server.cpp`
-- `study/shared-core/01-eventlab/cpp/src/main.cpp`
-- `study/shared-core/01-eventlab/cpp/tests/test_eventlab.py`
-- `study/shared-core/01-eventlab/docs/README.md`
-
-## Canonical CLI
-
-```bash
-cd study/shared-core/01-eventlab/cpp
-make clean && make test
-```
-
-## Git Anchor
-
-- `2026-03-09 73372bd Add project: backend-fastapi, backend-spring, cpp-server`
-- `2026-03-10 7dc71a8 docs: enhance cpp-server`
-- `2026-03-11 a9c65b3 Track 2에 대한 전반적인 개선 완료 (infobank, bithumb, game-server)`
-
-## 추론 원칙
-
-- `2026-03-11` 이전의 세부 구현 순서는 commit granularity로 복원하지 않는다.
-- chronology는 `main.cpp`와 `Server.hpp`가 보여 주는 entrypoint, `EventManager.cpp`가 보여 주는 runtime substrate, `test_eventlab.py`가 요구하는 smoke path 순서로 재구성한다.

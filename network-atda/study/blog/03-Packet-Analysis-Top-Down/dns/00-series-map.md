@@ -1,33 +1,28 @@
-# DNS Packet Analysis 시리즈 지도
+# DNS Packet Analysis series map
 
-## 이 프로젝트를 한 줄로
+이 프로젝트를 읽을 때 붙들 질문은 하나다. DNS trace에서 query, response, authoritative 여부를 어떤 필드로 구분했는가?
 
-DNS를 "도메인 이름을 IP로 바꿔 준다"에서 멈추지 않고, query/response 쌍과 trace의 관찰 한계를 함께 적어 내려간 기록이다.
+## 무엇을 근거로 복원했는가
 
-## 시작 전에 고정한 자료
+- 프로젝트 README: `study/03-Packet-Analysis-Top-Down/dns/README.md`
+- 문제 문서와 실행 표면: `study/03-Packet-Analysis-Top-Down/dns/problem/README.md`, `study/03-Packet-Analysis-Top-Down/dns/problem/Makefile`
+- 분석 본문: `study/03-Packet-Analysis-Top-Down/dns/analysis/src/dns-analysis.md`
+- 정식 검증 출력: `make -C study/03-Packet-Analysis-Top-Down/dns/problem test`
 
-- 제공 trace: `problem/data/dns-nslookup.pcapng`, `dns-web-browsing.pcapng`
-- 실행 진입점: `problem/Makefile`
-- 사용자 답안: `study/03-Packet-Analysis-Top-Down/dns/analysis/src/dns-analysis.md`
-- 보조 개념 문서: `docs/concepts/wireshark-dns.md`
+## 어떤 순서로 읽으면 되는가
 
-## 이 시리즈에서 따라갈 질문
+1. `problem/README.md`로 문제 조건과 성공 기준을 확인한다.
+2. 이 문서에서 어떤 입력을 근거로 썼는지 먼저 본다.
+3. `01-evidence-ledger.md`로 세 단계 흐름을 짧게 파악한다.
+4. `10-development-timeline.md`에서 코드나 trace, CLI를 따라간다.
 
-1. DNS query와 response를 최소 몇 개의 필드로 묶어야 "이 요청의 답이 이것"이라고 말할 수 있는가.
-2. `8.8.8.8` 같은 resolver 주소를 trace만으로 어디까지 해석할 수 있고, 어디부터는 추정이 되는가.
-3. authoritative bit, TTL, answer count는 어떤 frame에서 바로 확인되는가.
-4. malformed response나 packet 수가 너무 작은 trace에서는 어떤 답을 과감하게 `관찰 불가`로 남겨야 하는가.
+## 이번 리라이트에서 의도적으로 제외한 입력
 
-## 검증 명령
+- 현재 `study/blog/**`의 이전 본문
+- `notion/`, `notion-archive/` 아래의 서술형 메모
 
-- query 확인: `make -C study/03-Packet-Analysis-Top-Down/dns/problem filter-queries`
-- response 확인: `make -C study/03-Packet-Analysis-Top-Down/dns/problem filter-responses`
-- browsing trace: `make -C study/03-Packet-Analysis-Top-Down/dns/problem filter-browsing`
-- 답안 검증: `make -C study/03-Packet-Analysis-Top-Down/dns/problem test`
+## 짧은 판정 메모
 
-## 글 구성
-
-| 파일 | 역할 |
-| :--- | :--- |
-| `00-series-map.md` | query/response 구조와 관찰 한계를 먼저 선언한다. |
-| `10-development-timeline.md` | nslookup trace를 먼저 읽고, 그다음 browsing trace로 "관찰 가능한 범위"를 다시 줄여 본다. |
+- 독립 프로젝트로 본 이유: `DNS Packet Analysis`는 자기 README와 정식 검증 명령으로 범위를 독립적으로 설명할 수 있다.
+- 보관본 위치: `study/blog/_legacy`
+- 이번 글의 중심 답: DNS query/response 구조와 TTL 기반 캐시를 Wireshark로 해석하는 랩입니다.

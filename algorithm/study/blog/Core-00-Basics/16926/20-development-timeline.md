@@ -1,28 +1,117 @@
-# BOJ 16926 — 개발 타임라인 (후반)
+# 배열 돌리기 1: 검증, edge case, 마지막 설명 축
 
-## Phase 2
+뒷 절반에서는 “왜 맞는가”를 더 조밀하게 확인한다. fixture 전체를 다시 돌려 실수 포인트를 묶고, 마지막에는 개념 문서와 코드가 정확히 어디서 맞물리는지 정리한다.
+
+## 구현 순서 요약
+
+- `make -C study/Core-00-Basics/16926/problem test`로 fixture 전체를 다시 돌린다.
+- `docs/references/approach.md`의 실수 포인트를 코드 분기와 연결한다.
+- `Layer Decomposition — Concept & Background`를 붙여 마지막 판단 기준을 고정한다.
+
+## Phase 3
 ### Session 3
-- 목표: 써넣기 순서와 edge case를 점검한다.
-- 진행: 추출할 때와 같은 인덱스 순서로 `ring[idx]`를 써넣으면 된다. 처음엔 추출 순서와 써넣기 순서를 따로 구현했다가, 같은 인덱스 루프를 재사용하는 게 안전하다는 걸 알았다.
-- 이슈: N=2, M=2이면 레이어 1개, ring 길이 4. N=1 또는 M=1이면 layers=0이라 아무 회전도 안 한다.
 
-### Session 4
-- 검증: fixture 통과 확인.
+- 당시 목표: 한두 개 입력이 맞는 수준을 넘어서 fixture 전체를 통과하는 구조로 묶는다.
+- 변경 단위: `problem/script/test.sh`, `docs/references/approach.md`, `docs/concepts/edge-cases.md`
+- 처음 가설: 실수 포인트를 문장으로만 남기면 다시 틀리기 쉽고, 테스트 루프와 함께 봐야 실제 방어선이 보인다.
+- 실제 조치: `test.sh`의 PASS/FAIL 루프와 `approach.md`의 실수 체크리스트를 나란히 읽으며, 어떤 분기가 어디를 막는지 다시 맞췄다.
 
-CLI:
+CLI 1:
 
 ```bash
 $ make -C study/Core-00-Basics/16926/problem test
 ```
 
-```text
-Test 1: PASS
-Test 2: PASS
-Results: 2/2 passed, 0 failed
+검증 신호:
+
+- `Test 1: PASS`, `Test 2: PASS`, `Results: 2/2 passed, 0 failed` 순서로 출력됐다.
+- 이번 단계에서 특히 다시 확인한 실수 포인트는 아래 셋이었다.
+
+- 레이어 길이 계산에서 코너를 중복 포함하는 오류
+- R을 레이어 길이로 모듈러하지 않아 시간 초과
+- 행/열 경계를 혼동해 인덱스 에러 발생
+
+핵심 코드 1:
+
+```python
+    for k in range(layers):
+        # k번째 레이어를 1차원 리스트로 펼친다(시계 방향 순회)
+        ring = []
+        # 윗줄: left에서 right까지
+        for j in range(k, M - k):
+            ring.append(arr[k][j])
+        # 오른쪽 열: top+1에서 bottom까지
+        for i in range(k + 1, N - k):
+            ring.append(arr[i][M - 1 - k])
+        # 아랫줄: right-1에서 left까지
 ```
 
-### Session 5
-- 정리:
-  - 이 문제의 핵심은 "2차원 회전을 1차원 시프트로 변환"하는 아이디어다.
-  - 가장 실수하기 쉬운 지점은 테두리 인덱스다. 네 변의 시작/끝 인덱스가 각각 다르고, 코너를 중복 포함하면 ring 길이가 틀어진다.
-  - R을 모듈러하는 건 사소해 보이지만, 안 하면 R=10억에서 시간 초과가 된다.
+왜 이 코드가 중요했는가:
+
+이 코드는 정답을 만드는 줄이면서 동시에 체크리스트를 만족시키는 줄이다. 그래서 `approach.md`의 실수 포인트와 가장 잘 연결된다.
+
+새로 배운 것:
+
+- 테스트를 다시 읽는 순간, “맞았다”보다 “어디서 안 틀리는가”를 더 분명하게 설명할 수 있었다.
+
+다음:
+
+- 마지막으로 개념 문서와 코드가 어느 지점에서 맞물리는지 정리한다.
+
+## Phase 4
+### Session 4
+
+- 당시 목표: `Layer Decomposition — Concept & Background`를 실제 코드와 연결해 마지막 설명 축을 세운다.
+- 변경 단위: `docs/concepts/*.md`, `python/src/solution.py`
+- 처음 가설: 마지막 글에서 남겨야 할 것은 추상 개념이 아니라, 그 개념이 꼭 필요해진 줄이다.
+- 실제 조치: 마지막 출력과 guard를 다시 읽으며 개념 설명이 어느 줄을 가리키는지 고정했다.
+
+CLI 2:
+
+```bash
+$ cd study/Core-00-Basics/16926/problem && python3 ../python/src/solution.py < data/input2.txt
+```
+
+검증 신호:
+
+- `2 3 4 8`, `1 7 11 12`, `5 6 10 16`, `9 13 14 15` 순서로 출력됐다.
+- 설명용 문서가 아니라 실제 실행 결과와 같은 답이 나온다는 점이 마지막 확인 포인트였다.
+
+핵심 코드 2:
+
+```python
+    # 출력
+    for row in arr:
+        print(' '.join(map(str, row)))
+
+if __name__ == "__main__":
+    solve()
+```
+
+왜 이 코드가 중요했는가:
+
+여기서는 `Layer Decomposition — Concept & Background`가 별도 해설이 아니라는 점이 분명해진다. `레이어 분해(layer decomposition) 후 각 테두리를 독립적으로 회전`를 끝까지 지키는 데 필요한 최소 단위가 바로 이 블록에 남아 있다.
+
+핵심 코드 3:
+
+```python
+    # 출력
+    for row in arr:
+        print(' '.join(map(str, row)))
+
+if __name__ == "__main__":
+    solve()
+```
+
+왜 이 코드가 중요했는가:
+
+끝을 어떻게 닫느냐가 생각보다 중요했다. `배열 돌리기 1`에서는 마지막 출력 정리가 구현의 완성도를 가장 직접적으로 드러냈다.
+
+새로 배운 것:
+
+- `Layer Decomposition — Concept & Background`를 다시 읽고 나니, 이 문제의 핵심은 `레이어 분해(layer decomposition) 후 각 테두리를 독립적으로 회전`를 끝까지 흔들리지 않게 유지하는 데 있었다.
+- 그래서 `Core-00-Basics`의 질문인 `작은 입력과 조건 분기를 어떻게 안정적으로 구현하고 검증할까?`도 결과 요약이 아니라, 상태와 순서를 어떻게 붙잡는가의 문제로 읽히게 됐다.
+
+다음:
+
+- 이 시리즈는 여기서 닫히지만, 다음 문제를 읽을 때도 `문제 계약 -> 첫 상태 -> fixture 검증` 순서를 그대로 재사용할 수 있다.

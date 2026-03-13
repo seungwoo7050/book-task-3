@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#06131a" />
+  <rect x="48" y="48" width="1104" height="624" rx="24" fill="#0f172a" stroke="#1d4ed8" />
+  <text x="80" y="118" fill="#f8fafc" font-size="34" font-family="Menlo, Monaco, Consolas, monospace">Workspace SaaS API</text>
+  <text x="80" y="158" fill="#7dd3fc" font-size="18" font-family="Menlo, Monaco, Consolas, monospace">Go backend verification snapshot</text>
+
+  <text x="80" y="220" fill="#cbd5e1" font-size="17" font-family="Menlo, Monaco, Consolas, monospace">Source: 18-workspace-saas-api/docs/verification.md</text>
+
+  <text x="80" y="286" fill="#a7f3d0" font-size="20" font-family="Menlo, Monaco, Consolas, monospace">go test ./...          PASS</text>
+  <text x="80" y="324" fill="#a7f3d0" font-size="20" font-family="Menlo, Monaco, Consolas, monospace">make e2e               PASS</text>
+  <text x="80" y="362" fill="#a7f3d0" font-size="20" font-family="Menlo, Monaco, Consolas, monospace">make smoke             PASS</text>
+  <text x="80" y="400" fill="#a7f3d0" font-size="20" font-family="Menlo, Monaco, Consolas, monospace">test-portfolio-repro   PASS</text>
+
+  <text x="80" y="462" fill="#f8fafc" font-size="18" font-family="Menlo, Monaco, Consolas, monospace">End-to-end scenario checkpoints</text>
+  <text x="80" y="498" fill="#cbd5e1" font-size="17" font-family="Menlo, Monaco, Consolas, monospace">owner register / project create / invitation accept</text>
+  <text x="80" y="532" fill="#cbd5e1" font-size="17" font-family="Menlo, Monaco, Consolas, monospace">issue replay / optimistic locking conflict / comment create</text>
+  <text x="80" y="566" fill="#cbd5e1" font-size="17" font-family="Menlo, Monaco, Consolas, monospace">worker outbox consume / notification create / refresh rotate / logout revoke</text>
+
+  <text x="80" y="628" fill="#93c5fd" font-size="15" font-family="Menlo, Monaco, Consolas, monospace">OpenAPI-aligned fields were parsed in smoke and e2e to reduce doc drift.</text>
+</svg>

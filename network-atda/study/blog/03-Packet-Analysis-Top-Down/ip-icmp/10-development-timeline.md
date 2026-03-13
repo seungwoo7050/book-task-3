@@ -1,66 +1,120 @@
-# IP and ICMP Packet Analysis 개발 타임라인
+# IP and ICMP Packet Analysis development timeline
 
-## Day 1 — traceroute와 fragmentation을 따로 읽기 시작
+`IP and ICMP Packet Analysis`의 핵심은 완성 결과보다, 어떤 순서로 범위를 좁히고 검증까지 닫았는가에 있다.
 
-### Session 1
+본문은 코드나 trace를 한 번에 길게 복붙하지 않고, 판단이 바뀐 지점만 골라 이어 붙인다.
 
-- 목표: traceroute trace에서 TTL이 hop 수를 어떻게 드러내는지 확인한다.
-- 진행: 먼저 Echo Request만 뽑았다. frame 1, 3, 5의 TTL이 1, 2, 3으로 차례로 올라간다. `ip.id`도 `0x0fa0`, `0x0fa1`, `0x0fa2`로 함께 증가한다.
-- 이슈: 처음에는 `ICMP Type 11`만 찾으면 traceroute 설명이 끝날 줄 알았다. 하지만 그렇게 보면 왜 다른 router가 차례로 응답하는지, probe마다 무엇이 달라지는지 설명이 비어 버린다.
+## 구현 순서 한눈에 보기
+
+1. `study/03-Packet-Analysis-Top-Down/ip-icmp/problem`의 문제 문서와 실행 target으로 출발점을 고정했다.
+2. `study/03-Packet-Analysis-Top-Down/ip-icmp/analysis/src/ip-icmp-analysis.md`의 핵심 구간에서 동작 규칙을 설명할 수 있는 최소 앵커를 골랐다.
+3. `make -C study/03-Packet-Analysis-Top-Down/ip-icmp/problem test`와 테스트/verify 파일을 연결해 통과 신호와 남은 경계를 정리했다.
+
+## 1. 질문과 trace 범위를 먼저 세우기
+
+처음에는 `IP and ICMP Packet Analysis`를 어디서부터 설명해야 할지부터 정리해야 했다. 그래서 문제 문서와 `make help` 출력으로 공개된 실행 표면을 먼저 잡았다.
+
+- 당시 목표: `IP and ICMP Packet Analysis`를 읽는 출발점과 성공 기준을 고정한다.
+- 실제 진행: `problem/README.md`와 `problem/Makefile`을 먼저 확인한 뒤, `## Part 1: IPv4 Header`가 있는 파일로 내려갔다.
+- 검증 신호: `make help`에 보이는 target만으로도 이 프로젝트가 어떤 명령으로 열리고 닫히는지 설명할 수 있었다.
+- 새로 배운 것: IPv4 header field 해석
+
+핵심 코드/trace:
+
+```text
+## Part 1: IPv4 Header
+
+**Trace file**: `ip-traceroute.pcapng`
+
+### Question 1
+
+**Q: First ICMP Echo Request — IP version, header length, total length?**
+```
+
+왜 이 코드가 중요했는가:
+
+이 부분을 먼저 보여 주는 이유는, 이 프로젝트의 진입점과 실행 표면이 여기서 한 번에 정리되기 때문이다.
 
 CLI:
 
 ```bash
-$ make -C study/03-Packet-Analysis-Top-Down/ip-icmp/problem filter-ttl
-1   1   0x0fa0   93.184.216.34
-3   2   0x0fa1   93.184.216.34
-5   3   0x0fa2   93.184.216.34
+$ make -C study/03-Packet-Analysis-Top-Down/ip-icmp/problem help
+  open-traceroute        Open the traceroute trace in Wireshark GUI
+  open-fragmentation     Open the fragmentation trace in Wireshark GUI
+  filter-icmp            Show all ICMP packets from traceroute trace
+  filter-fragments       Show fragmented IP packets
+  filter-ttl             Show TTL values for ICMP echo requests
+  summary                Print packet count summary for all traces
 ```
 
-- 메모: TTL과 `ip.id`를 같이 보니 traceroute probe가 정말 서로 다른 IP datagram이라는 점이 감각적으로 들어왔다.
+## 2. IPv4 header와 ICMP 흐름을 같은 분석 축으로 묶기
 
-### Session 2
+이제부터는 설명을 추상적으로 유지할 수 없었다. 실제 분기나 frame evidence가 모이는 지점을 찾아야 글이 살아났다.
 
-- 목표: router가 보내는 ICMP 응답을 probe와 짝지어 읽는다.
-- 진행: `filter-icmp`로 request와 response를 한 번에 뽑고, 어떤 source IP가 어떤 TTL에서 등장하는지 확인했다. frame 2는 `10.0.0.1`, frame 4는 `172.16.0.1`에서 온 `Type 11 / Code 0`이다. 마지막 frame 6만 `Echo Reply`다.
-- 이슈: 처음에는 ICMP를 하나의 프로토콜로만 보고 Echo Reply와 Time Exceeded를 같은 성격의 응답처럼 취급할 뻔했다. 실제로는 traceroute에서 중요한 건 오류 메시지가 아니라 "TTL이 다 떨어졌다는 사실을 중간 router가 대신 알려 준다"는 구조였다.
+- 당시 목표: `IPv4 header, fragmentation, TTL, ICMP 메시지를 traceroute/ping 맥락에서 읽는 네트워크 계층 랩입니다.`를 실제 근거에 붙인다.
+- 실제 진행: `## Part 2: IP Fragmentation` 주변을 중심으로 symbol이나 trace 결과를 다시 좁혀 읽었다.
+- 검증 신호: 짧은 `rg`/filter 출력만으로도 어느 줄이 설명의 중심인지 바로 드러났다.
+- 새로 배운 것: fragmentation 3요소(`Identification`, `Flags`, `Offset`)
+
+핵심 코드/trace:
+
+```text
+## Part 2: IP Fragmentation
+
+**Trace file**: `ip-fragmentation.pcapng`
+
+### Question 9
+
+**Q: First fragmented Echo Request — Identification, Flags, Fragment Offset per fragment?**
+```
+
+왜 이 코드가 중요했는가:
+
+여기서는 구현이나 분석의 무게중심이 바뀐다. 그래서 파일 전체보다 이 좁은 구간을 먼저 보는 편이 훨씬 정확하다.
 
 CLI:
 
 ```bash
 $ make -C study/03-Packet-Analysis-Top-Down/ip-icmp/problem filter-icmp
-1   10.0.0.2       93.184.216.34   1    8    0   0x0fa0
-2   10.0.0.1       10.0.0.2       64   11   0   0x2000
-3   10.0.0.2       93.184.216.34   2    8    0   0x0fa1
-4   172.16.0.1     10.0.0.2       64   11   0   0x2001
-5   10.0.0.2       93.184.216.34   3    8    0   0x0fa2
-6   93.184.216.34  10.0.0.2       64   0    0   0x3000
+tshark -r data/ip-traceroute.pcapng -Y "icmp" -T fields \
+5	10.0.0.2	93.184.216.34	3	8	0	0x0fa2
+6	93.184.216.34	10.0.0.2	50	0	0	0x138b
 ```
 
-- 메모: 이 출력 덕분에 traceroute를 "TTL 실험 + router 보고"로 설명할 수 있게 됐다. 단순히 ICMP 종류를 외우는 것과는 느낌이 달랐다.
+## 3. verify 스크립트와 한계까지 정리하기
 
-### Session 3
+끝맺음에서 중요한 건 멋진 회고가 아니라 경계선이다. 통과한 범위와 남겨 둔 범위를 같은 문맥 안에 두려고 했다.
 
-- 목표: fragmentation trace를 별도의 문제로 읽고, reassembly 책임이 어디에 있는지 정리한다.
-- 진행: `filter-fragments`를 돌리니 세 fragment가 같은 `ip.id=0x3039`를 공유하고, offset이 0, 175, 350으로 이어졌다. 마지막 fragment만 `MF=0`이다. Wireshark는 final fragment에서 reassembly metadata를 보여 준다.
-- 이슈: 처음엔 fragment 개수만 세면 설명이 끝난다고 생각했다. 그런데 offset이 8-byte 단위라는 점과 마지막 fragment만 `MF=0`이라는 점을 빼면, 왜 이 셋이 한 datagram인지 설명이 약해진다.
+- 당시 목표: 검증 결과와 남은 경계를 함께 정리한다.
+- 실제 진행: `make -C study/03-Packet-Analysis-Top-Down/ip-icmp/problem test`를 다시 실행하고, `## Part 3: ICMP and Traceroute`가 남아 있는 파일을 본문 마지막 근거로 삼았다.
+- 검증 신호: 현재 공개 답안이 재현된다는 출력과, README limitation이 동시에 확인됐다.
+- 새로 배운 것: TTL과 traceroute 관계
+
+핵심 코드/trace:
+
+```text
+# IP & ICMP Lab — Analysis Answers
+
+## Trace Limitations
+
+- This report uses only the repository-provided trace files.
+- If a worksheet item needs packets that are not present in these traces, the answer is marked as `Not observable in this provided trace`.
+- Missing values are not guessed; only decoded packet evidence is used.
+- Numeric claims are tied to explicit frame references.
+```
+
+왜 이 코드가 중요했는가:
+
+최종 단계에서 중요한 것은 '잘 됐다'가 아니라 '무엇을 확인했고 무엇은 아직 안 했다'인데, 그 기준이 이 파일에 가장 잘 남아 있다.
 
 CLI:
 
 ```bash
-$ make -C study/03-Packet-Analysis-Top-Down/ip-icmp/problem filter-fragments
-1   0x3039   1   0     1420
-2   0x3039   1   175   1420
-3   0x3039   0   350   728
-```
-
-```bash
 $ make -C study/03-Packet-Analysis-Top-Down/ip-icmp/problem test
-bash script/verify_answers.sh
-IP/ICMP analysis answers look complete.
+PASS: ip-icmp answer file passed content verification
 ```
 
-- 정리:
-	- traceroute는 ICMP 메시지 이름보다 TTL 변화와 router source IP 대응이 더 중요했다.
-	- `ip.id`는 독립된 probe와 fragment 묶음을 추적하는 실마리로 계속 등장했다.
-	- fragmentation 설명은 개수 세기보다 `MF`, `frag_offset`, final fragment의 reassembly metadata를 같이 보는 편이 정확했다.
+## 남은 경계
+
+- IPv4 중심이며 IPv6 비교는 개념 문서에서만 다룹니다.
+- OS별 traceroute 구현 차이는 실험하지 않습니다.

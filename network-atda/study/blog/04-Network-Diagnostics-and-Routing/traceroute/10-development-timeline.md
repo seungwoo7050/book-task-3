@@ -1,82 +1,128 @@
-# Traceroute 개발 타임라인
+# Traceroute development timeline
 
-## Day 1 — probe port 공식, ICMP 계층 해석, 종료 조건
+`Traceroute`는 결과만 보면 단순해 보이지만, 실제로는 어느 파일에서 규칙을 고정했는지 따라가야 전체 그림이 보인다.
 
-### Session 1
+아래 순서는 README 설명을 다시 요약한 것이 아니라, 실제 근거가 남아 있는 지점을 따라 재조립한 흐름이다.
 
-- 목표: TTL 실험보다 probe-reply 매칭 공식을 먼저 독립적으로 고정한다.
-- 진행: `test_traceroute.py`의 `TestBuildProbePort`를 먼저 읽었다. TTL 1 probe 0은 port `33434`, TTL 1 probe 1은 `33435`, TTL 2 probe 0은 `33437`이어야 한다는 값이 하드코딩된 expected로 박혀 있었다.
-- 이슈: 처음에는 모든 probe에 동일한 `33434`를 써도 된다고 생각했다. 그러나 hop당 3개 probe를 날리면 reply를 받을 때 어느 probe에 대한 응답인지 port 번호로 역추적해야 한다. 동일한 port를 쓰면 이 매칭이 불가능하다.
-- 발견: 공식 `base_port + (ttl - 1) * probes_per_hop + probe_index`가 결정론적으로 port를 배분한다. 이 공식 하나가 send script와 recv script를 이어 주는 유일한 계약이다.
+## 구현 순서 한눈에 보기
 
-핵심 코드:
+1. `study/04-Network-Diagnostics-and-Routing/traceroute/problem`의 문제 문서와 실행 target으로 출발점을 고정했다.
+2. `study/04-Network-Diagnostics-and-Routing/traceroute/python/src/traceroute.py`의 핵심 구간에서 동작 규칙을 설명할 수 있는 최소 앵커를 골랐다.
+3. `make -C study/04-Network-Diagnostics-and-Routing/traceroute/problem test`와 테스트/verify 파일을 연결해 통과 신호와 남은 경계를 정리했다.
 
-```py
-def build_probe_port(
-    ttl: int,
-    probe_index: int,
-    probes_per_hop: int,
-    base_port: int = DEFAULT_BASE_PORT,
-) -> int:
+## 1. 실행 표면과 entrypoint를 먼저 고정하기
+
+출발점에서 중요한 건 기능 목록이 아니라 읽는 순서였다. `problem/` 문서와 Makefile만으로도 첫 발을 어디에 둘지 정리할 수 있었다.
+
+- 당시 목표: `Traceroute`를 읽는 출발점과 성공 기준을 고정한다.
+- 실제 진행: `problem/README.md`와 `problem/Makefile`을 먼저 확인한 뒤, `class ProbeObservation`가 있는 파일로 내려갔다.
+- 검증 신호: `make help`에 보이는 target만으로도 이 프로젝트가 어떤 명령으로 열리고 닫히는지 설명할 수 있었다.
+- 새로 배운 것: TTL과 `ICMP Time Exceeded`의 연결
+
+핵심 코드/trace:
+
+```python
+@dataclass
+class ProbeObservation:
+    responder: str | None
+    rtt_ms: float | None
+    icmp_type: int | None
+    icmp_code: int | None
+
+
+def build_probe_port(ttl: int, probe_index: int, probes_per_hop: int, base_port: int = DEFAULT_BASE_PORT) -> int:
+    """probe마다 안정적인 UDP destination port를 계산한다."""
     return base_port + (ttl - 1) * probes_per_hop + probe_index
 ```
 
-```bash
-$ PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q \
-    study/04-Network-Diagnostics-and-Routing/traceroute/python/tests/test_traceroute.py::TestBuildProbePort
-# 3 passed
-```
+왜 이 코드가 중요했는가:
 
-### Session 2
+첫 단계에서 이 코드를 붙드는 편이 좋은 이유는, 뒤 단계 전체가 여기서 정한 입력과 실행 방식 위에 쌓이기 때문이다.
 
-- 목표: ICMP reply 안에서 embedded UDP destination port를 꺼내는 parsing 계층을 완성한다.
-- 진행: raw recv socket이 받는 packet은 outer IP → ICMP header → embedded IP → embedded UDP 4개 계층이다. 각 계층을 넘어가는 offset이 맞지 않으면 port가 전혀 다른 값이 나온다.
-- 이슈: 처음에는 ICMP data를 바로 파싱하면 된다고 생각했다. 실제로는 `outer_ip_len = (data[0] & 0x0F) * 4`로 시작 offset을 구하고, ICMP header 8바이트를 건너뛰고, 그 안의 embedded IP header 길이를 다시 읽어서 embedded UDP destination port에 도달해야 한다.
-- 측정: `test_parse_icmp_response`는 각 계층의 실제 바이트를 조립해 넣고, `dest_port`가 의도한 probe port와 일치하는지 단언한다.
-
-핵심 코드:
-
-```py
-# ICMP payload 시작점
-outer_ip_header_len = (data[0] & 0x0F) * 4
-icmp_header = data[outer_ip_header_len : outer_ip_header_len + 8]
-icmp_type, icmp_code = icmp_header[0], icmp_header[1]
-
-# embedded IP 안의 embedded UDP
-embedded_ip_start = outer_ip_header_len + 8
-embedded_ip_header_len = (data[embedded_ip_start] & 0x0F) * 4
-udp_start = embedded_ip_start + embedded_ip_header_len
-_, dest_port, _, _ = struct.unpack("!HHHH", data[udp_start : udp_start + 8])
-```
+CLI:
 
 ```bash
-$ PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q \
-    study/04-Network-Diagnostics-and-Routing/traceroute/python/tests/test_traceroute.py::TestParseIcmpResponse
-# 2 passed
+$ make -C study/04-Network-Diagnostics-and-Routing/traceroute/problem help
+  run-client         Run the live traceroute implementation (requires sudo on most systems)
+  test               Run parser, formatting, and synthetic route integration tests
 ```
 
-### Session 3
+## 2. probe port 계산, ICMP 파싱, hop formatting을 한 경로로 묶기
 
-- 목표: 2-socket 아키텍처, `Port Unreachable` 종료 조건, synthetic route 테스트를 완성한다.
-- 진행: send side는 `SOCK_DGRAM`으로 TTL을 설정해 보내고, recv side는 raw `SOCK_RAW IPPROTO_ICMP`로 ICMP를 받는다. 같은 socket으로 보내고 받으면 TTL 제어와 raw 수신을 동시에 할 수 없다.
-- 이슈: 처음에는 `Time Exceeded`가 오면 hop을 기록하고, destination IP가 응답하면 종료하면 된다고 생각했다. 그러나 destination router가 ICMP `Echo Reply`가 아닌 `Port Unreachable (type 3, code 3)`로 응답한다는 점을 코드에서 명확히 처리해야 했다.
-- FakeSocket 설계: `FakeRecvSocket`은 TTL별로 미리 만든 합성 ICMP reply를 큐에 담아 두고, `recv()` 호출마다 하나씩 반환한다. `FakeSendSocket`은 실제 socket 없이 `setsockopt` / `sendto`를 조용히 삼킨다. 이 두 가짜 socket이 있어야 root 없이 전체 경로 추적 흐름을 단위 테스트할 수 있다.
+두 번째 단계에서는 `TTL 증가와 `ICMP Time Exceeded`를 이용해 hop-by-hop 경로를 드러내는 bridge 프로젝트입니다.`라는 설명을 실제 코드나 trace 근거에 붙여야 했다. 그래서 파일 전체를 훑기보다 판단이 몰린 구간 하나를 먼저 골랐다.
+
+- 당시 목표: `TTL 증가와 ICMP Time Exceeded를 이용해 hop-by-hop 경로를 드러내는 bridge 프로젝트입니다.`를 실제 근거에 붙인다.
+- 실제 진행: `def trace_route` 주변을 중심으로 symbol이나 trace 결과를 다시 좁혀 읽었다.
+- 검증 신호: 짧은 `rg`/filter 출력만으로도 어느 줄이 설명의 중심인지 바로 드러났다.
+- 새로 배운 것: embedded UDP port를 이용한 probe 매칭
+
+핵심 코드/trace:
+
+```python
+def trace_route(
+    host: str,
+    max_hops: int = 30,
+    probes_per_hop: int = 3,
+    timeout: float = 1.0,
+    base_port: int = DEFAULT_BASE_PORT,
+) -> list[str]:
+    """경로를 추적하고 출력용 hop line 목록을 반환한다."""
+    destination_ip = resolve_target(host)
+    lines = [f"traceroute to {host} ({destination_ip}), {max_hops} hops max"]
+```
+
+왜 이 코드가 중요했는가:
+
+이 스니펫은 실제 판단이 몰린 줄을 보여 준다. 설명을 길게 하기보다 이 줄을 기준으로 앞뒤 규칙을 읽는 편이 빠르다.
+
+CLI:
+
+```bash
+$ rg -n -e 'def build_probe_port' -e 'def parse_icmp_response' -e 'def format_hop_line' -e 'def trace_route' 'study/04-Network-Diagnostics-and-Routing/traceroute/python/src/traceroute.py' 'study/04-Network-Diagnostics-and-Routing/traceroute/python/tests/test_traceroute.py'
+study/04-Network-Diagnostics-and-Routing/traceroute/python/src/traceroute.py:30:def build_probe_port(ttl: int, probe_index: int, probes_per_hop: int, base_port: int = DEFAULT_BASE_PORT) -> int:
+study/04-Network-Diagnostics-and-Routing/traceroute/python/src/traceroute.py:35:def parse_icmp_response(packet: bytes) -> tuple[int, int, int | None] | None:
+study/04-Network-Diagnostics-and-Routing/traceroute/python/src/traceroute.py:60:def format_hop_line(ttl: int, observations: list[ProbeObservation]) -> str:
+study/04-Network-Diagnostics-and-Routing/traceroute/python/src/traceroute.py:84:def trace_route(
+```
+
+## 3. 테스트와 남은 범위를 정리하기
+
+검증 단계에서는 결과보다 계약을 봤다. 어떤 출력이 통과 신호인지, 그리고 README에 남겨 둔 한계가 무엇인지 함께 정리했다.
+
+- 당시 목표: 검증 결과와 남은 경계를 함께 정리한다.
+- 실제 진행: `make -C study/04-Network-Diagnostics-and-Routing/traceroute/problem test`를 다시 실행하고, `def test_trace_route_returns_hops_until_destination`가 남아 있는 파일을 본문 마지막 근거로 삼았다.
+- 검증 신호: 현재 공개 답안이 재현된다는 출력과, README limitation이 동시에 확인됐다.
+- 새로 배운 것: live probing과 synthetic integration test 분리
+
+핵심 코드/trace:
+
+```python
+def test_trace_route_returns_hops_until_destination(monkeypatch):
+    route_map = {
+        1: ("10.0.0.1", 11, 0),
+        2: ("10.0.1.1", 11, 0),
+        3: ("203.0.113.9", 3, 3),
+    }
+    recv_socket = FakeRecvSocket(route_map)
+    fake_clock = FakeClock()
+
+    def fake_socket_factory(_family, sock_type, protocol):
+```
+
+왜 이 코드가 중요했는가:
+
+본문을 여기로 닫으면 구현 설명이 감상문으로 흘러가지 않는다. 어떤 계약을 확인했는지 바로 보이기 때문이다.
+
+CLI:
 
 ```bash
 $ make -C study/04-Network-Diagnostics-and-Routing/traceroute/problem test
+....                                                                     [100%]
 4 passed in 0.01s
 ```
 
-```bash
-$ sudo make -C study/04-Network-Diagnostics-and-Routing/traceroute/problem run-solution HOST=8.8.8.8
-traceroute to 8.8.8.8 (8.8.8.8), 30 hops max, 3 probes per hop
-  1  192.168.0.1  (192.168.0.1)  1.23 ms  1.45 ms  1.38 ms
-  2  10.0.0.1  (10.0.0.1)  4.56 ms  4.78 ms  4.62 ms
-  3  *  *  *
-  4  8.8.8.8  (8.8.8.8)  12.34 ms  12.01 ms  12.18 ms
-```
+## 남은 경계
 
-- 정리:
-  - probe-reply 매칭의 유일한 근거는 `build_probe_port`가 만드는 고유 port다. port가 없으면 어느 hop의 응답인지 알 수 없다.
-  - ICMP reply는 "맨 바깥 IP → ICMP 헤더 → embedded IP → embedded UDP" 4개 계층이 있다. 계층마다 하나씩 `IHL × 4`를 계산해야 embedded port에 도달한다.
-  - 종료 조건은 destination IP가 `Port Unreachable (3/3)`를 보내는 것이다. plain destination IP 비교로는 충분하지 않다.
+- IPv6 traceroute는 지원하지 않습니다.
+- DNS reverse lookup은 포함하지 않습니다.
+- ECMP나 비대칭 경로 같은 실제 인터넷 변동성은 모델링하지 않습니다.

@@ -1,38 +1,27 @@
-# D-data-api-lab 시리즈 지도
+# D-data-api-lab
 
-이 시리즈는 CRUD보다 오래 남는 데이터 API의 결정 지점, 즉 목록 질의, 소프트 삭제, 버전 충돌을 실제 소스와 테스트 기준으로 다시 읽습니다.
+이 글은 프로젝트, 태스크, 댓글 API를 만들 때 단순 CRUD보다 어떤 데이터 일관성 규칙을 먼저 드러내야 하는가를 묻는다. D 랩은 기능 수를 늘리기보다 목록 semantics, 소프트 삭제, 동시 수정 충돌 같은 현실적인 데이터 문제를 먼저 표면으로 올린다.
 
-## 이 시리즈가 보는 문제
+## 이 글이 붙잡는 질문
+데이터 중심 API에서 생성과 조회만 잘 되는 것으로 충분하지 않다면, 필터링과 정렬, 삭제 정책, optimistic locking 가운데 무엇을 먼저 API surface로 설명해야 하는가가 이 글의 질문이다.
 
-- 프로젝트, 태스크, 댓글 API가 단순 생성/조회 예제로 끝나지 않고, 정렬과 삭제 정책을 설명할 수 있어야 합니다.
-- 동시에 수정 충돌을 낙관적 락으로 드러내는 최소 경로가 있어야 합니다.
+## 왜 이 프로젝트를 따로 읽어야 하나
+README와 problem 문서가 데이터 API의 성공 기준을 명시하고, 통합 테스트는 목록 조건과 버전 충돌, 하위 리소스 생성을 한 흐름으로 묶는다. 덕분에 이 프로젝트는 단순 예제가 아니라 데이터 일관성을 읽는 독립 단위가 된다.
 
-## 실제 구현 표면
+## 이번 글에서 따라갈 흐름
+1. 데이터 API를 CRUD보다 넓은 문제로 다시 정의한다.
+2. 목록 조건과 버전 필드를 route surface로 끌어올린다.
+3. 충돌과 소프트 삭제를 테스트로 문서화한다.
+4. 재검증 기록으로 compose와 health surface까지 닫는다.
 
-- `/api/v1/data/projects`, `/tasks`, `/comments`
-- `status`, `sort`, `page`, `page_size`, `include_deleted` query parameter
-- `version` 필드 기반 업데이트 충돌 감지
-- soft delete 후 목록 필터링
+## 마지막에 확인할 근거
+- 코드: `labs/D-data-api-lab/fastapi/app/api/v1/routes/data_api.py::update_project`
+- 테스트/런타임: `labs/D-data-api-lab/fastapi/tests/integration/test_data_api.py::test_optimistic_locking_and_task_comment_creation`
+- CLI: `python3 -m compileall app tests`, `make lint`, `make test`, `make smoke`, `./tools/compose_probe.sh labs/D-data-api-lab/fastapi 8002`
 
-## 대표 검증 엔트리
-
-- `pytest tests/integration/test_data_api.py -q`
-- `make smoke`
-
-## 읽는 순서
-
-1. [프로젝트 README](../../../labs/D-data-api-lab/README.md)
-2. [문제 정의](../../../labs/D-data-api-lab/problem/README.md)
-3. [실행 진입점](../../../labs/D-data-api-lab/fastapi/README.md)
-4. [대표 통합 테스트](../../../labs/D-data-api-lab/fastapi/tests/integration/test_data_api.py)
-5. [핵심 구현](../../../labs/D-data-api-lab/fastapi/app/domain/services/data_api.py)
-6. [개발 타임라인](10-development-timeline.md)
-
-## 근거 파일
-
-- [README.md](../../../labs/D-data-api-lab/README.md)
-- [problem/README.md](../../../labs/D-data-api-lab/problem/README.md)
-- [fastapi/README.md](../../../labs/D-data-api-lab/fastapi/README.md)
-- [tests/integration/test_data_api.py](../../../labs/D-data-api-lab/fastapi/tests/integration/test_data_api.py)
-- [app/domain/services/data_api.py](../../../labs/D-data-api-lab/fastapi/app/domain/services/data_api.py)
-- [docs/verification-report.md](../../../docs/verification-report.md)
+## 이 글을 다 읽고 나면
+- 필터링, 정렬, 페이지네이션이 도메인 해석에 어떤 영향을 주는지 감이 잡힌다.
+- 소프트 삭제와 optimistic locking이 왜 함께 자주 등장하는지 이해하게 된다.
+- 버전 필드 하나가 API 계약을 어떻게 바꾸는지 볼 수 있다.
+- 검증 기록: 2026-03-09에 compile, lint, test, smoke, Compose live/ready probe가 통과했고, 로컬 학습 실행을 위해 앱 시작 시 스키마 자동 초기화를 두었다.
+- 다음으로 이어 볼 대상: E-async-jobs-lab

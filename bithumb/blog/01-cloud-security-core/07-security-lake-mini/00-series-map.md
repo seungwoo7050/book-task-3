@@ -1,44 +1,34 @@
-# 07 Security Lake Mini - Series Map
+# 07 Security Lake Mini 읽기 지도
 
-이 시리즈는 `notion/` 없이 `README.md`, `problem/README.md`, `python/README.md`, `lake.py`, `cli.py`, `test_lake.py`, `test_cli.py`, 실제 재검증 명령만으로 다시 읽은 학습 로그입니다.
+CloudTrail fixture를 local lake에 적재하고 preset detection query로 alert를 만드는 최소 security lake 실습이다.
 
-## 이 시리즈가 답하는 질문
+이 문서는 본문으로 바로 들어가기 전에 무엇을 붙들고 읽어야 하는지 정리해 두는 입구다. 먼저 질문과 흐름을 잡고 내려가면 phase 사이 점프가 훨씬 덜 갑작스럽다.
 
-- Security Lake 개념을 local 단일 테이블 수준으로 줄였을 때도 어떤 detection query를 반복 실행할 수 있을까
-- 로그 적재와 alert 생성이 한 흐름이라는 점을 가장 작은 코드로 어떻게 설명할까
+## 먼저 붙들 질문
+- security lake를 로컬로 축소할 때 무엇을 먼저 고정해야 하는가?
+- 왜 SQL query preset이 alert taxonomy 역할을 하는가?
+- alert 순서를 테스트로 잠가야 하는 이유는 무엇인가?
 
-## 실제 구현 표면
+## 이 글은 이렇게 흘러간다
+1. 시작점: 문제 정의와 이 프로젝트가 고정하려는 입력/출력 경계
+2. Phase 1. CloudTrail fixture를 local lake로 적재했다: CloudTrail 이벤트를 DuckDB/Parquet lake 산출물로 바꾼다.
+3. Phase 2. SQL query를 alert taxonomy로 썼다: 이벤트 이름 기반의 suspicious activity를 `LAKE-*` control로 매핑한다.
+4. Phase 3. CLI와 테스트로 alert 순서를 잠갔다: 로컬에서 같은 입력을 주면 같은 alert 집합이 재현되게 한다.
+5. 마무리: 다음 프로젝트로 이어지는 질문과 남은 한계
 
-- CloudTrail fixture를 DuckDB `lake_events`와 Parquet 파일로 적재합니다.
-- `CreateAccessKey`, `PutBucketAcl`, `AuthorizeSecurityGroupIngress`, `DeleteTrail`, root `ConsoleLogin`을 `LAKE-001`부터 `LAKE-005`로 변환합니다.
-- CLI는 적재 후 바로 detection query 결과 JSON을 출력합니다.
+## 특히 눈여겨볼 장면
+- 적재 단계와 detection query를 분리해서 보이되, 한 CLI로 다시 묶이는 흐름을 보여 준다.
+- SQL `CASE` 매핑이 왜 alert taxonomy가 되는지 설명한다.
+- alert 순서를 테스트로 잠그는 장면을 끝에 둔다.
 
-## 대표 검증 엔트리
+## 먼저 열 문서
+- [10-development-timeline.md](10-development-timeline.md): local lake에서 detection query를 굴리기
 
-- `mkdir -p .artifacts/security-lake-mini && PYTHONPATH=01-cloud-security-core/07-security-lake-mini/python/src .venv/bin/python -m security_lake_mini.cli 01-cloud-security-core/07-security-lake-mini/problem/data/cloudtrail_suspicious.json .artifacts/security-lake-mini/lake.duckdb .artifacts/security-lake-mini/events.parquet`
-- `PYTHONPATH=01-cloud-security-core/07-security-lake-mini/python/src .venv/bin/python -m pytest 01-cloud-security-core/07-security-lake-mini/python/tests`
-
-## 읽는 순서
-
-1. [프로젝트 README](../../../01-cloud-security-core/07-security-lake-mini/README.md)
-2. [문제 정의](../../../01-cloud-security-core/07-security-lake-mini/problem/README.md)
-3. [실행 진입점](../../../01-cloud-security-core/07-security-lake-mini/python/README.md)
-4. [대표 테스트](../../../01-cloud-security-core/07-security-lake-mini/python/tests/test_lake.py)
-5. [CLI 테스트](../../../01-cloud-security-core/07-security-lake-mini/python/tests/test_cli.py)
-6. [핵심 구현](../../../01-cloud-security-core/07-security-lake-mini/python/src/security_lake_mini/lake.py)
-7. [개발 타임라인](10-development-timeline.md)
-
-## 근거 파일
-
-- [README.md](../../../01-cloud-security-core/07-security-lake-mini/README.md)
-- [problem/README.md](../../../01-cloud-security-core/07-security-lake-mini/problem/README.md)
-- [python/README.md](../../../01-cloud-security-core/07-security-lake-mini/python/README.md)
-- [lake.py](../../../01-cloud-security-core/07-security-lake-mini/python/src/security_lake_mini/lake.py)
-- [cli.py](../../../01-cloud-security-core/07-security-lake-mini/python/src/security_lake_mini/cli.py)
-- [test_lake.py](../../../01-cloud-security-core/07-security-lake-mini/python/tests/test_lake.py)
-- [test_cli.py](../../../01-cloud-security-core/07-security-lake-mini/python/tests/test_cli.py)
-
-## Git Anchor
-
-- `2026-03-10 a4b4aae docs: enhance bithumb`
-- `2026-03-11 a9c65b3 Track 2에 대한 전반적인 개선 완료 (infobank, bithumb, game-server)`
+## 근거로 삼은 파일
+- `README.md`
+- `problem/README.md`
+- `python/README.md`
+- `docs/concepts/lake-thinking.md`
+- `python/src/security_lake_mini/lake.py`
+- `python/src/security_lake_mini/cli.py`
+- `python/tests/test_lake.py`

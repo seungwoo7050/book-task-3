@@ -1,42 +1,34 @@
-# 04 IAM Policy Analyzer - Series Map
+# 04 IAM Policy Analyzer 읽기 지도
 
-이 시리즈는 `notion/` 없이 `README.md`, `problem/README.md`, `python/README.md`, `analyzer.py`, `cli.py`, `test_analyzer.py`, 실제 재검증 명령만으로 다시 읽은 학습 로그입니다.
+allow/deny 평가를 끝내지 않고, least privilege 관점의 triage 가능한 finding으로 바꾸는 단계다.
 
-## 이 시리즈가 답하는 질문
+이 문서는 본문으로 바로 들어가기 전에 무엇을 붙들고 읽어야 하는지 정리해 두는 입구다. 먼저 질문과 흐름을 잡고 내려가면 phase 사이 점프가 훨씬 덜 갑작스럽다.
 
-- allow/deny 결과를 넘어서, policy가 왜 위험한지 어떤 finding으로 설명할 수 있을까
-- broad admin과 `iam:PassRole`을 같은 위험으로 뭉개지 않고 분리하려면 어떤 규칙이 필요할까
+## 먼저 붙들 질문
+- 왜 allow/deny 결과 위에 finding 구조를 한 겹 더 얹어야 했는가?
+- broad admin을 왜 두 control로 분리했는가?
+- escalation action과 safe policy 0건이 rule 품질을 어떻게 결정했는가?
 
-## 실제 구현 표면
+## 이 글은 이렇게 흘러간다
+1. 시작점: 문제 정의와 이 프로젝트가 고정하려는 입력/출력 경계
+2. Phase 1. finding 스키마를 먼저 고정했다: 정책 위험을 remediation과 이어질 수 있는 구조화된 finding으로 표현한다.
+3. Phase 2. broad admin을 두 control로 분해했다: `Action=*`와 `Resource=*`가 남기는 운영 질문을 분리한다.
+4. Phase 3. escalation action과 false positive 경계를 함께 고정했다: 정책이 넓지 않더라도 privilege escalation 위험이 있는 경우를 별도 control로 잡고, safe fixture 0건도 확인한다.
+5. 마무리: 다음 프로젝트로 이어지는 질문과 남은 한계
 
-- `*` action, `*` resource, privilege escalation action을 각각 별도 control ID로 변환합니다.
-- finding은 `source`, `control_id`, `severity`, `resource_id`, `evidence_ref`를 포함한 작은 JSON 배열로 반환됩니다.
-- `scoped_policy.json`이 0건이어야 한다는 기준선이 함께 고정돼 있습니다.
+## 특히 눈여겨볼 장면
+- decision engine에서 risk analyzer로 질문이 바뀌는 지점을 도입에서 선명하게 잡는다.
+- broad admin을 두 control로 나누는 장면을 첫 번째 핵심 분기점으로 둔다.
+- escalation action과 safe policy 0건 테스트를 후반부에 묶어 false positive 기준을 설명한다.
 
-## 대표 검증 엔트리
+## 먼저 열 문서
+- [10-development-timeline.md](10-development-timeline.md): allow/deny를 risk finding으로 바꾸기
 
-- `PYTHONPATH=01-cloud-security-core/04-iam-policy-analyzer/python/src .venv/bin/python -m iam_policy_analyzer.cli 01-cloud-security-core/04-iam-policy-analyzer/problem/data/broad_admin_policy.json`
-- `PYTHONPATH=01-cloud-security-core/04-iam-policy-analyzer/python/src .venv/bin/python -m pytest 01-cloud-security-core/04-iam-policy-analyzer/python/tests`
-
-## 읽는 순서
-
-1. [프로젝트 README](../../../01-cloud-security-core/04-iam-policy-analyzer/README.md)
-2. [문제 정의](../../../01-cloud-security-core/04-iam-policy-analyzer/problem/README.md)
-3. [실행 진입점](../../../01-cloud-security-core/04-iam-policy-analyzer/python/README.md)
-4. [대표 테스트](../../../01-cloud-security-core/04-iam-policy-analyzer/python/tests/test_analyzer.py)
-5. [핵심 구현](../../../01-cloud-security-core/04-iam-policy-analyzer/python/src/iam_policy_analyzer/analyzer.py)
-6. [개발 타임라인](10-development-timeline.md)
-
-## 근거 파일
-
-- [README.md](../../../01-cloud-security-core/04-iam-policy-analyzer/README.md)
-- [problem/README.md](../../../01-cloud-security-core/04-iam-policy-analyzer/problem/README.md)
-- [python/README.md](../../../01-cloud-security-core/04-iam-policy-analyzer/python/README.md)
-- [analyzer.py](../../../01-cloud-security-core/04-iam-policy-analyzer/python/src/iam_policy_analyzer/analyzer.py)
-- [cli.py](../../../01-cloud-security-core/04-iam-policy-analyzer/python/src/iam_policy_analyzer/cli.py)
-- [test_analyzer.py](../../../01-cloud-security-core/04-iam-policy-analyzer/python/tests/test_analyzer.py)
-
-## Git Anchor
-
-- `2026-03-10 a4b4aae docs: enhance bithumb`
-- `2026-03-11 a9c65b3 Track 2에 대한 전반적인 개선 완료 (infobank, bithumb, game-server)`
+## 근거로 삼은 파일
+- `README.md`
+- `problem/README.md`
+- `python/README.md`
+- `docs/concepts/least-privilege-findings.md`
+- `python/src/iam_policy_analyzer/analyzer.py`
+- `python/src/iam_policy_analyzer/cli.py`
+- `python/tests/test_analyzer.py`

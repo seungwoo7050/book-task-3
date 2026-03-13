@@ -1,96 +1,130 @@
-# Distance-Vector Routing 개발 타임라인
+# Distance-Vector Routing development timeline
 
-## Day 1 — 초기화, Bellman-Ford, 2-phase 시뮬레이션
+`Distance-Vector Routing`를 읽을 때 먼저 잡아야 하는 것은 기능 목록이 아니라, 어디서부터 구현이나 분석이 무거워졌는가이다.
 
-### Session 1
+그래서 이 문서는 문제 문서, 핵심 파일, 테스트, CLI 출력만 남기고 나머지 군더더기는 걷어 냈다.
 
-- 목표: topology loader와 `DVNode.__init__()`에서 각 node가 시작 시점에 "알고 있는 것"을 정리한다.
-- 진행: `topology.json`은 `{"x": {"y": 2, "z": 7}, "y": {"x": 2, "z": 1}, "z": {"x": 7, "y": 1}}`처럼 링크 정보를 담고 있다. `load_topology()`는 이 정보를 읽어 bidirectional 구조를 만든다. 처음에는 JSON을 그대로 인접 목록으로 쓰면 된다고 생각했다. 하지만 `z -> x`가 JSON에 없으면 z는 x를 이웃으로 모르고 시작하게 된다.
-- 발견: `DVNode.__init__()`의 초기 DV에서 자신은 0, 이웃은 link_cost, 나머지는 INF가 된다. 이 3가지 값을 먼저 읽고 나서야 자신이 모르는 목적지를 어떻게 발견하는지라는 의미가 생긴다.
+## 구현 순서 한눈에 보기
 
-핵심 코드:
+1. `study/04-Network-Diagnostics-and-Routing/routing/problem`의 문제 문서와 실행 target으로 출발점을 고정했다.
+2. `study/04-Network-Diagnostics-and-Routing/routing/python/src/dv_routing.py`의 핵심 구간에서 동작 규칙을 설명할 수 있는 최소 앵커를 골랐다.
+3. `make -C study/04-Network-Diagnostics-and-Routing/routing/problem test`와 테스트/verify 파일을 연결해 통과 신호와 남은 경계를 정리했다.
 
-```py
-def __init__(self, name: str, neighbors: dict[str, float], all_nodes: list[str]) -> None:
-    self.name = name
-    self.neighbors = neighbors
-    self.neighbor_dvs: dict[str, dict[str, float]] = {}
-    self.distance_vector: dict[str, float] = {}
-    self.next_hop: dict[str, str] = {}
+## 1. 실행 표면과 entrypoint를 먼저 고정하기
 
-    for node in all_nodes:
-        if node == name:
-            self.distance_vector[node] = 0
-        elif node in neighbors:
-            self.distance_vector[node] = neighbors[node]
-        else:
-            self.distance_vector[node] = INF
+이 단계에서는 구현 세부로 바로 내려가지 않았다. 먼저 어떤 파일이 진입점이고 어떤 명령이 검증 기준인지 고정하는 일이 더 급했다.
+
+- 당시 목표: `Distance-Vector Routing`를 읽는 출발점과 성공 기준을 고정한다.
+- 실제 진행: `problem/README.md`와 `problem/Makefile`을 먼저 확인한 뒤, `def load_topology`가 있는 파일로 내려갔다.
+- 검증 신호: `make help`에 보이는 target만으로도 이 프로젝트가 어떤 명령으로 열리고 닫히는지 설명할 수 있었다.
+- 새로 배운 것: Bellman-Ford update 식
+
+핵심 코드/trace:
+
+```python
+def load_topology(filepath: str) -> tuple[list[str], dict[str, dict[str, int]]]:
+    """JSON file에서 network topology를 읽는다.
+
+    Args:
+        filepath: topology JSON file path.
+
+    Returns:
+        `(node_list, adjacency_dict)` tuple.
+        `adjacency_dict`는 `node -> {neighbor: cost}`를 뜻한다.
+    """
 ```
+
+왜 이 코드가 중요했는가:
+
+문제 사양을 읽은 뒤 바로 이 지점으로 내려오면, 말로 적힌 요구가 실제 파일 구조와 어떻게 만나는지 곧바로 보인다.
+
+CLI:
 
 ```bash
-$ PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q \
-    study/04-Network-Diagnostics-and-Routing/routing/python/tests/test_dv_routing.py::TestDVNodeInit
-# 3 passed
+$ make -C study/04-Network-Diagnostics-and-Routing/routing/problem help
+  run-sim              Run the skeleton DV simulation
+  run-solution         Run the solution DV simulation
+  test                 Run the test script
 ```
 
-### Session 2
+## 2. Bellman-Ford 갱신을 node 단위 상태 변화로 읽기
 
-- 목표: `receive_dv()`에서 Bellman-Ford를 구현하고, `best_hop`까지 연결한다.
-- 진행: 이웃에게서 DV를 받으면 `cost_via_v = link_cost + dv.get(dest, INF)`를 전체 목적지에 대해 계산한다. 이 값이 현재 `best_cost`보다 작으면 cost와 hop을 동시에 바꾼다.
-- 이슈: 처음에는 cost만 업데이트하고 hop은 다른 루프에서 채우려 했다. cost만 업데이트하면 수렴 후에도 `next_hop`이 없어 routing table이 불완전해진다.
-- 측정: triangle test에서 `x -> z`가 z의 직접 링크 7 대신 `via y`로 3 (2+1)을 선택하는지 확인한다.
+중간 단계의 핵심은 '무엇을 만들었나'보다 '어느 줄에서 규칙이 드러나는가'를 잡는 일이었다.
 
-핵심 코드:
+- 당시 목표: `Bellman-Ford 식을 분산 라우팅 테이블 갱신으로 옮기는 시뮬레이션 과제입니다.`를 실제 근거에 붙인다.
+- 실제 진행: `def receive_dv` 주변을 중심으로 symbol이나 trace 결과를 다시 좁혀 읽었다.
+- 검증 신호: 짧은 `rg`/filter 출력만으로도 어느 줄이 설명의 중심인지 바로 드러났다.
+- 새로 배운 것: 2-phase synchronous simulation
 
-```py
-def receive_dv(self, neighbor: str, dv: dict[str, float]) -> bool:
-    self.neighbor_dvs[neighbor] = dv
-    changed = False
-    link_cost = self.neighbors[neighbor]
+핵심 코드/trace:
 
-    for dest in dv:
-        cost_via_v = link_cost + dv.get(dest, INF)
-        best_cost = self.distance_vector.get(dest, INF)
+```python
+def receive_dv(self, sender: str, dv: dict[str, float]) -> bool:
+        """neighbor에게서 받은 distance vector를 반영한다.
 
-        if cost_via_v < best_cost:
-            self.distance_vector[dest] = cost_via_v
-            self.next_hop[dest] = neighbor
-            changed = True
+        Args:
+            sender: The neighbor that sent this DV.
+            dv: The neighbor's distance vector.
 
-    return changed
+        Returns:
+            True if this node's DV changed, False otherwise.
+        """
 ```
+
+왜 이 코드가 중요했는가:
+
+핵심은 함수 이름 자체가 아니라, 이 줄 주변에서 어떤 입력이 어떤 결과로 바뀌는지가 한 번에 드러난다는 점이다.
+
+CLI:
 
 ```bash
-$ PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 python3 -m pytest -q \
-    study/04-Network-Diagnostics-and-Routing/routing/python/tests/test_dv_routing.py::TestTriangleConvergence
-# 3 passed
+$ rg -n -e 'def load_topology' -e 'class DVNode' -e 'def receive_dv' -e 'def simulate' 'study/04-Network-Diagnostics-and-Routing/routing/python/src/dv_routing.py' 'study/04-Network-Diagnostics-and-Routing/routing/python/tests/test_dv_routing.py'
+study/04-Network-Diagnostics-and-Routing/routing/python/src/dv_routing.py:17:def load_topology(filepath: str) -> tuple[list[str], dict[str, dict[str, int]]]:
+study/04-Network-Diagnostics-and-Routing/routing/python/src/dv_routing.py:41:class DVNode:
+study/04-Network-Diagnostics-and-Routing/routing/python/src/dv_routing.py:79:    def receive_dv(self, sender: str, dv: dict[str, float]) -> bool:
+study/04-Network-Diagnostics-and-Routing/routing/python/src/dv_routing.py:145:def simulate(topology_file: str) -> None:
 ```
 
-### Session 3
+## 3. 테스트와 남은 범위를 정리하기
 
-- 목표: 2-phase simulation과 convergence 종료를 완성하고, 11개 단위 테스트를 모두 통과한다.
-- 진행: `simulate()`는 round마다 각 node의 DV를 먼저 모두 수집(`messages`)한 자리에, recv를 적용한다. 이 순서가 없으면 같은 round에서 한 노드가 DV를 업데이트한 후 다른 노드가 그 값을 즉시 반영하는 비동기 오염이 만들어진다.
-- convergence: `receive_dv()`가 리턴하는 `changed` 보드를 OR하여 어떤 노드도 DV를 바꿀 이유가 없으면 종료한다. 따라서 라운드 제한이 아니라 실질적 변화 여부로 멈춘다.
+마지막 단계에서는 단순히 테스트가 통과했다는 사실만 적지 않으려고 했다. 어디까지 확인됐고 무엇이 아직 범위 밖인지 같이 남겨야 글이 정직해진다.
+
+- 당시 목표: 검증 결과와 남은 경계를 함께 정리한다.
+- 실제 진행: `make -C study/04-Network-Diagnostics-and-Routing/routing/problem test`를 다시 실행하고, `def test_convergence`가 남아 있는 파일을 본문 마지막 근거로 삼았다.
+- 검증 신호: 현재 공개 답안이 재현된다는 출력과, README limitation이 동시에 확인됐다.
+- 새로 배운 것: 수렴 판정
+
+핵심 코드/trace:
+
+```python
+def test_convergence(self):
+        """DV를 교환하면 x에서 z까지 cost가 3(via y)로 수렴해야 한다."""
+        x, y, z = self._make_triangle()
+
+        # 한 round 동안 DV를 교환한다고 가정한다.
+        dvs = {"x": x.get_dv(), "y": y.get_dv(), "z": z.get_dv()}
+
+        x.receive_dv("y", dvs["y"])
+        x.receive_dv("z", dvs["z"])
+```
+
+왜 이 코드가 중요했는가:
+
+마지막에 이 파일을 남겨 두는 이유는, 이 프로젝트가 실제로 무엇을 통과해야 끝나는지 가장 직접적으로 보여 주기 때문이다.
+
+CLI:
 
 ```bash
 $ make -C study/04-Network-Diagnostics-and-Routing/routing/problem test
-11 passed in 0.02s
+TEST: 3-node topology convergence              [PASS]
+TEST: x→z shortest path = 3 via y            [PASS]
+TEST: 5-node topology convergence              [PASS]
+TEST: a→e shortest path = 5                  [PASS]
+ Results: 4 passed, 0 failed
 ```
 
-```bash
-$ make -C study/04-Network-Diagnostics-and-Routing/routing/problem run-solution
-=== Iteration 1 ===
-Node x: {x: 0, y: 2, z: 3}
-Node y: {x: 2, y: 0, z: 1}
-Node z: {x: 3, y: 1, z: 0}
+## 남은 경계
 
-=== Final Routing Tables ===
-  x -> z: cost=3.0, next_hop=y
-  y -> x: cost=2.0, next_hop=x
-  z -> x: cost=3.0, next_hop=y
-```
-
-- 정리:
-  - 초기화 3가지(0 / link_cost / INF)는 언제 나와도 Bellman-Ford가 결정론적인 신호를 주는 근거다.
-  - `best_cost`와 `best_hop`을 함께 갱신하지 않으면 routing table이 불완전해진다.
-    - 2-phase simulation은 동기적(synchronous) 분산 시스템을 순차 코드로 시뮬레이션하는 가장 단순한 방법이다.
+- poisoned reverse는 구현하지 않았습니다.
+- 동적 토폴로지 변화 실험은 포함하지 않습니다.
+- 비동기 메시지 모델은 구현하지 않습니다.

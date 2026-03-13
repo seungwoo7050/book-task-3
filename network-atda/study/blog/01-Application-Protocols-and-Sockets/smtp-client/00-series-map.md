@@ -1,21 +1,28 @@
-# SMTP Client 시리즈 지도
+# SMTP Client series map
 
-## 이 프로젝트를 한 줄로
+이 프로젝트를 읽을 때 붙들 질문은 하나다. SMTP 대화를 raw socket 위에서 단계별 명령으로 어떻게 끝까지 완주했는가?
 
-HTTP처럼 텍스트 명령을 쓰지만 상태 전이가 더 길고 엄격한 프로토콜 — SMTP 대화를 raw TCP socket으로 직접 구현하는 과제다. `220` → `250` → `354` → `250` → `221`이라는 응답 코드 시퀀스가 이 프로젝트의 뼈대이고, 한 단계라도 어긋나면 전체 대화가 실패하는 구조를 직접 겪는다.
+## 무엇을 근거로 복원했는가
 
-## 문제 구조
-- 제공물: `problem/code/smtp_client_skeleton.py`, `problem/script/mock_smtp_server.py`
-- 답안: `python/src/smtp_client.py`, `python/tests/test_smtp_client.py`
-- 검증: `make -C study/01-Application-Protocols-and-Sockets/smtp-client/problem test`
+- 프로젝트 README: `study/01-Application-Protocols-and-Sockets/smtp-client/README.md`
+- 문제 문서와 실행 표면: `study/01-Application-Protocols-and-Sockets/smtp-client/problem/README.md`, `study/01-Application-Protocols-and-Sockets/smtp-client/problem/Makefile`
+- 핵심 구현과 테스트: `study/01-Application-Protocols-and-Sockets/smtp-client/python/src/smtp_client.py`, `study/01-Application-Protocols-and-Sockets/smtp-client/python/tests/test_smtp_client.py`
+- 정식 검증 출력: `make -C study/01-Application-Protocols-and-Sockets/smtp-client/problem test`
 
-## 이 시리즈에서 따라갈 질문
-1. SMTP 대화는 왜 한 번에 보내지 않고 단계마다 허가를 기다리는가
-2. `check_reply()`라는 단순한 함수가 왜 프로토콜 전체의 안전 장치인가
-3. `DATA` 종료 구분자 `"\r\n.\r\n"`의 위치를 놓치면 무엇이 벌어지는가
-4. mock 서버 없이 SMTP를 테스트할 수 없는 현실적 이유는 무엇인가
+## 어떤 순서로 읽으면 되는가
 
-## 글 목록
-| 번호 | 파일 | 범위 |
-| :--- | :--- | :--- |
-| `10` | [`10-development-timeline.md`](10-development-timeline.md) | mock 서버 이해부터 전체 대화 완성까지 |
+1. `problem/README.md`로 문제 조건과 성공 기준을 확인한다.
+2. 이 문서에서 어떤 입력을 근거로 썼는지 먼저 본다.
+3. `01-evidence-ledger.md`로 세 단계 흐름을 짧게 파악한다.
+4. `10-development-timeline.md`에서 코드나 trace, CLI를 따라간다.
+
+## 이번 리라이트에서 의도적으로 제외한 입력
+
+- 현재 `study/blog/**`의 이전 본문
+- `notion/`, `notion-archive/` 아래의 서술형 메모
+
+## 짧은 판정 메모
+
+- 독립 프로젝트로 본 이유: `SMTP Client`는 자기 README와 정식 검증 명령으로 범위를 독립적으로 설명할 수 있다.
+- 보관본 위치: `study/blog/_legacy`
+- 이번 글의 중심 답: 텍스트 기반 명령-응답 프로토콜을 TCP 위에서 직접 수행하는 메일 클라이언트 과제입니다.

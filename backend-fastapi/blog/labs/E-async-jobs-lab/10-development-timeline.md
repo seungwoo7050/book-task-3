@@ -1,114 +1,64 @@
-# E-async-jobs-lab 개발 타임라인
+# E-async-jobs-lab: 요청-응답을 끝내는 대신, outbox와 retry 상태를 먼저 보여주기
 
-## 2026-03-09
-### Session 1
+이 글은 `labs/E-async-jobs-lab/README.md`, `problem/README.md`, `docs/README.md`, `labs/E-async-jobs-lab/fastapi/app/api/v1/routes/jobs.py::drain_outbox`, `labs/E-async-jobs-lab/fastapi/tests/integration/test_async_jobs.py::test_retrying_job_requires_second_drain`, `backend-fastapi/docs/verification-report.md`를 바탕으로 실제 구현 순서를 다시 복원한다.
 
-- 목표: 비동기 작업이라고 하면 처음엔 "Celery worker를 붙이는 것"이 전부라고 생각했다. `problem/README.md`를 먼저 읽어 실제 범위를 확인한다.
-- 진행: 성공 기준에 idempotency key, outbox 패턴, 재시도 상태 전이가 들어 있다. 단순 백그라운드 실행이 아니라 "안전하게 넘기는 법"이 핵심이다.
-- 이슈: 처음엔 "API가 알림 요청을 받으면 바로 worker에 넘기면 되는 거 아닌가?"라고 생각했다. 그런데 API 호출은 성공했는데 worker 전달이 실패하면? DB에는 남아 있지만 실제 알림은 안 간다.
-- 판단: 저장과 전달을 분리해야 한다. API는 DB에 저장만 하고, 별도 drain 단계에서 outbox를 읽어 전달하는 구조로 가기로 했다.
+E 랩이 바꾸는 건 기능보다 시간축이다. problem/README.md는 요청을 받고 바로 일을 끝내는 대신, idempotency key, outbox, retry 상태를 먼저 설명하라고 요구한다. docs/README.md 역시 worker보다 handoff boundary를 먼저 묻는다. 그래서 이 글도 queue 기술 선택보다 '무엇을 언제 확정하고 언제 뒤로 미루는가'에 초점을 둔다.
 
-CLI:
+## 1. 비동기 작업을 별도 boundary로 떼어내기
+첫 단계에서 비동기 작업은 알림 기능이 아니라 시간 분리 문제로 정의된다. README.md가 enqueue API, outbox 저장, Celery worker 실행, retry 상태 모델을 같이 묶는 이유도 여기에 있다. 즉 프로젝트의 중심은 worker 프로세스 그 자체보다 요청-응답 밖으로 어떤 책임을 밀어내는지 정하는 일이다.
 
-```bash
-$ cd labs/E-async-jobs-lab/fastapi
-$ python3 -m venv .venv
-$ source .venv/bin/activate
-$ make install
-```
-
-### Session 2
-
-- 목표: idempotency key를 구현한다. 같은 요청이 두 번 오면 job이 두 개 만들어지면 안 된다.
-- 진행: 처음 시도는 요청마다 무조건 새 job을 만드는 것이었다. 네트워크 재시도로 같은 요청이 두 번 오면 같은 알림이 두 번 발송된다.
-- 조치: enqueue 전에 idempotency_key로 먼저 기존 job을 찾고, 있으면 그대로 반환한다.
+## 2. enqueue와 drain을 다른 route로 나누기
+코드에서는 drain_outbox가 그 경계를 가장 잘 보여 준다. 이 함수는 서비스 객체를 받지만, 실제로는 repository에서 pending event를 읽고 각 이벤트를 deliver_notification.delay(...).get()으로 넘긴다. 저장과 dispatch가 한 route 안에서 명시적으로 분리되니, 글에서도 outbox가 왜 중간 단계인지 훨씬 선명하게 설명할 수 있다.
 
 ```python
-existing = self.repository.get_job_by_idempotency_key(idempotency_key)
-if existing:
-    return existing
-job = NotificationJob(
-    idempotency_key=idempotency_key,
-    recipient=recipient,
-    subject=subject,
-    status="queued",
-    attempt_count=0,
-)
-self.repository.save(job)
-self.repository.save(OutboxEvent(job_id=job.id, status="pending"))
+def drain_outbox(service: Annotated[JobsService, Depends(get_jobs_service)]) -> DrainResponse:
+    repository = JobsRepository(service.session)
+    dispatched = []
+    for event in repository.list_pending_events():
+        dispatched.append(deliver_notification.delay(event.id).get())
+    return DrainResponse(processed=len(dispatched), statuses=dispatched)
+
+
+@router.get("/notifications/{job_id}", response_model=JobResponse)
+def get_job(
+    job_id: str,
+    service: Annotated[JobsService, Depends(get_jobs_service)],
 ```
 
-이 블록에서 중요한 건 job과 outbox event를 같은 트랜잭션에서 만든다는 점이다. 처음엔 job만 만들고 outbox는 나중에 넣으려 했는데, 그러면 job은 있지만 outbox가 없는 불일치 상태가 가능하다.
+여기서 보이는 건 저장과 worker dispatch 사이에 의도적인 handoff 단계가 놓여 있다는 점이다.
 
-- 검증: 같은 `Idempotency-Key`로 두 번 POST하면 같은 job id가 돌아오는 것을 확인했다.
+## 3. retry 상태를 테스트로 고정하기
+테스트는 retry를 정상 경로로 만들어 준다. 첫 번째 테스트는 같은 Idempotency-Key를 두 번 보내도 같은 job id가 돌아오는지 본다. 두 번째 테스트는 첫 drain 뒤 status가 retrying이고, 두 번째 drain 뒤에야 sent와 attempt_count == 2가 되는지 확인한다. 이 흐름이 있기 때문에 retry를 에러 꼬리표가 아니라 상태 기계의 일부로 서술할 수 있다.
 
 ```python
-assert first.json()["id"] == second.json()["id"]
+def test_retrying_job_requires_second_drain(client) -> None:
+    job = client.post(
+        "/api/v1/jobs/notifications",
+        json={"recipient": "retry@example.com", "subject": "Retry me"},
+        headers={"Idempotency-Key": "job-2"},
+    )
+    assert job.status_code == 200
+
+    first_drain = client.post("/api/v1/jobs/outbox/drain")
+    assert first_drain.status_code == 200
+    first_job = client.get(f"/api/v1/jobs/notifications/{job.json()['id']}")
+    assert first_job.json()["status"] == "retrying"
 ```
 
-CLI:
+테스트는 첫 drain의 retrying과 두 번째 drain의 sent 전이를 실제로 확인한다.
+
+## 4. 2026-03-09 재검증으로 worker surface를 다시 닫기
+보고서 기준 2026-03-09 재검증은 compile, lint, test, smoke, Compose probe를 모두 포함한다. 거기에 API 스키마 자동 초기화 메모까지 붙어 있어서, 이 프로젝트가 문서 수준 가정이 아니라 실제 로컬 워크스페이스로 다시 살아났다는 사실을 보여 준다. 비동기 작업 예제도 독립 프로젝트가 되려면 결국 이런 실행 surface가 필요하다.
 
 ```bash
-$ pytest tests/integration/test_async_jobs.py::test_idempotent_enqueue_and_outbox_drain -q
+python3 -m compileall app tests
+make lint
+make test
+make smoke
+./tools/compose_probe.sh labs/E-async-jobs-lab/fastapi 8003
 ```
 
-```
-1 passed
-```
+2026-03-09에 compile, lint, test, smoke, Compose live/ready probe가 통과했고, 로컬 학습 실행을 위해 API 스키마 자동 초기화를 두었다. 이 랩은 메시징 인프라 전체보다 enqueue -> outbox -> drain -> status 조회 순서를 재현하는 데 초점을 둔다.
 
-### Session 3
-
-- 목표: drain을 구현한다. outbox에 쌓인 pending event를 읽어 실제 전달을 시도하는 단계다.
-- 진행: `process_event`에서 event를 하나씩 읽어 job의 상태를 바꾼다. 성공하면 `sent`, 처리 중이면 `retrying`.
-- 이슈: 재시도를 어떻게 테스트하나? 실제 SMTP 실패를 재현하기 어렵다. 처음엔 mock으로 실패를 주입하려 했는데, 더 간단한 방법이 있었다.
-- 조치: `retry@`로 시작하는 수신자라면 첫 번째 시도에서 `retrying` 상태로 남기고, 두 번째 drain에서야 `sent`로 바꾸는 학습용 규칙을 넣었다.
-
-```python
-job.attempt_count += 1
-if job.recipient.startswith("retry@") and job.attempt_count == 1:
-    job.status = "retrying"
-    event.status = "retrying"
-    self.session.commit()
-    return event
-job.status = "sent"
-event.status = "delivered"
-```
-
-처음엔 `retry@` 같은 매직 문자열이 너무 인위적이라고 생각했다. 하지만 이 랩의 목적은 "재시도 상태 전이를 관찰하는 것"이므로, 복잡한 실패 시뮬레이터보다 이 한 줄 규칙이 학습 목적에 더 부합한다.
-
-- 검증: retry 수신자에게 첫 drain 후 `retrying`, 두 번째 drain 후 `sent`, `attempt_count == 2`까지 확인.
-
-CLI:
-
-```bash
-$ pytest tests/integration/test_async_jobs.py -q
-```
-
-```
-2 passed
-```
-
-### Session 4
-
-- 목표: 전체 검증 루프를 돌리고 Compose 환경에서 API가 뜨는지 확인한다.
-- 진행: worker와 Redis를 실제로 올려 전달 경계를 보려면 Compose가 필요하지만, 핵심 검증은 통합 테스트만으로도 끝난다.
-- 이슈: 스키마 자동 초기화 이슈. 로컬 학습 환경에서 첫 실행 시 테이블이 없어서 실패. 이전 랩들과 동일하게 lifespan에서 `create_all`을 호출하도록 반영했다.
-- 검증: compile, lint, test, smoke, Compose live/ready probe 모두 통과.
-- 다음: 이 랩은 저장과 전달의 분리까지만 잡고, 실시간 연결(WebSocket, presence)은 F-realtime-lab으로 넘긴다.
-
-CLI:
-
-```bash
-$ python3 -m compileall app tests
-$ make lint
-$ make test
-```
-
-```
-2 passed
-```
-
-```bash
-$ make smoke
-$ docker compose up --build
-```
+## 정리
+E 랩의 핵심은 '나중에 처리한다'는 말 대신, 무엇을 outbox에 남기고 어떤 상태를 retry로 볼지 명시했다는 점이다. 이 결정이 다음 F 랩에서 실시간 전달을 붙일 때도, 요청-응답 밖으로 밀어낸 일과 연결 상태를 어떻게 다르게 다룰지 설명하는 발판이 된다.

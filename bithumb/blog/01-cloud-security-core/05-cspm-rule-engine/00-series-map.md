@@ -1,42 +1,34 @@
-# 05 CSPM Rule Engine - Series Map
+# 05 CSPM Rule Engine 읽기 지도
 
-이 시리즈는 `notion/` 없이 `README.md`, `problem/README.md`, `python/README.md`, `scanner.py`, `cli.py`, `test_scanner.py`, 실제 재검증 명령만으로 다시 읽은 학습 로그입니다.
+Terraform plan과 운영 snapshot을 함께 읽어 triage 가능한 misconfiguration finding으로 바꾸는 규칙 엔진이다.
 
-## 이 시리즈가 답하는 질문
+이 문서는 본문으로 바로 들어가기 전에 무엇을 붙들고 읽어야 하는지 정리해 두는 입구다. 먼저 질문과 흐름을 잡고 내려가면 phase 사이 점프가 훨씬 덜 갑작스럽다.
 
-- Terraform plan JSON과 운영 snapshot을 읽어 triage 가능한 misconfiguration finding을 어떻게 만들까
-- 인프라 규칙과 계정 수명주기 규칙을 같은 finding 구조로 합칠 수 있을까
+## 먼저 붙들 질문
+- Terraform plan에서 어떤 resource-level 규칙을 먼저 고정했는가?
+- 왜 access key snapshot을 같은 engine 안으로 끌어들였는가?
+- secure fixture 0건이 rule 품질에 왜 중요한가?
 
-## 실제 구현 표면
+## 이 글은 이렇게 흘러간다
+1. 시작점: 문제 정의와 이 프로젝트가 고정하려는 입력/출력 경계
+2. Phase 1. Terraform plan 규칙부터 세웠다: 정적 plan JSON만으로 설명 가능한 misconfiguration을 먼저 잡는다.
+3. Phase 2. access key snapshot으로 입력 범위를 넓혔다: CSPM이 선언형 plan만 읽는 정적 분석에 머무르지 않도록 한다.
+4. Phase 3. secure fixture 0건을 품질 기준으로 삼았다: 불필요한 finding이 나오지 않는 기준선을 만든다.
+5. 마무리: 다음 프로젝트로 이어지는 질문과 남은 한계
 
-- S3 public access block, open SSH/RDP ingress, storage encryption 비활성화 규칙을 plan JSON에서 바로 읽습니다.
-- access key age는 별도 snapshot payload에서 읽되, 같은 `Finding` 구조로 합칩니다.
-- secure fixture가 0건이어야 한다는 기준으로 false positive를 통제합니다.
+## 특히 눈여겨볼 장면
+- Terraform plan에서 resource를 꺼내 규칙을 적용하는 기본 loop를 첫 장면으로 둔다.
+- snapshot 기반 access key rule을 추가하는 순간 CSPM의 입력 범위가 넓어지는 장면을 강조한다.
+- secure fixture 0건과 finding schema가 품질 기준이라는 점으로 마무리한다.
 
-## 대표 검증 엔트리
+## 먼저 열 문서
+- [10-development-timeline.md](10-development-timeline.md): plan과 snapshot에서 triage finding 뽑기
 
-- `PYTHONPATH=01-cloud-security-core/05-cspm-rule-engine/python/src .venv/bin/python -m cspm_rule_engine.cli 01-cloud-security-core/05-cspm-rule-engine/problem/data/insecure_plan.json 01-cloud-security-core/05-cspm-rule-engine/problem/data/access_keys_snapshot.json`
-- `PYTHONPATH=01-cloud-security-core/05-cspm-rule-engine/python/src .venv/bin/python -m pytest 01-cloud-security-core/05-cspm-rule-engine/python/tests`
-
-## 읽는 순서
-
-1. [프로젝트 README](../../../01-cloud-security-core/05-cspm-rule-engine/README.md)
-2. [문제 정의](../../../01-cloud-security-core/05-cspm-rule-engine/problem/README.md)
-3. [실행 진입점](../../../01-cloud-security-core/05-cspm-rule-engine/python/README.md)
-4. [대표 테스트](../../../01-cloud-security-core/05-cspm-rule-engine/python/tests/test_scanner.py)
-5. [핵심 구현](../../../01-cloud-security-core/05-cspm-rule-engine/python/src/cspm_rule_engine/scanner.py)
-6. [개발 타임라인](10-development-timeline.md)
-
-## 근거 파일
-
-- [README.md](../../../01-cloud-security-core/05-cspm-rule-engine/README.md)
-- [problem/README.md](../../../01-cloud-security-core/05-cspm-rule-engine/problem/README.md)
-- [python/README.md](../../../01-cloud-security-core/05-cspm-rule-engine/python/README.md)
-- [scanner.py](../../../01-cloud-security-core/05-cspm-rule-engine/python/src/cspm_rule_engine/scanner.py)
-- [cli.py](../../../01-cloud-security-core/05-cspm-rule-engine/python/src/cspm_rule_engine/cli.py)
-- [test_scanner.py](../../../01-cloud-security-core/05-cspm-rule-engine/python/tests/test_scanner.py)
-
-## Git Anchor
-
-- `2026-03-10 a4b4aae docs: enhance bithumb`
-- `2026-03-11 a9c65b3 Track 2에 대한 전반적인 개선 완료 (infobank, bithumb, game-server)`
+## 근거로 삼은 파일
+- `README.md`
+- `problem/README.md`
+- `python/README.md`
+- `docs/concepts/rule-design.md`
+- `python/src/cspm_rule_engine/scanner.py`
+- `python/src/cspm_rule_engine/cli.py`
+- `python/tests/test_scanner.py`

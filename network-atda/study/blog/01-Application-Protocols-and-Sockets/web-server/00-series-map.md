@@ -1,23 +1,28 @@
-# Web Server 시리즈 지도
+# Web Server series map
 
-## 이 프로젝트를 한 줄로
+이 프로젝트를 읽을 때 붙들 질문은 하나다. TCP 연결 하나를 받아 HTTP 요청, 파일 조회, 404 응답까지 어디서 나눠 구현했는가?
 
-TCP socket과 `threading`만으로 HTTP/1.1 정적 파일 서버를 밑바닥부터 만드는 과제다. skeleton을 열었을 때 "소켓이면 바로 send 하면 되지 않나?"라는 생각이, 끝날 때 "요청 라인 파싱 → 파일 읽기 → Content-Length → 연결 종료라는 계약이 먼저였다"로 바뀌는 과정을 기록한다.
+## 무엇을 근거로 복원했는가
 
-## 문제 구조
-- 제공물: `problem/code/server_skeleton.py`, `problem/data/hello.html`, `problem/script/test_server.sh`
-- 답안: `python/src/web_server.py`, `python/tests/test_web_server.py`
-- 검증: `make -C study/01-Application-Protocols-and-Sockets/web-server/problem test`
-- 단건 확인: `make ... request` → `curl -v http://localhost:6789/hello.html`
+- 프로젝트 README: `study/01-Application-Protocols-and-Sockets/web-server/README.md`
+- 문제 문서와 실행 표면: `study/01-Application-Protocols-and-Sockets/web-server/problem/README.md`, `study/01-Application-Protocols-and-Sockets/web-server/problem/Makefile`
+- 핵심 구현과 테스트: `study/01-Application-Protocols-and-Sockets/web-server/python/src/web_server.py`, `study/01-Application-Protocols-and-Sockets/web-server/python/tests/test_web_server.py`
+- 정식 검증 출력: `make -C study/01-Application-Protocols-and-Sockets/web-server/problem test`
 
-## 이 시리즈에서 따라갈 질문
-1. socket `bind → listen → accept` 루프와 HTTP 요청 라인의 관계는 무엇인가
-2. `/` 요청과 `/hello.html` 요청을 왜 같은 파일로 매핑해야 하는가
-3. `404`가 단순 오류가 아니라 응답 계약의 절반인 이유는 무엇인가
-4. `Content-Length`와 `Connection: close`가 없으면 브라우저가 왜 멈추는가
-5. `curl` 한 번으로 "된다"고 말할 수 없는 이유는 무엇인가
+## 어떤 순서로 읽으면 되는가
 
-## 글 목록
-| 번호 | 파일 | 범위 |
-| :--- | :--- | :--- |
-| `10` | [`10-development-timeline.md`](10-development-timeline.md) | skeleton 읽기부터 `make test` 통과까지의 전체 타임라인 |
+1. `problem/README.md`로 문제 조건과 성공 기준을 확인한다.
+2. 이 문서에서 어떤 입력을 근거로 썼는지 먼저 본다.
+3. `01-evidence-ledger.md`로 세 단계 흐름을 짧게 파악한다.
+4. `10-development-timeline.md`에서 코드나 trace, CLI를 따라간다.
+
+## 이번 리라이트에서 의도적으로 제외한 입력
+
+- 현재 `study/blog/**`의 이전 본문
+- `notion/`, `notion-archive/` 아래의 서술형 메모
+
+## 짧은 판정 메모
+
+- 독립 프로젝트로 본 이유: `Web Server`는 자기 README와 정식 검증 명령으로 범위를 독립적으로 설명할 수 있다.
+- 보관본 위치: `study/blog/_legacy`
+- 이번 글의 중심 답: TCP 소켓과 `HTTP/1.1` 응답 조합으로 정적 파일 서버를 구현하는 파일럿 과제입니다.

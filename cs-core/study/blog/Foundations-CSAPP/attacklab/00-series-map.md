@@ -1,24 +1,26 @@
 # Attack Lab 시리즈 맵
 
-## 프로젝트 개요
+`attacklab`은 stack layout, code injection, ROP, 상대 주소 계산을 단계적으로 익히는 프로젝트다. 이 시리즈는 결과만 정리해 둔 회고문이 아니라, hex payload를 읽는 표면부터 phase validator까지 이어 붙여, code injection/ROP를 raw exploit dump가 아닌 재현 가능한 companion lab로 재구성한 흐름을 다룬다.를 끝까지 따라가게 만드는 입구다.
 
-Code injection(phase 1-3)과 ROP(phase 4-5)로 target 함수를 호출하는 exploit 프로젝트.
-raw payload 대신 payload structure validator로 학습 내용을 문서화했다.
+2026-03-13에 기존 초안을 `study/blog/_legacy/2026-03-13-isolate-and-rewrite/Foundations-CSAPP/attacklab/`로 옮긴 뒤, `README`, `problem/`, 실제 구현 파일, `docs/`, 테스트, 현재 다시 실행한 CLI만으로 이 시리즈를 다시 썼다. 그래서 이 문서는 '무엇을 만들었는가'보다 '어떤 순서로 읽어야 그 판단 이동이 보이는가'를 먼저 설명한다.
 
-## 타임라인
+## 이 시리즈를 읽는 방법
 
-| 파일 | 기간 | 핵심 내용 |
-|------|------|-----------|
-| [1편](10-2026-03-08-to-2026-03-09.md) | 2026-03-08 ~ 03-09 | code injection phase 1-3, ROP phase 4-5, gadget chain 설계 |
-| [2편](20-2026-03-10-to-2026-03-11.md) | 2026-03-10 ~ 03-11 | validator 정교화, byte order 가정, publication policy |
+가장 먼저 `01-evidence-ledger.md`에서 살아 있는 근거를 모아 본다. 그 다음 `_structure-outline.md`에서 왜 최종 글이 그 순서로 배치되는지 확인한다. 마지막으로 `10-2026-03-13-reconstructed-development-log.md`에서 그 근거가 실제 서사로 어떻게 이어지는지 읽는다.
 
-## 공개 경계
+## 이번 재작성에서 붙잡은 source-of-truth
 
-- gadget 주소와 payload shape는 설명하되, 외부 target에 직접 쓸 수 있는 raw exploit 배포 금지
+- 문제 계약: [`README.md`](../../../Foundations-CSAPP/attacklab/README.md), [`problem/README.md`](../../../Foundations-CSAPP/attacklab/problem/README.md)
+- 구현 표면: `c/src/main.c`, `c/src/mini_attacklab.c`, `cpp/src/main.cpp`, `cpp/src/mini_attacklab.cpp`
+- 검증 entrypoint: `make clean && make test` in `c`
+- 개념 축: `payload models`, `rop and relative addressing`
 
-## 검증 경로
+## 읽는 순서
 
-```bash
-cd problem && make verify-official
-cd ../c && make test
-```
+1. [`01-evidence-ledger.md`](01-evidence-ledger.md) — source-first 근거와 phase별 판단 전환점을 먼저 모아 둔 문서
+2. [`_structure-outline.md`](_structure-outline.md) — 최종 글의 읽기 곡선과 장면 배치를 설명하는 편집 설계 메모
+3. [`10-2026-03-13-reconstructed-development-log.md`](10-2026-03-13-reconstructed-development-log.md) — 구현 순서, 코드, CLI를 한 흐름으로 다시 쓴 최종 blog
+
+## 이번에 따라간 질문
+
+hex payload를 읽는 표면부터 phase validator까지 이어 붙여, code injection/ROP를 raw exploit dump가 아닌 재현 가능한 companion lab로 재구성한 흐름을 다룬다.

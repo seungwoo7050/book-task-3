@@ -1,116 +1,128 @@
-# RDT Protocol 개발 타임라인
+# RDT Protocol development timeline
 
-## Day 1 — rdt3.0 (Stop-and-Wait)
+`RDT Protocol`는 결과만 보면 단순해 보이지만, 실제로는 어느 파일에서 규칙을 고정했는지 따라가야 전체 그림이 보인다.
 
-### Session 1
+아래 순서는 README 설명을 다시 요약한 것이 아니라, 실제 근거가 남아 있는 지점을 따라 재조립한 흐름이다.
 
-- 목표: 불신 채널 위의 전송을 교과서의 상태 다이어그램 대신 실제 코드로 읽어본다.
-- 진행: 먼저 `channel.py`와 `packet.py`를 열었다. `UnreliableChannel`은 `send()` 시 loss/corruption을 확률적으로 적용하고, `packet.py`는 `make_packet()`, `parse_packet()`, `is_corrupt()`, `make_ack()`, `is_ack()`를 제공한다. 즉 패킷 조립과 검증은 제공되고, sender/receiver 상태 전이만 내가 짜야 한다.
-- 이슈: 당시 가장 헷갈렸던 건 "번호가 0과 1만 있는데 어떻게 여러 packet을 순서대로 보내지?"였다. alternating bit이라는 이름은 알았지만, 실제로 0→1→0 전환만으로 5개, 10개 메시지를 순서대로 보낼 수 있는 이유를 코드로 보기 전에는 확신이 없었다.
+## 구현 순서 한눈에 보기
 
-### Session 2
+1. `study/02-Reliable-Transport/rdt-protocol/problem`의 문제 문서와 실행 target으로 출발점을 고정했다.
+2. `study/02-Reliable-Transport/rdt-protocol/python/src/gbn.py`의 핵심 구간에서 동작 규칙을 설명할 수 있는 최소 앵커를 골랐다.
+3. `make -C study/02-Reliable-Transport/rdt-protocol/problem test`와 테스트/verify 파일을 연결해 통과 신호와 남은 경계를 정리했다.
 
-- 목표: sender 상태 변수를 고정하고 stop-and-wait 루프를 돌린다.
-- 진행: sender에 필요한 상태는 세 개였다 — `send_seq`(0 또는 1), `current_pkt`(재전송용 복사본), `timer_start`(timeout 판정용).
+## 1. 실행 표면과 entrypoint를 먼저 고정하기
 
-```py
-current_pkt = make_packet(send_seq, data_list[send_idx].encode())
-channel_data.send(current_pkt)
-timer_start = time.time()
-awaiting_ack = True
+출발점에서 중요한 건 기능 목록이 아니라 읽는 순서였다. `problem/` 문서와 Makefile만으로도 첫 발을 어디에 둘지 정리할 수 있었다.
+
+- 당시 목표: `RDT Protocol`를 읽는 출발점과 성공 기준을 고정한다.
+- 실제 진행: `problem/README.md`와 `problem/Makefile`을 먼저 확인한 뒤, `def rdt_send_receive`가 있는 파일로 내려갔다.
+- 검증 신호: `make help`에 보이는 target만으로도 이 프로젝트가 어떤 명령으로 열리고 닫히는지 설명할 수 있었다.
+- 새로 배운 것: alternating bit와 cumulative ACK의 차이
+
+핵심 코드/trace:
+
+```python
+"""
+Go-Back-N (GBN) 정답 구현.
+
+cumulative ACK와 sliding window를 이용해 reliable data transfer를 시뮬레이션한다.
+
+Usage:
+    python3 gbn.py [--loss RATE] [--corrupt RATE] [--window N]
+"""
+
+import argparse
 ```
 
-- 이슈: 처음에 `current_pkt`을 저장하지 않고 timeout 시 새로 `make_packet()`을 불렀더니, checksum이 달라져서 receiver가 corrupt로 판정하는 문제가 생겼다. 실제로 재전송은 "packet을 다시 만드는 게 아니라 똑같은 packet을 다시 보내는 것"이었다.
-- 조치: `current_pkt`을 전송 전에 저장해 두고, timeout 시 그대로 다시 보내도록 수정.
+왜 이 코드가 중요했는가:
 
-### Session 3
-
-- 목표: receiver 비정상 경로를 완성한다 — duplicate, corrupt.
-- 진행: receiver는 `expected_seq`와 일치하면 deliver + ACK, 다르면 직전 ACK 재전송.
-
-```py
-if seq == expected_seq:
-    received.append(msg)
-    channel_ack.send(make_ack(expected_seq))
-    expected_seq = 1 - expected_seq
-else:
-    prev = 1 - expected_seq
-    channel_ack.send(make_ack(prev))
-```
-
-- 이슈: corrupt packet에 대해 처음에는 아무 응답도 안 보냈다. 그러니 sender가 timeout만 기다리게 됐는데, 이러면 채널이 좋을 때도 항상 timeout이 날 수 있었다. corrupt에도 직전 ACK를 보내는 편이 timeout 안에 sender가 구제됐다.
-- 검증:
+첫 단계에서 이 코드를 붙드는 편이 좋은 이유는, 뒤 단계 전체가 여기서 정한 입력과 실행 방식 위에 쌓이기 때문이다.
 
 CLI:
 
 ```bash
-$ make -C study/02-Reliable-Transport/rdt-protocol/problem run-solution-rdt3
-=== RDT 3.0 (Stop-and-Wait) ===
-Messages to send: 5
-Loss rate: 0.2, Corruption rate: 0.1
-
-[SENDER]   Sent packet seq=0: "Hello"
-[RECEIVER] Received seq=0: "Hello" → ACK 0
-[SENDER]   ACK 0 received
-[SENDER]   Sent packet seq=1: "World"
-[SENDER]   Timeout! Retransmitting seq=1
-[RECEIVER] Received seq=1: "World" → ACK 1
-[SENDER]   ACK 1 received
-...
-=== Transfer Complete ===
-Sent:     5 messages
-Received: 5 messages
-Status:   SUCCESS — All messages delivered correctly!
+$ make -C study/02-Reliable-Transport/rdt-protocol/problem help
+  run-gbn                  Run the GBN skeleton
+  run-solution-gbn         Run the GBN solution
+  test                     Run all tests
 ```
 
-## Day 2 — Go-Back-N
+## 2. 패킷 생성 규칙과 전송 루프를 비교 가능한 단위로 붙들기
 
-### Session 1
+두 번째 단계에서는 `rdt3.0`과 `Go-Back-N`을 같은 채널 모델 위에서 비교하는 신뢰 전송 과제입니다.`라는 설명을 실제 코드나 trace 근거에 붙여야 했다. 그래서 파일 전체를 훑기보다 판단이 몰린 구간 하나를 먼저 골랐다.
 
-- 목표: rdt3.0의 stop-and-wait가 느린 이유를 코드로 느낀 뒤 sliding window를 넣는다.
-- 진행: sender 상태가 `send_seq`(0 or 1) 대신 `base`, `next_seq`, `window_size` 세 개로 늘어났다. packet을 미리 다 만들어 두고, window 안에서 `next_seq`까지 연속 전송한다.
-- 이슈: 당시에는 GBN이 "rdt3.0을 여러 개 병렬로 보내는 것"이라고 생각했는데, 실제로 다른 점은 ACK 의미였다. rdt3.0은 개별 ACK이지만 GBN은 누적 ACK다 — "seq 3까지 다 받았다"라는 뜻이다.
+- 당시 목표: `rdt3.0과 Go-Back-N을 같은 채널 모델 위에서 비교하는 신뢰 전송 과제입니다.`를 실제 근거에 붙인다.
+- 실제 진행: `def gbn_send_receive` 주변을 중심으로 symbol이나 trace 결과를 다시 좁혀 읽었다.
+- 검증 신호: 짧은 `rg`/filter 출력만으로도 어느 줄이 설명의 중심인지 바로 드러났다.
+- 새로 배운 것: timeout 기반 재전송
 
-### Session 2
+핵심 코드/trace:
 
-- 목표: timeout 시 재전송 범위를 구현하고 이 비효율을 눈으로 확인한다.
-- 진행:
+```python
+def gbn_send_receive(
+    channel_data: UnreliableChannel,
+    channel_ack: UnreliableChannel,
+    data_list: list[str],
+    window_size: int = 4,
+) -> list[str]:
+    """GBN protocol로 모든 메시지를 전송한다.
 
-```py
-if timer_start and (time.time() - timer_start > TIMEOUT):
-    print(f"[SENDER]   Timeout! Retransmitting packets {base} to {next_seq - 1}")
-    for i in range(base, next_seq):
-        channel_data.send(packets[i])
-    timer_start = time.time()
+    Args:
+        channel_data: data packet용 channel.
 ```
 
-- 이슈: 로그를 보니 seq 2만 손실됐는데 seq 2, 3, 4를 전부 다시 보내고 있었다. 3과 4는 이미 receiver가 받았는데도 GBN receiver는 out-of-order를 버리니까 또 받아야 한다. 이게 "비효율"의 실체였다. 동시에 다음 프로젝트(Selective Repeat)가 왜 필요한지를 뼈저리게 느낀 순간이기도 했다.
-- 검증:
+왜 이 코드가 중요했는가:
+
+이 스니펫은 실제 판단이 몰린 줄을 보여 준다. 설명을 길게 하기보다 이 줄을 기준으로 앞뒤 규칙을 읽는 편이 빠르다.
 
 CLI:
 
 ```bash
-$ make -C study/02-Reliable-Transport/rdt-protocol/problem run-solution-gbn
-=== Go-Back-N (Window Size = 4) ===
-[SENDER]   Sent packet seq=0: "Hello"
-[SENDER]   Sent packet seq=1: "World"
-[SENDER]   Sent packet seq=2: "RDT"
-[SENDER]   Sent packet seq=3: "Protocol"
-[RECEIVER] Received seq=0 → ACK 0
-[RECEIVER] Received seq=1 → ACK 1
-[SENDER]   ACK 1 received (cumulative)
-[SENDER]   Timeout! Retransmitting packets 2 to 3
-...
-Status:   SUCCESS
+$ rg -n -e 'def rdt_send_receive' -e 'def gbn_send_receive' -e 'class TestPacketModule' -e 'def test_make_and_parse_packet' 'study/02-Reliable-Transport/rdt-protocol/python/src/gbn.py' 'study/02-Reliable-Transport/rdt-protocol/python/src/rdt3.py' 'study/02-Reliable-Transport/rdt-protocol/python/tests/test_rdt.py'
+study/02-Reliable-Transport/rdt-protocol/python/src/rdt3.py:28:def rdt_send_receive(
+study/02-Reliable-Transport/rdt-protocol/python/src/gbn.py:27:def gbn_send_receive(
+study/02-Reliable-Transport/rdt-protocol/python/tests/test_rdt.py:16:class TestPacketModule:
+study/02-Reliable-Transport/rdt-protocol/python/tests/test_rdt.py:19:    def test_make_and_parse_packet(self):
 ```
+
+## 3. 테스트와 남은 범위를 정리하기
+
+검증 단계에서는 결과보다 계약을 봤다. 어떤 출력이 통과 신호인지, 그리고 README에 남겨 둔 한계가 무엇인지 함께 정리했다.
+
+- 당시 목표: 검증 결과와 남은 경계를 함께 정리한다.
+- 실제 진행: `make -C study/02-Reliable-Transport/rdt-protocol/problem test`를 다시 실행하고, `def test_make_and_parse_packet`가 남아 있는 파일을 본문 마지막 근거로 삼았다.
+- 검증 신호: 현재 공개 답안이 재현된다는 출력과, README limitation이 동시에 확인됐다.
+- 새로 배운 것: sliding window의 기본 구조
+
+핵심 코드/trace:
+
+```python
+def test_make_and_parse_packet(self):
+        pkt = make_packet(0, b"Hello")
+        checksum, seq, payload = parse_packet(pkt)
+        assert seq == 0
+        assert payload == b"Hello"
+
+    def test_valid_packet_not_corrupt(self):
+        pkt = make_packet(1, b"World")
+        assert not is_corrupt(pkt)
+```
+
+왜 이 코드가 중요했는가:
+
+본문을 여기로 닫으면 구현 설명이 감상문으로 흘러가지 않는다. 어떤 계약을 확인했는지 바로 보이기 때문이다.
+
+CLI:
 
 ```bash
 $ make -C study/02-Reliable-Transport/rdt-protocol/problem test
-===== 6 passed =====
+TEST: RDT 3.0 completes transfer               [PASS]
+TEST: GBN completes transfer                   [PASS]
+ Results: 2 passed, 0 failed
 ```
 
-- 정리:
-  - rdt3.0의 핵심은 "timeout 후 똑같은 packet을 다시 보내는 discipline"이었다.
-  - GBN의 핵심은 "누적 ACK 기준으로 window를 밀고, timeout 시 남은 전체를 재전송"이었다.
-  - "seq 2만 죽었는데 3, 4도 다시 보낸다"는 로그를 직접 보니, Selective Repeat가 왜 필요한지가 교과서보다 설득력 있었다.
-  - 다음 프로젝트에서 이 비효율을 정확히 선별적으로 고치는 작업을 한다.
+## 남은 경계
+
+- 실제 네트워크가 아니라 시뮬레이션 채널을 사용합니다.
+- GBN 성능 로그를 자동 수집하지 않습니다.
+- 동시성 대신 단일 이벤트 루프를 사용합니다.

@@ -1,21 +1,25 @@
 # DNS Packet Analysis blog
 
-이 디렉터리는 `DNS Packet Analysis`를 `strict source-only` 기준으로 다시 읽는 blog 시리즈다. chronology는 `problem/README.md`, `problem/Makefile`, `analysis/src/dns-analysis.md`, `docs/concepts/wireshark-dns.md`를 바탕으로 일반적인 개발자 수준의 추론으로 재구성했다.
+`DNS Packet Analysis` 문서 묶음은 DNS trace에서 query, response, authoritative 여부를 어떤 필드로 구분했는가?라는 질문에 답하기 위해 준비한 읽기 경로다. 결과만 요약하지 않고, 어디서부터 구현이나 분석이 무거워졌는지 따라갈 수 있게 구성했다.
 
-## source set
-- [`../../../03-Packet-Analysis-Top-Down/dns/README.md`](../../../03-Packet-Analysis-Top-Down/dns/README.md)
-- [`../../../03-Packet-Analysis-Top-Down/dns/problem/README.md`](../../../03-Packet-Analysis-Top-Down/dns/problem/README.md)
-- [`../../../03-Packet-Analysis-Top-Down/dns/problem/Makefile`](../../../03-Packet-Analysis-Top-Down/dns/problem/Makefile)
-- [`../../../03-Packet-Analysis-Top-Down/dns/analysis/src/dns-analysis.md`](../../../03-Packet-Analysis-Top-Down/dns/analysis/src/dns-analysis.md)
-- [`../../../03-Packet-Analysis-Top-Down/dns/docs/concepts/wireshark-dns.md`](../../../03-Packet-Analysis-Top-Down/dns/docs/concepts/wireshark-dns.md)
+이 프로젝트의 본문은 `DNS query/response 구조와 TTL 기반 캐시를 Wireshark로 해석하는 랩입니다.`라는 한 줄 설명을 실제 파일, CLI, 테스트 신호로 다시 풀어 쓰는 데 초점을 둔다.
 
-## 읽는 순서
-1. [`00-series-map.md`](00-series-map.md)
-2. [`10-development-timeline.md`](10-development-timeline.md)
-3. [`../../../03-Packet-Analysis-Top-Down/dns/README.md`](../../../03-Packet-Analysis-Top-Down/dns/README.md)
+## 이 폴더에서 기대할 수 있는 것
 
-## 검증 진입점
-- `make -C study/03-Packet-Analysis-Top-Down/dns/problem test`
+- 문제 경계와 읽는 순서: [00-series-map.md](00-series-map.md)
+- 단계별 근거 압축본: [01-evidence-ledger.md](01-evidence-ledger.md)
+- 글의 편집 개요: [02-structure.md](02-structure.md)
+- 실제 서사형 기록: [10-development-timeline.md](10-development-timeline.md)
 
-## chronology 메모
-- 이 프로젝트는 `관찰 가능한 것`과 `trace가 짧아서 관찰 불가한 것`을 구분하는 흐름 자체가 핵심이다.
+## 근거로 사용한 source set
+
+- 프로젝트 루트: `study/03-Packet-Analysis-Top-Down/dns`
+- 정식 검증 명령: `make -C study/03-Packet-Analysis-Top-Down/dns/problem test`
+- 분석 본문: `study/03-Packet-Analysis-Top-Down/dns/analysis/src/dns-analysis.md`
+- 제외한 입력: 기존 `study/blog/**`, `notion/**`, `notion-archive/**`
+
+## 먼저 읽을 순서
+
+1. `00-series-map.md`에서 질문과 근거를 먼저 잡는다.
+2. `01-evidence-ledger.md`에서 세 단계 흐름을 짧게 본다.
+3. `10-development-timeline.md`에서 코드/trace와 CLI를 따라 내려간다.

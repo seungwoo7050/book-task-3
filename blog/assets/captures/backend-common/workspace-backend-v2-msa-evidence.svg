@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#0b1220" />
+  <rect x="48" y="48" width="1104" height="624" rx="24" fill="#111827" stroke="#334155" />
+  <text x="80" y="118" fill="#f8fafc" font-size="34" font-family="Menlo, Monaco, Consolas, monospace">workspace-backend-v2-msa</text>
+  <text x="80" y="158" fill="#93c5fd" font-size="18" font-family="Menlo, Monaco, Consolas, monospace">FastAPI backend-common evidence snapshot</text>
+
+  <text x="80" y="220" fill="#cbd5e1" font-size="17" font-family="Menlo, Monaco, Consolas, monospace">Source: backend-fastapi/docs/verification-report.md</text>
+  <text x="80" y="268" fill="#e2e8f0" font-size="20" font-family="Menlo, Monaco, Consolas, monospace">2026-03-10 re-run summary</text>
+
+  <text x="80" y="324" fill="#a7f3d0" font-size="19" font-family="Menlo, Monaco, Consolas, monospace">make test              PASS</text>
+  <text x="80" y="362" fill="#a7f3d0" font-size="19" font-family="Menlo, Monaco, Consolas, monospace">system test            PASS</text>
+  <text x="80" y="400" fill="#a7f3d0" font-size="19" font-family="Menlo, Monaco, Consolas, monospace">smoke                  PASS</text>
+  <text x="80" y="438" fill="#a7f3d0" font-size="19" font-family="Menlo, Monaco, Consolas, monospace">compose runtime        RESTORED</text>
+
+  <text x="80" y="496" fill="#f8fafc" font-size="18" font-family="Menlo, Monaco, Consolas, monospace">Verified collaboration flow</text>
+  <text x="80" y="532" fill="#cbd5e1" font-size="17" font-family="Menlo, Monaco, Consolas, monospace">register -&gt; verify -&gt; login -&gt; Google login -&gt; invite</text>
+  <text x="80" y="566" fill="#cbd5e1" font-size="17" font-family="Menlo, Monaco, Consolas, monospace">comment -&gt; drain -&gt; notification recovery -&gt; websocket delivery</text>
+
+  <text x="80" y="628" fill="#fca5a5" font-size="15" font-family="Menlo, Monaco, Consolas, monospace">Note: fresh image rebuild path was unstable; verification report records restored prebuilt runtime success.</text>
+</svg>

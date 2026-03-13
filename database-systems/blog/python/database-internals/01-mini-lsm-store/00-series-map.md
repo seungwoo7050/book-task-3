@@ -1,36 +1,39 @@
-# 01 Mini LSM Store — Series Map
+# 01 Mini LSM Store 시리즈 맵
 
-`store.py` 한 파일에 memtable, immutable snapshot, SSTable이 전부 들어 있다. 처음엔 이게 정말 저장 엔진이라고 부를 수 있는 물건인지 의심스러웠다. 이 시리즈는 그 의심이 어떻게 풀렸는지, 그리고 어디서 새로운 의심이 생겼는지를 따라간다.
+Database Internals 트랙의 1번째 슬롯인 `01 Mini LSM Store`에서는 active memtable, immutable flush, newest-first read path를 연결해 최소 LSM store를 완성합니다. 이 시리즈는 결과 요약보다 실제 구현 순서가 어디서 선명해지는지 보여 주는 데 초점을 둔다.
 
-## 이 프로젝트가 답하는 질문
+## 먼저 보고 갈 질문
 
-- `dict` 하나짜리 memtable이 flush와 reopen을 거치면서도 newest-first lookup을 유지할 수 있는가
-- tombstone이 `None`일 뿐인데 삭제된 키가 SSTable에서 되살아나지 않는 이유는 무엇인가
+- active memtable이 threshold를 넘으면 immutable swap 후 SSTable로 flush해야 합니다.
+- read path는 active memtable, immutable memtable, newest SSTable부터 순서대로 조회해야 합니다.
 
 ## 읽는 순서
 
-1. [10-chronology-setup-and-surface.md](10-chronology-setup-and-surface.md) — 파일 하나짜리 저장 엔진을 처음 열었을 때
-2. [20-chronology-core-mechanics.md](20-chronology-core-mechanics.md) — `get`의 조회 순서가 전부였다는 깨달음
-3. [30-chronology-verification-and-boundaries.md](30-chronology-verification-and-boundaries.md) — 9 passed, 그리고 WAL 없는 세계의 한계
-
-## 참조한 실제 파일
-
-- `python/database-internals/projects/01-mini-lsm-store/src/mini_lsm_store/store.py`
-- `python/database-internals/projects/01-mini-lsm-store/tests/test_mini_lsm_store.py`
-- `python/database-internals/projects/01-mini-lsm-store/src/mini_lsm_store/__main__.py`
-- `python/database-internals/projects/01-mini-lsm-store/README.md`
-- `python/database-internals/projects/01-mini-lsm-store/problem/README.md`
-- `python/database-internals/projects/01-mini-lsm-store/pyproject.toml`
+1. [10-chronology-scope-and-surface.md](10-chronology-scope-and-surface.md) — 테스트 이름과 파일 배치부터 훑으면서 문제의 테두리를 다시 좁히는 글
+2. [20-chronology-core-invariants.md](20-chronology-core-invariants.md) — 핵심 함수와 상태 전이에서 invariant가 실제로 어디서 잠기는지 따라가는 글
+3. [30-chronology-verification-and-boundaries.md](30-chronology-verification-and-boundaries.md) — 테스트와 demo를 다시 돌려 약속 범위와 남는 한계를 정리하는 글
 
 ## 재검증 명령
 
 ```bash
-cd python/database-internals/projects/01-mini-lsm-store
-PYTHONPATH=src python3 -m pytest
-PYTHONPATH=src python3 -m mini_lsm_store
+PYTHONPATH=src .venv/bin/python -m pytest
+PYTHONPATH=src .venv/bin/python -m mini_lsm_store
 ```
+
+## 이번 시리즈가 근거로 삼은 파일
+
+- `database-systems/python/database-internals/projects/01-mini-lsm-store/src/mini_lsm_store/store.py`
+- `database-systems/python/database-internals/projects/01-mini-lsm-store/tests/test_mini_lsm_store.py`
+- `database-systems/python/database-internals/projects/01-mini-lsm-store/README.md`
+- `database-systems/python/database-internals/projects/01-mini-lsm-store/problem/README.md`
+- `database-systems/python/database-internals/projects/01-mini-lsm-store/docs/README.md`
+- `database-systems/python/database-internals/projects/01-mini-lsm-store/src/mini_lsm_store/__main__.py`
+
+## 보조 메모
+
+작업 메모가 꼭 필요할 때만 [_evidence-ledger.md](_evidence-ledger.md)와 [_structure-outline.md](_structure-outline.md)를 보면 된다. 공개 시리즈는 `00 -> 10 -> 20 -> 30`만 따라가면 충분하다.
 
 ## Git Anchor
 
+- `2026-03-13 abeead6 docs: TRACK 1 에대한 blog/ 작업 1차 완료`
 - `2026-03-11 bbb6673 Track 1에 대한 전반적인 개선 완료`
-- `2026-03-11 74d5b11 feat: add new project in database-systems`

@@ -1,35 +1,28 @@
-# 802.11 Wireless Packet Analysis 시리즈 지도
+# 802.11 Wireless Packet Analysis series map
 
-## 이 프로젝트를 한 줄로
+이 프로젝트를 읽을 때 붙들 질문은 하나다. 무선 링크 계층에서는 beacon, probe, association이 어떤 순서로 보이는가?
 
-무선 LAN 연결을 복잡한 용어 목록이 아니라 beacon부터 data/ACK까지 이어지는 짧은 절차로 복원해 보는 기록이다.
+## 무엇을 근거로 복원했는가
 
-## 시작 전에 고정한 자료
+- 프로젝트 README: `study/03-Packet-Analysis-Top-Down/wireless-802.11/README.md`
+- 문제 문서와 실행 표면: `study/03-Packet-Analysis-Top-Down/wireless-802.11/problem/README.md`, `study/03-Packet-Analysis-Top-Down/wireless-802.11/problem/Makefile`
+- 분석 본문: `study/03-Packet-Analysis-Top-Down/wireless-802.11/analysis/src/wireless-analysis.md`
+- 정식 검증 출력: `make -C study/03-Packet-Analysis-Top-Down/wireless-802.11/problem test`
 
-- 제공 trace: `problem/data/wireless-trace.pcap`
-- 실행 진입점: `problem/Makefile`
-- 사용자 답안: `study/03-Packet-Analysis-Top-Down/wireless-802.11/analysis/src/wireless-analysis.md`
-- 보조 개념 문서: `docs/concepts/wireshark-wireless.md`
+## 어떤 순서로 읽으면 되는가
 
-## 이 시리즈에서 따라갈 질문
+1. `problem/README.md`로 문제 조건과 성공 기준을 확인한다.
+2. 이 문서에서 어떤 입력을 근거로 썼는지 먼저 본다.
+3. `01-evidence-ledger.md`로 세 단계 흐름을 짧게 파악한다.
+4. `10-development-timeline.md`에서 코드나 trace, CLI를 따라간다.
 
-1. beacon과 probe response는 같은 AP 정보를 어떻게 다른 맥락에서 보여 주는가.
-2. authentication과 association는 어떤 frame 순서로 이어져야 연결이 성립했다고 말할 수 있는가.
-3. `To DS`, `From DS`, AID, ACK frame은 연결 이후 데이터 전송을 어떻게 보여 주는가.
-4. synthetic trace의 단순화는 capability, security detail, data exchange 양에서 어디서 드러나는가.
+## 이번 리라이트에서 의도적으로 제외한 입력
 
-## 검증 명령
+- 현재 `study/blog/**`의 이전 본문
+- `notion/`, `notion-archive/` 아래의 서술형 메모
 
-- beacon 확인: `make -C study/03-Packet-Analysis-Top-Down/wireless-802.11/problem beacons`
-- probe 확인: `make -C study/03-Packet-Analysis-Top-Down/wireless-802.11/problem probes`
-- authentication: `make -C study/03-Packet-Analysis-Top-Down/wireless-802.11/problem auth`
-- association: `make -C study/03-Packet-Analysis-Top-Down/wireless-802.11/problem assoc`
-- data frame: `make -C study/03-Packet-Analysis-Top-Down/wireless-802.11/problem data`
-- 답안 검증: `make -C study/03-Packet-Analysis-Top-Down/wireless-802.11/problem test`
+## 짧은 판정 메모
 
-## 글 구성
-
-| 파일 | 역할 |
-| :--- | :--- |
-| `00-series-map.md` | management frame sequence를 먼저 정리한다. |
-| `10-development-timeline.md` | beacon/probe → auth/assoc → data/ACK 순서로 연결 절차를 따라간다. |
+- 독립 프로젝트로 본 이유: `802.11 Wireless Packet Analysis`는 자기 README와 정식 검증 명령으로 범위를 독립적으로 설명할 수 있다.
+- 보관본 위치: `study/blog/_legacy`
+- 이번 글의 중심 답: 비콘, 프로브, 인증, 연관, 주소 필드를 통해 무선 LAN 연결 과정을 읽는 랩입니다.

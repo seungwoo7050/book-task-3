@@ -1,22 +1,20 @@
 # 04. Network Diagnostics and Routing blog
 
-이 트랙의 blog 시리즈는 raw socket 기반 진단 도구와 Bellman-Ford 시뮬레이션을 같은 흐름 안에서 복원한다. `problem/Makefile`, solution 코드, 테스트 코드, 개념 문서를 함께 읽으면서 `packet observation -> tool -> algorithm`으로 이어지는 구조를 보여 준다.
+ICMP 기반 진단 도구와 distance-vector routing 구현으로 네트워크 계층 감각을 확장하는 단계입니다.
 
-## 프로젝트
+## 이 트랙에서 무엇을 따라가면 되나
 
-| 프로젝트 | blog | 원 프로젝트 |
-| :--- | :--- | :--- |
-| ICMP Pinger | [`README.md`](icmp-pinger/README.md) | [`../../04-Network-Diagnostics-and-Routing/icmp-pinger/README.md`](../../04-Network-Diagnostics-and-Routing/icmp-pinger/README.md) |
-| Traceroute | [`README.md`](traceroute/README.md) | [`../../04-Network-Diagnostics-and-Routing/traceroute/README.md`](../../04-Network-Diagnostics-and-Routing/traceroute/README.md) |
-| Distance-Vector Routing | [`README.md`](routing/README.md) | [`../../04-Network-Diagnostics-and-Routing/routing/README.md`](../../04-Network-Diagnostics-and-Routing/routing/README.md) |
+이 레이어는 프로젝트를 나열하는 데서 멈추지 않고, 왜 이 순서가 자연스러운지까지 같이 보여 주려고 한다. 구현형 프로젝트는 진입점과 테스트를 먼저 보고, 분석형 프로젝트는 trace 질문과 filter target을 먼저 잡는 방식으로 읽으면 흐름이 편하다.
 
-## 읽는 순서
-1. [`ICMP Pinger`](icmp-pinger/README.md)로 checksum, raw socket, echo request/reply를 본다.
-2. [`Traceroute`](traceroute/README.md)로 TTL과 `ICMP Time Exceeded`를 경로 추적으로 연결한다.
-3. [`Distance-Vector Routing`](routing/README.md)로 경로 계산을 알고리즘 시뮬레이션 수준에서 정리한다.
+## 권장 읽기 순서
 
-## source-first 메모
-- `ICMP Pinger`, `Traceroute`는 live 명령과 non-privileged test를 분리해서 기록한다.
-- `routing`은 JSON topology, `dv_routing.py`, test script, routing table 출력이 핵심 근거다.
-- 세 프로젝트 모두 날짜 근거가 약하므로 `Day/Session`으로 chronology를 정리한다.
-- 구현 순서는 소스와 테스트가 드러내는 일반적인 개발 흐름으로만 추론한다.
+1. [ICMP Pinger](icmp-pinger/README.md) - ICMP echo request/reply를 raw socket 위에서 어디까지 직접 조립하고 해석했는가?
+2. [Traceroute](traceroute/README.md) - UDP probe와 ICMP 응답을 엮어 hop 단위 경로를 어떻게 복원했는가?
+3. [Distance-Vector Routing](routing/README.md) - distance-vector가 topology 입력에서 최종 routing table로 수렴하는 과정을 어떻게 보여 줬는가?
+
+## 공통으로 보는 근거
+
+- 프로젝트 README와 `problem/README.md`
+- `problem/Makefile`의 실행/검증 target
+- 구현형은 `python/` 또는 `cpp/`, 분석형은 `analysis/src/`
+- 테스트 파일과 `docs/concepts/`

@@ -1,38 +1,35 @@
-# arenaserv blog
+# arenaserv Source-First Blog
 
-이 디렉터리는 `arenaserv`를 `source-first` 방식으로 다시 읽는 프로젝트 단위 blog 시리즈다. chronology는 프로젝트 README, `problem/README.md`, `cpp/README.md`, `cpp/Makefile`, `cpp/include/inc/Server.hpp`, `cpp/include/inc/EventManager.hpp`, `cpp/src/Server.cpp`, `cpp/src/MatchEngine.cpp`, `cpp/tests/test_arenaserv.py`를 기준으로 복원했다.
+`arenaserv`은 `ticklab`의 authoritative engine을 다시 설명하는 문서가 아니다. 오히려 이미 검증된 engine을 TCP 서버에 올릴 때, timed event loop와 session bridge가 어떤 책임을 새로 떠안는지 보여 주는 capstone에 가깝다. 같은 규칙을 쓴다는 점은 같지만, transport를 붙이는 순간 새로 생기는 문제는 전혀 다르다.
 
-## source set
+이 시리즈는 그 차이를 source-first로 다시 읽는다. 근거는 [`problem/README.md`](../../../game-track/02-arenaserv/problem/README.md), [`cpp/README.md`](../../../game-track/02-arenaserv/cpp/README.md), [`docs/README.md`](../../../game-track/02-arenaserv/docs/README.md), 실제 소스, 테스트, 그리고 직접 실행한 CLI뿐이다. 특히 [`cpp/src/MatchEngine.cpp`](../../../game-track/02-arenaserv/cpp/src/MatchEngine.cpp)와 [`cpp/include/inc/MatchEngine.hpp`](../../../game-track/02-arenaserv/cpp/include/inc/MatchEngine.hpp)가 `ticklab`과 동일하다는 사실이 이 문서의 출발점이 된다.
 
-- [../../../game-track/02-arenaserv/README.md](../../../game-track/02-arenaserv/README.md)
-- [../../../game-track/02-arenaserv/problem/README.md](../../../game-track/02-arenaserv/problem/README.md)
-- [../../../game-track/02-arenaserv/cpp/README.md](../../../game-track/02-arenaserv/cpp/README.md)
-- [../../../game-track/02-arenaserv/cpp/Makefile](../../../game-track/02-arenaserv/cpp/Makefile)
-- [../../../game-track/02-arenaserv/cpp/include/inc/Server.hpp](../../../game-track/02-arenaserv/cpp/include/inc/Server.hpp)
-- [../../../game-track/02-arenaserv/cpp/include/inc/EventManager.hpp](../../../game-track/02-arenaserv/cpp/include/inc/EventManager.hpp)
-- [../../../game-track/02-arenaserv/cpp/include/inc/MatchEngine.hpp](../../../game-track/02-arenaserv/cpp/include/inc/MatchEngine.hpp)
-- [../../../game-track/02-arenaserv/cpp/src/Server.cpp](../../../game-track/02-arenaserv/cpp/src/Server.cpp)
-- [../../../game-track/02-arenaserv/cpp/src/MatchEngine.cpp](../../../game-track/02-arenaserv/cpp/src/MatchEngine.cpp)
-- [../../../game-track/02-arenaserv/cpp/tests/test_arenaserv.py](../../../game-track/02-arenaserv/cpp/tests/test_arenaserv.py)
+## 검증 명령
 
-## 읽는 순서
-
-1. [00-series-map.md](00-series-map.md)
-2. [10-chronology-server-surface-and-session-handshake.md](10-chronology-server-surface-and-session-handshake.md)
-3. [20-chronology-queue-ready-and-engine-bridge.md](20-chronology-queue-ready-and-engine-bridge.md)
-4. [30-chronology-input-rejoin-and-room-events.md](30-chronology-input-rejoin-and-room-events.md)
-5. [40-chronology-multi-client-verification-and-boundaries.md](40-chronology-multi-client-verification-and-boundaries.md)
-6. [../../../game-track/02-arenaserv/README.md](../../../game-track/02-arenaserv/README.md)
-
-## 검증 진입점
-
-```bash
-cd ../../../game-track/02-arenaserv/cpp
+```sh
+cd /Users/woopinbell/work/book-task-3/cpp-server/study/game-track/02-arenaserv/cpp
 make clean && make test
 ```
 
-## chronology 메모
+최근 확인 결과:
 
-- `arenaserv`는 `eventlab` runtime과 `ticklab` engine을 다시 합치는 capstone이므로, chronology도 command surface -> engine bridge -> rejoin/input path -> multi-client smoke verification 순서로 나눴다.
-- `2026-03-11`은 현재 `verified` surface를 고정한 날짜 앵커다.
-- 본문은 별도 노트 계층 없이 source set과 smoke test contract만으로 재구성했다.
+- `python3 tests/test_arenaserv.py`
+- `arenaserv smoke passed.`
+
+## 읽기 순서
+
+- [00-series-map.md](00-series-map.md)
+- [evidence-ledger.md](evidence-ledger.md)
+- [structure-plan.md](structure-plan.md)
+- [10-server-surface-and-session-handshake.md](10-server-surface-and-session-handshake.md)
+- [20-queue-ready-and-engine-bridge.md](20-queue-ready-and-engine-bridge.md)
+- [30-input-rejoin-and-room-events.md](30-input-rejoin-and-room-events.md)
+
+## 핵심 근거 파일
+
+- [`cpp/include/inc/EventManager.hpp`](../../../game-track/02-arenaserv/cpp/include/inc/EventManager.hpp)
+- [`cpp/src/EventManager.cpp`](../../../game-track/02-arenaserv/cpp/src/EventManager.cpp)
+- [`cpp/src/Server.cpp`](../../../game-track/02-arenaserv/cpp/src/Server.cpp)
+- [`cpp/src/MatchEngine.cpp`](../../../game-track/02-arenaserv/cpp/src/MatchEngine.cpp)
+- [`cpp/tests/test_arenaserv.py`](../../../game-track/02-arenaserv/cpp/tests/test_arenaserv.py)
+

@@ -1,47 +1,27 @@
-# H-service-boundary-lab 시리즈 지도
+# H-service-boundary-lab
 
-이 시리즈는 단일 백엔드에서 처음으로 인증과 워크스페이스 도메인을 분리하는 순간을, gateway와 서비스 코드, system test를 기준으로 다시 읽습니다.
+이 글은 단일 백엔드에서 자연스럽게 함께 있던 인증과 워크스페이스 도메인을 어디서 끊을 것인가라는 질문에서 출발한다. H 랩은 MSA 전체를 한꺼번에 보여 주지 않고, 가장 작은 서비스 분해가 claims만으로 어디까지 가능한지부터 차근히 확인한다.
 
-## 이 시리즈가 보는 문제
+## 이 글이 붙잡는 질문
+서비스가 서로의 DB를 직접 읽지 않고도 협업 흐름을 시작할 수 있으려면 어디서 경계를 끊어야 하는가, 그리고 bearer claims만으로 어떤 계약을 만들 수 있는가가 이 글이 붙잡는 질문이다.
 
-- `identity-service`와 `workspace-service`를 나눈 뒤에도 토큰 발급과 workspace 생성이 이어져야 합니다.
-- 서비스가 서로의 DB를 읽지 않고 claims만으로 협력할 수 있어야 합니다.
+## 왜 이 프로젝트를 따로 읽어야 하나
+README와 problem 문서는 identity와 workspace의 DB ownership을 핵심 기준으로 삼고, compose와 system test는 실제 runtime을 두 서비스로 제한한다. 그래서 이 글은 "MSA 맛보기"가 아니라 첫 경계 선택을 읽는 문서가 된다.
 
-## 실제 구현 표면
+## 이번 글에서 따라갈 흐름
+1. 서비스 분리를 기능 추가가 아니라 경계 선택 문제로 본다.
+2. compose runtime을 두 서비스로 제한해 범위를 고정한다.
+3. claims-only 협업이 system test에서 어떻게 증명되는지 본다.
+4. 재검증 기록으로 MSA 시작점을 닫는다.
 
-- `identity-service`의 `/api/v1/internal/auth/*`
-- `workspace-service`의 `/api/v1/internal/workspaces`
-- gateway의 request id 전파와 공통 health/metrics surface
-- Compose 기반 system test
+## 마지막에 확인할 근거
+- 코드: `labs/H-service-boundary-lab/fastapi/compose.yaml::__compose__`
+- 테스트/런타임: `labs/H-service-boundary-lab/fastapi/tests/test_system.py::test_identity_token_then_workspace_creation`
+- CLI: `make lint`, `make test`, `make smoke`, `docker compose up --build`
 
-## 대표 검증 엔트리
-
-- `python -m pytest tests/test_system.py -q`
-- `make smoke`
-- `docker compose up --build`
-
-## 읽는 순서
-
-1. [프로젝트 README](../../../labs/H-service-boundary-lab/README.md)
-2. [문제 정의](../../../labs/H-service-boundary-lab/problem/README.md)
-3. [실행 진입점](../../../labs/H-service-boundary-lab/fastapi/README.md)
-4. [gateway README](../../../labs/H-service-boundary-lab/fastapi/gateway/README.md)
-5. [identity-service README](../../../labs/H-service-boundary-lab/fastapi/services/identity-service/README.md)
-6. [workspace-service README](../../../labs/H-service-boundary-lab/fastapi/services/workspace-service/README.md)
-7. [대표 system test](../../../labs/H-service-boundary-lab/fastapi/tests/test_system.py)
-8. [gateway main](../../../labs/H-service-boundary-lab/fastapi/gateway/app/main.py)
-9. [gateway runtime](../../../labs/H-service-boundary-lab/fastapi/gateway/app/runtime.py)
-10. [개발 타임라인](10-development-timeline.md)
-
-## 근거 파일
-
-- [README.md](../../../labs/H-service-boundary-lab/README.md)
-- [problem/README.md](../../../labs/H-service-boundary-lab/problem/README.md)
-- [fastapi/README.md](../../../labs/H-service-boundary-lab/fastapi/README.md)
-- [gateway/README.md](../../../labs/H-service-boundary-lab/fastapi/gateway/README.md)
-- [services/identity-service/README.md](../../../labs/H-service-boundary-lab/fastapi/services/identity-service/README.md)
-- [services/workspace-service/README.md](../../../labs/H-service-boundary-lab/fastapi/services/workspace-service/README.md)
-- [tests/test_system.py](../../../labs/H-service-boundary-lab/fastapi/tests/test_system.py)
-- [gateway/app/main.py](../../../labs/H-service-boundary-lab/fastapi/gateway/app/main.py)
-- [gateway/app/runtime.py](../../../labs/H-service-boundary-lab/fastapi/gateway/app/runtime.py)
-- [docs/verification-report.md](../../../docs/verification-report.md)
+## 이 글을 다 읽고 나면
+- `identity-service`와 `workspace-service`의 책임 경계가 또렷해진다.
+- bearer claims가 왜 첫 경계 계약으로 자주 쓰이는지 이해하게 된다.
+- gateway나 broker를 일부러 뒤로 미루는 이유가 보이기 시작한다.
+- 검증 기록: 2026-03-10에 lint, service unit test, system test, smoke가 통과했다.
+- 다음으로 이어 볼 대상: I-event-integration-lab

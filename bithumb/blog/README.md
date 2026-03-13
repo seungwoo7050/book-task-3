@@ -1,30 +1,27 @@
-# bithumb blog
+# Bithumb Cloud Security Blog 읽기 안내
 
-이 디렉터리는 `bithumb/`의 10개 독립 프로젝트를 `blog-writing-guide.md` 기준으로 다시 쓴 source-first 블로그 시리즈입니다.
+이 디렉터리는 AWS-first cloud security track을 프로젝트 단위로 다시 읽는 blog 모음이다. 결과만 훑는 회고가 아니라, 어떤 입력을 먼저 고정하고 어떤 검증으로 다음 단계로 넘어갔는지를 차례대로 따라가게 만드는 것이 목표다.
 
-## 이 블로그 계층의 기준
+이번 리라이트에서는 문장을 조금 더 부드럽게 다듬고, legacy 격리 같은 메타 설명은 여기와 트랙 README에 모아 두었다. 예전 초안은 [`_legacy/2026-03-13-isolate-and-rewrite`](_legacy/2026-03-13-isolate-and-rewrite)에 보관해 두었고, 현재 활성 문서는 소스코드, README, docs, 테스트, CLI를 중심으로 읽는다.
 
-- `notion/`과 `notion-archive/`는 읽지 않습니다.
-- `README.md`, `problem/README.md`, `python/README.md`, `docs/`, `python/src/`, `python/tests/`, `Makefile`, `pyproject.toml`, `docker-compose.yml`, `git log/show`, 실제 재검증 명령만 근거로 사용합니다.
-- 정확한 과거 작업 시각이 부족한 구간은 `Day / Session` 형식으로 적고, commit 날짜는 `Git Anchor`로만 제한해 둡니다.
-- 코드는 판단이 갈린 짧은 핵심 조각만 남기고, CLI는 현재 레포에서 다시 실행 가능한 경로를 chronology 순서대로 정리합니다.
+## 이렇게 읽으면 덜 막힌다
 
-## 현재 범위
+1. 루트에서 트랙을 고른 뒤, 해당 트랙 README로 들어가 프로젝트 순서를 먼저 잡는다.
+2. 각 프로젝트에서는 `00-series-map.md`를 먼저 열어 어떤 질문을 들고 읽으면 좋은지 확인한다.
+3. `05-evidence-ledger.md`와 `_structure-outline.md`로 근거와 서사 배치를 짧게 훑는다.
+4. 마지막으로 `10-development-timeline.md`를 읽으면 phase별 판단 이동이 훨씬 자연스럽게 들어온다.
 
-- [00 AWS Security Foundations](00-aws-security-foundations/README.md): IAM 판단 규칙, Terraform plan, CloudTrail 정규화처럼 후속 분석이 기대하는 입력을 고정하는 트랙입니다.
-- [01 Cloud Security Core](01-cloud-security-core/README.md): finding, remediation, detection, governance를 작은 도구 단위로 쌓는 트랙입니다.
-- [02 Capstone](02-capstone/README.md): 앞선 프로젝트를 API, worker, DB, report 흐름으로 다시 묶는 최종 통합 트랙입니다.
+## 트랙별 입구
 
-## 검증 스냅샷
+| 트랙 | 설명 | 프로젝트 수 |
+| --- | --- | --- |
+| [00 AWS Security Foundations](00-aws-security-foundations/README.md) | IAM, Terraform, CloudTrail처럼 이후 스캐너가 기대는 입력 계약을 먼저 고정한다. | 3 |
+| [01 Cloud Security Core](01-cloud-security-core/README.md) | finding, remediation, detection, governance를 서로 다른 작은 프로젝트로 확장한다. | 6 |
+| [02 Capstone](02-capstone/README.md) | 앞선 판단 로직을 API, worker, report, demo asset까지 이어지는 control plane으로 묶는다. | 1 |
 
-- `2026-03-13 make test-unit`: 8개 단위 프로젝트 테스트가 모두 통과했습니다. 총 18개 테스트가 `01 3`, `03 1`, `04 3`, `05 3`, `06 2`, `07 2`, `08 2`, `09 2`로 나뉘어 확인됐습니다.
-- `2026-03-13 make test-integration`: Terraform 기반 02번 프로젝트 테스트 3개가 통과했습니다.
-- `2026-03-13 make test-capstone`: capstone end-to-end 테스트 1개가 통과했습니다.
-- `2026-03-13 make demo-capstone`: `02-capstone/10-cloud-security-control-plane/.artifacts/capstone/demo`에 demo 산출물이 생성됐습니다.
+## 문서 역할
 
-## 읽는 순서
-
-1. 루트 [README.md](../README.md)에서 전체 트랙 순서와 검증 표면을 먼저 확인합니다.
-2. 원하는 트랙의 blog index로 내려가 각 프로젝트 `00-series-map.md`를 먼저 읽습니다.
-3. 그다음 chronology 문서에서 실제 소스와 테스트가 어떤 순서로 읽히는지 따라갑니다.
-4. 원래 프로젝트 문서가 필요하면 series map의 근거 파일 링크로 바로 이동합니다.
+- `00-series-map.md`: 이 프로젝트를 왜 읽어야 하는지와 어떤 질문을 붙들어야 하는지 안내하는 입구
+- `05-evidence-ledger.md`: 본문으로 들어가기 전에 phase별 근거를 빠르게 훑는 정리 문서
+- `_structure-outline.md`: 최종 글이 어떤 순서와 강조점으로 배치됐는지 보여 주는 구조 메모
+- `10-development-timeline.md`: 코드, CLI, 개념 설명을 묶어 실제 구현 흐름을 따라가는 본문

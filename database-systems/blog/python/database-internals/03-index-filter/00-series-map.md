@@ -1,39 +1,39 @@
-# 03 Index Filter — Series Map
+# 03 Index Filter 시리즈 맵
 
-이 시리즈의 출발점은 단순하다. `get(key)`를 할 때 매번 SSTable 전체를 읽는 건 너무 비싸다. 그런데 "빠르게 찾기"보다 먼저 "없는 키를 빠르게 버리기"가 더 싸다는 사실을 Bloom filter가 보여 준다.
+이 시리즈는 Database Internals 트랙의 3번째 프로젝트 `03 Index Filter`를 따라간다. Bloom filter와 sparse index를 붙여 point lookup이 전체 SSTable 스캔으로 떨어지지 않도록 만듭니다. 기능 목록보다 먼저, 어떤 순서로 경계를 고정했는지 읽는 쪽에 무게를 두었다.
 
-## 이 프로젝트가 답하는 질문
+## 먼저 보고 갈 질문
 
-- Bloom filter는 어디까지 책임지고, 어디서 sparse index에게 바통을 넘기는가
-- footer metadata를 파일 끝에 박아 두는 선택이 왜 lookup 비용과 직결되는가
+- Bloom filter를 직렬화·복원할 수 있어야 합니다.
+- 정렬된 key-offset 스트림에서 sparse index를 생성해야 합니다.
 
 ## 읽는 순서
 
-1. [10-chronology-setup-and-surface.md](10-chronology-setup-and-surface.md)
-2. [20-chronology-core-mechanics.md](20-chronology-core-mechanics.md)
-3. [30-chronology-integration-and-tradeoffs.md](30-chronology-integration-and-tradeoffs.md)
-4. [40-chronology-verification-and-boundaries.md](40-chronology-verification-and-boundaries.md)
-
-## 참조한 실제 파일
-
-- `python/database-internals/projects/03-index-filter/src/index_filter/table.py`
-- `python/database-internals/projects/03-index-filter/src/index_filter/__main__.py`
-- `python/database-internals/projects/03-index-filter/tests/test_index_filter.py`
-- `python/database-internals/projects/03-index-filter/README.md`
-- `python/database-internals/projects/03-index-filter/problem/README.md`
-- `python/database-internals/projects/03-index-filter/docs/concepts/bloom-filter-sizing.md`
-- `python/database-internals/projects/03-index-filter/docs/concepts/sparse-index-scan.md`
-- `python/database-internals/projects/03-index-filter/pyproject.toml`
+1. [10-chronology-scope-and-surface.md](10-chronology-scope-and-surface.md) — 테스트 이름과 파일 배치부터 훑으면서 문제의 테두리를 다시 좁히는 글
+2. [20-chronology-core-invariants.md](20-chronology-core-invariants.md) — 핵심 함수와 상태 전이에서 invariant가 실제로 어디서 잠기는지 따라가는 글
+3. [30-chronology-verification-and-boundaries.md](30-chronology-verification-and-boundaries.md) — 테스트와 demo를 다시 돌려 약속 범위와 남는 한계를 정리하는 글
 
 ## 재검증 명령
 
 ```bash
-cd python/database-internals/projects/03-index-filter
-PYTHONPATH=src python3 -m pytest
-PYTHONPATH=src python3 -m index_filter
+PYTHONPATH=src .venv/bin/python -m pytest
+PYTHONPATH=src .venv/bin/python -m index_filter
 ```
+
+## 이번 시리즈가 근거로 삼은 파일
+
+- `database-systems/python/database-internals/projects/03-index-filter/src/index_filter/table.py`
+- `database-systems/python/database-internals/projects/03-index-filter/tests/test_index_filter.py`
+- `database-systems/python/database-internals/projects/03-index-filter/README.md`
+- `database-systems/python/database-internals/projects/03-index-filter/problem/README.md`
+- `database-systems/python/database-internals/projects/03-index-filter/docs/README.md`
+- `database-systems/python/database-internals/projects/03-index-filter/src/index_filter/__main__.py`
+
+## 보조 메모
+
+작업 메모가 꼭 필요할 때만 [_evidence-ledger.md](_evidence-ledger.md)와 [_structure-outline.md](_structure-outline.md)를 보면 된다. 공개 시리즈는 `00 -> 10 -> 20 -> 30`만 따라가면 충분하다.
 
 ## Git Anchor
 
+- `2026-03-13 abeead6 docs: TRACK 1 에대한 blog/ 작업 1차 완료`
 - `2026-03-11 bbb6673 Track 1에 대한 전반적인 개선 완료`
-- `2026-03-11 74d5b11 feat: add new project in database-systems`

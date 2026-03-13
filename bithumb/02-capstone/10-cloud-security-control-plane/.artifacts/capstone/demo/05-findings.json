@@ -1,0 +1,124 @@
+{
+  "findings": [
+    {
+      "id": "f96987c43e4a82dc",
+      "source": "terraform-plan",
+      "control_id": "CSPM-001",
+      "severity": "HIGH",
+      "resource_type": "aws_s3_bucket_public_access_block",
+      "resource_id": "study2-public-logs",
+      "title": "S3 bucket does not fully block public access",
+      "status": "open",
+      "detected_at": "2026-03-13T01:32:47.640767Z",
+      "evidence_ref": "public_logs"
+    },
+    {
+      "id": "cd605b1287dbef62",
+      "source": "terraform-plan",
+      "control_id": "CSPM-002",
+      "severity": "HIGH",
+      "resource_type": "aws_security_group",
+      "resource_id": "ssh_open",
+      "title": "Security group exposes SSH or RDP to the internet",
+      "status": "open",
+      "detected_at": "2026-03-13T01:32:47.640802Z",
+      "evidence_ref": "ssh_open"
+    },
+    {
+      "id": "e3a9519522f3a657",
+      "source": "terraform-plan",
+      "control_id": "CSPM-003",
+      "severity": "MEDIUM",
+      "resource_type": "aws_db_instance",
+      "resource_id": "study2-analytics",
+      "title": "Resource encryption is disabled",
+      "status": "open",
+      "detected_at": "2026-03-13T01:32:47.640808Z",
+      "evidence_ref": "analytics"
+    },
+    {
+      "id": "6132874147cd17dc",
+      "source": "iam-policy",
+      "control_id": "IAM-001",
+      "severity": "HIGH",
+      "resource_type": "iam-policy",
+      "resource_id": "BroadAdmin",
+      "title": "Policy allows every action",
+      "status": "open",
+      "detected_at": "2026-03-13T01:32:47.645656Z",
+      "evidence_ref": "BroadAdmin"
+    },
+    {
+      "id": "23e09c9bbdb636d9",
+      "source": "iam-policy",
+      "control_id": "IAM-002",
+      "severity": "HIGH",
+      "resource_type": "iam-policy",
+      "resource_id": "BroadAdmin",
+      "title": "Policy applies to every resource",
+      "status": "open",
+      "detected_at": "2026-03-13T01:32:47.645667Z",
+      "evidence_ref": "BroadAdmin"
+    },
+    {
+      "id": "b92efdd23509ccdb",
+      "source": "cloudtrail",
+      "control_id": "LAKE-001",
+      "severity": "MEDIUM",
+      "resource_type": "cloudtrail-event",
+      "resource_id": "CreateAccessKey",
+      "title": "Detected CreateAccessKey event",
+      "status": "open",
+      "detected_at": "2026-03-13T01:32:47.667074Z",
+      "evidence_ref": "arn:aws:iam::123456789012:user/devops"
+    },
+    {
+      "id": "061bcb868f8eedeb",
+      "source": "cloudtrail",
+      "control_id": "LAKE-004",
+      "severity": "MEDIUM",
+      "resource_type": "cloudtrail-event",
+      "resource_id": "DeleteTrail",
+      "title": "Detected DeleteTrail event",
+      "status": "open",
+      "detected_at": "2026-03-13T01:32:47.667093Z",
+      "evidence_ref": "arn:aws:iam::123456789012:user/security-admin"
+    },
+    {
+      "id": "cb6f6e448a457369",
+      "source": "k8s-manifest",
+      "control_id": "K8S-001",
+      "severity": "HIGH",
+      "resource_type": "manifest",
+      "resource_id": "insecure-api",
+      "title": "Manifest uses hostPath volume",
+      "status": "open",
+      "detected_at": "2026-03-13T01:32:47.700153Z",
+      "evidence_ref": "insecure-api"
+    },
+    {
+      "id": "15aa7d29fa5b1871",
+      "source": "k8s-manifest",
+      "control_id": "K8S-002",
+      "severity": "MEDIUM",
+      "resource_type": "manifest",
+      "resource_id": "insecure-api",
+      "title": "Container uses latest tag",
+      "status": "open",
+      "detected_at": "2026-03-13T01:32:47.700174Z",
+      "evidence_ref": "nginx:latest"
+    },
+    {
+      "id": "9534b4280f9836ba",
+      "source": "k8s-manifest",
+      "control_id": "K8S-003",
+      "severity": "HIGH",
+      "resource_type": "manifest",
+      "resource_id": "insecure-api",
+      "title": "Container security context is too broad",
+      "status": "open",
+      "detected_at": "2026-03-13T01:32:47.700179Z",
+      "evidence_ref": "nginx:latest"
+    }
+  ]
+}

@@ -1,32 +1,41 @@
-# cpp-server study blog
+# cpp-server Source-First Blog
 
-`study/blog/`는 `cpp-server`의 공개 학습 로그 레이어다. 이 디렉터리는 기존 `README.md`와 `docs/`를 대체하지 않고, 각 독립 lab을 실제 소스와 테스트만으로 다시 읽는 `source-first chronology` 시리즈만 모은다.
+이 디렉터리는 `/Users/woopinbell/work/book-task-3/blog/blog-writing-guide.md` 기준으로 `cpp-server/study`를 다시 읽기 위한 입구다. 목표는 각 lab의 결과만 요약하는 것이 아니라, 소스와 테스트를 따라가며 "무엇을 먼저 만들었고, 어디서 책임을 나눴고, 어떤 검증으로 멈췄는가"를 한 단계씩 복원하는 데 있다.
 
-## 공통 provenance
+이번 세트는 기존 초안을 바탕으로 다듬은 글이 아니다. 예전 문서는 [`_legacy/2026-03-13-isolate-and-rewrite/`](_legacy/2026-03-13-isolate-and-rewrite/)로 따로 격리해 두었고, 현재 글은 각 lab의 `README`, `problem/README`, `cpp/README`, 실제 소스, 테스트, 그리고 `make clean && make test` 실행 결과만 근거로 다시 썼다.
 
-- 근거 우선순위는 `README.md` -> `problem/README.md` -> `cpp/README.md` -> `cpp/Makefile` -> `cpp/include/inc` -> `cpp/src` -> `cpp/tests` -> `docs/` -> `git log -- cpp-server`다.
-- 현재 공개 문서와 구현 표면 밖의 노트 계층은 이 레이어의 근거로 쓰지 않는다.
-- 실제 git anchor는 저장소 수준에서만 얇게 남아 있으므로 `2026-03-09`, `2026-03-10`, `2026-03-11` 같은 날짜는 앵커로만 쓰고, 세부 개발 흐름은 `Day / Session`으로 보수적으로 복원한다.
-- 재검증 신호는 각 lab README의 `verified` 표면과 test source 안에 직접 적힌 pass 문자열만 사용한다.
+읽는 순서는 저장소 구조와 같다. 먼저 `shared-core`에서 런타임과 parser를 분리해 보고, 그 위에 `irc-track`에서 상태 전이와 privilege를 얹고, 마지막으로 `game-track`에서 authoritative simulation과 TCP game server capstone을 본다. 한 축만 먼저 읽어도 되지만, 전체를 따라가면 "무엇을 먼저 떼어 내고, 무엇을 마지막에 다시 합쳤는가"가 더 또렷해진다.
 
-## 트랙 카탈로그
+## 트랙 안내
 
-| 트랙 | 프로젝트 수 | 시작점 |
-| --- | --- | --- |
-| [shared-core](shared-core/README.md) | `2` | [eventlab](shared-core/01-eventlab/README.md) |
-| [irc-track](irc-track/README.md) | `2` | [roomlab](irc-track/01-roomlab/README.md) |
-| [game-track](game-track/README.md) | `2` | [ticklab](game-track/01-ticklab/README.md) |
+### shared-core
 
-## 읽는 법
+서버의 바닥을 먼저 고정하는 축이다. `eventlab`은 non-blocking runtime을, `msglab`은 line framing과 parser 경계를 분리한다.
 
-1. 먼저 [../README.md](../README.md)와 원 저장소 [../../README.md](../../README.md)에서 전체 트랙 구조를 확인한다.
-2. 원하는 트랙의 blog `README.md`에서 질문과 프로젝트 순서를 잡는다.
-3. 각 프로젝트 디렉터리의 `README.md`와 `00-series-map.md`로 source set, canonical CLI, git anchor를 확인한다.
-4. 그다음 numbered chronology 파일을 순서대로 읽으며 실제 코드와 테스트가 어떤 판단을 고정하는지 따라간다.
+- [eventlab](shared-core/01-eventlab/README.md)
+- [msglab](shared-core/02-msglab/README.md)
 
-## Git Anchor
+### irc-track
 
-- `2026-03-09 73372bd Add project: backend-fastapi, backend-spring, cpp-server`
-- `2026-03-09 5721ffb documentation pass on cpp-server`
-- `2026-03-10 7dc71a8 docs: enhance cpp-server`
-- `2026-03-11 a9c65b3 Track 2에 대한 전반적인 개선 완료 (infobank, bithumb, game-server)`
+공용 기초 위에 IRC subset을 올리고, 마지막에 advanced command를 포함한 pure TCP capstone으로 확장하는 축이다.
+
+- [roomlab](irc-track/01-roomlab/README.md)
+- [ircserv](irc-track/02-ircserv/README.md)
+
+### game-track
+
+먼저 headless authoritative engine을 고정한 뒤, 같은 엔진을 TCP 서버에 연결하는 축이다. runtime보다 simulation을 먼저 분리해 보는 흐름이 중심에 있다.
+
+- [ticklab](game-track/01-ticklab/README.md)
+- [arenaserv](game-track/02-arenaserv/README.md)
+
+## 공통 검증 규칙
+
+각 lab의 현재 기준 검증 명령은 해당 `cpp/` 디렉터리에서 아래와 같다.
+
+```sh
+make clean && make test
+```
+
+본문 글과 evidence ledger는 이 명령의 실제 출력과 테스트 시나리오를 기준으로 정리했다. 그래서 글을 따라가다 궁금해지는 장면이 있으면, 같은 경로에서 같은 명령을 다시 돌려 바로 대조해 볼 수 있다.
+

@@ -1,85 +1,53 @@
-# K-distributed-ops-lab 개발 타임라인
+# K-distributed-ops-lab: 여러 서비스가 함께 살아 있을 때, health와 metrics 질문도 분산시키기
 
-## 2026-03-10
-### Session 1
+이 글은 `labs/K-distributed-ops-lab/README.md`, `problem/README.md`, `docs/README.md`, `labs/K-distributed-ops-lab/fastapi/gateway/app/api/v1/routes/ops.py::metrics`, `labs/K-distributed-ops-lab/fastapi/tests/test_system.py::test_v2_system_flow_and_notification_recovery`, `backend-fastapi/docs/verification-report.md`를 바탕으로 실제 구현 순서를 다시 복원한다.
 
-- 목표: J에서 gateway를 만들었는데, "서비스가 준비됐는지"를 외부에서 어떻게 알 수 있나? `/health/ready`라는 말은 들어 봤지만, J의 ready는 그냥 200을 돌려준다. upstream 서비스들이 실제로 살아 있는지는 확인하지 않는다.
-- 진행: K의 `health.py`를 열었다. `live`는 여전히 무조건 200이다. 하지만 `ready`가 달랐다.
+K 랩은 J 랩 뒤에 붙은 마무리처럼 보일 수 있지만, 실제로는 질문이 완전히 다르다. J가 public API shape를 지키는 이야기였다면, K는 여러 서비스가 함께 살아 있을 때 health, metrics, request id, target shape를 어떻게 읽어야 하는지 묻는다. docs/README.md가 gateway health와 내부 service health를 같은 의미로 보면 안 된다고 적는 이유가 바로 그것이다.
 
-```python
-@router.get("/ready", response_model=HealthResponse)
-def ready(
-    request: Request,
-    client: Annotated[ServiceClient, Depends(get_service_client)],
-    settings: Annotated[Settings, Depends(get_settings)],
-) -> HealthResponse:
-    try:
-        client.request(request, "identity", "GET", "/health/ready")
-        client.request(request, "workspace", "GET", "/health/ready")
-        client.request(request, "notification", "GET", "/health/ready")
-        if settings.redis_url:
-            Redis.from_url(settings.redis_url).ping()
-    except Exception as exc:
-        raise AppError(
-            code="DEPENDENCY_NOT_READY",
-            message="One or more upstream services are not ready.",
-            status_code=503,
-        ) from exc
-    return HealthResponse(status="ok")
-```
+## 1. MSA 실행 뒤 남는 운영 질문을 별도 랩으로 떼기
+첫 단계에서 운영 질문을 분리한다. README는 서비스별 health/metrics, gateway 포함 Compose health matrix, AWS target shape 문서를 한 답으로 제시한다. 즉 이 프로젝트는 로그를 조금 더 붙이는 작업이 아니라, 분산 구조를 어떤 표면으로 관찰할지를 정리하는 실험이다.
 
-- 이슈: internal 서비스 중 하나가 죽어 있으면, gateway의 ready도 503이 된다. 처음엔 "gateway가 ready이면 upstream은 별도로 체크해야 하지 않나?"라고 생각했다. 하지만 이 구조에서 gateway의 ready는 "전체 시스템이 요청을 받을 수 있는가"를 뜻한다. 개별 서비스의 ready는 orchestrator나 load balancer가 직접 각 `/health/ready`를 폴링하면 된다.
-
-CLI:
-
-```bash
-$ cd labs/K-distributed-ops-lab/fastapi
-$ make install
-```
-
-### Session 2
-
-- 목표: G-ops-lab에서 prometheus text 형식으로 `app_requests_total`을 만들었다. K에서는 MSA 구조에서 같은 메트릭을 어떻게 노출하나?
-- 진행: `ops.py`를 열었다. 메트릭 엔드포인트는 단일 서비스 시절과 구조가 거의 같다.
+## 2. 서비스별 health/metrics와 gateway health를 다른 질문으로 보기
+코드에서는 metrics route가 그 최소 기준을 보여 준다. gateway metrics는 app_requests_total{service="gateway"}라는 한 줄을 반환한다. 아주 작지만, 서비스별 label을 포함해 어떤 주체의 수치인지 분리하려는 의도가 분명하다. compose healthcheck까지 같이 보면 각 서비스가 어떤 준비 상태를 스스로 보고해야 하는지도 보인다.
 
 ```python
-@router.get("/metrics", response_class=PlainTextResponse)
 def metrics(request: Request) -> str:
     total = request.app.state.metrics.request_count
     return f'app_requests_total{{service="gateway"}} {total}\n'
 ```
 
-- 이슈: `service="gateway"` 레이블이 붙어 있다. 내부 서비스들도 각자 `service="identity"` 같은 레이블로 메트릭을 내야 scraper가 이름으로 구분할 수 있다. 처음엔 gateway 하나에서 모든 서비스 메트릭을 집계하면 되지 않을까 생각했지만, 그러면 gateway가 내부 서비스의 구현에 결합된다.
-- 판단: 각 서비스가 자기 메트릭을 자기 `/ops/metrics`로 내고, scraper가 all-service 엔드포인트를 돌아다니는 게 MSA에서 자연스러운 형태다. gateway는 gateway 자신의 request count만 센다.
-- 확인: `main.py`의 middleware에서 `app.state.metrics.increment()`가 모든 요청에 붙어 있으므로, gateway를 통과한 요청 수는 항상 카운트된다.
+여기서는 service label이 붙은 metrics line이 분산 운영성의 최소 관측 surface가 된다.
 
-### Session 3
-
-- 목표: notification-service 장애 후 recovery까지 K의 system test로 확인한다. J에서 이미 같은 시나리오를 봤는데, K에서 추가된 게 있는지 확인한다.
-- 진행: `tests/test_system.py`를 J와 비교했다.
-- 확인: 핵심 흐름은 동일하다. 하지만 K는 `wait_for("http://127.0.0.1:8133/api/v1/health/ready")`에서 notification-service의 개별 ready를 폴링한다. 이 URL이 notification-service 포트다. 즉, orchestrator가 개별 서비스 ready를 직접 폴링하는 패턴이 system test에 명시적으로 나타난다.
+## 3. system test와 compose health matrix로 운영 surface를 고정하기
+system test는 steady-state보다 복구 경로를 강조한다. notification-service를 멈춘 상태에서 두 번째 comment를 남기면 drain이 503이 되고, 서비스를 다시 시작한 뒤 recovery drain을 수행하면 websocket으로 두 번째 알림이 도착한다. 이 흐름 덕분에 운영성 글이 단순 health endpoint 설명에 머물지 않는다.
 
 ```python
-wait_for("http://127.0.0.1:8133/api/v1/health/ready")
-recovery_drain = owner.post("/api/v1/platform/notifications/drain")
-assert recovery_drain.status_code == 200
-assert "Second comment after consumer outage." in websocket.recv(timeout=20)
+def test_v2_system_flow_and_notification_recovery() -> None:
+    with compose_stack() as project_name:
+        owner = httpx.Client(base_url="http://127.0.0.1:8014", timeout=10.0)
+        collaborator = httpx.Client(base_url="http://127.0.0.1:8014", timeout=10.0)
+
+        register = owner.post(
+            "/api/v1/auth/register",
+            json={"handle": "owner", "email": "owner@example.com", "password": "super-secret-1"},
+        )
+        assert register.status_code == 200
+        verify = owner.post("/api/v1/auth/verify-email", json={"token": _latest_token("owner@example.com")})
+        assert verify.status_code == 200
 ```
 
-- 판단: K의 핵심은 "각 서비스가 자기 상태를 직접 노출하고, 외부가 그걸 직접 폴링해서 판단한다"는 분산 운영성 원칙이다. gateway의 ready는 편의를 위한 집약이고, 진짜 recovery 여부는 해당 서비스 포트로 확인해야 한다.
+테스트는 분산 runtime이 협업 흐름과 장애 복구를 얼마나 견디는지 마지막 smoke로 보여 준다.
 
-CLI:
+## 4. 2026-03-10 재검증으로 분산 운영성 기준을 닫기
+보고서 기준 2026-03-10 재검증은 gateway/identity/workspace/notification unit test, system test, smoke를 모두 남겼다. 운영성 랩일수록 '문서가 있다'보다 '그 문서가 가리키는 runtime이 실제로 다시 올라왔다'는 사실이 더 중요하다. 이 태도가 capstone v2까지 그대로 이어진다.
 
 ```bash
-$ make test
-$ python -m pytest tests/test_system.py -q
+make test
+make smoke
+docker compose up --build
 ```
 
-```
-1 passed
-```
+2026-03-10에 gateway/identity/workspace/notification unit test, system test, smoke가 통과했다. 이 랩은 '운영성 문서도 학습 산출물'이라는 점을 특히 강하게 보여 준다.
 
-```bash
-$ make smoke
-$ docker compose up --build
-```
+## 정리
+K 랩은 분산 운영성도 학습 저장소의 핵심 산출물임을 보여 준다. health와 metrics를 조금 붙였다는 수준이 아니라, 어떤 surface가 service-local이고 어떤 surface가 system-level인지 분리했다는 점이 중요하다. 이것이 capstone v2에서 실제 협업 흐름과 장애 복구를 해석하는 기준이 된다.

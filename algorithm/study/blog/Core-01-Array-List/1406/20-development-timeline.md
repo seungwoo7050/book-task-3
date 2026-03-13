@@ -1,27 +1,115 @@
-# BOJ 1406 — 개발 타임라인 (후반)
+# 에디터: 검증, edge case, 마지막 설명 축
 
-## Phase 2
+뒷 절반에서는 “왜 맞는가”를 더 조밀하게 확인한다. fixture 전체를 다시 돌려 실수 포인트를 묶고, 마지막에는 개념 문서와 코드가 정확히 어디서 맞물리는지 정리한다.
+
+## 구현 순서 요약
+
+- `make -C study/Core-01-Array-List/1406/problem test`로 fixture 전체를 다시 돌린다.
+- `docs/references/approach.md`의 실수 포인트를 코드 분기와 연결한다.
+- `Two-Stack Editor & Linked List — Concept & Background`를 붙여 마지막 판단 기준을 고정한다.
+
+## Phase 3
 ### Session 3
-- 목표: edge case와 출력 성능을 점검한다.
-- 진행: 빈 `left`에서 L이나 B가 오면 `if left:` 가드로 무시된다. 빈 `right`에서 D가 오면 무시.
-- 이슈: 출력은 `''.join(left) + ''.join(reversed(right))`인데, 줄바꿈 포함해서 `print`로 한 번에 출력한다.
 
-### Session 4
-- 검증: fixture 통과.
+- 당시 목표: 한두 개 입력이 맞는 수준을 넘어서 fixture 전체를 통과하는 구조로 묶는다.
+- 변경 단위: `problem/script/test.sh`, `docs/references/approach.md`, `docs/concepts/edge-cases.md`
+- 처음 가설: 실수 포인트를 문장으로만 남기면 다시 틀리기 쉽고, 테스트 루프와 함께 봐야 실제 방어선이 보인다.
+- 실제 조치: `test.sh`의 PASS/FAIL 루프와 `approach.md`의 실수 체크리스트를 나란히 읽으며, 어떤 분기가 어디를 막는지 다시 맞췄다.
 
-CLI:
+CLI 1:
 
 ```bash
 $ make -C study/Core-01-Array-List/1406/problem test
 ```
 
-```text
-Test 1: PASS
-Results: 1/1 passed, 0 failed
+검증 신호:
+
+- `Test 1: PASS`, `Results: 1/1 passed, 0 failed` 순서로 출력됐다.
+- 이번 단계에서 특히 다시 확인한 실수 포인트는 아래 셋이었다.
+
+- 빈 좌측 버퍼에서 B/L 명령 처리 누락
+- D 명령에서 우측 버퍼 pop 조건을 빠뜨리는 실수
+- 최종 출력 시 우측 버퍼 역순 결합을 잊는 문제
+
+핵심 코드 1:
+
+```python
+    for _ in range(m):
+        cmd = input().strip()
+        if cmd == 'L':
+            if left:
+                right.append(left.pop())
+        elif cmd == 'D':
+            if right:
+                left.append(right.pop())
+        elif cmd == 'B':
+            if left:
 ```
 
-### Session 5
-- 정리:
-  - 이 문제와 키로거(5397)는 사실상 같은 구조다. 두 스택 모델이 커서 기반 편집의 정석이라는 걸 두 문제를 통해 확인했다.
-  - 처음엔 리스트 insert로 풀려다가 시간 초과를 예상하고 전략을 바꿨다. "O(1) 연산만으로 구성할 수 있는가"를 먼저 묻는 습관이 중요하다.
-  - `cmd[2]` vs `cmd.split()[1]` — I/O 최적화가 생각보다 결과를 바꾼다.
+왜 이 코드가 중요했는가:
+
+이 코드는 정답을 만드는 줄이면서 동시에 체크리스트를 만족시키는 줄이다. 그래서 `approach.md`의 실수 포인트와 가장 잘 연결된다.
+
+새로 배운 것:
+
+- 테스트를 다시 읽는 순간, “맞았다”보다 “어디서 안 틀리는가”를 더 분명하게 설명할 수 있었다.
+
+다음:
+
+- 마지막으로 개념 문서와 코드가 어느 지점에서 맞물리는지 정리한다.
+
+## Phase 4
+### Session 4
+
+- 당시 목표: `Two-Stack Editor & Linked List — Concept & Background`를 실제 코드와 연결해 마지막 설명 축을 세운다.
+- 변경 단위: `docs/concepts/*.md`, `python/src/solution.py`
+- 처음 가설: 마지막 글에서 남겨야 할 것은 추상 개념이 아니라, 그 개념이 꼭 필요해진 줄이다.
+- 실제 조치: 마지막 출력과 guard를 다시 읽으며 개념 설명이 어느 줄을 가리키는지 고정했다.
+
+CLI 2:
+
+```bash
+$ cd study/Core-01-Array-List/1406/problem && python3 ../python/src/solution.py < data/input1.txt
+```
+
+검증 신호:
+
+- `abcdx`가 그대로 나왔다.
+- 설명용 문서가 아니라 실제 실행 결과와 같은 답이 나온다는 점이 마지막 확인 포인트였다.
+
+핵심 코드 2:
+
+```python
+    # 최종 문자열: left(아래→위) + right(위→아래)
+    print(''.join(left) + ''.join(reversed(right)))
+
+if __name__ == "__main__":
+    solve()
+```
+
+왜 이 코드가 중요했는가:
+
+마지막 전환점은 이 코드였다. `Two-Stack Editor & Linked List — Concept & Background`를 붙여 읽으면, 왜 이 문제의 설명이 결국 이 줄로 수렴하는지 자연스럽게 보인다.
+
+핵심 코드 3:
+
+```python
+    # 최종 문자열: left(아래→위) + right(위→아래)
+    print(''.join(left) + ''.join(reversed(right)))
+
+if __name__ == "__main__":
+    solve()
+```
+
+왜 이 코드가 중요했는가:
+
+끝을 어떻게 닫느냐가 생각보다 중요했다. `에디터`에서는 마지막 출력 정리가 구현의 완성도를 가장 직접적으로 드러냈다.
+
+새로 배운 것:
+
+- `Two-Stack Editor & Linked List — Concept & Background`를 다시 읽고 나니, 이 문제의 핵심은 `커서를 기준으로 좌/우 스택(또는 리스트) 두 개를 유지하는 editor simulation`를 끝까지 흔들리지 않게 유지하는 데 있었다.
+- 그래서 `Core-01-Array-List`의 질문인 `순차 자료구조 선택이 편집과 이동 비용을 어떻게 바꾸는가?`도 결과 요약이 아니라, 상태와 순서를 어떻게 붙잡는가의 문제로 읽히게 됐다.
+
+다음:
+
+- 이 시리즈는 여기서 닫히지만, 다음 문제를 읽을 때도 `문제 계약 -> 첫 상태 -> fixture 검증` 순서를 그대로 재사용할 수 있다.

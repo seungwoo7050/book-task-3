@@ -1,46 +1,48 @@
-# 02 챗봇 상담 품질 관리 시리즈 지도
+# Chat QA Ops 시리즈 맵
 
-이 시리즈는 `상담 챗봇 품질 관리`를 단순 챗봇 데모가 아니라, `rubric -> rule/evidence/judge pipeline -> regression compare -> self-hosted evaluation job`으로 읽기 위한 지도다.
+이 시리즈는 `projects/02-chat-qa-ops`를 "챗봇이 얼마나 잘 답하는가"보다 "상담 품질을 어떻게 정의하고 증명 가능한 형태로 운영하는가"라는 질문으로 다시 읽는다. 처음에는 rule, evidence, judge를 묶은 평가 파이프라인이 등장하고, 그다음에는 golden regression과 compare proof가 붙고, 마지막에는 self-hosted review ops로 확장된다.
 
-## 이 시리즈가 보는 문제
+이번 버전은 2026-03-13에 `isolate-and-rewrite` 방식으로 다시 썼다. 예전 blog는 [`../../_legacy/2026-03-13-isolate-and-rewrite/projects/02-chat-qa-ops/`](../../_legacy/2026-03-13-isolate-and-rewrite/projects/02-chat-qa-ops/)에 옮겨 두었고, 이번 시리즈는 현재 소스와 실제 CLI 결과만 사용했다.
 
-- 상담 품질을 어떤 rubric과 failure taxonomy로 정의해야 rule, evidence, judge가 같은 점수 체계 안에서 동작하는가
-- critical short-circuit, evidence verification, provider fallback을 어떤 순서로 합성해야 비용과 안전성을 같이 다룰 수 있는가
-- golden set과 version compare를 어디까지 구현해야 "개선됐다"는 주장을 artifact로 남길 수 있는가
-- `v3`에서 login, dataset upload, KB bundle upload, evaluation job worker를 더하면 어느 지점부터 self-hosted QA Ops가 되는가
+## 왜 독립 프로젝트로 보았는가
 
-## 실제 구현 표면
+`projects/02-chat-qa-ops`는 하나의 완결된 문제를 스스로 설명할 수 있다. 이 프로젝트는 "상담 품질을 어떤 기준으로 평가하고, 그 평가를 어떻게 회귀 증빙과 운영 화면까지 연결할 것인가"라는 질문에 답한다. 진입점도 분명하고, 검증 명령도 따로 있으며, `v0 -> v3` 흐름도 다른 디렉터리와 섞이지 않는다.
 
-- `python/backend/src/chatbot/*`, `evaluator/*`, `api/routes/*`, `core/*`가 품질 평가 파이프라인의 중심이다.
-- `python/tests/mp1~mp5/*`는 chat runtime, rule engine, retrieval/evidence, scoring, lineage/runtime contract를 각각 고정한다.
-- `react/src/pages/Overview.tsx`, `Failures.tsx`, `SessionReview.tsx`, `EvalRunner.tsx`가 데모 콘솔 표면을 이룬다.
-- `docs/demo/`는 실제 시연 흐름과 proof artifact 위치를 정리한다.
-- `v3-self-hosted-oss`의 `api/routes/auth.py`, `datasets.py`, `kb_bundles.py`, `jobs.py`, `services/importers.py`, `services/jobs.py`는 로그인, 업로드, job worker 경로를 더한다.
+반면 루트 redirect인 `chat-qa-ops/`는 현재 위치를 가리키는 README만 남아 있어 독립 프로젝트 기준을 충족하지 못했다.
 
-## 대표 검증 엔트리
+## 이번에 사용한 근거
 
-- `UV_PYTHON=python3.12 uv sync --extra dev`
-- `UV_PYTHON=python3.12 make gate-all`
-- `UV_PYTHON=python3.12 make smoke-postgres`
-- `cd ../react && pnpm test --run`
+- 프로젝트 경계: `README.md`, `problem/README.md`
+- 흐름 복원 기준: `docs/stage-catalog.md`, `docs/verification-matrix.md`
+- 공식 답: `capstone/v2-submission-polish/README.md`
+- proof 자료:
+  - `docs/demo/demo-runbook.md`
+  - `docs/demo/phase1-vs-phase2-diff-matrix.md`
+  - `docs/demo/proof-artifacts/improvement-report.json`
+  - `docs/demo/proof-artifacts/cli-report.txt`
+  - `docs/demo/proof-artifacts/cli-compare.txt`
+- 핵심 코드:
+  - `python/backend/src/evaluator/pipeline.py`
+  - `python/backend/src/api/routes/dashboard.py`
+  - `python/backend/src/cli/main.py`
+  - `v3 python/backend/src/core/auth.py`
+  - `v3 python/backend/src/services/jobs.py`
+  - `v3 react/src/App.tsx`
+  - `v3 react/src/pages/Jobs.tsx`
+- 실제 검증:
+  - `UV_PYTHON=python3.12 make gate-all`
+  - `UV_PYTHON=python3.12 make smoke-postgres`
+  - `v3 UV_PYTHON=python3.12 make gate-all`
 
-## 읽는 순서
+## 챕터 구성
 
-1. [원 프로젝트 README](../../../projects/02-chat-qa-ops/README.md)
-2. [capstone 개요](../../../projects/02-chat-qa-ops/capstone/README.md)
-3. [v2 제출 버전 README](../../../projects/02-chat-qa-ops/capstone/v2-submission-polish/README.md)
-4. [v2 demo runbook](../../../projects/02-chat-qa-ops/capstone/v2-submission-polish/docs/demo/demo-runbook.md)
-5. [v2 Makefile](../../../projects/02-chat-qa-ops/capstone/v2-submission-polish/python/Makefile)
-6. [개발 타임라인](10-development-timeline.md)
+1. [`10-first-qa-evaluation-loop.md`](./10-first-qa-evaluation-loop.md)  
+   rule, evidence, judge, scoring이 어떤 순서로 묶였는지, 그리고 왜 CLI가 먼저 중요한 운영 출구가 되었는지 본다.
+2. [`20-regression-hardening-and-proof.md`](./20-regression-hardening-and-proof.md)  
+   golden compare, dashboard version compare, smoke-postgres, proof artifact가 어떻게 하나의 증빙 흐름을 만드는지 본다.
+3. [`30-self-hosted-review-ops.md`](./30-self-hosted-review-ops.md)  
+   이미 만든 proof surface가 `v3`에서 login, dataset import, evaluation job, selected-job review UI로 어떻게 확장되는지 본다.
 
-## 근거 파일
+## 이 시리즈를 읽을 때의 핵심 질문
 
-- [bot.py](../../../projects/02-chat-qa-ops/capstone/v0-initial-demo/python/backend/src/chatbot/bot.py)
-- [pipeline.py](../../../projects/02-chat-qa-ops/capstone/v0-initial-demo/python/backend/src/evaluator/pipeline.py)
-- [provider_chain.py](../../../projects/02-chat-qa-ops/capstone/v1-regression-hardening/python/backend/src/core/provider_chain.py)
-- [test_lineage_and_trace.py](../../../projects/02-chat-qa-ops/capstone/v1-regression-hardening/python/tests/mp5/test_lineage_and_trace.py)
-- [test_retrieval_v2.py](../../../projects/02-chat-qa-ops/capstone/v2-submission-polish/python/tests/mp3/test_retrieval_v2.py)
-- [Overview.tsx](../../../projects/02-chat-qa-ops/capstone/v2-submission-polish/react/src/pages/Overview.tsx)
-- [auth.py](../../../projects/02-chat-qa-ops/capstone/v3-self-hosted-oss/python/backend/src/api/routes/auth.py)
-- [datasets.py](../../../projects/02-chat-qa-ops/capstone/v3-self-hosted-oss/python/backend/src/api/routes/datasets.py)
-- [jobs.py](../../../projects/02-chat-qa-ops/capstone/v3-self-hosted-oss/python/backend/src/services/jobs.py)
+이 트랙에서 중요한 건 점수 계산식 하나를 이해하는 것이 아니다. 더 중요한 질문은 `rule/evidence/judge -> regression proof -> operator review`가 어떤 순서로 서로 기대게 되었는가다.

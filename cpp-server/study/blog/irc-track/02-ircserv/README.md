@@ -1,37 +1,35 @@
-# ircserv blog
+# ircserv Source-First Blog
 
-이 디렉터리는 `ircserv`를 `source-first` 방식으로 다시 읽는 프로젝트 단위 blog 시리즈다. chronology는 프로젝트 README, `problem/README.md`, `cpp/README.md`, `cpp/Makefile`, `cpp/include/inc/Channel.hpp`, `cpp/src/Executor.cpp`, `cpp/src/Channel.cpp`, `cpp/src/Server.cpp`, `cpp/tests/test_irc_join.py`를 기준으로 복원했다.
+`ircserv`은 roomlab 위에 기능을 조금 더 얹은 버전이라기보다, subset에서 미리 분리해 둔 책임을 다시 한 서버로 모으는 capstone에 가깝다. 여기서 핵심은 코드가 얼마나 길어졌는가가 아니라, 어떤 command가 실제로 dispatcher에 열리고, 그 추가가 channel privilege와 cleanup까지 어떻게 이어지는가다.
 
-## source set
+이 시리즈는 그 차이를 source-first로 다시 읽는다. 근거는 [`problem/README.md`](../../../irc-track/02-ircserv/problem/README.md), [`cpp/README.md`](../../../irc-track/02-ircserv/cpp/README.md), [`docs/README.md`](../../../irc-track/02-ircserv/docs/README.md), 실제 소스, 그리고 직접 실행한 CLI뿐이다. roomlab와 비슷한 뼈대는 유지하지만, command surface와 state model이 어디서 넓어지는지가 문서의 중심이 된다.
 
-- [../../../irc-track/02-ircserv/README.md](../../../irc-track/02-ircserv/README.md)
-- [../../../irc-track/02-ircserv/problem/README.md](../../../irc-track/02-ircserv/problem/README.md)
-- [../../../irc-track/02-ircserv/cpp/README.md](../../../irc-track/02-ircserv/cpp/README.md)
-- [../../../irc-track/02-ircserv/cpp/Makefile](../../../irc-track/02-ircserv/cpp/Makefile)
-- [../../../irc-track/02-ircserv/cpp/include/inc/Channel.hpp](../../../irc-track/02-ircserv/cpp/include/inc/Channel.hpp)
-- [../../../irc-track/02-ircserv/cpp/include/inc/Server.hpp](../../../irc-track/02-ircserv/cpp/include/inc/Server.hpp)
-- [../../../irc-track/02-ircserv/cpp/src/Executor.cpp](../../../irc-track/02-ircserv/cpp/src/Executor.cpp)
-- [../../../irc-track/02-ircserv/cpp/src/Channel.cpp](../../../irc-track/02-ircserv/cpp/src/Channel.cpp)
-- [../../../irc-track/02-ircserv/cpp/tests/test_irc_join.py](../../../irc-track/02-ircserv/cpp/tests/test_irc_join.py)
+## 검증 명령
 
-## 읽는 순서
-
-1. [00-series-map.md](00-series-map.md)
-2. [10-chronology-baseline-capability-and-registration.md](10-chronology-baseline-capability-and-registration.md)
-3. [20-chronology-channel-privilege-and-mode-state.md](20-chronology-channel-privilege-and-mode-state.md)
-4. [30-chronology-advanced-command-flows.md](30-chronology-advanced-command-flows.md)
-5. [40-chronology-capstone-verification-and-boundaries.md](40-chronology-capstone-verification-and-boundaries.md)
-6. [../../../irc-track/02-ircserv/README.md](../../../irc-track/02-ircserv/README.md)
-
-## 검증 진입점
-
-```bash
-cd ../../../irc-track/02-ircserv/cpp
+```sh
+cd /Users/woopinbell/work/book-task-3/cpp-server/study/irc-track/02-ircserv/cpp
 make clean && make test
 ```
 
-## chronology 메모
+최근 확인 결과:
 
-- `ircserv`는 `roomlab` 위에 advanced command를 얹는 capstone이므로, chronology도 baseline 유지 -> mode state 추가 -> invite/topic/kick flow -> smoke verification 순서로 나눴다.
-- `2026-03-11`은 현재 `verified` surface를 고정하는 날짜 앵커다.
-- 본문은 별도 노트 계층 없이 source set과 smoke test contract만으로 재구성했다.
+- `python3 tests/test_irc_join.py`
+- `ircserv capstone smoke passed.`
+
+## 읽기 순서
+
+- [00-series-map.md](00-series-map.md)
+- [evidence-ledger.md](evidence-ledger.md)
+- [structure-plan.md](structure-plan.md)
+- [10-baseline-capability-and-registration.md](10-baseline-capability-and-registration.md)
+- [20-channel-privilege-and-mode-state.md](20-channel-privilege-and-mode-state.md)
+- [30-advanced-command-flows-and-verification.md](30-advanced-command-flows-and-verification.md)
+
+## 핵심 근거 파일
+
+- [`cpp/src/Executor.cpp`](../../../irc-track/02-ircserv/cpp/src/Executor.cpp)
+- [`cpp/src/Channel.cpp`](../../../irc-track/02-ircserv/cpp/src/Channel.cpp)
+- [`cpp/src/execute_join.cpp`](../../../irc-track/02-ircserv/cpp/src/execute_join.cpp)
+- [`cpp/src/Server.cpp`](../../../irc-track/02-ircserv/cpp/src/Server.cpp)
+- [`cpp/tests/test_irc_join.py`](../../../irc-track/02-ircserv/cpp/tests/test_irc_join.py)
+
