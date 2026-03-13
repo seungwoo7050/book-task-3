@@ -8,6 +8,8 @@
 | --- | --- | --- | --- | --- | --- |
 | `bits.c`의 13개 함수를 원문 허용 연산자, 상수, max ops 제약 안에서 구현한다. | 정수 퍼즐은 bit-level contract를 유지하고, float 퍼즐은 unsigned bit pattern만 다룬다. 공식 handout verifier는 로컬에서 복원한다. | C 답은 [`c/src/bits.c`](c/src/bits.c), C++ 답은 [`cpp/src/bits.cpp`](cpp/src/bits.cpp)이며, 풀이 근거는 `docs/`, `notion/`으로 분리한다. | [`problem/README.md`](problem/README.md), [`c/README.md`](c/README.md), [`cpp/README.md`](cpp/README.md) | two's complement, mask 구성, 부호 비트 해석, IEEE754 경계 | `verified (local-only asset)` |
 
+실제 소스코드·테스트·검증 엔트리 기준의 blog 시리즈: [`../../blog/Foundations-CSAPP/datalab/00-series-map.md`](../../blog/Foundations-CSAPP/datalab/00-series-map.md)
+
 ## 디렉터리 역할
 
 - `problem/`: 원문 과제 계약과 공식 verifier 경계

@@ -10,6 +10,8 @@
 | [`static-type-checking`](static-type-checking/README.md) | 같은 언어에 static type rule과 diagnostic surface 추가 | `src/static_type_checking`, `tests/`, `examples/` | [`problem`](static-type-checking/problem/README.md), [`docs`](static-type-checking/docs/README.md) | `public verified` |
 | [`bytecode-ir`](bytecode-ir/README.md) | 같은 언어를 bytecode와 VM으로 lowering해 실행 모델 비교 | `src/bytecode_ir`, `tests/`, `examples/` | [`problem`](bytecode-ir/problem/README.md), [`docs`](bytecode-ir/docs/README.md) | `public verified` |
 
+코드 기반 재구성 blog 시리즈는 [`../blog/Programming-Languages-Foundations/README.md`](../blog/Programming-Languages-Foundations/README.md)에서 모아 보고, 프로젝트별 진입점은 [Bytecode IR](../blog/Programming-Languages-Foundations/bytecode-ir/00-series-map.md), [Parser Interpreter](../blog/Programming-Languages-Foundations/parser-interpreter/00-series-map.md), [Static Type Checking](../blog/Programming-Languages-Foundations/static-type-checking/00-series-map.md) 에서 바로 읽을 수 있다.
+
 ## 권장 순서
 
 1. [`parser-interpreter`](parser-interpreter/README.md)

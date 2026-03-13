@@ -21,3 +21,7 @@
 
 - 각 lab의 기본 검증 명령은 해당 `cpp/` 디렉터리에서 `make clean && make test`다.
 - 루트 문서는 학습 순서를 설명하고, 실제 명령은 각 lab의 `cpp/README.md`에 둔다.
+
+## Source-First Blog
+
+- 실제 소스와 테스트만으로 다시 읽는 chronology는 [blog/README.md](blog/README.md)에서 시작한다.

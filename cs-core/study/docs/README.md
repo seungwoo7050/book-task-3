@@ -9,6 +9,9 @@
 2. [`repository-architecture.md`](repository-architecture.md)
 3. [`readme-contract.md`](readme-contract.md)
 4. [`status-matrix.md`](status-matrix.md)
+5. [`../blog/README.md`](../blog/README.md)
+
+코드와 테스트를 기준으로 다시 읽는 장문 public log는 `docs/`가 아니라 [`../blog/README.md`](../blog/README.md)에서 관리한다.
 
 ## 문서 역할
 

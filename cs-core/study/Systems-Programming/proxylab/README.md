@@ -8,6 +8,8 @@
 | --- | --- | --- | --- | --- | --- |
 | 단일 origin server 앞에서 동작하는 concurrent HTTP proxy와 캐시를 구현한다. | header 정규화, connection handling, thread-safe cache 계약을 함께 만족해야 하고, local origin server 기반 검증을 유지한다. | C 답은 [`c/src/proxy.c`](c/src/proxy.c), C++ 답은 [`cpp/src/proxy.cpp`](cpp/src/proxy.cpp), 공용 시나리오는 `tests/`와 `docs/`에 둔다. | [`problem/README.md`](problem/README.md), [`c/README.md`](c/README.md), [`cpp/README.md`](cpp/README.md) | socket I/O, HTTP forwarding, concurrent cache, 기능 테스트 설계 | `public verified` |
 
+실제 소스코드·테스트·검증 엔트리 기준의 blog 시리즈: [`../../blog/Systems-Programming/proxylab/00-series-map.md`](../../blog/Systems-Programming/proxylab/00-series-map.md)
+
 ## 디렉터리 역할
 
 - `problem/`: starter contract와 최소 빌드 경계

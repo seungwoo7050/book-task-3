@@ -11,6 +11,8 @@
 | [`filesystem-mini-lab`](filesystem-mini-lab/README.md) | inode/block allocation과 journaling recovery를 toy filesystem으로 설명 | `python/` 구현, JSON disk image, demo fixture | [`problem`](filesystem-mini-lab/problem/README.md), [`python`](filesystem-mini-lab/python/README.md) | `public verified` |
 | [`synchronization-contention-lab`](synchronization-contention-lab/README.md) | mutex, semaphore, condvar가 contention invariant를 어떻게 드러내는지 실험 | `c/` 구현, scenario test, demo binary | [`problem`](synchronization-contention-lab/problem/README.md), [`c`](synchronization-contention-lab/c/README.md) | `public verified` |
 
+코드 기반 재구성 blog 시리즈는 [`../blog/Operating-Systems-Internals/README.md`](../blog/Operating-Systems-Internals/README.md)에서 모아 보고, 프로젝트별 진입점은 [Filesystem Mini Lab](../blog/Operating-Systems-Internals/filesystem-mini-lab/00-series-map.md), [Scheduling Simulator](../blog/Operating-Systems-Internals/scheduling-simulator/00-series-map.md), [Synchronization Contention Lab](../blog/Operating-Systems-Internals/synchronization-contention-lab/00-series-map.md), [Virtual Memory Lab](../blog/Operating-Systems-Internals/virtual-memory-lab/00-series-map.md) 에서 바로 읽을 수 있다.
+
 ## 권장 순서
 
 1. [`scheduling-simulator`](scheduling-simulator/README.md)

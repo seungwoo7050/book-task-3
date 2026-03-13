@@ -20,11 +20,13 @@
 - 공개 답안 위치: `python/src/`
 - 보조 공개 표면: `python/tests/`
 - 보조 공개 표면: `docs/`
+- 보조 공개 표면: `study/blog/04-Network-Diagnostics-and-Routing/icmp-pinger/`
 - 읽는 순서:
   1. `problem/README.md` - 문제 조건, 제공 자료, 성공 기준을 먼저 확인합니다.
   2. `python/README.md` - 현재 공개 답안 범위와 기준 명령을 확인합니다.
-  3. `docs/README.md` - 반복해서 참고할 개념 문서를 고릅니다.
-  4. `notion/README.md` - 공개 학습 노트이지만 엔트리포인트는 아닙니다.
+  3. `../../blog/04-Network-Diagnostics-and-Routing/icmp-pinger/README.md` - 실제 소스 기준의 개발 chronology를 따라갑니다.
+  4. `docs/README.md` - 반복해서 참고할 개념 문서를 고릅니다.
+  5. `notion/README.md` - 공개 학습 노트이지만 엔트리포인트는 아닙니다.
 
 ## 어떻게 검증하나
 - 실행: `make -C study/04-Network-Diagnostics-and-Routing/icmp-pinger/problem run-solution HOST=google.com`

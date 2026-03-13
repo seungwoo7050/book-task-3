@@ -8,6 +8,8 @@
 | --- | --- | --- | --- | --- | --- |
 | 주어진 target의 호출 규약과 메모리 배치를 읽고, phase별로 control flow를 원하는 지점으로 유도한다. | 공식 target, cookie, exploit 검증은 로컬 전용이고, course target에 바로 적용 가능한 raw exploit은 저장소에 두지 않는다. | 공개 답은 [`c/src/mini_attacklab.c`](c/src/mini_attacklab.c), [`cpp/src/mini_attacklab.cpp`](cpp/src/mini_attacklab.cpp) companion과 [`docs/README.md`](docs/README.md) payload model 정리다. | [`problem/README.md`](problem/README.md), [`c/README.md`](c/README.md), [`cpp/README.md`](cpp/README.md) | stack layout, calling convention, ROP, 상대 주소 계산 | `verified (local-only asset)` |
 
+실제 소스코드·테스트·검증 엔트리 기준의 blog 시리즈: [`../../blog/Foundations-CSAPP/attacklab/00-series-map.md`](../../blog/Foundations-CSAPP/attacklab/00-series-map.md)
+
 ## 디렉터리 역할
 
 - `problem/`: 공식 target 복원, local-only verifier, 실행 스크립트

@@ -12,6 +12,8 @@
 | [`attacklab`](attacklab/README.md) | code injection, ROP, 상대 주소 계산 이해 | `c/src/mini_attacklab.c`, `cpp/src/mini_attacklab.cpp`, `docs/` | [`problem`](attacklab/problem/README.md), [`c`](attacklab/c/README.md), [`cpp`](attacklab/cpp/README.md) | `verified (local-only asset)` |
 | [`perflab`](perflab/README.md) | cache simulator와 cache-friendly transpose 구현 | `c/src/perflab.c`, `cpp/src/perflab.cpp`, `docs/` | [`problem`](perflab/problem/README.md), [`c`](perflab/c/README.md), [`cpp`](perflab/cpp/README.md) | `public verified` |
 
+코드 기반 재구성 blog 시리즈는 [`../blog/Foundations-CSAPP/README.md`](../blog/Foundations-CSAPP/README.md)에서 모아 보고, 프로젝트별 진입점은 [Architecture Lab](../blog/Foundations-CSAPP/archlab/00-series-map.md), [Attack Lab](../blog/Foundations-CSAPP/attacklab/00-series-map.md), [Bomb Lab](../blog/Foundations-CSAPP/bomblab/00-series-map.md), [Data Lab](../blog/Foundations-CSAPP/datalab/00-series-map.md), [Performance Lab](../blog/Foundations-CSAPP/perflab/00-series-map.md) 에서 바로 읽을 수 있다.
+
 ## 권장 순서
 
 1. [`datalab`](datalab/README.md)

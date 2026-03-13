@@ -53,6 +53,7 @@
 ## 문서 지도
 
 - [`study/README.md`](study/README.md) - 단계 인덱스와 읽는 순서
+- [`study/blog/README.md`](study/blog/README.md) - 실제 소스와 검증 자산을 바탕으로 다시 쓴 프로젝트별 blog 인덱스
 - [`docs/readme-contract.md`](docs/readme-contract.md) - 루트, 단계, 프로젝트, 하위 README의 공개 표면 계약
 - [`docs/curriculum-map.md`](docs/curriculum-map.md) - 왜 이 순서로 단계를 구성했는지
 - [`docs/project-set-audit.md`](docs/project-set-audit.md) - 현재 프로젝트 묶음의 강점과 의도적인 공백

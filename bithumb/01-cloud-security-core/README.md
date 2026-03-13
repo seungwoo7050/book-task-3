@@ -23,6 +23,7 @@
 2. 06에서 finding 이후 조치 흐름을 분리합니다.
 3. 07과 08에서 로그와 컨테이너 입력을 각각 확장합니다.
 4. 09에서 운영 거버넌스 모델을 붙입니다.
+5. source-first 흐름이 필요하면 [../blog/01-cloud-security-core/README.md](../blog/01-cloud-security-core/README.md)로 이동합니다.
 
 ## 이 트랙을 끝내면 설명할 수 있어야 하는 것
 

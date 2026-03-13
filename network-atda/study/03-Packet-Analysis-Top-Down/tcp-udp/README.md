@@ -19,10 +19,12 @@
 - 한 줄 답: TCP의 신뢰성 메커니즘과 UDP의 단순성을 같은 전송 계층 시야에서 비교하는 랩입니다.
 - 공개 답안 위치: `analysis/src/`
 - 보조 공개 표면: `docs/`
+- 보조 공개 표면: `study/blog/03-Packet-Analysis-Top-Down/tcp-udp/`
 - 읽는 순서:
   1. `problem/README.md` - 문제 조건, 제공 자료, 성공 기준을 먼저 확인합니다.
   2. `analysis/README.md` - 현재 공개 답안 범위와 기준 명령을 확인합니다.
-  3. `docs/README.md` - 반복해서 참고할 개념 문서를 고릅니다.
+  3. `../../blog/03-Packet-Analysis-Top-Down/tcp-udp/README.md` - 소스 기준의 분석 chronology를 따라갑니다.
+  4. `docs/README.md` - 반복해서 참고할 개념 문서를 고릅니다.
 
 ## 어떻게 검증하나
 - 검증: `make -C study/03-Packet-Analysis-Top-Down/tcp-udp/problem test`

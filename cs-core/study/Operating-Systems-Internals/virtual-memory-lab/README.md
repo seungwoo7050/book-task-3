@@ -8,6 +8,8 @@
 | --- | --- | --- | --- | --- | --- |
 | FIFO, LRU, Clock, OPT를 같은 trace에서 비교해 page fault와 dirty eviction 차이를 설명한다. | trace-driven 모델만 다루고, page table이나 TLB는 범위 밖으로 둔다. | 구현은 [`python/`](python/README.md)의 replacement simulator, trace fixture, replay CLI로 정리한다. | [`problem/README.md`](problem/README.md), [`python/README.md`](python/README.md) | locality, Belady anomaly, replacement policy, dirty page 해석 | `public verified` |
 
+실제 소스코드·테스트·검증 엔트리 기준의 blog 시리즈: [`../../blog/Operating-Systems-Internals/virtual-memory-lab/00-series-map.md`](../../blog/Operating-Systems-Internals/virtual-memory-lab/00-series-map.md)
+
 ## 디렉터리 역할
 
 - `problem/`: 문제 범위와 canonical `make` entrypoint

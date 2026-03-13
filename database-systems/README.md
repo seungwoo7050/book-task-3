@@ -14,6 +14,7 @@
 - [Go Track](go/README.md): 더 잘게 나눈 정본 경로입니다. 자료구조, 포맷, recovery, compaction, consensus-lite를 더 세밀하게 추적하고 싶을 때 시작합니다.
 - [전체 카탈로그](docs/catalog/project-catalog.md): 언어, 트랙, 문제, 내 해법, 검증 명령을 한 번에 보는 단일 인덱스입니다.
 - [문서 인덱스](docs/README.md): 커리큘럼 설계 근거, 언어 대응표, 문서 정책을 확인하는 위치입니다.
+- [Blog Index](blog/README.md): `src/`, `tests`, `README`, 실제 재검증 CLI만으로 다시 읽은 source-first blog 시리즈입니다.
 
 ## 대표 프로젝트
 
@@ -42,5 +43,6 @@ go run ./database-internals/projects/01-memtable-skiplist/cmd/skiplist-demo
 
 - 루트나 트랙 README에서는 먼저 `문제 / 내 해법 / 검증`을 확인하고, 더 자세한 세부는 개별 프로젝트로 내려갑니다.
 - 프로젝트를 읽을 때는 `README -> problem/README -> docs/README -> 구현과 tests -> notion/README` 순서를 기본 경로로 삼습니다.
+- source-first 재구성 흐름이 필요하면 `blog/README.md`와 각 프로젝트의 `00-series-map.md`로 이동합니다.
 - 전역 문구와 검증 명령의 기준점은 [docs/catalog/project-catalog.md](docs/catalog/project-catalog.md)입니다.
 - 긴 커리큘럼 설명은 `docs/`, 현재 학습 로그는 `notion/`, 이전 장문 기록은 `notion-archive/`에 둡니다.

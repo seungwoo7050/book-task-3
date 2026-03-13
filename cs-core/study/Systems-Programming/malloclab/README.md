@@ -8,6 +8,8 @@
 | --- | --- | --- | --- | --- | --- |
 | `malloc`, `free`, `realloc` 계약을 만족하는 동적 메모리 할당기를 구현한다. | alignment, block metadata, free list invariant를 지켜야 하고, starter contract는 `problem/`에서만 유지한다. | C 답은 [`c/src/mm.c`](c/src/mm.c), C++ 답은 [`cpp/src/mm.cpp`](cpp/src/mm.cpp), 개념 해설은 `docs/`와 `notion/`으로 분리한다. | [`problem/README.md`](problem/README.md), [`c/README.md`](c/README.md), [`cpp/README.md`](cpp/README.md) | allocator invariant, coalescing, free list, `realloc` payload 보존 | `public verified` |
 
+실제 소스코드·테스트·검증 엔트리 기준의 blog 시리즈: [`../../blog/Systems-Programming/malloclab/00-series-map.md`](../../blog/Systems-Programming/malloclab/00-series-map.md)
+
 ## 디렉터리 역할
 
 - `problem/`: starter contract와 최소 컴파일 경계

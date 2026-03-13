@@ -18,4 +18,5 @@
 2. 프로젝트 README에서 `문제가 뭐였나`, `이 레포의 답`, `어떻게 검증하나`를 먼저 확인합니다.
 3. `problem/README.md`로 제공 자료와 성공 기준을 읽습니다.
 4. 구현형 과제는 `python/README.md` 또는 `cpp/README.md`, 분석형 과제는 `analysis/README.md`로 내려갑니다.
-5. 개념 복습이 필요할 때만 `docs/README.md`를, 과정 기록이 필요할 때만 `notion/README.md`를 읽습니다.
+5. 소스 기준의 개발 흐름을 따라가고 싶다면 `blog/README.md`와 프로젝트별 blog 문서를 읽습니다.
+6. 개념 복습이 필요할 때만 `docs/README.md`를, 추가 노트가 필요할 때만 `notion/README.md`를 읽습니다.

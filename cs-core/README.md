@@ -12,6 +12,7 @@
 
 - `study/`: 현재 기준으로 유지하는 학습용 작업 트리
 - `docs/`: 저장소 전체 운영 기준, 재구성 메모, 역사적 정리 문서
+- `study/blog/`: 실제 소스코드, 테스트, git history를 기준으로 재구성한 장문 학습 로그
 
 별도의 `legacy/` 디렉터리는 더 이상 두지 않습니다.
 예전 재구성 맥락은 [`docs/legacy-study-rebuild-plan.md`](docs/legacy-study-rebuild-plan.md) 같은 문서 이름에만 남아 있습니다.
@@ -24,6 +25,7 @@
 4. [`study/Operating-Systems-Internals/README.md`](study/Operating-Systems-Internals/README.md): scheduler, VM, filesystem, synchronization으로 이어지는 운영체제 breadth 트랙
 5. [`study/Programming-Languages-Foundations/README.md`](study/Programming-Languages-Foundations/README.md): parser, typing, VM으로 이어지는 PL/컴파일러 기초 트랙
 6. 각 프로젝트의 `README.md`: 문제 경계, 구현 경로, 검증 방법
+7. [`study/blog/README.md`](study/blog/README.md): 소스코드 우선 재구성 blog 허브
 
 ## 트랙 개요
 
@@ -69,6 +71,7 @@
 - 현재 `notion/`은 `00`~`05` 세트로 유지하며, 특히 `05-development-timeline.md`는 새 환경에서 다시 따라 하기 위한 재현 문서로 씁니다.
 - 현재 기준의 학습 노트는 `notion/`에 유지합니다. 더 긴 작업 로그가 필요하면 로컬 백업을 따로 둘 수 있지만, 새 프로젝트의 공개 표면에 `notion-archive/`를 필수로 두지는 않습니다.
 - 공식 핸드아웃, 바이너리, 쿠키, 복원 툴체인은 계속 로컬 전용 자산으로 취급합니다.
+- 긴 chronology와 코드 기반 구현 서사는 `study/blog/`에서 별도로 유지합니다.
 
 ## 스포일러 정책
 
@@ -85,5 +88,5 @@
 ## 기준 문서
 
 - [`docs/legacy-study-rebuild-plan.md`](docs/legacy-study-rebuild-plan.md)
-- [`study/PUBLISHABILITY_REVIEW.md`](study/PUBLISHABILITY_REVIEW.md)
-- [`study/TODO.md`](study/TODO.md)
+- [`study/docs/readme-contract.md`](study/docs/readme-contract.md)
+- [`study/docs/status-matrix.md`](study/docs/status-matrix.md)

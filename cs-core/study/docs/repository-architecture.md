@@ -7,13 +7,14 @@
 - 루트 `README.md`: 4개 트랙과 15개 프로젝트를 빠르게 탐색하는 대시보드
 - 트랙 `README.md`: 같은 주제의 프로젝트를 묶어 읽는 지도
 - 프로젝트 `README.md`: `문제`, `답`, `검증`, `공개 경계`를 한 화면에 보여 주는 진입점
-
+- `study/blog/<track>/<project>/`: 실제 소스코드, 테스트, 검증 엔트리, git history를 기준으로 재구성한 장문 학습 로그
 ## 디렉터리 책임
 
 | 경로 | 책임 | 공개 원칙 |
 | --- | --- | --- |
 | `problem/` | 문제 계약, starter boundary, 공식 검증 경계, local-only 자산 안내 | 원문 계약과 검증 절차를 보존한다. 공식 자산은 source tone을 유지할 수 있다. |
 | `c/`, `cpp/`, `python/`, `y86/`, `src/` | 내가 작성한 실행 가능한 답 | authored comment는 한국어를 기본으로 한다. |
+| `study/blog/<track>/<project>/` | 코드와 테스트를 기준으로 재구성한 장문 public learning log | `notion/` 없이도 구현과 검증 경로를 복원할 수 있게 쓴다. |
 | 프로젝트 `docs/` | 개념 설명, 검증 해설, durable note | README보다 길어도 되지만 답안 덤프처럼 쓰지 않는다. |
 | 프로젝트 `notion/` | 현재판 접근 로그, 디버그 근거, 재현 타임라인 | 장문 reasoning과 rebuild log를 둔다. |
 | 프로젝트 `notion-archive/` | 이전 버전 노트, 폐기된 시도, superseded draft | 현재판에서 밀려난 내용을 보존한다. |

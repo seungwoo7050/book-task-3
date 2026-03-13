@@ -25,6 +25,7 @@
 - [01 Cloud Security Core](01-cloud-security-core/README.md): finding, remediation, detection, governance로 확장하는 핵심 트랙
 - [02 Capstone](02-capstone/README.md): 앞선 결과물을 하나의 local security platform 흐름으로 통합하는 캡스톤
 - [docs/roadmap.md](docs/roadmap.md): 왜 이 순서로 배치했는지와 프로젝트 간 연결 이유
+- [blog/README.md](blog/README.md): `notion/` 없이 실제 소스와 테스트만으로 다시 읽은 source-first blog 시리즈
 
 ## 전체 검증
 

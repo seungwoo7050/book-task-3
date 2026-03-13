@@ -8,6 +8,8 @@
 | --- | --- | --- | --- | --- | --- |
 | Part A는 Y86 프로그램 작성, Part B는 `iaddq`와 control signal 구현, Part C는 `ncopy` 성능 최적화가 핵심이다. | 공식 simulator/HCL toolchain은 로컬 복원이 필요하고, Part A/B/C 산출물을 같은 README에서 섞지 않는다. | 제출 가능한 Y86 답은 [`y86/src/*.ys`](y86/src), companion 모델은 [`c/src/mini_archlab.c`](c/src/mini_archlab.c), [`cpp/src/mini_archlab.cpp`](cpp/src/mini_archlab.cpp)로 정리한다. | [`problem/README.md`](problem/README.md), [`y86/README.md`](y86/README.md), [`c/README.md`](c/README.md), [`cpp/README.md`](cpp/README.md) | ISA 읽기, control signal, pipeline cost model, throughput 최적화 | `verified (local-only asset)` |
 
+실제 소스코드·테스트·검증 엔트리 기준의 blog 시리즈: [`../../blog/Foundations-CSAPP/archlab/00-series-map.md`](../../blog/Foundations-CSAPP/archlab/00-series-map.md)
+
 ## 디렉터리 역할
 
 - `problem/`: 공식 handout, simulator, HCL toolchain 경계

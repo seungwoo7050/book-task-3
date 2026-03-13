@@ -12,6 +12,7 @@ Python 저장 엔진 입문 트랙입니다. 더 적은 프로젝트 수로 writ
 
 - 저장 엔진의 write path와 read path를 가장 적은 프로젝트 수로 어떻게 이해할 것인가
 - Go 심화 트랙으로 내려가기 전에 어떤 핵심 개념을 먼저 고정해야 하는가
+- source-first 관점에서 각 프로젝트의 설계 판단과 검증 흐름을 어떻게 다시 읽을 것인가
 
 ## 프로젝트 표
 
@@ -26,4 +27,5 @@ Python 저장 엔진 입문 트랙입니다. 더 적은 프로젝트 수로 writ
 ## 다음 단계
 
 - 각 프로젝트는 `README -> problem/README -> docs/README -> 구현 -> tests -> notion/README` 순서로 읽습니다.
+- source-first chronology로 다시 읽고 싶다면 [../../blog/python/database-internals/README.md](../../blog/python/database-internals/README.md)에서 각 프로젝트의 `00-series-map.md`로 이동합니다.
 - 이 트랙을 끝낸 뒤 [Go 저장 엔진 트랙](../../go/database-internals/README.md)으로 내려가면 자료구조와 파일 포맷을 더 세밀하게 비교할 수 있습니다.

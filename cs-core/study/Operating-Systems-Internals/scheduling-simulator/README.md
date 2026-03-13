@@ -8,6 +8,8 @@
 | --- | --- | --- | --- | --- | --- |
 | FCFS, SJF, RR, MLFQ가 같은 workload에서 어떤 지표 차이를 만드는지 비교한다. | 단일 CPU, deterministic fixture, 고정된 MLFQ 파라미터를 유지하고 I/O burst는 다루지 않는다. | 구현은 [`python/`](python/README.md)의 scheduler와 replay CLI, fixture, 지표 계산 로직으로 정리한다. | [`problem/README.md`](problem/README.md), [`python/README.md`](python/README.md) | fairness, response time, turnaround, replay 기반 검증 | `public verified` |
 
+실제 소스코드·테스트·검증 엔트리 기준의 blog 시리즈: [`../../blog/Operating-Systems-Internals/scheduling-simulator/00-series-map.md`](../../blog/Operating-Systems-Internals/scheduling-simulator/00-series-map.md)
+
 ## 디렉터리 역할
 
 - `problem/`: 문제 범위와 canonical `make` entrypoint

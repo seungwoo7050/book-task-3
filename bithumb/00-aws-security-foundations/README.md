@@ -19,6 +19,7 @@
 1. 01에서 정책 판단 규칙을 익힙니다.
 2. 02에서 선언형 인프라 입력을 보안 분석 관점으로 읽습니다.
 3. 03에서 로그를 이후 탐지에 재사용 가능한 구조로 바꿉니다.
+4. source-first 흐름이 필요하면 [../blog/00-aws-security-foundations/README.md](../blog/00-aws-security-foundations/README.md)로 이동합니다.
 
 ## 이 트랙을 끝내면 설명할 수 있어야 하는 것
 

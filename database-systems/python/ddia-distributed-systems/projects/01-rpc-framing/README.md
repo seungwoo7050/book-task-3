@@ -33,6 +33,7 @@ PYTHONPATH=src python -m rpc_framing
 - `docs/README.md`: 개념 메모와 참고자료 인덱스를 먼저 훑는 문서입니다.
 - `src/`: 핵심 구현 패키지와 `__main__` entry point가 들어 있습니다.
 - `tests/`: pytest 기반 회귀 테스트를 모아 둔 위치입니다.
+- `../../../../blog/python/ddia-distributed-systems/01-rpc-framing/00-series-map.md`: `src/tests`와 실제 재검증 CLI만으로 다시 구성한 source-first blog 시리즈 입구입니다.
 - `notion/README.md`: 현재 공개용 학습 노트와 설계 로그의 입구입니다.
 - `notion-archive/README.md`: 이전 세대 문서를 보존하는 아카이브입니다.
 

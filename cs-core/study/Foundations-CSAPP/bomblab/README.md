@@ -8,6 +8,8 @@
 | --- | --- | --- | --- | --- | --- |
 | phase별 입력 조건을 어셈블리에서 복원하고, 문자열 비교, 재귀, 리스트, 트리 패턴을 읽어낸다. | 공식 bomb 인스턴스별 정답은 저장소에 두지 않고, 공식 바이너리는 로컬 전용 자산으로 유지한다. | 공개 답은 [`c/src/mini_bomb.c`](c/src/mini_bomb.c), [`cpp/src/mini_bomb.cpp`](cpp/src/mini_bomb.cpp) companion과 [`docs/README.md`](docs/README.md) 분석 노트다. | [`problem/README.md`](problem/README.md), [`c/README.md`](c/README.md), [`cpp/README.md`](cpp/README.md) | reverse-engineering workflow, phase pattern 복원, 입력 조건 추론 | `verified (local-only asset)` |
 
+실제 소스코드·테스트·검증 엔트리 기준의 blog 시리즈: [`../../blog/Foundations-CSAPP/bomblab/00-series-map.md`](../../blog/Foundations-CSAPP/bomblab/00-series-map.md)
+
 ## 디렉터리 역할
 
 - `problem/`: 공식 bomb 복원과 로컬 분석 절차

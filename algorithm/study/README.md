@@ -32,3 +32,4 @@
 - [../docs/project-catalog.md](../docs/project-catalog.md)
 - [../docs/verification-matrix.md](../docs/verification-matrix.md)
 - [../docs/curriculum-map.md](../docs/curriculum-map.md)
+- [blog/README.md](blog/README.md): Gold 14개 프로젝트의 code-first blog series 인덱스

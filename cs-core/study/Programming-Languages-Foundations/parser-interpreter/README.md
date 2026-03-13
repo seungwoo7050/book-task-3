@@ -8,6 +8,8 @@
 | --- | --- | --- | --- | --- | --- |
 | 하나의 toy language에 대해 lexer, parser, evaluator를 구현하고 demo와 테스트로 결과를 재현한다. | expression-oriented 문법, lexical scoping, left-to-right evaluation을 유지하고 타입 주석은 파싱만 한다. | 구현은 [`src/parser_interpreter/`](src/parser_interpreter), [`tests/`](tests), [`examples/`](examples)와 CLI demo로 정리한다. | [`problem/README.md`](problem/README.md), [`docs/README.md`](docs/README.md) | token stream, precedence, lexical closure, tree-walk evaluation | `public verified` |
 
+실제 소스코드·테스트·검증 엔트리 기준의 blog 시리즈: [`../../blog/Programming-Languages-Foundations/parser-interpreter/00-series-map.md`](../../blog/Programming-Languages-Foundations/parser-interpreter/00-series-map.md)
+
 ## 디렉터리 역할
 
 - `problem/`: 범위와 의도적으로 제외한 항목

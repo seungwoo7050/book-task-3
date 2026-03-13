@@ -7,6 +7,8 @@
 | [`01-mcp-recommendation-demo`](./01-mcp-recommendation-demo/README.md) | [`capstone/v2-submission-polish`](./01-mcp-recommendation-demo/capstone/v2-submission-polish/README.md) | [`capstone/v3-oss-hardening`](./01-mcp-recommendation-demo/capstone/v3-oss-hardening/README.md) | [`docs/stage-catalog.md`](./01-mcp-recommendation-demo/docs/stage-catalog.md) | [`docs/verification-matrix.md`](./01-mcp-recommendation-demo/docs/verification-matrix.md) |
 | [`02-chat-qa-ops`](./02-chat-qa-ops/README.md) | [`capstone/v2-submission-polish`](./02-chat-qa-ops/capstone/v2-submission-polish/README.md) | [`capstone/v3-self-hosted-oss`](./02-chat-qa-ops/capstone/v3-self-hosted-oss/README.md) | [`docs/stage-catalog.md`](./02-chat-qa-ops/docs/stage-catalog.md) | [`docs/verification-matrix.md`](./02-chat-qa-ops/docs/verification-matrix.md) |
 
+source-first chronology가 필요하면 [`../blog/projects/README.md`](../blog/projects/README.md)로 이동한다.
+
 ## 읽는 법
 
 - 먼저 각 프로젝트 `problem/README.md`에서 과제 원문과 이 레포의 답 범위를 확인한다.

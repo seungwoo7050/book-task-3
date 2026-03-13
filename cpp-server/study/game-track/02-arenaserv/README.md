@@ -34,6 +34,10 @@ make clean && make test
 - [cpp/src/MatchEngine.cpp](cpp/src/MatchEngine.cpp)
 - [cpp/tests/test_arenaserv.py](cpp/tests/test_arenaserv.py)
 
+## Source-First Blog
+
+- 실제 소스와 테스트만으로 다시 읽는 chronology는 [../../blog/game-track/02-arenaserv/README.md](../../blog/game-track/02-arenaserv/README.md)에서 이어진다.
+
 ## 다음 단계
 
 - 같은 저장소의 다른 capstone은 [../../irc-track/02-ircserv/README.md](../../irc-track/02-ircserv/README.md)

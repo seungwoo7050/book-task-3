@@ -21,3 +21,7 @@
 1. [01-roomlab/README.md](01-roomlab/README.md)
 2. [02-ircserv/README.md](02-ircserv/README.md)
 3. 다른 capstone과 비교하려면 [../game-track/02-arenaserv/README.md](../game-track/02-arenaserv/README.md)
+
+## Source-First Blog
+
+- 이 트랙의 chronology 입구는 [../blog/irc-track/README.md](../blog/irc-track/README.md)다.

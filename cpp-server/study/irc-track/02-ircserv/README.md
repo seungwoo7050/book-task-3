@@ -34,6 +34,10 @@ make clean && make test
 - [cpp/src/Channel.cpp](cpp/src/Channel.cpp)
 - [cpp/tests/test_irc_join.py](cpp/tests/test_irc_join.py)
 
+## Source-First Blog
+
+- 실제 소스와 테스트만으로 다시 읽는 chronology는 [../../blog/irc-track/02-ircserv/README.md](../../blog/irc-track/02-ircserv/README.md)에서 이어진다.
+
 ## 다음 단계
 
 - 다른 도메인의 capstone과 비교하려면 [../../game-track/02-arenaserv/README.md](../../game-track/02-arenaserv/README.md)

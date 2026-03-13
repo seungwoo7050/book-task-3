@@ -12,6 +12,7 @@ Python 분산 시스템 입문 트랙입니다. RPC, replication, sharding, clus
 
 - 분산 시스템 입문에서 request 흐름, replication, routing을 어떤 순서로 연결해 볼 것인가
 - consensus 이전에 clustered KV까지 어떤 골격을 먼저 고정해야 하는가
+- source-first 관점에서 각 프로젝트의 wire contract와 write pipeline을 어떻게 다시 읽을 것인가
 
 ## 프로젝트 표
 
@@ -25,4 +26,5 @@ Python 분산 시스템 입문 트랙입니다. RPC, replication, sharding, clus
 ## 다음 단계
 
 - 각 프로젝트는 `README -> problem/README -> docs/README -> 구현 -> tests -> notion/README` 순서로 읽습니다.
+- source-first chronology로 다시 읽고 싶다면 [../../blog/python/ddia-distributed-systems/README.md](../../blog/python/ddia-distributed-systems/README.md)에서 각 프로젝트의 `00-series-map.md`로 이동합니다.
 - 이 트랙을 끝낸 뒤 [Go 분산 트랙](../../go/ddia-distributed-systems/README.md)의 Raft-lite, quorum, election, failure handling 슬롯으로 넘어가면 authority와 consistency를 더 깊게 읽을 수 있습니다.

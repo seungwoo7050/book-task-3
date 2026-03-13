@@ -17,6 +17,7 @@
 1. 이 프로젝트 README에서 문제, 답, 검증을 먼저 확인합니다.
 2. `problem/README.md`로 캡스톤이 통합하는 입력과 출력 범위를 확인합니다.
 3. `docs/demo-walkthrough.md`와 `python/README.md`로 API와 worker 흐름을 따라갑니다.
+4. source-first 흐름이 필요하면 [../blog/02-capstone/README.md](../blog/02-capstone/README.md)로 이동합니다.
 
 ## 이 트랙을 끝내면 설명할 수 있어야 하는 것
 

@@ -8,6 +8,8 @@
 | --- | --- | --- | --- | --- | --- |
 | Part A는 trace-driven cache simulator, Part B는 cache-friendly transpose 구현이다. | trace 입력과 miss 집계 규칙을 지키고, transpose는 correctness와 miss budget을 함께 만족해야 한다. | C 답은 [`c/src/perflab.c`](c/src/perflab.c), C++ 답은 [`cpp/src/perflab.cpp`](cpp/src/perflab.cpp)이며, miss 근거와 전략 비교는 `docs/`에 둔다. | [`problem/README.md`](problem/README.md), [`c/README.md`](c/README.md), [`cpp/README.md`](cpp/README.md) | cache model, LRU, trace-driven 검증, blocking 전략 | `public verified` |
 
+실제 소스코드·테스트·검증 엔트리 기준의 blog 시리즈: [`../../blog/Foundations-CSAPP/perflab/00-series-map.md`](../../blog/Foundations-CSAPP/perflab/00-series-map.md)
+
 ## 디렉터리 역할
 
 - `problem/`: self-written starter boundary와 sample trace

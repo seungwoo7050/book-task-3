@@ -34,6 +34,10 @@ make clean && make test
 - [cpp/src/execute_join.cpp](cpp/src/execute_join.cpp)
 - [cpp/tests/test_roomlab.py](cpp/tests/test_roomlab.py)
 
+## Source-First Blog
+
+- 실제 소스와 테스트만으로 다시 읽는 chronology는 [../../blog/irc-track/01-roomlab/README.md](../../blog/irc-track/01-roomlab/README.md)에서 이어진다.
+
 ## 다음 단계
 
 - 고급 channel command까지 확장한 capstone은 [../02-ircserv/README.md](../02-ircserv/README.md)

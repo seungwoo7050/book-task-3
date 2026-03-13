@@ -49,6 +49,7 @@
 ## 기준 문서
 
 - 문서 지도: [docs/README.md](docs/README.md)
+- source-first blog: [study/blog/README.md](study/blog/README.md)
 - 트랙 설계 이유: [docs/curriculum-map.md](docs/curriculum-map.md)
 - 현재 저장소 상태: [docs/repository-audit.md](docs/repository-audit.md)
 - 경로 변경표: [docs/path-migration-map.md](docs/path-migration-map.md)

@@ -8,6 +8,8 @@
 | --- | --- | --- | --- | --- | --- |
 | counter, gate, bounded buffer 시나리오에서 synchronization primitive별 invariant를 검증한다. | correctness를 timing보다 먼저 검증하고, lock-free primitive나 kernel scheduler internals는 범위 밖으로 둔다. | 구현은 [`c/`](c/README.md)의 primitive별 시나리오 코드와 `problem/`의 shell test, demo binary로 정리한다. | [`problem/README.md`](problem/README.md), [`c/README.md`](c/README.md) | mutex, semaphore, condvar, contention invariant, scenario 기반 테스트 | `public verified` |
 
+실제 소스코드·테스트·검증 엔트리 기준의 blog 시리즈: [`../../blog/Operating-Systems-Internals/synchronization-contention-lab/00-series-map.md`](../../blog/Operating-Systems-Internals/synchronization-contention-lab/00-series-map.md)
+
 ## 디렉터리 역할
 
 - `problem/`: 문제 범위와 canonical `make` entrypoint

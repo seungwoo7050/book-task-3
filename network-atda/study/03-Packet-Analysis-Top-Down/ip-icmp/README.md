@@ -19,10 +19,12 @@
 - 한 줄 답: IPv4 header, fragmentation, TTL, ICMP 메시지를 traceroute/ping 맥락에서 읽는 네트워크 계층 랩입니다.
 - 공개 답안 위치: `analysis/src/`
 - 보조 공개 표면: `docs/`
+- 보조 공개 표면: `study/blog/03-Packet-Analysis-Top-Down/ip-icmp/`
 - 읽는 순서:
   1. `problem/README.md` - 문제 조건, 제공 자료, 성공 기준을 먼저 확인합니다.
   2. `analysis/README.md` - 현재 공개 답안 범위와 기준 명령을 확인합니다.
-  3. `docs/README.md` - 반복해서 참고할 개념 문서를 고릅니다.
+  3. `../../blog/03-Packet-Analysis-Top-Down/ip-icmp/README.md` - 소스 기준의 분석 chronology를 따라갑니다.
+  4. `docs/README.md` - 반복해서 참고할 개념 문서를 고릅니다.
 
 ## 어떻게 검증하나
 - 검증: `make -C study/03-Packet-Analysis-Top-Down/ip-icmp/problem test`

@@ -8,6 +8,8 @@
 | --- | --- | --- | --- | --- | --- |
 | foreground/background job control, builtin command, signal forwarding을 갖춘 tiny shell을 구현한다. | 공식 starter shell과 공식 trace는 저장소에 두지 않고, self-owned trace와 테스트 하네스로 계약을 재구성한다. | C 답은 [`c/src/tsh.c`](c/src/tsh.c), C++ 답은 [`cpp/src/tsh.cpp`](cpp/src/tsh.cpp), 공용 trace는 `tests/`와 각 구현 테스트에 둔다. | [`problem/README.md`](problem/README.md), [`c/README.md`](c/README.md), [`cpp/README.md`](cpp/README.md) | process group, signal forwarding, race discipline, job list 관리 | `public verified` |
 
+실제 소스코드·테스트·검증 엔트리 기준의 blog 시리즈: [`../../blog/Systems-Programming/shlab/00-series-map.md`](../../blog/Systems-Programming/shlab/00-series-map.md)
+
 ## 디렉터리 역할
 
 - `problem/`: self-owned 문제 계약과 최소 검증 경계

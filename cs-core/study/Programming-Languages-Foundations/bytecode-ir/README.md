@@ -8,6 +8,8 @@
 | --- | --- | --- | --- | --- | --- |
 | AST를 bytecode instruction sequence로 lowering하고 VM에서 실행해 interpreter와 같은 의미를 유지한다. | stack machine 모델을 유지하고, closure capture와 call frame을 self-contained runtime으로 구현한다. | 구현은 [`src/bytecode_ir/`](src/bytecode_ir), [`tests/`](tests), [`examples/`](examples), run/disasm CLI로 정리한다. | [`problem/README.md`](problem/README.md), [`docs/README.md`](docs/README.md) | lowering, stack machine, closure capture, disassembly, VM execution | `public verified` |
 
+실제 소스코드·테스트·검증 엔트리 기준의 blog 시리즈: [`../../blog/Programming-Languages-Foundations/bytecode-ir/00-series-map.md`](../../blog/Programming-Languages-Foundations/bytecode-ir/00-series-map.md)
+
 ## 디렉터리 역할
 
 - `problem/`: compiler/VM 범위와 제외한 항목

@@ -23,6 +23,7 @@
 - 공개 답안 위치: `python/src/`, `cpp/src/`
 - 판단 근거: [docs/references/approach.md](docs/references/approach.md)
 - 장문 학습 노트: [notion/README.md](notion/README.md)
+- code-first blog series: [../../blog/Core-07-Binary-Search-Hash/2110/00-series-map.md](../../blog/Core-07-Binary-Search-Hash/2110/00-series-map.md)
 
 ## 어떻게 검증하나
 - 정식 검증: `make -C study/Core-07-Binary-Search-Hash/2110/problem test`

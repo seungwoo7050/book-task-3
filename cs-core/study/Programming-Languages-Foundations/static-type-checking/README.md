@@ -8,6 +8,8 @@
 | --- | --- | --- | --- | --- | --- |
 | parser 이후 단계에서 static type rule과 diagnostic surface를 추가해 실행 전 오류를 걸러낸다. | language surface는 유지하고, `let` annotation은 optional, type environment와 runtime environment를 섞지 않는다. | 구현은 [`src/static_type_checking/`](src/static_type_checking), [`tests/`](tests), [`examples/`](examples)와 CLI demo로 정리한다. | [`problem/README.md`](problem/README.md), [`docs/README.md`](docs/README.md) | type environment, function type, static diagnostic, runtime/static 경계 | `public verified` |
 
+실제 소스코드·테스트·검증 엔트리 기준의 blog 시리즈: [`../../blog/Programming-Languages-Foundations/static-type-checking/00-series-map.md`](../../blog/Programming-Languages-Foundations/static-type-checking/00-series-map.md)
+
 ## 디렉터리 역할
 
 - `problem/`: checker 범위와 의도적으로 제외한 항목

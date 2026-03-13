@@ -8,6 +8,8 @@
 | --- | --- | --- | --- | --- | --- |
 | 작은 filesystem 모델에서 create/write/read/delete와 journaling recovery를 구현한다. | root-only 모델, whole-file write, metadata journaling에 범위를 고정하고 subdirectory와 permission은 다루지 않는다. | 구현은 [`python/`](python/README.md)의 filesystem 모델, JSON disk image, crash-recovery demo로 정리한다. | [`problem/README.md`](problem/README.md), [`python/README.md`](python/README.md) | inode/block allocation, journaling, recovery, disk image 모델링 | `public verified` |
 
+실제 소스코드·테스트·검증 엔트리 기준의 blog 시리즈: [`../../blog/Operating-Systems-Internals/filesystem-mini-lab/00-series-map.md`](../../blog/Operating-Systems-Internals/filesystem-mini-lab/00-series-map.md)
+
 ## 디렉터리 역할
 
 - `problem/`: 문제 범위와 canonical `make` entrypoint

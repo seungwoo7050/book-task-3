@@ -3,6 +3,8 @@
 `cs-core/study`는 4개 트랙, 15개 프로젝트를 `문제 계약 -> 실행 가능한 답 -> 검증 -> 학습 노트`로 분리해 둔 multi-track 학습 아카이브다.
 GitHub 방문자가 루트에서 바로 `무슨 문제를 풀었는지`, `답이 어디 있는지`, `어떻게 검증하는지`를 찾을 수 있게 공개 표면을 짧고 반복 가능한 형태로 유지한다.
 
+실제 소스코드와 테스트를 기준으로 다시 읽는 장문 로그는 [`blog/README.md`](blog/README.md)에서 별도로 관리한다. 이 레이어는 `notion/` 없이도 구현과 검증 경로를 복원할 수 있게 만드는 데 목적이 있다.
+
 ## 먼저 읽을 곳
 
 1. [`docs/curriculum-map.md`](docs/curriculum-map.md)
@@ -11,6 +13,7 @@ GitHub 방문자가 루트에서 바로 `무슨 문제를 풀었는지`, `답이
 4. [`Systems-Programming/README.md`](Systems-Programming/README.md)
 5. [`Operating-Systems-Internals/README.md`](Operating-Systems-Internals/README.md)
 6. [`Programming-Languages-Foundations/README.md`](Programming-Languages-Foundations/README.md)
+7. [`blog/README.md`](blog/README.md)
 
 ## 트랙 요약
 
@@ -46,6 +49,7 @@ GitHub 방문자가 루트에서 바로 `무슨 문제를 풀었는지`, `답이
 - README 표면 계약은 [`docs/readme-contract.md`](docs/readme-contract.md)를 따른다.
 - 디렉터리 책임은 [`docs/repository-architecture.md`](docs/repository-architecture.md)에 고정한다.
 - 프로젝트별 현재 상태와 대표 검증 경로는 [`docs/status-matrix.md`](docs/status-matrix.md)에서 한눈에 확인한다.
+- `blog/`는 `notion/` 대체제가 아니라, 실제 코드와 테스트를 기준으로 재구성한 장문 공개 로그다.
 
 ## 공개 경계
 

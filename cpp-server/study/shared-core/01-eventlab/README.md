@@ -34,6 +34,10 @@ make clean && make test
 - [cpp/src/EventManager.cpp](cpp/src/EventManager.cpp)
 - [cpp/tests/test_eventlab.py](cpp/tests/test_eventlab.py)
 
+## Source-First Blog
+
+- 실제 소스와 테스트만으로 다시 읽는 chronology는 [../../blog/shared-core/01-eventlab/README.md](../../blog/shared-core/01-eventlab/README.md)에서 이어진다.
+
 ## 다음 단계
 
 - 입력을 구조화하는 답을 보려면 [../02-msglab/README.md](../02-msglab/README.md)

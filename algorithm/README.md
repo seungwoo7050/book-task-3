@@ -52,4 +52,5 @@
 - [docs/project-catalog.md](docs/project-catalog.md): 53개 프로젝트 전체 카탈로그
 - [docs/verification-matrix.md](docs/verification-matrix.md): canonical verify command와 최신 확인일
 - [docs/curriculum-map.md](docs/curriculum-map.md): 왜 이 순서로 문제를 배치했는지 설명하는 커리큘럼 맵
+- [study/blog/README.md](study/blog/README.md): Gold 14개 프로젝트의 code-first blog series 인덱스
 - [docs/migration-template.md](docs/migration-template.md): 새 프로젝트나 재정리 라운드에 쓰는 질문형 템플릿

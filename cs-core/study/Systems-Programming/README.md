@@ -10,6 +10,8 @@
 | [`malloclab`](malloclab/README.md) | explicit free list allocator와 `realloc` 경계 구현 | `c/src/mm.c`, `cpp/src/mm.cpp`, `docs/` | [`problem`](malloclab/problem/README.md), [`c`](malloclab/c/README.md), [`cpp`](malloclab/cpp/README.md) | `public verified` |
 | [`proxylab`](proxylab/README.md) | concurrent HTTP proxy와 in-memory cache 구현 | `c/src/proxy.c`, `cpp/src/proxy.cpp`, `tests/` | [`problem`](proxylab/problem/README.md), [`c`](proxylab/c/README.md), [`cpp`](proxylab/cpp/README.md) | `public verified` |
 
+코드 기반 재구성 blog 시리즈는 [`../blog/Systems-Programming/README.md`](../blog/Systems-Programming/README.md)에서 모아 보고, 프로젝트별 진입점은 [Malloc Lab](../blog/Systems-Programming/malloclab/00-series-map.md), [Proxy Lab](../blog/Systems-Programming/proxylab/00-series-map.md), [Shell Lab](../blog/Systems-Programming/shlab/00-series-map.md) 에서 바로 읽을 수 있다.
+
 ## 권장 순서
 
 1. [`shlab`](shlab/README.md)

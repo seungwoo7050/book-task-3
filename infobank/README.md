@@ -13,6 +13,8 @@
 
 ```text
 infobank/
+├── blog/
+│   └── projects/
 ├── projects/
 │   ├── 01-mcp-recommendation-demo/
 │   │   ├── problem/
@@ -41,6 +43,7 @@ infobank/
 ## 공용 문서
 
 - [`docs/README.md`](./docs/README.md): 전역 문서 인덱스
+- [`blog/README.md`](./blog/README.md): `notion/` 없이 현재 소스와 테스트만으로 다시 읽은 source-first blog index
 - [`docs/catalog/path-migration-map.md`](./docs/catalog/path-migration-map.md): 이전 경로와 새 경로 대응표
 - [`docs/curriculum/project-selection-rationale.md`](./docs/curriculum/project-selection-rationale.md): 왜 두 과제를 이렇게 재구성했는지
 - [`docs/curriculum/curriculum-map.md`](./docs/curriculum/curriculum-map.md): stage와 capstone 전체 맵

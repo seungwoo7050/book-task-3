@@ -1,6 +1,6 @@
 # README Contract
 
-이 저장소의 README는 GitHub 첫 화면에서 `무슨 문제를 풀었는가`, `이 레포의 답이 어디 있는가`, `어떻게 검증하는가`, `더 긴 노트는 어디에 있는가`를 바로 찾게 하는 공개 표면이다. 긴 reasoning과 디버깅 이력은 `docs/`와 `notion/`으로 내리고, README는 길찾기 계약을 유지한다.
+이 저장소의 README는 GitHub 첫 화면에서 `무슨 문제를 풀었는가`, `이 레포의 답이 어디 있는가`, `어떻게 검증하는가`, `더 긴 노트는 어디에 있는가`를 바로 찾게 하는 공개 표면이다. 긴 reasoning과 디버깅 이력은 `docs/`, `notion/`, `blog/`로 내리고, README는 길찾기 계약을 유지한다.
 
 ## 루트 README
 - 저장소가 다루는 문제군
@@ -29,6 +29,7 @@
 - `python/README.md`, `cpp/README.md`: 이 폴더의 역할, 먼저 볼 파일, 기준 명령, 현재 범위, 남은 약점
 - `docs/README.md`: 이 폴더의 역할, 먼저 볼 파일, 기준 명령, 현재 범위, 남은 약점
 - `notion/README.md`: 공개 노트 인덱스와 읽는 순서만 보여 주며, 프로젝트 엔트리포인트 역할은 하지 않는다.
+- `blog/README.md`와 `blog/<track>/<project>/00-series-map.md`: chronological public learning log 인덱스. 현재 algorithm Gold 시리즈는 `code/docs/git` 기준 reconstruction variant를 허용한다.
 
 ## 언어 정책
 - 설명 문장과 authored code comment는 한국어를 기본으로 쓴다.

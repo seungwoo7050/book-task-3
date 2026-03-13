@@ -34,6 +34,10 @@ make clean && make test
 - [cpp/src/Parser.cpp](cpp/src/Parser.cpp)
 - [cpp/tests/test_parser.cpp](cpp/tests/test_parser.cpp)
 
+## Source-First Blog
+
+- 실제 소스와 테스트만으로 다시 읽는 chronology는 [../../blog/shared-core/02-msglab/README.md](../../blog/shared-core/02-msglab/README.md)에서 이어진다.
+
 ## 다음 단계
 
 - parser 결과를 실제 상태 전이와 합치는 답은 [../../irc-track/01-roomlab/README.md](../../irc-track/01-roomlab/README.md)

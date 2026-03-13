@@ -34,6 +34,10 @@ make clean && make test
 - [cpp/src/MatchEngine.cpp](cpp/src/MatchEngine.cpp)
 - [cpp/tests/test_ticklab.cpp](cpp/tests/test_ticklab.cpp)
 
+## Source-First Blog
+
+- 실제 소스와 테스트만으로 다시 읽는 chronology는 [../../blog/game-track/01-ticklab/README.md](../../blog/game-track/01-ticklab/README.md)에서 이어진다.
+
 ## 다음 단계
 
 - 네트워크를 붙인 capstone은 [../02-arenaserv/README.md](../02-arenaserv/README.md)
