@@ -1,39 +1,41 @@
 # 03 Index Filter 시리즈 맵
 
-이 시리즈는 Database Internals 트랙의 3번째 프로젝트 `03 Index Filter`를 따라간다. Bloom filter와 sparse index를 붙여 point lookup이 전체 SSTable 스캔으로 떨어지지 않도록 만듭니다. 기능 목록보다 먼저, 어떤 순서로 경계를 고정했는지 읽는 쪽에 무게를 두었다.
+이 프로젝트는 앞선 슬롯들이 "어떻게 안전하게 저장할 것인가"를 붙잡았다면, 이제는 "어떻게 덜 읽고 찾을 것인가"로 질문을 옮긴다. 읽을 때도 Bloom filter와 sparse index를 따로 외우기보다 `negative lookup을 빨리 거르고, positive lookup은 작은 block만 읽는다`는 두 단계 최적화를 먼저 붙드는 편이 정확하다.
 
 ## 먼저 보고 갈 질문
 
-- Bloom filter를 직렬화·복원할 수 있어야 합니다.
-- 정렬된 key-offset 스트림에서 sparse index를 생성해야 합니다.
+- miss를 전체 SSTable scan 없이 끝내려면 Bloom filter가 어떤 역할을 해야 하는가?
+- hit일 때도 왜 전체 data section을 읽지 않고 bounded block만 읽게 되는가?
+- footer metadata는 filter와 index를 어떻게 다시 찾아오게 만드는가?
 
 ## 읽는 순서
 
-1. [10-chronology-scope-and-surface.md](10-chronology-scope-and-surface.md) — 테스트 이름과 파일 배치부터 훑으면서 문제의 테두리를 다시 좁히는 글
-2. [20-chronology-core-invariants.md](20-chronology-core-invariants.md) — 핵심 함수와 상태 전이에서 invariant가 실제로 어디서 잠기는지 따라가는 글
-3. [30-chronology-verification-and-boundaries.md](30-chronology-verification-and-boundaries.md) — 테스트와 demo를 다시 돌려 약속 범위와 남는 한계를 정리하는 글
+1. [10-chronology-scope-and-surface.md](10-chronology-scope-and-surface.md)
+   테스트와 문제 정의를 다시 보며 이 슬롯의 초점이 "정확도"보다 "bytes read 경계"라는 점을 먼저 잡는다.
+2. [20-chronology-core-invariants.md](20-chronology-core-invariants.md)
+   `BloomFilter`, `SparseIndex`, `SSTable.write/load/get_with_stats()`가 lookup 비용을 어디서 줄이는지 본다.
+3. [30-chronology-verification-and-boundaries.md](30-chronology-verification-and-boundaries.md)
+   pytest, demo, 보조 재실행으로 bloom reject, bounded scan, footer 복원이 실제로 어떤 숫자로 보이는지 정리한다.
 
 ## 재검증 명령
 
 ```bash
-PYTHONPATH=src .venv/bin/python -m pytest
-PYTHONPATH=src .venv/bin/python -m index_filter
+cd /Users/woopinbell/work/book-task-3/database-systems/python/database-internals/projects/03-index-filter
+PYTHONPATH=src python3 -m pytest
+PYTHONPATH=src python3 -m index_filter
 ```
 
-## 이번 시리즈가 근거로 삼은 파일
+## 이번 시리즈의 근거
 
-- `database-systems/python/database-internals/projects/03-index-filter/src/index_filter/table.py`
-- `database-systems/python/database-internals/projects/03-index-filter/tests/test_index_filter.py`
 - `database-systems/python/database-internals/projects/03-index-filter/README.md`
 - `database-systems/python/database-internals/projects/03-index-filter/problem/README.md`
 - `database-systems/python/database-internals/projects/03-index-filter/docs/README.md`
+- `database-systems/python/database-internals/projects/03-index-filter/docs/concepts/bloom-filter-sizing.md`
+- `database-systems/python/database-internals/projects/03-index-filter/docs/concepts/sparse-index-scan.md`
+- `database-systems/python/database-internals/projects/03-index-filter/src/index_filter/table.py`
 - `database-systems/python/database-internals/projects/03-index-filter/src/index_filter/__main__.py`
+- `database-systems/python/database-internals/projects/03-index-filter/tests/test_index_filter.py`
 
 ## 보조 메모
 
-작업 메모가 꼭 필요할 때만 [_evidence-ledger.md](_evidence-ledger.md)와 [_structure-outline.md](_structure-outline.md)를 보면 된다. 공개 시리즈는 `00 -> 10 -> 20 -> 30`만 따라가면 충분하다.
-
-## Git Anchor
-
-- `2026-03-13 abeead6 docs: TRACK 1 에대한 blog/ 작업 1차 완료`
-- `2026-03-11 bbb6673 Track 1에 대한 전반적인 개선 완료`
+작업 메모는 [_evidence-ledger.md](_evidence-ledger.md)와 [_structure-outline.md](_structure-outline.md)에 남긴다. 공개 시리즈는 `00 -> 10 -> 20 -> 30`만 읽어도 충분하다.

@@ -1,101 +1,62 @@
-# 30 03 Index Filter를 다시 돌려 보며 검증 신호와 경계를 정리하기
+# 30 다시 돌려 보기: filter와 index가 실제로 얼마나 덜 읽게 만드는가
 
-이 시리즈의 마지막 글이다. 테스트와 demo를 다시 돌려, 앞에서 읽은 규칙이 실제 통과 신호와 어디에서 만나는지 확인한다.
+마지막으로 확인할 건 theory가 아니라 숫자다. Bloom filter와 sparse index는 설명만으로는 쉽게 과장된다. 실제로 몇 바이트를 읽고, 어떤 경우에 0바이트로 끝나는지 다시 봐야 현재 경계가 보인다.
 
-## Phase 3 — 검증 신호와 한계를 확인하는 구간
+## Phase 3-1. pytest는 정확도보다 비용 감소 계약을 잡는다
 
-이번 글에서는 먼저 테스트가 남긴 회귀 신호를 다시 읽고, 이어서 demo가 공개하는 표면과 README가 남겨 둔 한계를 함께 정리한다.
+이번 재실행에서 pytest는 `4 passed, 1 warning in 0.04s`였다. 경고는 앞선 두 슬롯과 같은 `pytest_asyncio` deprecation이라 프로젝트 핵심과는 무관했다.
 
-### Session 1 — 테스트가 남긴 회귀 신호 다시 보기
+테스트가 잠그는 건 네 가지다.
 
-이 구간에서 먼저 붙잡으려 한 것은 테스트 명령을 다시 돌려 핵심 invariant가 실제 회귀 신호로 남아 있는지 확인하는 것이었다. 처음 읽을 때는 pass 수치만 확인하면 충분할 거라고 생각했다.
+- Bloom filter는 false negative가 없어야 한다
+- false positive rate는 3% 이하여야 한다
+- sparse index는 기대 block range를 찾아야 한다
+- SSTable lookup은 bloom reject와 bounded scan을 둘 다 드러내야 한다
 
-그런데 `PYTHONPATH=src .venv/bin/python -m pytest`를 다시 실행하고, 어떤 테스트가 있는지 이미 알고 있는 상태에서 pass 신호를 다시 읽었다. 특히 `4 passed`가 이번 판단을 굳혀 줬다.
+즉 이 프로젝트의 검증 축은 "정확히 읽었는가"보다 "덜 읽으면서도 맞게 찾았는가"다.
 
-변경 단위:
-- `database-systems/python/database-internals/projects/03-index-filter/tests/test_index_filter.py`
+## Phase 3-2. demo는 bounded scan의 감각을 한 줄로 보여 준다
 
-CLI:
-
-```bash
-$ PYTHONPATH=src .venv/bin/python -m pytest
-============================= test session starts ==============================
-platform darwin -- Python 3.12.6, pytest-9.0.2, pluggy-1.6.0
-rootdir: /Users/woopinbell/work/book-task-3/database-systems/python/database-internals/projects/03-index-filter
-configfile: pyproject.toml
-collected 4 items
-
-tests/test_index_filter.py ....                                          [100%]
-
-============================== 4 passed in 0.04s ===============================
-```
-
-검증 신호:
-- `4 passed`
-- `test_sstable_bloom_reject_and_bounded_scan`가 실제로 회귀 테스트 묶음 안에 남아 있다는 점이 중요했다.
-
-핵심 코드:
-
-```python
-def test_sstable_bloom_reject_and_bounded_scan(tmp_path):
-    table = SSTable(tmp_path / "index.sst", 8)
-    records = [(fmt_key(index), f"value-{fmt_key(index)}") for index in range(64)]
-    table.write(records)
-
-    value, ok, stats, _ = table.get_with_stats("missing-key")
-    assert ok is False
-    assert value is None
-    assert stats.bloom_rejected is True
-    assert stats.bytes_read == 0
-```
-
-왜 여기서 판단이 바뀌었는가:
-
-`test_sstable_bloom_reject_and_bounded_scan`는 구현의 뒷부분에서 생길 수 있는 붕괴 지점을 문장보다 정확하게 고정한다. pass 숫자보다 더 중요했던 건, 어떤 경계가 계속 회귀 테스트로 남아 있느냐였다.
-
-이번 구간에서 새로 이해한 것:
-- 테스트는 단순 성공 여부보다, 어떤 invariant를 공개적으로 약속하는지 보여 주는 문서에 가깝다.
-
-다음으로 넘긴 질문:
-- demo entry point를 다시 실행해 테스트보다 얇은 표면에서 무엇을 보여 주는지 확인한다.
-
-### Session 2 — demo가 공개하는 표면과 한계 정리하기
-
-여기서 가장 먼저 확인한 것은 demo 출력과 README의 한계를 함께 읽어, 공개 표면과 내부 경계를 분리한다. 처음에는 demo는 테스트의 축약판일 뿐이라고 생각했다.
-
-하지만 실제로는 `PYTHONPATH=src .venv/bin/python -m index_filter`를 다시 실행해 마지막 한 줄을 확인하고, README의 `한계와 확장` bullet과 나란히 읽었다. 결정적으로 방향을 잡아 준 신호는 demo 핵심 줄: `{'found': True, 'value': 'value-k023', 'bytes_read': 176}`.
-
-변경 단위:
-- `database-systems/python/database-internals/projects/03-index-filter/src/index_filter/__main__.py`
-
-CLI:
+demo entry point를 다시 돌리면 이런 출력이 나온다.
 
 ```bash
-$ PYTHONPATH=src .venv/bin/python -m index_filter
+cd /Users/woopinbell/work/book-task-3/database-systems/python/database-internals/projects/03-index-filter
+PYTHONPATH=src python3 -m index_filter
+```
+
+```text
 {'found': True, 'value': 'value-k023', 'bytes_read': 176}
 ```
 
-검증 신호:
-- demo 핵심 줄: `{'found': True, 'value': 'value-k023', 'bytes_read': 176}`
-- 경계 메모: 현재 범위 밖: learned index와 adaptive filter는 포함하지 않습니다.
-- 경계 메모: 현재 범위 밖: range query 최적화와 block cache 연동은 다음 단계 확장으로 남깁니다.
+이 한 줄에서 중요한 건 `bytes_read`다. 전체 data section을 다 읽지 않았다는 감각을 가장 빠르게 보여 준다. 이 demo는 false positive rate나 footer offset까지는 드러내지 않지만, lookup 최적화의 결과를 밖으로 노출하는 최소 표면 역할은 충분히 한다.
 
-핵심 코드:
+## Phase 3-3. 보조 재실행이 footer와 block range를 더 선명하게 보여 줬다
 
-```python
-from .table import demo
+이번 Todo에서는 demo 외에도 한 번 더 파일을 직접 확인했다.
 
+- footer magic: `SIF1`
+- data size: `1024`
+- bloom offset: `1024`
+- index offset: `1110`
+- missing key stats: `bloom_rejected=True`, `bytes_read=0`
+- hit key stats: `bytes_read=128`, `block_range=(256, 384)`
 
-if __name__ == "__main__":
-    demo()
-```
+이 숫자들이 의미하는 건 명확하다.
 
-왜 여기서 판단이 바뀌었는가:
+1. metadata는 footer를 통해 복원된다.
+2. miss는 filter에서 즉시 잘리면 실제 data read가 없다.
+3. hit여도 data section 전체가 아니라 선택된 block만 읽는다.
 
-demo entry point는 내부 구현을 전부 보여 주지는 않지만, 독자가 처음 마주치는 공개 표면을 결정한다. 테스트가 invariant를 지키는 장치라면, demo는 그중 무엇을 밖으로 보여 줄지 고르는 자리였다.
+즉 이 슬롯은 "index가 있다"가 아니라 "negative path와 positive path가 서로 다른 비용 절감 경로를 가진다"는 사실을 파일 구조 수준으로 보여 준다.
 
-이번 구간에서 새로 이해한 것:
-- `Bloom Filter Sizing`에서 정리한 요점처럼, Bloom filter는 false negative가 없어야 하고, false positive는 허용 가능한 수준으로만 남아야 한다. 이 프로젝트는 레거시와 같은 식을 사용한다.
+## Phase 3-4. 지금 상태에서 비워 둔 것
 
-다음으로 넘긴 질문:
-- 이 프로젝트 이후에는 다음 트랙/다음 슬롯으로 넘어가더라도, 지금 고정한 invariant를 더 큰 저장 엔진이나 분산 경로 안에서 다시 만날 수 있다.
+현재 구현은 교육용으로 충분히 선명하지만, production read path라고 보긴 어렵다.
+
+- hash 함수는 단순 SHA-256 기반이고, docs 설명과 완전히 같지 않다.
+- false positive rate는 deterministic upper bound가 아니라 test-sampled empirical bound다.
+- range query 최적화가 없다.
+- block cache가 없다.
+- `get_with_stats()`의 네 번째 반환값은 아직 항상 `None`이다.
+
+그래도 이 프로젝트가 중요한 이유는 분명하다. 앞선 two slots가 "어떻게 쓰고 보존할 것인가"를 고정했다면, 이 슬롯은 처음으로 "읽기 비용을 어떻게 줄일 것인가"를 byte-level stats와 함께 보여 주기 때문이다. 이후 buffer pool이나 더 복잡한 read path로 넘어갈 때 필요한 감각이 바로 여기서 생긴다.

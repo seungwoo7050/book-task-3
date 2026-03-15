@@ -1,9 +1,53 @@
-# 07 Buffer Pool — Evidence Ledger
+# Evidence Ledger
 
-기존 `blog/` 초안은 입력에서 제외하고, `README`, `problem/`, `docs/`, 실제 구현 파일, 테스트, 재검증 CLI만으로 chronology를 다시 세웠다.
+## Primary sources
 
-| 순서 | 시간 표지 | 당시 목표 | 변경 단위 | 처음 가설 | 실제 조치 | CLI | 검증 신호 | 핵심 코드 앵커 | 새로 배운 것 | 다음 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Phase 1 | 프로젝트 범위를 tests와 README로 다시 좁힌다 | `database-systems/go/database-internals/projects/07-buffer-pool/README.md`, `database-systems/go/database-internals/projects/07-buffer-pool/tests/buffer_pool_test.go` | 구현이 너무 작아서 단순 API 연습에 가까울 거라고 봤다. | 파일 목록과 테스트 이름을 먼저 훑어 문제의 중심을 다시 잡았다. | `find internal tests cmd -type f | sort`<br>`rg -n "^func Test" tests` | `TestLRUOrderingAndDelete`까지 테스트 이름을 훑고 나니, 이 프로젝트의 중심이 단순 기능 추가가 아니라 `FetchPage` 주변의 invariant를 고정하는 일이라는 게 보였다. | `TestFetchPageFromDisk` | `LRU Eviction`에서 정리한 요점처럼, doubly-linked list와 hash map을 조합하면 O(1) get/put/evict가 가능하다. | `FetchPage`와 `UnpinPage`가 실제로 어떤 순서 제약을 만드는지 다시 본다. |
-| 2 | Phase 2 | 핵심 상태 전이와 invariant를 코드에서 확인한다 | `database-systems/go/database-internals/projects/07-buffer-pool/internal/bufferpool/buffer_pool.go`의 `FetchPage` | `FetchPage`만 보면 충분할 거라고 생각했다. | `FetchPage`와 `UnpinPage`를 함께 읽어 write/read ordering을 맞췄다. | `rg -n "^(type|func) " internal cmd`<br>`rg -n "FetchPage|UnpinPage" internal cmd` | `FetchPage`와 `UnpinPage`가 같은 상태를 다른 방향에서 고정한다는 점이 드러났다. | `FetchPage` | `Pin And Dirty`에서 정리한 요점처럼, pin count가 0보다 큰 page는 eviction 대상이 될 수 없다. | 테스트와 demo를 다시 실행해 이 invariant가 실제 검증 신호와 맞물리는지 확인한다. |
-| 3 | Phase 3 | 실제 검증 명령으로 pass 신호를 다시 본다 | `database-systems/go/database-internals/projects/07-buffer-pool/tests/buffer_pool_test.go`와 `database-systems/go/database-internals/projects/07-buffer-pool/cmd/buffer-pool/main.go` | 테스트만 통과하면 경계까지 충분히 설명할 수 있을 거라고 봤다. | pytest/go test와 demo를 모두 다시 돌려, 테스트가 잡는 범위와 demo가 보여주는 표면을 분리했다. | `GOWORK=off go test ./...`<br>`GOWORK=off go run ./cmd/buffer-pool` | go test ok, 7 tests; demo 핵심 줄은 `page-1`였다. | `TestLRUOrderingAndDelete` | `Pin And Dirty`에서 정리한 요점처럼, pin count가 0보다 큰 page는 eviction 대상이 될 수 없다. | 현재 범위 밖: concurrent latch, lock manager, asynchronous IO는 포함하지 않습니다. |
+- [`problem/README.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/07-buffer-pool/problem/README.md)
+- [`README.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/07-buffer-pool/README.md)
+- [`docs/README.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/07-buffer-pool/docs/README.md)
+- [`docs/concepts/lru-eviction.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/07-buffer-pool/docs/concepts/lru-eviction.md)
+- [`docs/concepts/pin-and-dirty.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/07-buffer-pool/docs/concepts/pin-and-dirty.md)
+- [`internal/bufferpool/buffer_pool.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/07-buffer-pool/internal/bufferpool/buffer_pool.go)
+- [`tests/buffer_pool_test.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/07-buffer-pool/tests/buffer_pool_test.go)
+- [`tests/lru_cache_test.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/07-buffer-pool/tests/lru_cache_test.go)
+- [`cmd/buffer-pool/main.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/07-buffer-pool/cmd/buffer-pool/main.go)
+
+## Re-run commands
+
+```bash
+cd /Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/07-buffer-pool
+GOWORK=off go test ./...
+GOWORK=off go run ./cmd/buffer-pool
+```
+
+추가 재실행:
+
+```bash
+tmpfile=$(mktemp ./tmpcheck-XXXX.go)
+# project root 안에 임시 Go 파일을 만들어 dirty flush와 pinned eviction failure를 직접 확인
+GOWORK=off go run "$tmpfile"
+rm -f "$tmpfile"
+```
+
+## Observed outputs
+
+- `go test`: `ok   study.local/go/database-internals/projects/07-buffer-pool/tests (cached)`
+- demo:
+  - `page-1`
+- extra snippet:
+  - `disk_after_flush modified`
+  - `pinned_evict_error true`
+
+## Source-grounded claims
+
+- cache hit increments `PinCount` on the same page object.
+- dirty state is set through `UnpinPage(..., true)`.
+- dirty pages are written back on `FlushPage()` or eviction.
+- pinned eviction currently fails fast instead of searching another victim.
+
+## Explicit boundaries
+
+- No concurrency control
+- No async IO
+- No advanced replacer fallback
+- No page allocation/growth management

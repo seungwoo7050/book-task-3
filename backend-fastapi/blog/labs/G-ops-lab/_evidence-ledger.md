@@ -1,40 +1,36 @@
-# G-ops-lab Evidence Ledger
+# G-ops-lab evidence ledger
 
 ## 독립 프로젝트 판정
+
 - 판정: 처리 대상
-- 이유: 프로젝트 README와 docs가 운영성 자체를 독립 주제로 잡고, `tests/integration/test_ops.py`, workflow matrix, Compose probe가 서로 다른 검증 축을 제공한다.
-- 프로젝트 질문: 학습용 백엔드에서도 liveness, readiness, metrics, CI, target shape 문서를 어디까지 분리해서 보여줘야 하는가.
-- 주의: finer-grained 구현 순서는 commit granularity가 거칠어서 README, docs, code surface, tests 의존 순서를 바탕으로 복원했다. 실제 날짜가 확인되는 부분은 git log와 검증 보고서에만 한정했다.
+- 이유: [`problem/README.md`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/G-ops-lab/problem/README.md) 가 live/ready, metrics, Compose/CI, AWS target shape 문서를 독립된 성공 기준으로 두고, 통합 테스트와 smoke가 그 surface 일부를 직접 고정한다.
+- 프로젝트 질문: 작은 백엔드에서도 어떤 운영 질문을 별도 표면으로 드러내야 하는가.
+- 복원 방식: 기존 `blog/` 본문은 근거에서 제외하고, `problem/README`, source code, tests, 실제 재실행 CLI만 사용했다.
 
-## 소스 인벤토리
-- `labs/G-ops-lab/README.md`
-- `labs/G-ops-lab/problem/README.md`
-- `labs/G-ops-lab/docs/README.md`
-- `labs/G-ops-lab/fastapi/README.md`
-- `labs/G-ops-lab/fastapi/Makefile`
-- `labs/G-ops-lab/fastapi/compose.yaml`
-- `backend-fastapi/.github/workflows/labs-fastapi.yml`
-- `backend-fastapi/docs/verification-report.md`
-- `backend-fastapi/labs/G-ops-lab/fastapi/app/api/v1/routes/ops.py`
-- `backend-fastapi/labs/G-ops-lab/fastapi/tests/integration/test_ops.py`
-- `git log -- backend-fastapi/labs/G-ops-lab`
+## 근거 인벤토리
 
-## 프로젝트 표면 요약
-- 문제 요약: 기능은 단순해도, 백엔드가 어떻게 살아 있는지 확인하고 어떻게 배포 가정을 설명할지 정리해야 합니다. health check, readiness, metrics, CI, 배포 문서는 개발용 API와 별개의 운영성 문제입니다. live / ready health endpoint가 구분되어야 합니다. 요청 수 같은 최소 metrics surface가 있어야 합니다. 상세 성공 기준과 제외 범위는 problem/README.md에 둡니다.
-- 성공 기준: live / ready health endpoint가 구분되어야 합니다. 요청 수 같은 최소 metrics surface가 있어야 합니다. 로컬 Compose 부팅과 CI 명령이 정리되어야 합니다. AWS target shape가 실제 배포 완료처럼 과장되지 않고 문서로 설명되어야 합니다.
-- 설계 질문: liveness와 readiness는 왜 분리해야 하는가 "최소 metrics"는 어떤 운영 질문에 답해야 하는가 배포 문서는 어디까지 사실이고 어디부터 가정인가
-- 실제 검증 surface: make lint make test make smoke docker compose up --build 실행과 환경 설명은 fastapi/README.md에서 다룹니다. 마지막 기록된 실제 검증 결과는 ../../docs/verification-report.md에 있습니다.
+- [`README.md`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/G-ops-lab/README.md)
+- [`problem/README.md`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/G-ops-lab/problem/README.md)
+- [`docs/README.md`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/G-ops-lab/docs/README.md)
+- [`docs/aws-deployment.md`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/G-ops-lab/docs/aws-deployment.md)
+- [`fastapi/README.md`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/G-ops-lab/fastapi/README.md)
+- [`fastapi/Makefile`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/G-ops-lab/fastapi/Makefile)
+- [`app/api/v1/routes/health.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/G-ops-lab/fastapi/app/api/v1/routes/health.py)
+- [`app/api/v1/routes/ops.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/G-ops-lab/fastapi/app/api/v1/routes/ops.py)
+- [`app/main.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/G-ops-lab/fastapi/app/main.py)
+- [`app/runtime.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/G-ops-lab/fastapi/app/runtime.py)
+- [`app/core/logging.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/G-ops-lab/fastapi/app/core/logging.py)
+- [`app/api/deps.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/G-ops-lab/fastapi/app/api/deps.py)
+- [`tests/conftest.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/G-ops-lab/fastapi/tests/conftest.py)
+- [`tests/integration/test_ops.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/G-ops-lab/fastapi/tests/integration/test_ops.py)
+- [`tests/smoke.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/G-ops-lab/fastapi/tests/smoke.py)
 
-## 시간 표지
-- 2026-03-11 bbb6673 Track 1에 대한 전반적인 개선 완료
-- 2026-03-10 a3edce2 docs: enhance backend-fastapi
-- 2026-03-09 7813150 docs(notion): front-react, backend-fastapi
-- 2026-03-09 73372bd Add project: backend-fastapi, backend-spring, cpp-server
+## Chronology ledger
 
-## Chronology Ledger
-| 순서 | 시간 표지 | 당시 목표 | 변경 단위 | 처음 가설 | 실제 조치 | CLI | 검증 신호 | 핵심 코드 앵커 | 새로 배운 것 | 다음 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Phase 1, 2026-03-09 add project commit 73372bd를 기준으로 복원 | 학습용 API에서도 운영 기준을 따로 설명할 수 있게 만들기 | README.md, problem/README.md, docs/README.md | health endpoint 하나만 있어도 운영성 설명이 가능할 것 | live/ready, request-count metrics, JSON 로그, CI, AWS target shape 문서를 같은 프로젝트 범위로 묶음 | README의 `make run`, `docker compose up --build` | 문제 정의가 live/ready 분리와 metrics, Compose/CI, target shape를 모두 성공 기준으로 둠 | problem/README.md 성공 기준 | 운영성은 기능 부록이 아니라 별도 질문 묶음으로 봐야 설명이 가능하다 | health와 metrics route 구현 |
-| 2 | Phase 2, route/runtime 의존성으로 복원 | liveness와 readiness를 같은 상태로 보지 않는 surface 만들기 | app/api/v1/routes/health.py, app/api/v1/routes/ops.py, app/runtime.py | 단순 `/health` 하나면 충분할 것 | `/health/live`, `/ops/ready`, `/ops/metrics`를 분리하고 metrics registry를 앱 state로 둠 | `make test` | metrics route가 Prometheus text 형식으로 `app_requests_total`을 반환 | app/api/v1/routes/ops.py::metrics | 운영 질문은 '살아 있는가'와 '요청을 받을 준비가 됐는가'를 다르게 묻는다 | 테스트와 workflow로 surface 고정 |
-| 3 | Phase 3, 테스트와 CI surface 정리 | ops route가 문서뿐 아니라 회귀 테스트와 workflow로 유지되게 만들기 | tests/integration/test_ops.py, .github/workflows/labs-fastapi.yml, tools/compose_probe.sh | metrics 출력은 사람이 눈으로 확인하면 충분할 것 | live/ready/metrics를 통합 테스트로 묶고, workflow matrix에 workspace를 등록 | `make test`, `make smoke` | test가 live 200, ready 200, metrics text에 `app_requests_total` 포함 여부를 확인 | tests/integration/test_ops.py::test_live_ready_and_metrics | 운영성도 endpoint를 만든 뒤엔 자동 검증 표면이 함께 있어야 금세 썩지 않는다 | 실제 재실행 기록과 문서 구분 정리 |
-| 4 | 2026-03-09 재검증 + 2026-03-11 track polish | 운영 문서가 실제 사실과 target shape를 혼동하지 않도록 닫기 | docs/verification-report.md, docs/aws-deployment.md, fastapi/README.md | AWS target shape 문서를 쓰면 배포가 된 것처럼 읽힐 수 있다 | compile, lint, test, smoke, Compose probe는 사실로 적고, AWS는 문서 수준 target shape로 구분 | `python3 -m compileall app tests`, `make lint`, `make test`, `make smoke`, `./tools/compose_probe.sh labs/G-ops-lab/fastapi 8005` | 2026-03-09 기준 재검증 통과, docs가 실제 배포 완료를 주장하지 않음 | docs/verification-report.md G-ops-lab 항목 | 운영성 글에서는 '확인된 사실'과 '배치 가정'을 분리해서 써야 과장이 줄어든다 | capstone 통합 구조로 이동 |
+| 순서 | 당시 목표 | 변경 단위 | 실제로 확인한 것 | CLI | 검증 신호 | 다음으로 넘어간 이유 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 운영성이 구현 부록이 아니라 독립 질문 묶음인지 먼저 판정한다 | `README.md`, `problem/README.md`, `docs/README.md`, `docs/aws-deployment.md` | live/ready, metrics, Compose/CI, target-shape 문서가 함께 성공 기준으로 제시되지만, AWS 문서는 실제 배포 사실이 아님을 명시한다 | `sed -n '1,240p' backend-fastapi/labs/G-ops-lab/README.md`<br>`sed -n '1,320p' backend-fastapi/labs/G-ops-lab/docs/aws-deployment.md` | 이 랩의 중심은 기능보다 운영 표면과 문서 경계다 | 이제 route와 runtime이 그 표면을 실제로 어떻게 분리하는지 내려가 봐야 한다 |
+| 2 | live, dependency-ready, config-ready, metrics를 어떤 surface로 나누는지 확인한다 | `health.py`, `ops.py`, `main.py`, `runtime.py` | `health/live`는 process liveness, `health/ready`는 dependency probe, `ops/ready`는 구성 요약, `ops/metrics`는 request counter 노출을 맡는다 | `rg -n 'live|ready|metrics|request_count|middleware' backend-fastapi/labs/G-ops-lab/fastapi/app` | "ready"도 하나의 의미가 아니라 dependency readiness와 config summary로 나뉜다 | 다음은 logging과 in-memory metrics 모델이 어떤 최소 운영 신호를 남기는지 본다 |
+| 3 | 최소 metrics와 JSON logging의 현재 한계를 고정한다 | `runtime.py`, `logging.py`, `main.py` middleware | request counter는 인메모리 state라 재시작 시 초기화되고, JSON 로그는 timestamp/level/logger/message만 남긴다 | `rg -n 'request_count|JsonFormatter|increment' backend-fastapi/labs/G-ops-lab/fastapi/app` | full stack이 아니라 "최소 운영 질문에 답하는 표면"만 남긴 구현이다 | 이제 테스트와 smoke가 이 surface를 실제로 고정하는지 본다 |
+| 4 | ops surface가 문서가 아니라 회귀선인지 확인한다 | `test_ops.py`, `smoke.py` | 통합 테스트는 live, `ops/ready`, `ops/metrics`를 호출하고, smoke는 `/health/live`를 빠르게 확인한다 | `sed -n '1,320p' backend-fastapi/labs/G-ops-lab/fastapi/tests/integration/test_ops.py` | 운영성도 endpoint가 아니라 자동 검증 표면과 같이 있어야 유지된다 | 마지막으로 오늘 셸에서 공식 진입점과 보조 재실행이 어디서 갈리는지 닫는다 |
+| 5 | 현재 재검증 상태를 최신 값으로 닫는다 | `Makefile`, `health.py`, 현재 셸 환경 | lint는 E501에서, 기본 `pytest`는 path에서, `make smoke`는 interpreter에서 막히지만, `PYTHONPATH` 보조 재실행은 테스트와 smoke가 통과한다 | `make lint`<br>`make test`<br>`make smoke`<br>`PYTHONPATH=. pytest`<br>`PYTHONPATH=. python -m tests.smoke` | `make lint`는 `health.py` E501, `make test`는 `No module named 'app'`, `make smoke`는 `No module named 'fastapi'`, 보조 재실행은 통과한다 | 문서는 ops surface가 살아 있다는 사실과 기본 진입점 drift를 함께 남겨야 한다 |

@@ -11,6 +11,12 @@ GitHub 표면에서 바로 읽히게 하는 데 있다.
 3. stage README
 4. 각 프로젝트의 `problem/README.md -> 구현 README -> docs/README.md -> notion/README.md`
 
+## 문제지 빠른 진입
+
+- [problem-subject-essential/README.md](problem-subject-essential/README.md): 모바일 핵심 경로로 먼저 읽을 문제지
+- [problem-subject-elective/README.md](problem-subject-elective/README.md): essential에 포함되지 않은 나머지 문제지
+- [problem-subject-capstone/README.md](problem-subject-capstone/README.md): 대표 종합 과제만 따로 모은 문제지
+
 ## 핵심 커리큘럼
 
 | 단계 | 프로젝트 | 문제 질문 | 내가 만든 답 | 검증 명령 | 상태 |

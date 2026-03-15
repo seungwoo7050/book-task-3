@@ -26,6 +26,12 @@
 
 가장 짧은 입문 경로는 `01 -> 02 -> 03`이고, dependency triage와 capstone은 그 다음 단계입니다.
 
+## 서버 문제지 빠른 진입
+
+- [problem-subject-essential/README.md](problem-subject-essential/README.md): 서버 공통 필수 기준으로 다시 고른 문제지
+- [problem-subject-elective/README.md](problem-subject-elective/README.md): essential에 포함되지 않은 나머지 문제지
+- [problem-subject-capstone/README.md](problem-subject-capstone/README.md): 판단 기준을 다시 묶는 종합 과제 문제지
+
 ## 빠른 검증
 
 아래 명령은 모두 레포 루트 기준입니다.

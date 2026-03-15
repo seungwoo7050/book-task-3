@@ -1,38 +1,28 @@
-# 04 Raft Lite 시리즈 맵
+# 04 Raft Lite
 
-DDIA Distributed Systems 트랙의 4번째 슬롯인 `04 Raft Lite`에서는 leader election, vote rule, AppendEntries consistency, majority commit이 드러나는 작은 동기 Raft 시뮬레이터를 구현합니다. 이 시리즈는 결과 요약보다 실제 구현 순서가 어디서 선명해지는지 보여 주는 데 초점을 둔다.
+## 이 랩의 실제 초점
 
-## 먼저 보고 갈 질문
+이 프로젝트는 Raft 전체를 구현하지 않는다. 대신 leader election, vote rule, AppendEntries consistency, current-term majority commit, higher-term step-down이라는 핵심 규칙만 남긴 작은 동기 시뮬레이터다. randomized timeout 대신 노드별 고정 election TTL을 써서 테스트를 결정적으로 만들고, persistent log나 snapshotting은 일부러 비워 둔다.
 
-- leader election과 단일 leader 보장을 재현해야 합니다.
-- up-to-date log vote rule을 구현해야 합니다.
+즉 이 랩의 핵심은 consensus 시스템을 완성했다는 데 있지 않고, term과 log 규칙이 leader 교체와 commit safety를 어떻게 만들고 있는지 source-first로 드러내는 데 있다.
 
-## 읽는 순서
+이번 시리즈는 기존 blog를 입력 근거로 쓰지 않고 [`problem/README.md`](/Users/woopinbell/work/book-task-3/database-systems/go/ddia-distributed-systems/projects/04-raft-lite/problem/README.md), [`raft.go`](/Users/woopinbell/work/book-task-3/database-systems/go/ddia-distributed-systems/projects/04-raft-lite/internal/raft/raft.go), [`raft_test.go`](/Users/woopinbell/work/book-task-3/database-systems/go/ddia-distributed-systems/projects/04-raft-lite/tests/raft_test.go), [`main.go`](/Users/woopinbell/work/book-task-3/database-systems/go/ddia-distributed-systems/projects/04-raft-lite/cmd/raft-lite/main.go), 그리고 2026-03-14 재실행 결과만으로 다시 썼다.
 
-1. [10-chronology-scope-and-surface.md](10-chronology-scope-and-surface.md) — 테스트 이름과 파일 배치부터 훑으면서 문제의 테두리를 다시 좁히는 글
-2. [20-chronology-core-invariants.md](20-chronology-core-invariants.md) — 핵심 함수와 상태 전이에서 invariant가 실제로 어디서 잠기는지 따라가는 글
-3. [30-chronology-verification-and-boundaries.md](30-chronology-verification-and-boundaries.md) — 테스트와 demo를 다시 돌려 약속 범위와 남는 한계를 정리하는 글
+## 이번에 붙드는 질문
 
-## 재검증 명령
+- follower가 candidate로 바뀌고 leader가 되기까지 term과 vote는 어떻게 움직이는가
+- AppendEntries consistency check는 log mismatch를 어떻게 다루는가
+- majority commit은 왜 current term entry에만 적용되는가
+- higher term을 본 leader는 언제 어떻게 step-down하는가
 
-```bash
-GOWORK=off go test ./...
-GOWORK=off go run ./cmd/raft-lite
-```
+## 문서 지도
 
-## 이번 시리즈가 근거로 삼은 파일
+- [10-chronology-scope-and-surface.md](/Users/woopinbell/work/book-task-3/database-systems/blog/go/ddia-distributed-systems/04-raft-lite/10-chronology-scope-and-surface.md): 문제 범위, node/cluster 표면, demo 결과를 시간순으로 정리한다.
+- [20-chronology-core-invariants.md](/Users/woopinbell/work/book-task-3/database-systems/blog/go/ddia-distributed-systems/04-raft-lite/20-chronology-core-invariants.md): election cycle, vote up-to-date rule, AppendEntries consistency, majority commit, higher-term step-down을 소스 기준으로 해부한다.
+- [30-chronology-verification-and-boundaries.md](/Users/woopinbell/work/book-task-3/database-systems/blog/go/ddia-distributed-systems/04-raft-lite/30-chronology-verification-and-boundaries.md): go test와 demo, 추가 재실행을 묶어 현재 검증 범위와 한계를 정리한다.
+- [_evidence-ledger.md](/Users/woopinbell/work/book-task-3/database-systems/blog/go/ddia-distributed-systems/04-raft-lite/_evidence-ledger.md): 근거 파일과 재실행 명령, 관찰값을 남긴다.
+- [_structure-outline.md](/Users/woopinbell/work/book-task-3/database-systems/blog/go/ddia-distributed-systems/04-raft-lite/_structure-outline.md): 문서 구조 선택 이유와 버린 접근을 적는다.
 
-- `database-systems/go/ddia-distributed-systems/projects/04-raft-lite/internal/raft/raft.go`
-- `database-systems/go/ddia-distributed-systems/projects/04-raft-lite/tests/raft_test.go`
-- `database-systems/go/ddia-distributed-systems/projects/04-raft-lite/README.md`
-- `database-systems/go/ddia-distributed-systems/projects/04-raft-lite/problem/README.md`
-- `database-systems/go/ddia-distributed-systems/projects/04-raft-lite/docs/README.md`
-- `database-systems/go/ddia-distributed-systems/projects/04-raft-lite/cmd/raft-lite/main.go`
+## 지금 기준의 결론
 
-## 보조 메모
-
-작업 메모가 꼭 필요할 때만 [_evidence-ledger.md](_evidence-ledger.md)와 [_structure-outline.md](_structure-outline.md)를 보면 된다. 공개 시리즈는 `00 -> 10 -> 20 -> 30`만 따라가면 충분하다.
-
-## Git Anchor
-
-- `2026-03-11 bbb6673 Track 1에 대한 전반적인 개선 완료`
+이 랩은 Go 분산 시스템 트랙에서 처음으로 consensus 규칙을 드러낸다. persistent log, membership change, snapshotting, real transport는 아직 없다. 대신 election, vote up-to-date, append consistency, majority commit, step-down 규칙은 분명하게 드러난다.

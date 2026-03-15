@@ -1,26 +1,23 @@
-# Web Proxy blog
+# Web Proxy Blog
 
-`Web Proxy` 문서 묶음은 클라이언트 요청, origin fetch, cache 저장을 프록시 안에서 어떻게 이어 붙였는가?라는 질문에 답하기 위해 준비한 읽기 경로다. 결과만 요약하지 않고, 어디서부터 구현이나 분석이 무거워졌는지 따라갈 수 있게 구성했다.
+이 문서 묶음은 `web-proxy`를 "중간 서버"보다 "한 프로세스 안에서 client와 server 역할을 동시에 수행하는 구조 연습"으로 다시 읽는다. 현재 구현은 절대 URL을 origin request로 재구성하고, origin 응답을 그대로 캐시 파일에 저장한 뒤 다음 요청에 재사용한다.
 
-이 프로젝트의 본문은 `클라이언트 요청을 중계하고 파일 기반 캐시로 재사용하는 간단한 HTTP 프록시 구현입니다.`라는 한 줄 설명을 실제 파일, CLI, 테스트 신호로 다시 풀어 쓰는 데 초점을 둔다.
+이번 재작성은 `problem/README.md`, `python/README.md`, `python/src/web_proxy.py`, `python/tests/test_web_proxy.py`, 그리고 2026-03-14 재실행한 `make -C .../problem test`만 사용했다.
 
-## 이 폴더에서 기대할 수 있는 것
+## 읽는 순서
 
-- 문제 경계와 읽는 순서: [00-series-map.md](00-series-map.md)
-- 단계별 근거 압축본: [01-evidence-ledger.md](01-evidence-ledger.md)
-- 글의 편집 개요: [02-structure.md](02-structure.md)
-- 실제 서사형 기록: [10-development-timeline.md](10-development-timeline.md)
+1. [`00-series-map.md`](./00-series-map.md)
+2. [`10-development-timeline.md`](./10-development-timeline.md)
+3. [`01-evidence-ledger.md`](./01-evidence-ledger.md)
+4. [`02-structure.md`](./02-structure.md)
 
-## 근거로 사용한 source set
+## 이번에 다시 확인한 검증 상태
 
-- 프로젝트 루트: `study/01-Application-Protocols-and-Sockets/web-proxy`
-- 정식 검증 명령: `make -C study/01-Application-Protocols-and-Sockets/web-proxy/problem test`
-- 구현 파일: `study/01-Application-Protocols-and-Sockets/web-proxy/python/src`
-- 테스트 파일: `study/01-Application-Protocols-and-Sockets/web-proxy/python/tests`
-- 제외한 입력: 기존 `study/blog/**`, `notion/**`, `notion-archive/**`
+- 정식 검증: `make -C network-atda/study/01-Application-Protocols-and-Sockets/web-proxy/problem test`
+- 결과: origin fetch pass, second fetch cache check pass, body non-empty pass
 
-## 먼저 읽을 순서
+## 지금 남기는 한계
 
-1. `00-series-map.md`에서 질문과 근거를 먼저 잡는다.
-2. `01-evidence-ledger.md`에서 세 단계 흐름을 짧게 본다.
-3. `10-development-timeline.md`에서 코드/trace와 CLI를 따라 내려간다.
+- `Cache-Control`/TTL 없음
+- `HTTPS CONNECT` 미지원
+- 캐시 동시성 제어 단순

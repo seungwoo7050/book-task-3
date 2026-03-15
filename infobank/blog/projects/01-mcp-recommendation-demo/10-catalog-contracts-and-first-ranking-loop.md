@@ -1,14 +1,10 @@
 # catalog contract와 첫 ranking loop
 
-이 글은 `01-mcp-recommendation-demo` 시리즈의 첫 번째 본문이다. 여기서 따라갈 질문은 단순하다. 왜 이 프로젝트는 추천 알고리즘부터 시작하지 않고, catalog와 manifest 계약부터 먼저 세웠을까? 이 질문을 이해하면 이후의 rerank, compare, release gate도 훨씬 자연스럽게 읽힌다.
+이 프로젝트를 ranking demo로만 읽으면 가장 중요한 출발점을 놓치게 된다. 실제 코드와 stage catalog는 추천 알고리즘보다 먼저 "무엇을 추천할 수 있는가"의 계약을 세운다. 이 선택이 왜 중요했는지는 `shared/src/catalog.ts`와 `recommendation-service.ts`를 나란히 보면 분명해진다. baseline scoring이 사용하는 almost every field가 catalog metadata에서 출발하기 때문이다.
 
-앞선 `00-series-map.md`가 전체 경로를 보여 줬다면, 이 글은 그중에서도 `v0 -> v1` 구간에 집중한다. 즉 추천 시스템의 "출발점"이 어디였는지, 그리고 그 출발점이 왜 나중의 proof와 운영 흐름까지 받쳐 주게 되었는지를 본다.
+## 처음 세운 것은 점수 함수가 아니라 나중의 모든 판단이 기대는 metadata였다
 
-먼저 기준이 되는 문서는 `docs/stage-catalog.md`다. 이 문서에 `01-selection-rubric-and-eval-contract`, `02-registry-catalog-and-manifest-schema`, `03-differentiation-and-exposure-design`, `04-selector-baseline-and-reranking`이 차례로 적혀 있다는 건, 이 프로젝트가 추천 결과를 바로 뽑기보다 먼저 평가 기준과 catalog 구조를 고정했다는 뜻이다. 좋은 점은 이 순서가 코드에서도 그대로 보인다는 데 있다.
-
-그 출발점이 드러나는 파일이 `shared/src/catalog.ts`다. 여기서는 추천 후보 하나가 이름과 설명만 가진 항목이 아니라, runtime, compatibility, operational, exposure 메타데이터까지 함께 품고 있다.
-
-아래 블록이 중요한 이유는, 나중에 `compatibility gate`, `release gate`, 한국어 explanation, offline eval이 모두 이 메타데이터를 다시 읽기 때문이다. 다시 말해 이 프로젝트의 첫 구현은 "점수를 잘 매기는 함수"가 아니라, 나중의 모든 판단이 기대게 될 공용 계약이었다.
+`shared/src/catalog.ts`의 entry는 단순한 name/description 목록이 아니다. `runtime`, `compatibility`, `operational`, `freshnessScore`, `exposure.userFacingSummaryKo`까지 함께 갖고 있다.
 
 ```ts
 compatibility: {
@@ -22,9 +18,18 @@ exposure: {
   userFacingSummaryKo: "코드 변경 이유와 근거를 바로 보여주는 저장소 분석기",
 ```
 
-이제 baseline recommendation으로 내려가면, `node/src/services/recommendation-service.ts`가 이 metadata를 실제 점수와 설명으로 바꾸는 역할을 한다. 여기서 baseline은 query를 토큰화하고, capability, category, locale, compatibility, maturity, freshness를 한 번에 계산한다.
+이 구조가 중요한 이유는 나중 단계의 거의 모든 판단이 여기를 다시 읽기 때문이다.
 
-이 블록이 중요한 이유는 점수 그 자체보다, "왜 이 후보가 올라왔는가"를 나중에 설명할 수 있게 만든다는 점에 있다. 사용자가 보는 추천 이유와 offline evaluation이 같은 데이터를 근거로 삼는 구조가 여기서 시작된다.
+- baseline recommendation은 capability/locale/compatibility를 읽는다.
+- compatibility gate는 runtime/semver/testedClientVersions를 읽는다.
+- release gate는 release candidate와 docs/artifact completeness를 읽지만, 그 전제에는 already validated manifest/candidate 관계가 있다.
+- operator surface는 결국 같은 release candidate와 compare/gate 결과를 job으로 재실행한다.
+
+즉 catalog contract는 추천 결과의 재료가 아니라, 전체 proof chain의 공용 언어다.
+
+## baseline은 점수만 만드는 게 아니라 설명 가능한 trace를 남긴다
+
+`recommendation-service.ts`는 query를 tokenization한 뒤 `intent`, `capability`, `category`, `locale`, `compatibility`, `maturity`, `freshness`로 점수를 나눈다.
 
 ```ts
 const breakdown = {
@@ -35,36 +40,38 @@ const breakdown = {
   compatibility: calculateCompatibilityScore(request, entry),
 ```
 
-특히 좋았던 점은 score만 남기지 않고 `reasons`와 `explanationKo`를 같이 만든 것이다. 그래서 `shared/src/eval.ts`의 offline case도 top-k 적중률만 보는 데서 끝나지 않고, explanation completeness까지 함께 본다. "추천 품질"과 "설명 가능성"이 따로 자라지 않고 같은 metadata를 읽는 구조라는 뜻이다.
+좋았던 점은 total score만 반환하지 않는다는 것이다. 같은 함수가 `reasons`와 `buildExplanationKo()`를 통해 한국어 explanation을 만든다. 그래서 추천 품질과 설명 가능성이 갈라지지 않는다. `eval`이 `explanationCompleteness`를 별도 지표로 보는데도, 그 기반 데이터는 이미 baseline trace에 들어 있다.
 
-그다음 단계가 `node/src/services/rerank-service.ts`다. 여기서 candidate는 baseline top-k를 버리지 않고, usage CTR, accept rate, operator feedback, explanation quality, freshness를 더해 순서를 다시 조정한다.
+이 구조 덕분에 2026-03-14 재실행한 `pnpm eval`도 단순 accuracy report가 아니었다. 출력은 `top3Recall 0.9583333333333334`, `explanationCompleteness 1`, `forbiddenHitRate 0`였다. 즉 지금 시스템은 추천 적중률과 설명 completeness를 같이 pass하는 상태다.
 
-아래 식이 바로 그 전환점이다. 여기서부터 추천 시스템은 정적인 schema demo를 넘어, 실제 사용 신호를 반영해 우선순위를 바꾸는 구조를 갖게 된다.
+## rerank는 새 모델보다 usage signal을 deterministic하게 붙이는 쪽에 가깝다
+
+`rerank-service.ts`는 baseline top-k를 완전히 버리지 않는다. baseline 결과를 가져온 다음 CTR, accept rate, feedback average, explanation quality, freshness를 더한 uplift로 score를 다시 만든다.
 
 ```ts
 const uplift =
   ctr * 14 + acceptRate * 18 + feedbackAverage * 5 + explanationQuality * 4 + freshness * 2;
 ```
 
-중요한 이유는 이 프로젝트가 품질 개선을 "새 모델을 붙였다"가 아니라 "실사용 신호가 어떤 방식으로 순위를 밀어 올렸는가"로 설명하게 만들었기 때문이다. `docs/compare-report.md`가 baseline을 `weighted-baseline-v0`, candidate를 `signal-rerank-v1`로 부르는 것도 같은 맥락이다.
+여기서 중요한 건 "candidate model"이 black-box가 아니라 여전히 explainable weighted rerank라는 점이다. baseline이 어떤 metadata에서 출발했는지, usage signal이 얼마나 score를 밀어 올렸는지, explanationKo가 왜 더 강화되었는지 모두 trace 문장으로 남는다.
 
-이 흐름은 실제 CLI 출력에서도 그대로 확인된다.
+즉 이 프로젝트의 첫 ranking loop는 모델 sophistication보다 auditability를 우선한다. 나중에 release gate가 compare uplift를 읽을 수 있는 것도, rerank가 opaque하지 않기 때문이다.
+
+## 이번 단계의 검증 신호
 
 ```bash
+cd /Users/woopinbell/work/book-task-3/infobank/projects/01-mcp-recommendation-demo/capstone/v2-submission-polish
+pnpm migrate
 pnpm seed
 pnpm test
 pnpm eval
 ```
 
-```text
-Seeded 12 catalog entries, 12 eval cases, usage signals, feedback, experiments, and release candidates.
-node tests: 9 passed
-react tests: 1 passed
-top3Recall: 0.9583333333333334
-explanationCompleteness: 1
-forbiddenHitRate: 0
-```
+재실행 결과는 다음과 같았다.
 
-이 출력이 증명하는 것은 단순히 "정답률이 높다"가 아니다. 더 중요한 건 seeded catalog와 offline eval case가 같은 계약을 읽고 있고, 설명 completeness까지 포함해 같은 기준으로 검증되고 있다는 점이다. 그래서 이후에 release gate가 docs 파일 존재 여부까지 검사하더라도, 그 출발점이 흔들리지 않는다.
+- `pnpm migrate`: `No changes detected`
+- `pnpm seed`: catalog 12개, eval case 12개, usage signal, feedback, experiments, release candidates 적재
+- `pnpm test`: node 9 passed, react 1 passed
+- `pnpm eval`: `top3Recall 0.9583333333333334`, `explanationCompleteness 1`, `forbiddenHitRate 0`
 
-다음 글에서는 이 ranking loop가 compare, compatibility, release gate, artifact export까지 어떻게 넓어졌는지 본다. 즉 추천 결과를 `운영 승인 가능한 릴리즈 후보`로 바꾸는 과정으로 넘어간다.
+이 단계의 결론은 단순하다. 이 프로젝트의 첫 승부는 추천 순위를 멋지게 바꾸는 데 있지 않았다. release proof까지 버틸 metadata contract와 explanation trace를 먼저 세운 데 있었다.

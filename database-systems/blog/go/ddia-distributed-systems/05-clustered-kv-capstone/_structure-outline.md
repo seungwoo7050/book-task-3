@@ -1,27 +1,21 @@
-# 05 Clustered KV Capstone — Structure Outline
+# Structure Outline
 
-최종 시리즈는 chronology를 매끈하게 재배열하지 않고, 범위 파악 -> 핵심 invariant -> 재검증과 경계의 순서를 유지한다.
+## Core thesis
 
-## Planned Files
+이 capstone의 가치는 "분산 KV를 완성했다"가 아니라, routing, append-only persistence, follower catch-up, restart replay를 한 요청 경로로 묶어 보여 준다는 데 있다.
 
-- `00-series-map.md`: 프로젝트 질문, 읽는 순서, source-of-truth 파일, 재검증 명령을 잡는 지도
-- `10-chronology-scope-and-surface.md`: 파일 구조와 테스트 이름을 근거로 처음 가설이 바뀌는 구간
-- `20-chronology-core-invariants.md`: `RouteShard`와 `shardRing`가 실제로 invariant를 고정하는 구간
-- `30-chronology-verification-and-boundaries.md`: `go test`/`pytest`와 demo 출력으로 경계를 확정하는 구간
+## Writing plan
 
-## Article Goals
+1. problem 문서로 범위를 먼저 줄인다.
+2. `NewCluster`와 `RouteShard`로 정적 topology와 write target 선택을 설명한다.
+3. `Store.Apply`와 `SyncFollower`로 append/replication invariant를 설명한다.
+4. `RestartNode`와 임시 boundary check로 recovery 범위를 좁혀 적는다.
+5. test, demo, on-disk log를 함께 보여 주며 검증과 한계를 마무리한다.
 
-1. `10-chronology-scope-and-surface.md`
-   범위를 `tests/`와 README에서 어떻게 다시 좁혔는지 보여 준다.
-   코드 앵커: `TestWriteRoutesToLeaderAndReplicates`, `RouteShard`
-   CLI: `find internal tests cmd -type f | sort`, `rg -n "^func Test" tests`
+## Must-keep evidence
 
-2. `20-chronology-core-invariants.md`
-   핵심 invariant가 `RouteShard`와 `shardRing` 사이에서 어떻게 고정되는지 보여 준다.
-   코드 앵커: `RouteShard`, `shardRing`
-   CLI: `rg -n "^(type|func) " internal cmd`, `rg -n "RouteShard|shardRing" internal cmd`
-
-3. `30-chronology-verification-and-boundaries.md`
-   테스트와 demo를 모두 남겨, pass 신호와 공개 표면을 구분해 설명한다.
-   코드 앵커: `TestRestartNodeLoadsFromDisk`, `main.go`
-   CLI: GOWORK=off go test ./...; GOWORK=off go run ./cmd/clustered-kv
+- `NewCluster`의 static replica group construction
+- `Store.Apply`의 sequential offset rule
+- `SyncFollower`의 `Watermark()+1`
+- demo output과 `.demo-data` log files
+- `restart_without_sync_ok=false`

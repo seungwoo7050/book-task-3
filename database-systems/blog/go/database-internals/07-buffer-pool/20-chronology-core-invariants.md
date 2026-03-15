@@ -1,131 +1,53 @@
-# 20 07 Buffer Pool에서 진짜 중요한 상태 전이만 붙잡기
+# Core Invariants
 
-이 시리즈의 가운데 글이다. 기능 목록을 다시 적기보다, 규칙이 실제 코드에서 언제 강제되는지 보여 주는 데 초점을 둔다.
+## 1. page identity는 마지막 `:` 기준으로 file path와 page number를 자른다
 
-## Phase 2 — 핵심 상태 전이를 붙잡는 구간
+`parsePageID()`는 `strings.LastIndex(pageID, ":")`로 마지막 콜론을 찾고, 앞부분은 path, 뒷부분은 page number로 해석한다.
 
-이번 글에서는 핵심 함수 두 곳을 따라가며 같은 invariant가 어디서 고정되고, 다른 각도에서 어떻게 반복되는지 본다.
+즉 file path 안에 디렉터리 구분자가 있어도 마지막 `:`만 page boundary로 쓴다. buffer pool의 모든 fetch/write-back은 이 parsing contract 위에 선다.
 
-### Session 1 — FetchPage에서 invariant가 잠기는 지점 보기
+## 2. cache hit는 page object를 재사용하면서 pin count만 올린다
 
-이번 세션의 목표는 `FetchPage`가 어떤 입력을 받아 어떤 상태를 고정하는지 분해하는 것이었다. 초기 가설은 `FetchPage` 하나를 이해하면 나머지 흐름도 거의 자동으로 따라올 거라고 생각했다.
-
-막상 다시 펼쳐 보니 `rg -n "FetchPage|UnpinPage" internal cmd`로 핵심 함수 위치를 다시 잡고, `FetchPage`가 문제 정의의 첫 번째 bullet과 정확히 맞물리는지 확인했다. 특히 `FetchPage` 안에서 상태가 한 번에 굳는지, 아니면 보조 구조로 넘겨지는지가 프로젝트의 설명 밀도를 갈랐다.
-
-변경 단위:
-- `database-systems/go/database-internals/projects/07-buffer-pool/internal/bufferpool/buffer_pool.go`의 `FetchPage`
-
-CLI:
-
-```bash
-$ rg -n "FetchPage|UnpinPage" internal cmd
-cmd/buffer-pool/main.go:28:	page, err := pool.FetchPage(dataFile + ":1")
-internal/bufferpool/buffer_pool.go:41:func (pool *BufferPool) FetchPage(pageID string) (*Page, error) {
-internal/bufferpool/buffer_pool.go:79:func (pool *BufferPool) UnpinPage(pageID string, isDirty bool) {
-```
-
-검증 신호:
-- `FetchPage` 안에서 상태가 한 번에 굳는지, 아니면 보조 구조로 넘겨지는지가 프로젝트의 설명 밀도를 갈랐다.
-- `고정 크기 page를 메모리에 캐시하는 기본 구조를 익힙니다.`
-
-핵심 코드:
+`FetchPage()`의 첫 분기는 cached hit다.
 
 ```go
-func (pool *BufferPool) FetchPage(pageID string) (*Page, error) {
-	if cached := pool.cache.Get(pageID); cached != nil {
-		page := cached.(*Page)
-		page.PinCount++
-		return page, nil
-	}
-
-	filePath, pageNumber, err := parsePageID(pageID)
-	if err != nil {
-		return nil, err
-	}
-	handle, err := pool.getHandle(filePath)
-	if err != nil {
-		return nil, err
-```
-
-왜 여기서 판단이 바뀌었는가:
-
-`FetchPage`는 이 프로젝트에서 규칙이 가장 먼저 굳는 지점을 보여 준다. 테스트가 요구한 첫 번째 조건이 실제 코드 규칙으로 바뀌는 순간을 여기서 확인할 수 있었다.
-
-이번 구간에서 새로 이해한 것:
-- `Pin And Dirty`에서 정리한 요점처럼, pin count가 0보다 큰 page는 eviction 대상이 될 수 없다.
-
-다음으로 넘긴 질문:
-- `UnpinPage`까지 읽어야 비로소 이 프로젝트가 '쓰는 방법'만이 아니라 '읽고 복원하는 방법'까지 같이 고정하는지 판단할 수 있다.
-
-### Session 2 — UnpinPage로 같은 규칙 다시 확인하기
-
-이 구간에서 먼저 붙잡으려 한 것은 `UnpinPage`가 `FetchPage`와 어떤 짝을 이루는지 확인하는 것이었다. 처음 읽을 때는 `UnpinPage`는 단순 보조 함수일 거라고 생각했다.
-
-그런데 두 번째 앵커를 읽고 나니, 실제로는 `FetchPage`가 만든 상태를 외부에서 관찰 가능하게 만드는 규칙이 여기 있었다. 특히 `UnpinPage`는 테스트의 뒤쪽 시나리오를 설명하는 열쇠였다.
-
-변경 단위:
-- `database-systems/go/database-internals/projects/07-buffer-pool/internal/bufferpool/buffer_pool.go`의 `UnpinPage`
-
-CLI:
-
-```bash
-$ rg -n "^(type|func) " internal cmd
-cmd/buffer-pool/main.go:11:func main() {
-cmd/buffer-pool/main.go:33:func must(err error) {
-internal/lrucache/lru_cache.go:3:type node struct {
-internal/lrucache/lru_cache.go:10:type LRUCache struct {
-internal/lrucache/lru_cache.go:18:func New(capacity int) *LRUCache {
-internal/lrucache/lru_cache.go:31:func (cache *LRUCache) Get(key string) any {
-internal/lrucache/lru_cache.go:40:func (cache *LRUCache) Put(key string, value any) *Entry {
-internal/lrucache/lru_cache.go:65:func (cache *LRUCache) Delete(key string) bool {
-internal/lrucache/lru_cache.go:76:func (cache *LRUCache) Has(key string) bool {
-internal/lrucache/lru_cache.go:81:func (cache *LRUCache) Keys() []string {
-internal/lrucache/lru_cache.go:91:func (cache *LRUCache) Size() int {
-internal/lrucache/lru_cache.go:95:type Entry struct {
-internal/lrucache/lru_cache.go:100:func (cache *LRUCache) remove(item *node) {
-internal/lrucache/lru_cache.go:107:func (cache *LRUCache) addToFront(item *node) {
-internal/lrucache/lru_cache.go:114:func (cache *LRUCache) moveToFront(item *node) {
-internal/bufferpool/buffer_pool.go:15:type Page struct {
-internal/bufferpool/buffer_pool.go:22:type BufferPool struct {
-internal/bufferpool/buffer_pool.go:29:func New(maxPages, pageSize int) *BufferPool {
-internal/bufferpool/buffer_pool.go:41:func (pool *BufferPool) FetchPage(pageID string) (*Page, error) {
-internal/bufferpool/buffer_pool.go:79:func (pool *BufferPool) UnpinPage(pageID string, isDirty bool) {
-internal/bufferpool/buffer_pool.go:93:func (pool *BufferPool) FlushPage(pageID string) error {
-internal/bufferpool/buffer_pool.go:109:func (pool *BufferPool) FlushAll() error {
-internal/bufferpool/buffer_pool.go:118:func (pool *BufferPool) Close() error {
-internal/bufferpool/buffer_pool.go:131:func (pool *BufferPool) getHandle(filePath string) (*fileio.FileHandle, error) {
-internal/bufferpool/buffer_pool.go:144:func (pool *BufferPool) writePage(page *Page) error {
-internal/bufferpool/buffer_pool.go:159:func parsePageID(pageID string) (string, int, error) {
-```
-
-검증 신호:
-- `UnpinPage`는 테스트의 뒤쪽 시나리오를 설명하는 열쇠였다.
-- 특히 `TestLRUOrderingAndDelete` 같은 이름이 왜 필요한지, 이 함수에서야 연결이 됐다.
-
-핵심 코드:
-
-```go
-func (pool *BufferPool) UnpinPage(pageID string, isDirty bool) {
-	cached := pool.cache.Get(pageID)
-	if cached == nil {
-		return
-	}
-	page := cached.(*Page)
-	if page.PinCount > 0 {
-		page.PinCount--
-	}
-	if isDirty {
-		page.Dirty = true
-	}
+if cached := pool.cache.Get(pageID); cached != nil {
+    page := cached.(*Page)
+    page.PinCount++
+    return page, nil
 }
 ```
 
-왜 여기서 판단이 바뀌었는가:
+즉 같은 page를 다시 fetch하면 새로운 복사본을 만들지 않고 동일한 page object를 돌려주며 pin count를 증가시킨다. 테스트 `TestReturnCachedPage`도 page instance identity를 직접 확인한다.
 
-`UnpinPage`가 없으면 `FetchPage`의 의미도 끝까지 설명되지 않는다. 이 코드를 보고 나서야, 이 프로젝트가 단일 API 구현이 아니라 ordering / visibility / recovery 규칙을 통째로 묶는 이유를 납득할 수 있었다.
+## 3. dirty flag는 `UnpinPage(..., true)`에서만 명시적으로 올라간다
 
-이번 구간에서 새로 이해한 것:
-- `Pin And Dirty`에서 정리한 요점처럼, pin count가 0보다 큰 page는 eviction 대상이 될 수 없다.
+caller가 page를 수정했다는 신호는 `UnpinPage(pageID, isDirty)`에서 들어온다. 여기서 `isDirty=true`이면 page의 `Dirty`를 true로 바꾼다.
 
-다음으로 넘긴 질문:
-- 실제 재검증 명령을 다시 돌려, 지금까지 읽은 invariant가 테스트와 demo 출력에서 같은 모양으로 보이는지 확인한다.
+즉 buffer pool은 page bytes를 직접 감시하지 않는다. caller가 수정 사실을 신고해야 한다. docs의 [`pin-and-dirty.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/07-buffer-pool/docs/concepts/pin-and-dirty.md)가 바로 이 점을 설명한다.
+
+## 4. eviction은 LRU 후보를 받되, pinned면 되돌리고 실패한다
+
+`FetchPage()` miss path는 새 page를 `cache.Put()`으로 넣고, evicted value가 있으면 그 page를 검사한다.
+
+- `PinCount > 0`이면 eviction 불가
+- `Dirty`면 write-back 후 eviction
+
+흥미로운 점은 pinned page가 나오면 아래처럼 eviction된 page를 cache에 다시 넣고 에러를 반환한다는 것이다.
+
+```go
+if evictedPage.PinCount > 0 {
+    pool.cache.Put(evicted.Key, evictedPage)
+    return nil, errors.New("bufferpool: cannot evict pinned page")
+}
+```
+
+즉 현재 구현은 "다른 후보를 다시 찾는 replacer"가 아니라, pinned candidate를 만나면 바로 실패하는 단순 정책을 택한다.
+
+## 5. dirty write-back은 explicit flush와 eviction에서만 일어난다
+
+`FlushPage()`는 dirty가 아니면 아무것도 하지 않고, dirty면 `writePage()` 후 `Dirty=false`로 되돌린다. eviction path도 dirty page면 먼저 `writePage()`를 호출한다.
+
+추가 재실행의 `disk_after_flush modified`는 이 계약을 직접 보여 준다. 메모리에서 `"modified"`로 바꾼 bytes가 flush 후 실제 file에 기록된다.
+
+즉 현재 구현에서 dirty persistence는 background가 아니라 explicit call 또는 eviction 시점에만 발생한다.

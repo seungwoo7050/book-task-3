@@ -1,20 +1,10 @@
 # From JSX Shape To DOM Nodes
 
-React internals를 공부할 때 가장 쉽게 흐려지는 순간은 JSX를 너무 빨리 당연한 것으로 받아들이는 때다. `<div>Hello</div>` 같은 표현은 보기에는 간단하지만, 런타임이 다루려면 결국 type과 props와 children을 가진 데이터 구조로 바뀌어야 한다. 이 프로젝트는 바로 그 가장 낮은 층을 직접 만드는 단계다.
+이 프로젝트를 다시 읽으면서 가장 중요하게 보였던 건 "가상 DOM"이라는 큰 이름보다, 그 가상이라는 말이 실제로 어디서 시작되고 끝나는가였다. 여기서는 fiber도 없고 diff도 없고 scheduler도 없다. 대신 더 기초적인 질문만 남긴다. JSX-like 호출은 어떤 객체가 되고, 그 객체는 어떤 규칙으로 실제 DOM node가 되는가.
 
-흥미로운 건 여기서부터 벌써 다음 단계의 복잡도가 결정된다는 점이다. child shape를 애매하게 남겨 두면 나중의 diff와 patch도 계속 예외 처리를 떠안아야 한다. 반대로 입력을 초기에 정규화해 두면, 아래 단계는 훨씬 단순한 규칙 위에서 움직일 수 있다.
+## 첫 번째 고정점은 child를 항상 같은 shape로 만드는 일이다
 
-그래서 이 프로젝트의 중심은 "렌더러를 빨리 만든다"가 아니라 "무엇을 같은 shape로 취급할 것인가"에 있다. 텍스트도 element도 같은 VNode 인터페이스를 가지게 만들겠다는 선택이 바로 그 출발점이었다.
-
-## 구현 순서를 먼저 짚으면
-
-- `createElement()`에서 primitive child를 모두 `TEXT_ELEMENT`로 감싸 입력 shape를 통일했다.
-- `createDom()`, `updateDom()`, `render()`를 나눠 DOM 생성과 업데이트 정책을 분리했다.
-- 마지막에는 `npm run verify:vdom`으로 27개 테스트와 typecheck를 통과시켜 foundation boundary를 고정했다.
-
-## foundation 단계의 핵심은 render가 아니라 shape normalization이었다
-
-`createElement()`가 하는 일은 생각보다 단순하지만, 뒤 단계 전체를 결정한다. 문자열이나 숫자를 만날 때마다 나중에 특별 취급하지 않도록, 처음부터 `TEXT_ELEMENT`라는 VNode shape로 감싸 버린다.
+핵심 시작점은 [`ts/src/element.ts`](/Users/woopinbell/work/book-task-3/front-react/study/react-internals/01-vdom-foundations/ts/src/element.ts)다. 여기서 중요한 건 fancy abstraction이 아니라 "children은 항상 배열"이고 "primitive child는 항상 `TEXT_ELEMENT`"라는 규칙이다.
 
 ```ts
 export function createElement(
@@ -34,13 +24,24 @@ export function createElement(
 }
 ```
 
-이 한 번의 정규화가 중요한 이유는 명확하다. 이후 단계는 child가 문자열인지 숫자인지, 아니면 이미 element인지 다시 묻지 않는다. 모두 같은 `type + props.children` 인터페이스를 가진 노드로 취급할 수 있다.
+이 한 조각이 중요한 이유는 뒤 단계가 child 종류를 다시 분기하지 않아도 되게 만들기 때문이다. 문자열 `"Hello"`든 숫자 `42`든 결국 `TEXT_ELEMENT`가 되므로, renderer는 "VNode를 받는다"라는 가정만 유지하면 된다.
 
-`docs/concepts/jsx-to-vnode.md`가 primitive child를 굳이 별도 섹션으로 설명하는 것도 같은 이유다. foundation 단계의 가장 값진 선택은 런타임이 나중에 덜 고민하게 만드는 선택이다.
+하지만 여기서 React와 갈라지는 경계도 동시에 생긴다. `typeof false !== "object"`이므로 boolean child는 `String(false)`를 거쳐 `"false"` 텍스트 노드가 된다. 반대로 `typeof null === "object"`라서 `null` child는 그대로 children 배열에 남는다. 즉 이 프로젝트의 정규화 규칙은 "primitive는 전부 text로 감싼다"에 가깝지, React의 falsy child filtering과 동일하지는 않다.
 
-## DOM 생성과 업데이트를 나누자 렌더러의 성격이 분명해졌다
+테스트도 바로 이 규칙을 잠근다.
 
-다음 전환점은 `createDom()`과 `updateDom()`을 분리한 것이다. 노드를 만들고, 기존 props와 새 props를 비교해 바꾸고, 이벤트는 별도로 제거/재등록한다. 이 흐름이 나중의 diff/patch 단계가 기대할 최소 정책이 된다.
+- string child는 `TEXT_ELEMENT`
+- number child도 `TEXT_ELEMENT`
+- nested vnode는 그대로 유지
+- `props.children`은 항상 배열
+
+반대로 boolean/null child를 React처럼 special-case하는 테스트는 없다. 이 부재도 현재 범위를 보여 주는 중요한 신호다.
+
+이 정도의 정규화만 있어도 JSX가 "렌더 가능한 데이터 구조"로 바뀌는 첫 문턱은 설명 가능해진다.
+
+## 두 번째 고정점은 DOM 반영 규칙을 `updateDom` 하나에 모으는 일이다
+
+이 프로젝트가 의외로 좋은 이유는 DOM 조작을 여기저기 흩뿌리지 않는다는 점이다. [`ts/src/dom-utils.ts`](/Users/woopinbell/work/book-task-3/front-react/study/react-internals/01-vdom-foundations/ts/src/dom-utils.ts)의 `updateDom()`이 property와 event 규칙을 한곳에 모아 둔다.
 
 ```ts
 Object.keys(prevProps)
@@ -59,9 +60,26 @@ Object.keys(nextProps)
   });
 ```
 
-이 코드가 보여 주는 건 렌더러의 본질이 `appendChild`가 아니라 update policy라는 사실이다. 어떤 값은 속성 대입으로 충분하고, 어떤 값은 예전 listener를 떼고 새 listener를 다시 달아야 한다. foundation 단계에서 이 차이를 분리해 둬야 다음 단계에서 patch가 DOM-safe한 순서를 가질 수 있다.
+여기서 핵심은 두 가지다.
 
-실제 `render()`가 재귀적으로 child를 append하는 구조도 같은 맥락에서 읽힌다. 아직은 순진한 렌더러지만, 바로 그 단순함 덕분에 다음 단계에서 무엇이 부족한지 선명하게 드러난다.
+- `children`은 property set에서 제외한다.
+- event listener는 "없어졌거나 바뀐 것 제거 -> 새 것 추가" 순서로 처리한다.
+
+이 규칙 덕분에 `createDom()`은 단순히 node를 만들고 `updateDom(dom, {}, vnode.props)`만 호출하면 된다. DOM 생성과 DOM 갱신의 경계가 여기서 처음 만들어지는 셈이다. 아직 diff는 없지만, prop/event 반영 자체는 이미 하나의 규칙으로 추상화됐다.
+
+테스트도 이 부분을 꽤 촘촘하게 고정한다.
+
+- 새 property 설정
+- 옛 property 제거
+- 변경된 property 교체
+- listener 추가/삭제/교체
+- `children` key 무시
+
+즉 이 단계의 진짜 성과는 "DOM을 만들었다"가 아니라, DOM을 바꾸는 규칙을 따로 분리해 뒀다는 데 있다.
+
+## 마지막 단계는 render이지만, 아직은 재조정이 아니라 append다
+
+`render()`는 오히려 아주 단순하다.
 
 ```ts
 export function render(element: VNode, container: HTMLElement | Text): void {
@@ -77,21 +95,35 @@ export function render(element: VNode, container: HTMLElement | Text): void {
 }
 ```
 
-## 마지막에는 "여기까지가 foundation"이라는 경계를 잠갔다
+이 구현은 지금 단계의 가능성과 한계를 동시에 보여 준다.
 
-이 프로젝트의 검증은 꽤 넓다. `element.test.ts`는 child shape 정규화를, `dom-utils.test.ts`는 property set/remove와 event listener 교체를, 마지막에는 nested render를 확인한다.
+- 가능성: VNode 트리를 실제 DOM 트리로 동기 재귀 변환할 수 있다.
+- 한계: 기존 tree와 비교하지 않으므로 매번 새 DOM을 append한다.
+
+테스트에 있는 "same container에 두 번 render하면 paragraph가 두 개 된다"는 시나리오가 바로 이 경계를 드러낸다. 이건 버그라기보다, 아직 diff/commit 분리를 도입하기 전 단계라는 사실을 아주 정직하게 보여 주는 신호다.
+
+그래서 이 프로젝트를 "React clone 1단계"로 읽기보다, render pipeline의 가장 앞단 shape를 고정하는 작업으로 읽는 편이 맞다. JSX-like 입력이 객체가 되고, 그 객체가 DOM으로 바뀌는 건 성공했다. 하지만 무엇을 유지하고 무엇만 바꿀지는 아직 모른다.
+
+## 이번 검증은 shape와 경계를 둘 다 확인했다
+
+이번 Todo에서 다시 돌린 검증은 아래 셋이다.
 
 ```bash
-cd study
+npm run test:vdom
+npm run typecheck:vdom
 npm run verify:vdom
 ```
 
-2026-03-13 replay 기준으로 `vitest` 27개 테스트가 전부 통과했고, `tsc --noEmit`도 성공했다. 이 숫자가 의미하는 건 완성도가 아니라 경계다. 지금의 foundation은 어디까지 책임지고, 아직 diff도 hook도 scheduler도 없다는 사실을 테스트로 분명히 남겨 둔 것이다.
+재실행 결과는 다음과 같았다.
 
-이게 중요한 이유는 다음 단계가 바로 이 foundation 패키지를 소비하기 때문이다. `@front-react/vdom-foundations`라는 이름 자체가 "더 위 단계가 가져다 쓸 최소 surface"라는 선언이 된다.
+- `element.test.ts`와 `dom-utils.test.ts` 포함 총 27개 테스트 통과
+- `tsc --noEmit` 통과
+- verify 전체 통과
 
-## 무엇이 아직 남았는가
+이 결과가 의미하는 건 단순한 green check가 아니다. child 정규화, DOM prop/event 반영, 동기 재귀 render라는 최소 약속이 지금은 안정적으로 잠겨 있다는 뜻이다.
 
-아직 이 렌더러는 전체 트리를 동기적으로 다시 만든다. 무엇이 바뀌었는지 계산하지도 않고, DOM을 언제 건드릴지도 통제하지 않는다. 하지만 foundation 단계에서는 바로 그 결핍이 오히려 중요하다. 지금 없는 것이 분명해야 다음 단계의 목표도 분명해지기 때문이다.
+## 그래서 이 프로젝트의 진짜 역할은 다음 단계를 위한 shape 고정이다
 
-다음 프로젝트의 질문은 자연스럽다. old tree와 new tree가 있을 때, 무엇이 달라졌는지 어떻게 계산할 것인가. `02-render-pipeline`은 바로 그 지점에서 render와 commit을 분리하기 시작한다.
+여기에는 state도 없고 hook도 없고 diff도 없다. 그 대신 더 앞단의 질문을 해결한다. "렌더 가능한 트리란 무엇인가"와 "그 트리는 어떤 규칙으로 DOM이 되는가"다.
+
+다음 단계인 `02-render-pipeline`이 의미를 가지려면, 바로 이 최소 shape가 먼저 고정돼 있어야 한다. 비교 대상이 되는 tree, prop update 규칙, append-only 현재 동작이 이미 선명해야 그다음에야 diff와 commit 분리를 설명할 수 있기 때문이다.

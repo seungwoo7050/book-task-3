@@ -1,39 +1,41 @@
-# F-realtime-lab Structure Plan
+# F-realtime-lab structure plan
 
 ## 한 줄 약속
-- HTTP로는 표현되지 않는 연결 상태를 별도 모델로 만들기
+
+- 실시간 전달을 WebSocket 기술 소개가 아니라 connection lifecycle과 presence TTL이 보이는 상태 모델로 읽게 만든다.
 
 ## 독자 질문
-- presence와 알림을 다룰 때, WebSocket 연결 상태와 사용자 online 상태를 어떻게 구분할 것인가.
-- WebSocket 인증은 어디서 끝나야 하는가 presence는 왜 TTL과 heartbeat를 함께 써야 하는가 fan-out을 메모리에서 시작하고 Redis로 확장하는 경계는 어디인가
 
-## 서술 원칙
-- 기존 `blog/` 초안은 입력 근거로 사용하지 않는다.
-- 사실로 확인되는 날짜와 명령은 `git log`와 `docs/verification-report.md`에서만 가져온다.
-- finer-grained chronology는 코드/테스트 의존 순서를 바탕으로 복원했다고 명시한다.
+- 왜 이 랩은 알림 payload보다 connection state와 user presence를 먼저 구분하는가
+- WebSocket 인증이 현재 `token == user_id` 수준으로 단순화된 이유는 무엇인가
+- fan-out을 메모리 소켓 집합으로 시작하는 현재 구조는 무엇을 보여 주고 무엇을 아직 하지 않는가
+- reconnect 보조 HTTP surface는 현재 구현에서 어디까지 제공되는가
+- 현재 문서에 적힌 검증 명령은 지금 셸에서 그대로 재현되는가
+
+## 이번 Todo의 작성 원칙
+
+- 다른 lab 문장이나 구조를 가져오지 않는다.
+- 기존 `blog/` 본문은 사실 근거로 사용하지 않는다.
+- `problem/README`, source code, tests, 실제 재실행 CLI만으로 서사를 복원한다.
+- 메모리 기반 모델의 선명함과 현재 확장 한계를 둘 다 숨기지 않는다.
 
 ## 글 흐름
-1. 실시간 전달을 별도 상태 모델로 정의하기
-2. WebSocket connect와 heartbeat를 분리된 surface로 두기
-3. presence 만료와 잘못된 token을 테스트로 고정하기
-4. 2026-03-09 재검증으로 health/probe surface를 닫기
-5. 남은 범위와 다음 비교 대상 정리
 
-## Evidence Anchor
-- 주 코드 앵커: `labs/F-realtime-lab/fastapi/app/api/v1/routes/realtime.py::notifications_ws` — 연결 인증, presence 갱신, 수신 loop가 한 함수 안에서 만난다.
-- 보조 앵커: `labs/F-realtime-lab/fastapi/tests/integration/test_realtime.py::test_invalid_token_disconnects_and_presence_expires` — 잘못된 token disconnect와 TTL 만료를 실제로 보여 준다.
-- 문서 앵커: `labs/F-realtime-lab/problem/README.md`, `labs/F-realtime-lab/docs/README.md`
-- CLI 앵커:
-- `python3 -m compileall app tests`
-- `make lint`
-- `make test`
-- `make smoke`
-- `./tools/compose_probe.sh <workspace> <host-port>`
+1. 문제 정의가 실시간 메시지보다 connection model을 먼저 묻는다는 점부터 고정한다.
+2. WebSocket route와 presence HTTP surface를 나란히 두고 상태 갱신 표면 차이를 설명한다.
+3. `app.state` runtime 객체와 TTL 계산으로 현재 fan-out/presence 모델을 읽는다.
+4. invalid token disconnect, TTL expiry, WebSocket delivery를 테스트로 고정한다.
+5. 오늘 다시 돌린 CLI 결과로 현재 재현 가능 상태를 닫는다.
 
-## 글에서 강조할 개념
-- 연결 상태와 사용자 상태의 차이 다중 연결 fan-out 모델 reconnect를 고려한 보조 HTTP surface의 역할
-- WebSocket 인증 presence heartbeat와 TTL 한 사용자에 대한 다중 소켓 fan-out 테스트와 로컬 로직은 인메모리 상태를 적극적으로 활용합니다. Redis는 확장 경계로 두되, 이 랩의 핵심은 연결 모델 설명에 둡니다.
+## Evidence anchor
 
-## 끝맺음
-- 제외 범위: 완전한 broker 기반 수평 확장 구현 메시지 replay 보장 대규모 채팅 제품 수준의 방/채널 모델
-- 검증 문장: 2026-03-09에 compile, lint, test, smoke, Compose live/ready probe가 모두 통과했다.
+- 주 코드 앵커: [runtime.py](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/F-realtime-lab/fastapi/app/runtime.py)
+- 보조 코드 앵커: [realtime.py route](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/F-realtime-lab/fastapi/app/api/v1/routes/realtime.py), [main.py](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/F-realtime-lab/fastapi/app/main.py), [config.py](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/F-realtime-lab/fastapi/app/core/config.py)
+- 테스트 루프 앵커: [conftest.py](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/F-realtime-lab/fastapi/tests/conftest.py), [test_realtime.py](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/F-realtime-lab/fastapi/tests/integration/test_realtime.py), [smoke.py](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/F-realtime-lab/fastapi/tests/smoke.py)
+- CLI 앵커: `make lint`, `make test`, `make smoke`, `PYTHONPATH=. pytest`, `PYTHONPATH=. python -m tests.smoke`
+
+## 끝에서 남겨야 할 문장
+
+- 이 랩의 강점은 connection state, presence TTL, user-level fan-out을 아주 작은 인메모리 모델로 선명하게 보여 준다는 점이다.
+- 이 랩의 현재 한계는 인증이 `token == user_id`로 단순화돼 있고, Redis/DB는 핵심 전달 경로가 아니라 readiness와 확장 경계에만 남아 있으며, 2026-03-14 셸에서는 기본 `make` 진입점이 path/interpreter 문제로 바로 닫히지 않는다는 점이다.
+- 다음 랩인 `G-ops-lab`은 이 연결 모델 위에서 운영성, health, 관찰 가능성을 더 직접적으로 다루는 비교 대상으로 연결한다.

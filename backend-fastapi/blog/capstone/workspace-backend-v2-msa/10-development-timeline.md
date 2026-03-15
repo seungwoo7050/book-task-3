@@ -1,81 +1,93 @@
-# workspace-backend-v2-msa: 단일 백엔드 기준선을 MSA로 다시 풀고, 장애 복구까지 public API로 증명하기
+# workspace-backend-v2-msa 개발 타임라인
 
-이 글은 `capstone/workspace-backend-v2-msa/README.md`, `problem/README.md`, `docs/README.md`, `capstone/workspace-backend-v2-msa/fastapi/compose.yaml::__compose__`, `capstone/workspace-backend-v2-msa/fastapi/tests/test_system.py::test_v2_system_flow_and_notification_recovery`, `backend-fastapi/docs/verification-report.md`를 바탕으로 실제 구현 순서를 다시 복원한다.
+`workspace-backend-v2-msa`는 v1의 기능 목록을 나눠 담은 저장소가 아니다. 같은 협업형 도메인을 유지하면서, 단일 앱 시절엔 숨겨져 있던 브라우저 경계, DB ownership, event relay, 장애 복구를 어디서 비용으로 치르게 되는지를 보여 주는 비교판이다.
 
-v2 capstone을 읽을 때는 두 가지를 동시에 봐야 한다. 하나는 workspace-backend v1과 같은 public 협업 흐름을 gateway 아래에서 유지하는 일이고, 다른 하나는 notification-service 장애처럼 v1에는 없던 분산 실패 경로를 사실대로 드러내는 일이다. docs/README.md와 docs/verification-report.md가 둘 다 필요한 이유도 여기 있다.
+## 1. 출발점은 새 기능이 아니라 v1과의 비교 조건 유지였다
 
-## 1. v1 단일 백엔드 기준선을 다시 분해하기
-출발점은 비교다. README는 v1과 같은 public /api/v1/auth/*, /api/v1/platform/*를 유지한다고 말하면서도, 내부는 identity, workspace, notification 세 서비스와 gateway로 나뉜다고 적는다. 즉 이 프로젝트는 새 도메인을 만드는 capstone이 아니라, 같은 도메인을 다른 경계로 다시 푸는 capstone이다.
+문제 정의와 README를 먼저 보면, v2는 v1을 버리는 프로젝트가 아니다. public `/api/v1/auth/*`, `/api/v1/platform/*` route shape를 계속 유지해야 한다고 못 박고 시작한다. 즉 "사용자에게 보이는 흐름은 최대한 그대로 두고, 내부 구조만 다시 푼다"가 첫 원칙이다.
 
-## 2. gateway와 세 서비스의 runtime scope를 compose로 고정하기
-runtime scope도 그 비교를 위해 분명히 고정된다. compose에는 gateway, identity-service, workspace-service, notification-service, redis가 모두 올라오고, 각자 live healthcheck를 갖는다. gateway route는 public path를 유지하면서 내부 서비스 URL로 fan-out 하고, browser cookie와 websocket edge를 자신에게 남긴다. 여기서부터 v1과의 차이가 물리적인 runtime으로 바뀐다.
+이 선택 때문에 gateway가 가장 먼저 필요해진다. v1에서는 앱 하나가 쿠키도 들고 도메인도 들고 알림도 보냈지만, v2에선 그 브라우저 계약을 누가 계속 책임질지부터 정해야 했기 때문이다.
 
-```yaml
-services:
-  gateway:
-    build:
-      context: ./gateway
-    env_file:
-      - .env
-    environment:
-      SECRET_KEY: ${SECRET_KEY}
-      TOKEN_ISSUER: ${TOKEN_ISSUER}
-      IDENTITY_SERVICE_URL: http://identity-service:8000/api/v1
-      WORKSPACE_SERVICE_URL: http://workspace-service:8000/api/v1
-      NOTIFICATION_SERVICE_URL: http://notification-service:8000/api/v1
-      REDIS_URL: ${REDIS_URL}
-      REDIS_PUBSUB_CHANNEL: ${REDIS_PUBSUB_CHANNEL}
-    depends_on:
-      identity-service:
-        condition: service_healthy
-      workspace-service:
-        condition: service_healthy
-      notification-service:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    ports:
-      - "8015:8000"
-    command: >
-      sh -c "python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
-    volumes:
-```
+## 2. gateway는 reverse proxy가 아니라 브라우저 계약을 보존하는 adapter가 되었다
 
-이 장면은 gateway, identity, workspace, notification, redis가 비교 가능한 runtime을 어떻게 이루는지 보여 준다.
+`fastapi/gateway/app/api/v1/routes/auth.py`를 보면 gateway는 register, verify-email, login, google-login, refresh, logout route를 계속 public path에 둔다. 하지만 실제 auth 작업은 모두 `identity-service /internal/auth/*`로 위임한다. gateway는 응답의 `access_token`, `refresh_token`, `csrf_token`을 받아 브라우저 쿠키에 다시 심고, CSRF 검사는 gateway에서만 수행한다.
 
-## 3. system test로 public flow와 recovery를 한 번에 묶기
-system test는 그 차이를 가장 잘 보여 주는 증거다. owner는 로컬 회원가입/검증/로그인을 거치고, collaborator는 Google 로그인으로 들어온다. 둘은 gateway만 호출해 workspace, invite, project, task, comment 흐름을 끝낸다. 그리고 notification-service를 일부러 멈춘 뒤 두 번째 comment를 남겨 drain이 503으로 실패하는지, 복구 뒤 recovery drain으로 websocket 알림을 다시 받는지 확인한다. 이 시나리오는 v2가 단순 분해가 아니라 장애 경로까지 public flow로 끌어왔다는 사실을 보여 준다.
+이 구조가 중요해지는 이유는 내부 서비스가 브라우저 문맥을 몰라도 되기 때문이다. 내부 서비스는 cookie나 CSRF header를 해석하지 않고, bearer claims와 JSON payload만 읽는다. public API를 유지하면서도 내부 경계를 단순화하는 핵심 조치가 바로 여기 있다.
 
-```python
-def test_v2_system_flow_and_notification_recovery() -> None:
-    with compose_stack() as project_name:
-        owner = httpx.Client(base_url="http://127.0.0.1:8015", timeout=10.0)
-        collaborator = httpx.Client(base_url="http://127.0.0.1:8015", timeout=10.0)
+## 3. DB ownership을 지키려면 workspace-service는 identity DB를 보지 못한다
 
-        register = owner.post(
-            "/api/v1/auth/register",
-            json={"handle": "owner", "email": "owner@example.com", "password": "super-secret-1"},
-        )
-        assert register.status_code == 200
-        verify = owner.post("/api/v1/auth/verify-email", json={"token": _latest_token("owner@example.com")})
-        assert verify.status_code == 200
-```
+v1에서는 한 DB 안에서 membership과 user를 자연스럽게 연결할 수 있었다. 하지만 v2의 성공 기준은 각 서비스가 자기 DB만 읽어야 한다는 것이다. 그래서 `workspace-service`의 `Membership` 모델은 `user_id`뿐 아니라 `user_email`을 직접 들고 있고, invite accept도 identity DB join 없이 claims의 `email`과 invite의 `email`을 비교해 처리한다.
 
-테스트는 public API, invite, comment, drain failure, recovery, websocket fan-out을 한 흐름으로 묶는다.
+이건 사소한 구현 디테일이 아니라, 서비스 분리의 대가가 어디서 드러나는지 보여 주는 장면이다. 한 서비스가 다른 서비스의 테이블을 읽지 못하면, 이전에는 암묵적으로 얻던 정보도 claims나 event payload로 다시 옮겨야 한다.
 
-## 4. 2026-03-10 재검증과 fresh build 문제를 사실대로 남기기
-마지막 검증 기록은 특히 중요하다. 2026-03-10 보고서는 service unit tests 통과는 명시하지만, fresh image rebuild는 Docker Desktop의 containerd 저장소 오류와 0-byte 실행 파일 문제 때문에 안정적인 성공 기록을 남기지 않았다고 분명히 적는다. 대신 재시작 후 prebuilt local image를 복구해 Compose stack을 올리고, end-to-end 협업 흐름과 recovery, websocket notification까지 실제로 다시 확인했다고 남긴다. 이 정직한 구분이야말로 v2 문서의 가장 강한 부분이다.
+## 4. comment write path는 이제 하나의 함수가 아니라 세 경계로 갈라진다
+
+v2의 핵심 변화는 `create_comment()`가 더 이상 끝점이 아니라는 데 있다.
+
+`workspace-service`의 `create_comment()`는 다음까지만 책임진다.
+- membership 검증
+- `Comment` row 저장
+- 각 수신자별 `OutboxEvent(event_name="comment.created.v1")` 저장
+
+그 다음 단계는 `relay_outbox()`에서 일어난다. 이 함수는 queued outbox를 읽어 Redis Streams에 `xadd()`로 밀어 넣고, outbox status를 `relayed`로 바꾼다. 그리고 마지막 단계는 `notification-service.consume()`이다. 여기서는 stream을 읽어 `Notification` row를 저장하고, `ConsumerReceipt(event_id)`를 남기고, Redis pub/sub으로 gateway에 fan-out 한다.
+
+이 구조는 분산 시스템다운 seam을 보여 주지만, 동시에 학습용 단순화도 함께 노출한다. `consume()`은 consumer group이나 stream offset checkpoint 대신 `xread(..., "0-0", count=100)`으로 처음부터 다시 읽고, 중복 소비는 receipt 존재 여부로 걸러 낸다. 그래서 recovery는 "명시적으로 다시 밀어 넣고 다시 읽는다"는 점을 잘 보여 주지만, backlog가 길어지면 drain 한 번으로는 다 못 비우는 구조이기도 하다. 즉 v2는 완전한 운영용 consumer보다, 분산 이벤트 흐름을 읽을 수 있게 만드는 비교 모델에 가깝다.
+
+## 5. gateway의 `notifications/drain`은 eventual consistency를 눈에 보이게 만든다
+
+v2에서 가장 좋은 설계 선택 중 하나는 eventual consistency를 숨기지 않는다는 점이다. gateway의 `POST /api/v1/platform/notifications/drain`은 내부적으로 두 호출을 순서대로 묶는다.
+1. `workspace-service /internal/events/relay`
+2. `notification-service /internal/notifications/consume`
+
+반환값도 `{relayed, processed}`로 나뉜다. 이건 "알림이 그냥 간다"는 착시를 없애 준다. 실제로는 write path, relay path, consume path가 서로 다른 서비스와 다른 장애 표면을 가진다는 사실을 public API 레벨에서도 보여 주기 때문이다.
+
+## 6. 실시간과 운영성도 분산 구조에 맞춰 다시 설계된다
+
+gateway `main.py`를 보면 request마다 `X-Request-ID`를 만들거나 이어받고, 이 값을 응답 헤더와 upstream 요청에 다시 실어 보낸다. JSON logging payload에도 `service`, `request_id`가 들어간다. 각 서비스는 `/api/v1/ops/metrics`에서 `app_requests_total{service="..."}` 한 줄 카운터를 내고, health readiness도 역할이 다르다.
+
+- gateway ready: identity/workspace/notification의 `/health/ready`와 Redis ping을 함께 확인
+- workspace ready: DB + Redis
+- notification ready: DB + Redis
+- identity ready: 자체 DB
+
+이 차이는 K-lab에서 분리해 봤던 distributed ops를 capstone 안으로 다시 끌고 들어온 결과다.
+
+## 7. system test는 성공 경로만이 아니라 recovery 경로까지 고정한다
+
+`tests/test_system.py`는 v2가 왜 단순한 분해판이 아닌지를 가장 잘 보여 준다.
+1. owner는 gateway를 통해 로컬 가입, 메일 인증, 로그인
+2. collaborator는 gateway를 통해 Google 로그인
+3. owner가 workspace, invite, project, task를 생성
+4. 첫 comment 후 drain 성공, collaborator WebSocket 수신
+5. `docker compose stop notification-service`
+6. 두 번째 comment는 여전히 성공
+7. drain은 503으로 실패
+8. notification-service 재시작 후 ready 대기
+9. recovery drain 성공
+10. collaborator가 두 번째 댓글 알림을 다시 수신
+
+이 시나리오는 "notification-service가 죽어도 comment 생성은 성공해야 한다"는 성공 기준을 코드로 그대로 박아 둔 것이다. v1에 없던 실패 경로가 이제는 주요 기능이 된다.
+
+## 8. 이번 재실행은 설계보다 먼저 환경 공백을 드러냈다
+
+이번 턴의 canonical verification 결과는 아래와 같았다.
 
 ```bash
+make lint
+# python3.14: No module named ruff
+
 make test
-docker compose up --build -d
-docker build --progress=plain -t workspace-v2-identity-fresh ./services/identity-service
-docker pull python:3.12-slim
-docker compose -p workspace-backend-v2-msa-dd63448c -f compose.yaml up -d --no-build
-inline Python end-to-end flow for register -> verify -> login -> invite -> comment -> drain -> recovery -> websocket
+# gateway/tests/conftest.py import 단계에서 ModuleNotFoundError: No module named 'fastapi'
+
+make smoke
+# tests/compose_harness.py import 단계에서 ModuleNotFoundError: No module named 'httpx'
+
+python3 -m pytest tests/test_system.py -q
+# ModuleNotFoundError: No module named 'httpx'
 ```
 
-2026-03-10에 service unit tests는 통과했고, fresh build 경로는 Docker Desktop 문제로 성공 기록을 남기지 못했지만 prebuilt image 기준 Compose runtime과 end-to-end 협업 흐름 검증은 완료했다. 이 capstone은 성공 기록뿐 아니라 실패한 fresh build 경로를 숨기지 않는 점이 중요하다.
+즉, 현재 호스트에서는 서비스 간 계약을 검증하기도 전에 Python 도구와 라이브러리부터 비어 있다. 이번 문서는 그래서 "실행이 성공했다"고 포장하지 않고, 소스 구조와 테스트 설계는 확인했지만 현재 환경의 canonical rerun은 dependency 단계에서 멈춘다고 적는다.
 
 ## 정리
-v2 capstone은 MSA가 더 멋져 보인다는 이야기를 하지 않는다. 오히려 무엇이 더 복잡해졌는지, 어떤 실패 경로가 새로 생겼는지, 어떤 검증은 아직 불안정한지까지 같이 보여 준다. 그래서 이 시리즈의 끝점으로서 설득력이 있다. 결과 요약이 아니라 비교 가능한 증거 묶음으로 남기 때문이다.
+
+`workspace-backend-v2-msa`의 가치는 서비스가 많아졌다는 데 있지 않다. public API를 보존한 채 브라우저 경계는 gateway로, 데이터 소유권은 각 서비스로, 알림 전달은 outbox/stream/receipt/pubsub으로 찢어 놓았을 때 어떤 복잡성과 어떤 recovery 책임이 생기는지를 직접 보여 주는 데 있다. 이 capstone은 v1보다 더 편안한 구조가 아니라, 더 비싼 구조를 왜 감수해야 하는지 설명해야 하는 비교판이다.

@@ -1,27 +1,31 @@
 # 05 MVCC — Structure Outline
 
-최종 시리즈는 chronology를 매끈하게 재배열하지 않고, 범위 파악 -> 핵심 invariant -> 재검증과 경계의 순서를 유지한다.
+## 이번 문서의 중심
+
+- 이 슬롯을 generic transaction manager가 아니라 snapshot visibility core로 설명한다.
+- 서사는 `범위 재설정 -> snapshot/conflict/gc invariant -> 검증과 한계` 순서로 둔다.
+- GC가 active reader가 없을 때 최신 version 하나만 남길 수 있는 현재 semantics도 분명히 남긴다.
 
 ## Planned Files
 
-- `00-series-map.md`: 프로젝트 질문, 읽는 순서, source-of-truth 파일, 재검증 명령을 잡는 지도
-- `10-chronology-scope-and-surface.md`: 파일 구조와 테스트 이름을 근거로 처음 가설이 바뀌는 구간
-- `20-chronology-core-invariants.md`: `Version`와 `VersionStore`가 실제로 invariant를 고정하는 구간
-- `30-chronology-verification-and-boundaries.md`: `go test`/`pytest`와 demo 출력으로 경계를 확정하는 구간
+- `00-series-map.md`
+  - 질문, 읽는 순서, source-of-truth 파일, 재검증 명령
+- `10-chronology-scope-and-surface.md`
+  - 테스트와 문제 정의로 visibility core 범위를 다시 잡는 글
+- `20-chronology-core-invariants.md`
+  - `VersionStore`와 `TransactionManager`를 중심으로 읽는 글
+- `30-chronology-verification-and-boundaries.md`
+  - pytest, demo, 보조 재실행으로 chain semantics와 한계를 정리하는 글
 
-## Article Goals
+## 꼭 남길 검증 신호
 
-1. `10-chronology-scope-and-surface.md`
-   범위를 `tests/`와 README에서 어떻게 다시 좁혔는지 보여 준다.
-   코드 앵커: `test_basic_read_write`, `Version`
-   CLI: `find src tests -type f | sort`, `rg -n "^def test_" tests`
+- `PYTHONPATH=src python3 -m pytest` -> `7 passed`
+- `PYTHONPATH=src python3 -m mvcc_lab` -> `{'tx': 1, 'read_your_own_write': 10}`
+- 보조 재실행 -> `snapshot_read v1`
+- conflict 후 loser version cleanup, GC 후 latest one-version chain
 
-2. `20-chronology-core-invariants.md`
-   핵심 invariant가 `Version`와 `VersionStore` 사이에서 어떻게 고정되는지 보여 준다.
-   코드 앵커: `Version`, `VersionStore`
-   CLI: `rg -n "^(class|def) " src`, `rg -n "Version|VersionStore" src`
+## 탈락 기준
 
-3. `30-chronology-verification-and-boundaries.md`
-   테스트와 demo를 모두 남겨, pass 신호와 공개 표면을 구분해 설명한다.
-   코드 앵커: `test_abort_and_delete`, `__main__.py`
-   CLI: PYTHONPATH=src .venv/bin/python -m pytest; PYTHONPATH=src .venv/bin/python -m mvcc_lab
+- MVCC를 transaction 전반으로 과장하면 안 된다.
+- read-your-own-write를 빼면 안 된다.
+- aggressive GC semantics를 숨기면 문서가 지나치게 매끈해진다.

@@ -30,6 +30,12 @@
 - `problem/data/review_bundle.json`
 - `problem/data/demo_bundle.json`
 
+## 제외 범위
+
+- 실제 API 서버, DB, queue 운영
+- live scan feed와 외부 advisory API 연동
+- foundations 프로젝트를 runtime dependency로 직접 import하는 구조
+
 ## canonical validation
 
 ```bash

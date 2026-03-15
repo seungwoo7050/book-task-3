@@ -1,59 +1,43 @@
-# Traceroute evidence ledger
+# Traceroute Evidence Ledger
 
-이 문서는 긴 본문을 읽기 전에, 세 단계에서 어떤 판단이 있었는지만 빠르게 붙들기 위한 압축본이다.
+## 이번에 읽은 자료
 
-## Phase 1. 실행 표면과 entrypoint를 먼저 고정하기
+- 문제 사양: `study/04-Network-Diagnostics-and-Routing/traceroute/problem/README.md`
+- 구현 엔트리: `study/04-Network-Diagnostics-and-Routing/traceroute/python/src/traceroute.py`
+- 보조 테스트: `study/04-Network-Diagnostics-and-Routing/traceroute/python/tests/test_traceroute.py`
+- 실행 표면: `study/04-Network-Diagnostics-and-Routing/traceroute/problem/Makefile`
+- 문제 문서 기준: canonical success criterion은 raw-socket free deterministic parser/formatter test다
 
-- 당시 목표: `Traceroute`를 어디서부터 읽어야 하는지 고정한다.
-- 핵심 변경 단위: `study/04-Network-Diagnostics-and-Routing/traceroute/problem/README.md`, `study/04-Network-Diagnostics-and-Routing/traceroute/problem/Makefile`, `study/04-Network-Diagnostics-and-Routing/traceroute/python/src/traceroute.py`
-- 무슨 판단을 했는가: 어디서 실행하고 어디서 검증하는지 먼저 정하지 않으면 본문이 기능 요약으로 흘러갈 가능성이 컸다.
-- 실행한 CLI:
+## 핵심 코드 근거
 
-```bash
-$ make -C study/04-Network-Diagnostics-and-Routing/traceroute/problem help
-  run-client         Run the live traceroute implementation (requires sudo on most systems)
-  test               Run parser, formatting, and synthetic route integration tests
-```
-- 검증 신호:
-  - `make help`만 봐도 이 프로젝트가 어떤 target으로 열리고 닫히는지 드러난다.
-  - 이 단계에서의 역할: `ICMP Pinger`와 `routing` 사이에서, 패킷 수준 TTL 개념이 실제 경로 탐색 도구로 어떻게 이어지는지 분명하게 보여 줍니다.
-- 핵심 코드/trace 앵커: `study/04-Network-Diagnostics-and-Routing/traceroute/python/src/traceroute.py`의 `class ProbeObservation`
-- 다음으로 넘어간 이유: 이제 어디를 읽어야 할지 정해졌으니, 실제로 판단이 몰린 함수나 trace section으로 내려갈 수 있었다.
+- `build_probe_port()`: TTL/probe index/probes-per-hop를 이용해 collision 없는 UDP destination port를 만든다.
+- `parse_icmp_response()`: raw ICMP packet 안의 embedded IP + UDP header에서 original probe port를 꺼낸다.
+- `trace_route()`: raw ICMP receive socket과 UDP send socket을 분리하고, TTL마다 `ProbeObservation` 3개를 수집한다.
+- 종료 조건: destination IP에서 `icmp_type == 3 and icmp_code == 3`이 관찰되면 route trace를 멈춘다.
 
-## Phase 2. probe port 계산, ICMP 파싱, hop formatting을 한 경로로 묶기
+## 테스트 근거
 
-- 당시 목표: `TTL 증가와 ICMP Time Exceeded를 이용해 hop-by-hop 경로를 드러내는 bridge 프로젝트입니다.`를 실제 코드나 trace 근거에 붙여 본다.
-- 핵심 변경 단위: `study/04-Network-Diagnostics-and-Routing/traceroute/python/src/traceroute.py`
-- 무슨 판단을 했는가: 전체 파일을 다 설명하기보다, 판단이 바뀐 줄 몇 개를 먼저 붙드는 편이 더 정확하다고 판단했다.
-- 실행한 CLI:
+`make -C network-atda/study/04-Network-Diagnostics-and-Routing/traceroute/problem test`
 
-```bash
-$ rg -n -e 'def build_probe_port' -e 'def parse_icmp_response' -e 'def format_hop_line' -e 'def trace_route' 'study/04-Network-Diagnostics-and-Routing/traceroute/python/src/traceroute.py' 'study/04-Network-Diagnostics-and-Routing/traceroute/python/tests/test_traceroute.py'
-study/04-Network-Diagnostics-and-Routing/traceroute/python/src/traceroute.py:30:def build_probe_port(ttl: int, probe_index: int, probes_per_hop: int, base_port: int = DEFAULT_BASE_PORT) -> int:
-study/04-Network-Diagnostics-and-Routing/traceroute/python/src/traceroute.py:35:def parse_icmp_response(packet: bytes) -> tuple[int, int, int | None] | None:
-study/04-Network-Diagnostics-and-Routing/traceroute/python/src/traceroute.py:60:def format_hop_line(ttl: int, observations: list[ProbeObservation]) -> str:
-study/04-Network-Diagnostics-and-Routing/traceroute/python/src/traceroute.py:84:def trace_route(
-```
-- 검증 신호:
-  - 이 출력만으로도 `def trace_route` 주변이 설명의 중심축이라는 점이 드러난다.
-  - embedded UDP port를 이용한 probe 매칭
-- 핵심 코드/trace 앵커: `study/04-Network-Diagnostics-and-Routing/traceroute/python/src/traceroute.py`의 `def trace_route`
-- 다음으로 넘어간 이유: 중심 규칙을 잡은 뒤에는, 이 구현이나 분석이 실제로 무엇으로 닫히는지만 확인하면 됐다.
+결과:
 
-## Phase 3. 테스트와 남은 범위를 정리하기
+- `4 passed in 0.01s`
 
-- 당시 목표: 통과 신호와 남은 범위를 한 번에 정리한다.
-- 핵심 변경 단위: `study/04-Network-Diagnostics-and-Routing/traceroute/python/tests/test_traceroute.py`, `problem/script/`, `docs/`
-- 무슨 판단을 했는가: 테스트 통과만 적으면 과장이 되기 쉬워서, 어디까지 확인됐고 무엇이 남는지도 같이 적어야 한다고 봤다.
-- 실행한 CLI:
+세부:
 
-```bash
-$ make -C study/04-Network-Diagnostics-and-Routing/traceroute/problem test
-....                                                                     [100%]
-4 passed in 0.01s
-```
-- 검증 신호:
-  - `make -C study/04-Network-Diagnostics-and-Routing/traceroute/problem test`가 현재 공개 답안을 다시 재현해 준다.
-  - IPv6 traceroute는 지원하지 않습니다.
-- 핵심 코드/trace 앵커: `study/04-Network-Diagnostics-and-Routing/traceroute/python/tests/test_traceroute.py`의 `def test_trace_route_returns_hops_until_destination`
-- 다음으로 넘어간 이유: 통과 신호와 경계가 모두 적혔으니, 긴 본문에서는 각 단계를 더 사람 읽기 좋게 풀어 쓰면 된다.
+- probe port mapping test 통과
+- embedded UDP port parse test 통과
+- hop formatting test 통과
+- synthetic route integration test에서 3 hops 후 종료 확인
+- live run target은 `make run-client HOST=8.8.8.8`로만 제공되고, 별도 live smoke script는 없다
+
+보조 실행:
+
+- `python3 python/src/traceroute.py example.com --max-hops 2 --probes 1 --timeout 0.2`은 현재 세션에서 5초 내 완료되지 않았다
+
+## 이번에 고정한 해석
+
+- 이 lab의 핵심은 TTL increment 자체보다 reply correlation을 port space로 안정화하는 데 있다.
+- parser/unit tests가 훨씬 강한 근거이고, live path는 environment-dependent supplemental signal로 남겨야 한다.
+- traceroute output formatting을 별도 함수로 분리한 덕분에 logic과 presentation이 깔끔하게 갈린다.
+- 즉 현재 저장소는 intentionally "live traceroute correctness"보다 "parser/correlation determinism"을 canonical verification 대상으로 택한다.

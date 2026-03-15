@@ -1,27 +1,40 @@
-# J-edge-gateway-lab
+# J-edge-gateway-lab 시리즈 맵
 
-이 글은 브라우저에 보이는 public API shape를 gateway 하나에 남기고 내부 서비스 계약은 더 단순하게 만들 수 있는가를 묻는다. J 랩은 MSA 외부의 얼굴과 내부 연결 방식을 구분해서 보는 단계다.
+이 랩의 질문은 기능 추가가 아니다. 이미 분리된 `identity-service`, `workspace-service`, `notification-service`를 앞에 다시 하나의 얼굴로 세우는 방법이 핵심이다. gateway가 public API shape를 유지하고, 브라우저 상태는 edge에만 남기며, 내부 서비스에는 bearer token과 `X-Request-ID`만 넘기는 구조가 실제로 어떻게 굴러가는지를 추적한다.
 
-## 이 글이 붙잡는 질문
-쿠키, CSRF, WebSocket edge, public `/api/v1` 경로를 gateway에 모아 두면서도 내부 서비스 계약을 지나치게 복잡하게 만들지 않을 수 있는가가 핵심 질문이다.
+## 이 랩에서 끝까지 붙잡은 질문
 
-## 왜 이 프로젝트를 따로 읽어야 하나
-README와 docs는 gateway를 단순 reverse proxy가 아니라 edge contract로 설명하고, system test는 public 경로만으로 협업 흐름을 끝까지 검증한다. 이 랩을 따로 읽어야 gateway 도입의 비용과 이익이 동시에 보인다.
+- 외부 클라이언트가 내부 서비스 포트를 몰라도 되게 만드는 경계는 어디인가
+- 쿠키와 CSRF는 왜 gateway에만 둬야 하는가
+- request id는 실제로 어디서 만들어지고 어떤 경로로 전달되는가
+- upstream 장애가 생겼을 때 gateway는 어떤 실패를 외부에 보여 주는가
 
-## 이번 글에서 따라갈 흐름
-1. gateway를 단순 중계가 아니라 edge 계약으로 정의한다.
-2. cookie와 bearer translation, 내부 fan-out 경로를 본다.
-3. public `/api/v1`만으로 invite와 websocket 알림이 이어지는지 확인한다.
-4. 재검증 기록으로 edge runtime을 닫는다.
+## 이 문서 묶음이 내린 현재 결론
 
-## 마지막에 확인할 근거
-- 코드: `labs/J-edge-gateway-lab/fastapi/gateway/app/api/v1/routes/platform.py::_auth_headers`
-- 테스트/런타임: `labs/J-edge-gateway-lab/fastapi/tests/test_system.py::test_v2_system_flow_and_notification_recovery`
-- CLI: `make test`, `python -m pytest tests/test_system.py -q`, `python -m tests.smoke`, `docker compose up --build`
+- 검증된 public entrypoint는 `gateway` 하나다. system test도 끝까지 `http://127.0.0.1:8013`만 호출한다.
+- 로그인 후 쿠키는 gateway가 세팅하고, 내부 `identity-service`는 JSON bundle만 반환한다.
+- gateway의 platform route 대부분은 쿠키의 access token을 bearer header로 바꿔 `workspace-service`에 넘긴다. 다만 `/notifications/drain`은 현재 route-level `get_current_claims` dependency 없이 내부 relay/consume orchestration만 수행하는 예외 경로다.
+- HTTP auth는 edge cookie 중심이지만, websocket edge는 `access_token` query parameter를 직접 받는다. 즉 public edge도 모든 경로가 같은 인증 매체를 쓰는 것은 아니다.
+- `X-Request-ID` 전파는 테스트에서 직접 assert하지는 않지만, gateway middleware와 `ServiceClient.request()` 코드 경로로 확인된다.
+- notification-service가 내려가면 gateway의 drain 엔드포인트는 `503`을 반환하고, 서비스 복구 뒤 같은 public 경로로 recovery를 이어 간다.
 
-## 이 글을 다 읽고 나면
-- 브라우저용 인증 규칙을 왜 gateway에 남겨 두는지 이해하게 된다.
-- 내부 서비스가 단순한 계약을 유지하려면 edge에서 무엇을 흡수해야 하는지 보게 된다.
-- public path 안정성이 시스템 구조를 어떻게 바꾸는지 감이 잡힌다.
-- 검증 기록: 2026-03-10에 gateway/identity/workspace/notification unit test, system test, smoke가 모두 통과했다.
-- 다음으로 이어 볼 대상: K-distributed-ops-lab
+## 추천 읽기 순서
+
+1. `10-development-timeline.md`
+2. `_evidence-ledger.md`
+3. `_structure-plan.md`
+
+## 각 문서의 역할
+
+- `10-development-timeline.md`: public edge, cookie/CSRF, request id 전파, websocket recovery 시나리오를 시간순으로 정리한다.
+- `_evidence-ledger.md`: gateway와 내부 서비스의 경계 증거, system test, 검증 명령 결과를 모은다.
+- `_structure-plan.md`: 이 랩을 "edge 책임 재배치" 문서로 읽기 위한 설명 순서를 남긴다.
+
+## 이번에 다시 확인한 검증 스냅샷
+
+- `make lint`: 통과
+- `make test`: 로컬 `python3` 환경에서 gateway 테스트 import 단계에서 `ModuleNotFoundError: No module named 'argon2'`
+- `make smoke`: 통과
+- `python3 -m pytest tests/test_system.py -q`: 통과
+
+이 랩의 핵심은 gateway가 모든 걸 대신하는 만능 제품이라는 데 있지 않다. 오히려 브라우저 상태와 내부 서비스 계약을 분리해서, public API와 internal API를 서로 다른 언어로 유지하는 데 있다.

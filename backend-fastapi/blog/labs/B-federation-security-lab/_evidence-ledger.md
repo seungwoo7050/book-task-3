@@ -1,40 +1,36 @@
-# B-federation-security-lab Evidence Ledger
+# B-federation-security-lab evidence ledger
 
 ## 독립 프로젝트 판정
+
 - 판정: 처리 대상
-- 이유: README가 OIDC, TOTP, recovery code, audit log를 하나의 인증 보강 문제로 묶고, `tests/integration/test_google_callback.py`, `tests/integration/test_two_factor.py`, `tests/unit/test_token_rotation.py`가 각각 다른 실패 축을 검증한다.
-- 프로젝트 질문: 외부 로그인과 보안 강화 기능을 기존 세션 모델 위에 붙일 때, 어떤 단계부터 추가 복잡성을 드러낼 것인가.
-- 주의: finer-grained 구현 순서는 commit granularity가 거칠어서 README, docs, code surface, tests 의존 순서를 바탕으로 복원했다. 실제 날짜가 확인되는 부분은 git log와 검증 보고서에만 한정했다.
+- 이유: [`README.md`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/B-federation-security-lab/README.md) 가 OIDC, 2FA, recovery code, audit log를 하나의 독립 문제로 묶고, `google_callback`, `two_factor`, `token_rotation` 테스트가 서로 다른 상태 전이를 따로 고정한다.
+- 프로젝트 질문: 외부 로그인과 second factor가 들어오면 "인증 성공"을 어디에서 끝난 것으로 볼 것인가.
+- 복원 방식: 기존 `blog/` 본문은 근거에서 제외하고, `problem/README`, source code, tests, 실제 재실행 CLI만 사용했다.
 
-## 소스 인벤토리
-- `labs/B-federation-security-lab/README.md`
-- `labs/B-federation-security-lab/problem/README.md`
-- `labs/B-federation-security-lab/docs/README.md`
-- `labs/B-federation-security-lab/fastapi/README.md`
-- `labs/B-federation-security-lab/fastapi/Makefile`
-- `labs/B-federation-security-lab/fastapi/compose.yaml`
-- `backend-fastapi/.github/workflows/labs-fastapi.yml`
-- `backend-fastapi/docs/verification-report.md`
-- `backend-fastapi/labs/B-federation-security-lab/fastapi/app/api/v1/routes/auth.py`
-- `backend-fastapi/labs/B-federation-security-lab/fastapi/tests/integration/test_two_factor.py`
-- `git log -- backend-fastapi/labs/B-federation-security-lab`
+## 근거 인벤토리
 
-## 프로젝트 표면 요약
-- 문제 요약: 이미 로컬 인증이 있는 서비스에 외부 로그인과 보안 강화 기능을 붙여야 한다고 가정합니다. 사용자는 Google 스타일 로그인으로 진입할 수 있어야 하고, 필요하면 2단계 인증과 recovery code를 사용할 수 있어야 합니다. 동시에 로그인 시도는 남용에 대비해 제한하고, 중요한 인증 이벤트는 기록해야 합니다. 외부 인증 공급자와 내부 사용자 계정의 연결 관계가 설명 가능해야 합니다. TOTP 등록과 검증 흐름이 독립된 단계로 구현되어야 합니다. 상세 성공 기준과 제외 범위는 problem/README.md에 둡니다.
-- 성공 기준: 외부 인증 공급자와 내부 사용자 계정의 연결 관계가 설명 가능해야 합니다. TOTP 등록과 검증 흐름이 독립된 단계로 구현되어야 합니다. recovery code 재생성 및 소진 규칙이 있어야 합니다. 로그인 throttling과 audit log가 최소 수준으로라도 동작해야 합니다.
-- 설계 질문: 외부 공급자 계정과 내부 사용자 계정을 어떻게 연결할 것인가 2FA를 로그인 흐름 어디에 끼워 넣을 것인가 recovery code는 왜 평문으로 두면 안 되는가
-- 실제 검증 surface: make lint make test make smoke docker compose up --build 실행과 환경 설명은 fastapi/README.md에서 다룹니다. 마지막 기록된 실제 검증 결과는 ../../docs/verification-report.md에 있습니다.
+- [`problem/README.md`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/B-federation-security-lab/problem/README.md)
+- [`docs/README.md`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/B-federation-security-lab/docs/README.md)
+- [`fastapi/README.md`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/B-federation-security-lab/fastapi/README.md)
+- [`app/api/v1/routes/auth.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/B-federation-security-lab/fastapi/app/api/v1/routes/auth.py)
+- [`app/api/deps.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/B-federation-security-lab/fastapi/app/api/deps.py)
+- [`app/core/security.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/B-federation-security-lab/fastapi/app/core/security.py)
+- [`app/domain/services/auth.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/B-federation-security-lab/fastapi/app/domain/services/auth.py)
+- [`app/domain/services/google_oidc.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/B-federation-security-lab/fastapi/app/domain/services/google_oidc.py)
+- [`app/domain/services/two_factor.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/B-federation-security-lab/fastapi/app/domain/services/two_factor.py)
+- [`app/db/models/user.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/B-federation-security-lab/fastapi/app/db/models/user.py)
+- [`app/db/models/auth.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/B-federation-security-lab/fastapi/app/db/models/auth.py)
+- [`tests/integration/test_google_callback.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/B-federation-security-lab/fastapi/tests/integration/test_google_callback.py)
+- [`tests/integration/test_two_factor.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/B-federation-security-lab/fastapi/tests/integration/test_two_factor.py)
+- [`tests/unit/test_token_rotation.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/B-federation-security-lab/fastapi/tests/unit/test_token_rotation.py)
+- [`tests/smoke.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/B-federation-security-lab/fastapi/tests/smoke.py)
 
-## 시간 표지
-- 2026-03-11 bbb6673 Track 1에 대한 전반적인 개선 완료
-- 2026-03-10 a3edce2 docs: enhance backend-fastapi
-- 2026-03-09 7813150 docs(notion): front-react, backend-fastapi
-- 2026-03-09 73372bd Add project: backend-fastapi, backend-spring, cpp-server
+## Chronology ledger
 
-## Chronology Ledger
-| 순서 | 시간 표지 | 당시 목표 | 변경 단위 | 처음 가설 | 실제 조치 | CLI | 검증 신호 | 핵심 코드 앵커 | 새로 배운 것 | 다음 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Phase 1, 2026-03-09 add project commit 73372bd를 기준으로 복원 | 외부 로그인과 보안 강화 기능을 기존 로컬 인증과 분리해 설명 | README.md, problem/README.md, docs/README.md | Google 로그인만 추가하면 다음 단계로 넘어갈 수 있을 것 | OIDC, TOTP, recovery code, throttling, audit log를 같은 랩 surface로 묶음 | README의 `make run`, `docker compose up --build` | 문제 정의와 README가 provider link와 2FA를 동등한 성공 기준으로 둠 | README.md 문제 요약 / 핵심 설계 선택 | 외부 로그인은 편의 기능이 아니라 기존 세션 모델을 다시 검토하게 만드는 변화다 | OIDC callback을 내부 세션 발급과 연결 |
-| 2 | Phase 2, 초기 구현 순서를 route/test 의존성으로 복원 | authorization-code callback을 내부 세션 발급의 중심으로 고정 | app/api/v1/routes/auth.py, app/domain/services/google_oidc.py | provider access token만 받으면 충분할 것 | signed state cookie, code verifier, id token 검증, 내부 user/session 연결을 callback에 집중 | `make test` | callback이 state cookie 부재를 바로 에러로 막고 user payload를 반환 | app/api/v1/routes/auth.py::google_callback | 외부 공급자 성공이 곧 내부 인증 성공은 아니다. 둘 사이엔 연결 계층이 하나 더 필요하다 | 2FA challenge를 로그인 후속 단계로 분리 |
-| 3 | Phase 3, 테스트가 보안 단계 분리를 굳힘 | 2FA setup, confirm, verify, recovery code rotation을 별도 상태 전이로 고정 | tests/integration/test_two_factor.py, tests/unit/test_token_rotation.py | TOTP code 검증 한 번이면 2FA 설명이 끝날 것 | 재로그인 후 `me`가 401인 challenge 상태, recovery code 8개 발급, recovery login 성공까지 테스트화 | `make test` | 재로그인 직후 `GET /api/v1/auth/me` 401, recovery code 검증 후 `authenticated` | tests/integration/test_two_factor.py::test_two_factor_setup_and_recovery_code_login | 2FA는 인증 성공을 강화하는 기능이 아니라, 인증을 두 단계로 나누는 상태 기계다 | mock 기반 OIDC 경계를 문서로 고정 |
-| 4 | 2026-03-09 재검증 + 2026-03-11 track polish | 실제 Google 없이도 OIDC surface와 2FA 흐름이 재현된다는 사실 확인 | docs/verification-report.md, fastapi/README.md, .github/workflows/labs-fastapi.yml | 문서만 있으면 mock 기반 검증 범위가 충분히 전달될 것 | compile, lint, test, smoke, Compose probe 결과와 PostgreSQL DB 이름 수정 메모를 남김 | `python3 -m compileall app tests`, `make lint`, `make test`, `make smoke`, `./tools/compose_probe.sh labs/B-federation-security-lab/fastapi 8000` | 2026-03-09 기준 재검증 통과, DB 이름 불일치 수정 후 재실행 | docs/verification-report.md B-federation-security-lab 항목 | 외부 공급자 통합을 설명할 때도 mock 경로와 실제 서비스 경계를 분리해 써야 한다 | 인증에서 인가 규칙으로 초점을 옮기기 |
+| 순서 | 당시 목표 | 변경 단위 | 실제로 확인한 것 | CLI | 검증 신호 | 다음으로 넘어간 이유 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 외부 로그인 진입이 무엇을 새로 늘리는지 먼저 판정한다 | `README.md`, `problem/README.md`, `google_oidc.py`, `auth.py` | state, nonce, PKCE verifier를 signed cookie로 보관하고 callback에서 다시 검증한다 | `rg -n 'google/login|google/callback|auth:google' backend-fastapi/labs/B-federation-security-lab/fastapi/app backend-fastapi/labs/B-federation-security-lab/fastapi/tests` | OIDC callback은 redirect 끝점이 아니라 내부 인증으로 번역되는 경계로 읽힌다 | callback 이후에도 인증이 끝나지 않는 이유를 보려면 pending 2FA 단계로 내려가야 한다 |
+| 2 | provider 성공 후 왜 바로 세션을 주지 않을 수도 있는지 확인한다 | `auth.py`, `auth.py` service, `core/security.py`, `user.py` | `sync_google_user()`가 `ExternalIdentity`를 연결하고, `two_factor_enabled`면 `requires_2fa`와 `pending_auth_token`을 반환한다 | `rg -n 'requires_2fa|pending_auth|build_pending_auth_token|set_pending_auth_cookie' backend-fastapi/labs/B-federation-security-lab/fastapi/app backend-fastapi/labs/B-federation-security-lab/fastapi/tests` | 외부 로그인 성공과 내부 세션 완료 사이에 별도 challenge 단계가 존재한다 | 이제 2FA가 어떤 자료구조와 검증으로 닫히는지 봐야 한다 |
+| 3 | 2FA와 recovery code를 별도 state machine으로 고정한다 | `two_factor.py`, `auth.py` service, `auth_repository.py`, `test_two_factor.py` | setup/confirm/verify가 분리돼 있고, recovery code는 생성 직후 hash로만 저장된다 | `rg -n '2fa/setup|2fa/confirm|2fa/verify|recovery-codes/regenerate|2fa/disable|auth.2fa.' backend-fastapi/labs/B-federation-security-lab/fastapi/app backend-fastapi/labs/B-federation-security-lab/fastapi/tests` | 재로그인 직후 `me`는 401이고, recovery code 검증 뒤에야 `authenticated`가 된다 | federated login 위에서도 기존 refresh rotation 규칙이 유지되는지 확인한다 |
+| 4 | 외부 로그인 추가 후에도 session family 규칙과 운영 신호가 남아 있는지 본다 | `auth.py` service, `test_token_rotation.py`, route limiter 설정 | OIDC 로그인 이후에도 예전 refresh token 재사용을 감지하면 family 전체를 revoke하고, 주요 단계마다 audit event와 rate-limit prefix가 따로 있다 | `rg -n 'auth.refresh.reuse_detected|REFRESH_TOKEN_REUSED|family_id|auth:google|auth:2fa|auth.2fa.' backend-fastapi/labs/B-federation-security-lab/fastapi/app backend-fastapi/labs/B-federation-security-lab/fastapi/tests` | 외부 provider가 들어와도 세션 규칙과 최소 운영 신호는 사라지지 않고 위에 얹힌다 | 마지막으로 지금 셸에서 공식 검증 명령이 그대로 통과하는지 확인한다 |
+| 5 | 현재 재검증 상태를 최신 값으로 닫는다 | `Makefile`, `health.py`, `tests/smoke.py`, 현재 셸 환경 | 공식 `make` 진입점과 `PYTHONPATH` 보조 재실행 모두 즉시 통과하지는 않는다 | `make lint`<br>`make test`<br>`make smoke`<br>`PYTHONPATH=. pytest`<br>`PYTHONPATH=. python -m tests.smoke` | `make lint`는 `health.py` E501, `make test`는 `No module named 'app'`, `make smoke`는 `No module named 'fastapi'`, 보조 재실행은 `No module named 'itsdangerous'` | 구현 설명과 현재 재현 환경의 간극을 문서에 함께 남겨야 품질이 맞는다 |

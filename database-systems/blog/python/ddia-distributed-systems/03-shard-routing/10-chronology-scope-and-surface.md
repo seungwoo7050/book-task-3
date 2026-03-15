@@ -1,117 +1,55 @@
-# 10 03 Shard Routing를 읽기 전에 범위를 다시 좁히기
+# Scope, Ring Surface, First Measurements
 
-이 시리즈의 첫 글이다. 여기서는 구현 세부사항을 서둘러 설명하지 않고, 무엇을 먼저 고정해야 하는지 범위부터 다시 좁힌다.
+## 1. 문제는 router를 만든다고 해서 cluster를 만드는 건 아니다
 
-## Phase 1 — 범위를 다시 세우는 구간
+[`problem/README.md`](/Users/woopinbell/work/book-task-3/database-systems/python/ddia-distributed-systems/projects/03-shard-routing/problem/README.md)는 요구사항을 네 가지로 자른다. deterministic consistent hash ring, batch routing, add/remove 이후 reassignment count 계산, 그리고 empty/single/multi-node 상황 검증이다.
 
-이번 글에서는 먼저 테스트와 파일 구조로 문제의 테두리를 다시 잡고, 이어서 중심 타입이 어떤 책임을 끌어안는지 확인한다.
+여기서 중요한 건 일부러 빠진 범위다. dynamic membership protocol, gossip, 실제 data movement execution은 포함하지 않는다. 즉 이 랩의 목적은 "cluster membership control plane"이 아니라 "routing function과 rebalance accounting"이다.
 
-### Session 1 — 테스트와 파일 구조로 범위를 다시 좁히기
+## 2. 코드 표면은 Ring과 Router 두 개면 끝난다
 
-이번 세션의 목표는 `03 Shard Routing`가 어떤 invariant를 먼저 고정하는 슬롯인지 파악하는 것이었다. 초기 가설은 구현이 너무 작아서 단순 API 연습에 가까울 거라고 봤다.
+핵심 구현은 [`core.py`](/Users/woopinbell/work/book-task-3/database-systems/python/ddia-distributed-systems/projects/03-shard-routing/src/shard_routing/core.py)에 모두 들어 있다.
 
-막상 다시 펼쳐 보니 `find src tests -type f | sort`로 구조를 펼친 뒤 `rg -n "^def test_" tests`로 테스트 이름을 나열했다. 특히 `test_batch_routing`까지 테스트 이름을 훑고 나니, 이 프로젝트의 중심이 단순 기능 추가가 아니라 `Router` 주변의 invariant를 고정하는 일이라는 게 보였다. 여기서 해석을 바꾼 단서는 `test_empty_and_single_node_routing`는 가장 기본 표면을 보여 줬고, `test_batch_routing`는 이 프로젝트가 이미 경계 조건까지 포함한다는 신호였다.
+- `Ring`: node membership, ring entry 정렬, key lookup, moved key 계산을 담당한다.
+- `Router`: `Ring` 위에서 단건 `route()`와 batch `route_batch()`를 제공한다.
 
-변경 단위:
-- `database-systems/python/ddia-distributed-systems/projects/03-shard-routing/README.md`, `database-systems/python/ddia-distributed-systems/projects/03-shard-routing/tests/test_shard_routing.py`
+이 구조가 보여 주는 건 shard routing을 별도 분산 프로토콜이 아니라 "deterministic pure function에 가까운 계층"으로 보는 시각이다. 실제 데이터 노드는 등장하지 않고, node identifier 문자열만으로도 대부분의 개념을 설명할 수 있다.
 
-CLI:
+## 3. virtual node는 물리 노드를 여러 점으로 찢는다
 
-```bash
-$ find src tests -type f | sort
-src/shard_routing/__init__.py
-src/shard_routing/__main__.py
-src/shard_routing/__pycache__/__init__.cpython-312.pyc
-src/shard_routing/__pycache__/__main__.cpython-312.pyc
-src/shard_routing/__pycache__/core.cpython-312.pyc
-src/shard_routing/core.py
-tests/__pycache__/test_shard_routing.cpython-312-pytest-8.3.5.pyc
-tests/__pycache__/test_shard_routing.cpython-312-pytest-9.0.2.pyc
-tests/test_shard_routing.py
-```
-
-```bash
-$ rg -n "^def test_" tests
-tests/test_shard_routing.py:4:def test_empty_and_single_node_routing():
-tests/test_shard_routing.py:11:def test_distribution_and_rebalance():
-tests/test_shard_routing.py:38:def test_batch_routing():
-```
-
-검증 신호:
-- `test_empty_and_single_node_routing`는 가장 기본 표면을 보여 줬고, `test_batch_routing`는 이 프로젝트가 이미 경계 조건까지 포함한다는 신호였다.
-- 테스트 이름만으로도 문제의 중심이 `Router` 주변의 ordering / visibility 규칙이라는 점이 드러났다.
-
-핵심 코드:
+docs의 [`virtual-nodes.md`](/Users/woopinbell/work/book-task-3/database-systems/python/ddia-distributed-systems/projects/03-shard-routing/docs/concepts/virtual-nodes.md)는 `nodeID#v<index>`를 해시해 ring entry를 만든다고 요약한다. 실제 구현도 같다.
 
 ```python
-def test_batch_routing():
-    ring = Ring(100)
-    ring.add_node("node-a")
-    ring.add_node("node-b")
-    router = Router(ring)
-    grouped = router.route_batch(["k1", "k2", "k3", "k4", "k5"])
-    assert sum(len(keys) for keys in grouped.values()) == 5
+for index in range(self.virtual_nodes):
+    entry = RingEntry(hash_value(f"{node_id}#v{index}"), node_id)
+    bisect.insort(self.ring, entry)
 ```
 
-왜 여기서 판단이 바뀌었는가:
+기본 virtual node 수는 `Ring(virtual_nodes=150)`이지만, `0`이 들어와도 `self.virtual_nodes = virtual_nodes or 150` 때문에 결국 150으로 보정된다. 즉 "virtual node를 끄는" 모드는 현재 없다.
 
-`test_batch_routing`는 README의 추상 설명보다 더 직접적으로, 어떤 실패를 막아야 하는지 보여 준다. 나는 여기서 구현 순서를 거꾸로 세우기보다 테스트가 요구하는 경계를 먼저 고정해야 한다고 판단했다.
+## 4. 첫 데모가 보여 주는 것
 
-이번 구간에서 새로 이해한 것:
-- `Rebalance Accounting`에서 정리한 요점처럼, consistent hashing의 핵심 가치는 membership 변화가 있을 때 전체 key를 거의 다 움직이지 않는다는 점이다. 그래서 구현을 검증할 때는 "새 ring이 얼마나 적은 key를 옮겼는가"를 함께 본다.
-
-다음으로 넘긴 질문:
-- `Router`와 `hash_value`를 코드에서 직접 확인해, 테스트 이름이 가리키는 invariant가 실제로 어디에 박혀 있는지 본다.
-
-### Session 2 — 중심 타입에서 책임이 모이는 지점 보기
-
-이 구간에서 먼저 붙잡으려 한 것은 소스 파일의 중심 타입/클래스가 어떤 책임을 한곳에 묶고 있는지 확인하는 것이었다. 처음 읽을 때는 구현이 작으면 책임도 단순하게 한 줄로 설명될 거라고 생각했다.
-
-그런데 가장 큰 구현 파일인 `database-systems/python/ddia-distributed-systems/projects/03-shard-routing/src/shard_routing/core.py`를 먼저 읽고, 테스트가 요구한 상태 전이가 정말 이 파일 안에서 닫히는지 확인했다. 특히 `Router` 같은 이름이 초기에 바로 보이면 write path의 중심이 선명해진다.
-
-변경 단위:
-- `database-systems/python/ddia-distributed-systems/projects/03-shard-routing/src/shard_routing/core.py`
-
-CLI:
+2026-03-14에 아래 명령을 다시 실행했다.
 
 ```bash
-$ rg -n "^(class|def) " src
-src/shard_routing/core.py:8:def hash_value(value: str) -> int:
-src/shard_routing/core.py:13:class RingEntry:
-src/shard_routing/core.py:18:class Ring:
-src/shard_routing/core.py:62:class Router:
-src/shard_routing/core.py:78:def demo() -> None:
+cd /Users/woopinbell/work/book-task-3/database-systems/python/ddia-distributed-systems/projects/03-shard-routing
+PYTHONPATH=src python3 -m shard_routing
 ```
 
-검증 신호:
-- `Router` 같은 이름이 초기에 바로 보이면 write path의 중심이 선명해진다.
-- 반대로 `hash_value`가 함께 보이면 read path나 visibility 규칙을 따로 떼어 설명할 수 없다는 뜻이다.
-
-핵심 코드:
+출력은 아래와 같았다.
 
 ```python
-class Router:
-    def __init__(self, ring: Ring) -> None:
-        self.ring = ring
-
-    def route(self, key: str) -> tuple[str, bool]:
-        return self.ring.node_for_key(key)
-
-    def route_batch(self, keys: list[str]) -> dict[str, list[str]]:
-        grouped: dict[str, list[str]] = {}
-        for key in keys:
-            node_id, ok = self.ring.node_for_key(key)
-            if ok:
-                grouped.setdefault(node_id, []).append(key)
-        return grouped
+{'node-a': ['k1', 'k3', 'k4'], 'node-b': ['k2']}
 ```
 
-왜 여기서 판단이 바뀌었는가:
+demo는 ring에 `node-a`, `node-b`를 넣고 `route_batch()`를 실행한다. 여기서 중요한 건 특정 key가 어느 노드로 갔는지가 아니라, batch 결과가 "node별로 key를 묶은 map"이라는 점이다. 즉 router 표면은 key 하나씩 조회하는 API보다 "다음 단계에서 병렬 전송하기 쉬운 grouped assignment"를 더 중시한다.
 
-`Router`는 이 프로젝트가 가장 먼저 고정해야 하는 상태 전이를 보여 준다. 이 조각을 보고 나서야 테스트 이름과 구현 책임이 같은 문제를 가리키고 있다는 확신이 생겼다.
+## 5. 수동 재실행으로 다시 본 분산도
 
-이번 구간에서 새로 이해한 것:
-- `Virtual Nodes`에서 정리한 요점처럼, 물리 node마다 ring에 하나의 점만 두면 hash 편차 때문에 분산이 쉽게 치우친다. virtual node는 물리 node 하나를 ring 위의 여러 점으로 쪼개서 더 고르게 분산되도록 만든다.
+추가로 3000개 key를 넣어 distribution을 다시 계산했다.
 
-다음으로 넘긴 질문:
-- 같은 상태를 반대 방향에서 고정하는 `hash_value`를 읽어, write/read 혹은 append/replay가 서로 어떻게 잠기는지 확인한다.
+```python
+distribution {'node-a': 1010, 'node-b': 889, 'node-c': 1101}
+```
+
+비율로 바꾸면 대략 33.7%, 29.6%, 36.7%다. 테스트가 요구하는 `0.2 < share < 0.5` 범위 안에 들어온다. 이 수치는 "완벽하게 균등하다"는 뜻이 아니라, virtual node를 통해 단일 물리 노드에 과도하게 몰리지 않도록 만들었다는 현재 수준의 보장을 의미한다.

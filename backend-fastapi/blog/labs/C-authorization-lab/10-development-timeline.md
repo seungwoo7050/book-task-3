@@ -1,14 +1,16 @@
-# C-authorization-lab: 로그인에서 한 걸음 물러서서, 누가 무엇을 할 수 있는지만 고립시키기
+# C-authorization-lab development timeline
 
-이 글은 `labs/C-authorization-lab/README.md`, `problem/README.md`, `docs/README.md`, `labs/C-authorization-lab/fastapi/app/api/v1/routes/authorization.py::create_invite`, `labs/C-authorization-lab/fastapi/tests/integration/test_authorization_flows.py::test_invite_accept_promote_and_document_permissions`, `backend-fastapi/docs/verification-report.md`를 바탕으로 실제 구현 순서를 다시 복원한다.
+이 글은 C 랩을 "간단한 RBAC 예제"처럼 다루지 않는다. 현재 남아 있는 source of truth를 따라가 보면, 이 프로젝트의 핵심은 인증 자체를 단순화한 뒤에도 인가 규칙이 흐트러지지 않게 만드는 데 있다. `X-User-Id`라는 최소 actor 입력만 남겨 놓고, workspace membership, invitation status, owner/member/viewer 임계값, 문서 접근 제어를 어디서 서비스 규칙으로 고정하는지가 실제 중심이다.
 
-C 랩은 앞선 인증 트랙 뒤에 오지만, 실제로는 한 걸음 뒤로 물러선 프로젝트다. problem/README.md는 '누가 무엇을 할 수 있는가'를 명확히 해야 한다고만 말하고, README.md는 실제 로그인 시스템을 제외 범위로 밀어낸다. 이 결정 덕분에 글도 '어떻게 로그인했는가'가 아니라 '어떤 actor가 언제 403을 받아야 하는가'를 중심으로 재구성할 수 있다.
+## Phase 1. 인증을 비우고 actor 입력만 남긴다
 
-## 1. 로그인 대신 actor와 역할표부터 세우기
-출발점부터 actor 모델을 단순화했다. fastapi/README.md의 실행 surface는 단순하지만, docs/README.md가 먼저 묻는 질문은 역할과 소유권의 차이, 초대 흐름에서 누가 상태를 바꿀 수 있는가, 인가 규칙을 테스트하기 좋은 경계가 어디인가 같은 것들이다. 인증을 빼낸 자리에 역할표와 invitation lifecycle이 들어앉은 셈이다.
+가장 먼저 확인할 건 [`get_actor_id()`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/C-authorization-lab/fastapi/app/api/deps.py) 이다. 이 랩은 세션, JWT, cookie를 아예 다루지 않고 `X-User-Id` 헤더 하나를 actor 입력으로 받는다. README가 인증을 제외 범위로 밀어낸 이유가 여기서 바로 구현으로 드러난다.
 
-## 2. 초대 lifecycle을 인가 규칙의 중심으로 잡기
-그래서 중심 route도 authorization.py 하나로 모인다. create_invite, accept_invite, decline_invite, change_role, create_document, get_document가 한 surface에 있는 구성이 중요하다. 이 파일은 인가를 '모든 endpoint에 if를 붙이는 일'이 아니라 'workspace membership과 invitation 상태를 전이시키는 일'로 재정의한다.
+이 선택은 꽤 의도적이다. 인가를 설명할 때 "누가 들어왔는가"와 "들어온 뒤 무엇을 할 수 있는가"를 섞지 않기 위해서다. 그래서 C 랩은 auth surface를 거의 비운 대신, authorization route 하나에 user, workspace, invite, membership, document 규칙을 몰아 둔다.
+
+## Phase 2. invitation lifecycle이 authorization의 중심 surface가 된다
+
+[`authorization.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/C-authorization-lab/fastapi/app/api/v1/routes/authorization.py) 를 보면 중심 endpoint는 `create_invite`, `accept_invite`, `decline_invite`, `change_role`, `create_document`, `get_document`다. 이 배열이 중요한 이유는 인가를 "리소스 읽기/쓰기 전에 검사 하나 넣기"가 아니라, membership과 invite 상태를 전이시키는 문제로 다시 정의하기 때문이다.
 
 ```python
 def create_invite(
@@ -25,40 +27,74 @@ def create_invite(
     )
 ```
 
-이 대목에서 드러나는 건 인가 규칙이 actor, workspace, role payload를 함께 받아 판단한다는 사실이다.
+여기서 인가 판단의 최소 입력이 보인다. actor, workspace, email, role이다. 로그인 방식은 필요 없고, "누가 누구를 어떤 역할로 초대하려 하는가"만 있으면 된다.
 
-## 3. 권한 상승과 접근 거부를 테스트로 고정하기
-테스트는 그 전이를 구체적으로 보여 준다. viewer가 초대를 수락한 직후에는 문서 생성이 403이고, owner가 role을 member로 바꾼 다음에야 200이 된다. 다른 테스트에서는 초대를 decline한 invitee와 outsider 읽기 실패까지 확인한다. 이 흐름이 있으니 글에서도 '권한 테이블을 만들었다'가 아니라 '권한 상승 전후의 API 의미가 어떻게 달라지는지'를 자연스럽게 따라갈 수 있다.
+## Phase 3. ROLE_ORDER가 권한 임계값을 서비스 계층으로 고정한다
+
+실제 규칙은 [`AuthorizationService`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/C-authorization-lab/fastapi/app/domain/services/authorization.py) 의 `ROLE_ORDER`와 `_require_role()` 안에 모여 있다. `viewer < member < admin < owner` 순서를 기준으로 invite 생성은 최소 `admin`, 문서 생성은 최소 `member`, 문서 읽기는 최소 `viewer`, role change는 사실상 `owner`만 허용된다.
 
 ```python
-def test_invite_accept_promote_and_document_permissions(client) -> None:
-    owner = client.post(
-        "/api/v1/authorization/users",
-        json={"email": "owner@example.com", "name": "Owner"},
-    ).json()
-    viewer = client.post(
-        "/api/v1/authorization/users",
-        json={"email": "viewer@example.com", "name": "Viewer"},
-    ).json()
+ROLE_ORDER = {"viewer": 1, "member": 2, "admin": 3, "owner": 4}
 
-    workspace = client.post(
-        "/api/v1/authorization/workspaces",
+def _require_role(self, *, actor_id: str, workspace_id: str, minimum: str) -> Membership:
+    membership = self.repository.get_membership(workspace_id, actor_id)
+    if membership is None or ROLE_ORDER[membership.role] < ROLE_ORDER[minimum]:
+        raise AppError(code="FORBIDDEN", message="Forbidden.", status_code=403)
+    return membership
 ```
 
-테스트는 viewer가 거절당했다가 promote 뒤 허용되는 전환을 그대로 남긴다.
+이 랩이 깔끔한 건 권한 판단이 route에 흩어지지 않고 서비스 계층에서 하나의 임계값 규칙으로 읽힌다는 점이다. owner-only role change를 굳이 한 번 더 검사하는 것도 이 랩이 소유권을 역할표와 분리해서 강조하려는 흔적이다.
 
-## 4. 2026-03-09 재검증으로 규칙 surface를 다시 확인하기
-재검증 단계에서는 이 규칙이 독립 워크스페이스로 돌아간다는 사실이 닫힌다. 보고서에 적힌 2026-03-09 재실행은 compile, lint, test, smoke, Compose probe를 모두 포함하고, 로컬 실행을 위해 스키마 자동 초기화를 남겼다. 인가 규칙이 추상 정책 문서가 아니라 실제 FastAPI 앱으로 살아 있다는 증거다.
+## Phase 4. invitation은 수락 여부보다 "누가 그 상태를 바꿀 수 있는가"가 더 중요하다
+
+`accept_invite()`와 `decline_invite()`를 보면 둘 다 invite token만으로 끝나지 않는다. acting user가 실제로 그 email의 주인인지 다시 확인하고, 아니면 `INVITE_EMAIL_MISMATCH`로 막는다. 즉 이 랩의 invitation rule은 "token을 아는가"보다 "그 token이 누구를 대상으로 발급됐는가"를 더 중요하게 본다.
+
+이 지점에서 invitation lifecycle이 단순 CRUD가 아니라 상태 전이로 보이기 시작한다. `pending -> accepted` 또는 `pending -> declined`는 아무나 바꿀 수 있는 값이 아니라, actor identity와 연결된 상태다.
+
+## Phase 5. 테스트가 승격 전후의 403/200 경계를 고정한다
+
+이 랩의 가장 좋은 문서는 통합 테스트다. [`test_invite_accept_promote_and_document_permissions()`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/C-authorization-lab/fastapi/tests/integration/test_authorization_flows.py) 는 viewer가 초대를 받아도 바로 문서를 만들 수는 없고, owner가 role을 `member`로 올려 준 다음에야 200이 된다는 걸 한 흐름으로 보여 준다.
+
+```python
+forbidden = client.post(
+    f"/api/v1/authorization/workspaces/{workspace['id']}/documents",
+    json={"title": "Spec"},
+    headers={"X-User-Id": viewer["id"]},
+)
+assert forbidden.status_code == 403
+
+promote = client.patch(
+    f"/api/v1/authorization/workspaces/{workspace['id']}/members/{viewer['id']}",
+    json={"role": "member"},
+    headers={"X-User-Id": owner["id"]},
+)
+assert promote.status_code == 200
+```
+
+다른 테스트는 초대 거절과 outsider read 금지를 고정한다. 이 덕분에 C 랩의 핵심은 허용 규칙 표를 예쁘게 만드는 일이 아니라, "정확히 언제 403이어야 하는가"를 회귀선으로 남기는 일이라는 점이 더 또렷해진다.
+
+## Phase 6. 오늘 다시 돌린 검증은 path 문제와 schema dependency 문제를 같이 드러냈다
+
+2026-03-14 현재 셸에서 다시 실행한 결과는 공식 문서보다 거칠다.
 
 ```bash
-python3 -m compileall app tests
 make lint
 make test
 make smoke
-./tools/compose_probe.sh labs/C-authorization-lab/fastapi 8001
+PYTHONPATH=. pytest
+PYTHONPATH=. python -m tests.smoke
 ```
 
-2026-03-09에 compile, lint, test, smoke, Compose live/ready probe가 통과했고, 로컬 학습 실행을 위해 앱 시작 시 스키마 자동 초기화를 두었다. 이 랩은 로그인 시스템을 의도적으로 비워 두므로, 검증도 actor header 기반 규칙 surface에 집중한다.
+오늘 확인한 결과는 이렇다.
+
+- `make lint`: [`health.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/C-authorization-lab/fastapi/app/api/v1/routes/health.py) 의 주석 한 줄이 `E501`로 실패한다.
+- `make test`: `ModuleNotFoundError: No module named 'app'`.
+- `make smoke`: Homebrew `python3` 기준 `ModuleNotFoundError: No module named 'fastapi'`.
+- `PYTHONPATH=. pytest`: [`schemas/authorization.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/C-authorization-lab/fastapi/app/schemas/authorization.py) 의 `EmailStr`가 기대하는 `email-validator` 부재로 실패한다.
+- `PYTHONPATH=. python -m tests.smoke`: 같은 `email-validator` import 단계에서 실패한다.
+
+이건 꽤 중요한 정보다. 이 랩의 규칙 설계는 선명하지만, 지금 셸에서 공식 재검증 surface는 path 설정과 schema dependency에서 먼저 깨진다. 문서가 이 사실을 빼면 구현 완성도보다 실행 재현성이 더 좋아 보이게 된다.
 
 ## 정리
-C 랩이 하는 일은 로그인 시스템을 대체하는 것이 아니라, 로그인과 별개로 인가 규칙을 설명 가능한 단위로 떼어내는 것이다. 이 덕분에 다음 D 랩에서는 '누가 할 수 있는가'를 잠시 내려놓고, 데이터 API 자체가 어떤 일관성을 가져야 하는지에만 집중할 수 있다.
+
+C-authorization-lab이 실제로 한 일은 인증을 대체하는 것이 아니다. 오히려 반대다. 인증을 거의 비워 둔 상태에서도 인가 규칙이 standalone으로 설명될 수 있는지를 시험한다. actor header, invite email match, ROLE_ORDER, owner-only role change, viewer/member document threshold가 서로 연결되면서, "누가 무엇을 할 수 있는가"가 하나의 서비스 규칙 집합으로 읽히게 된다. 다음 D 랩이 데이터 API 일관성에 집중할 수 있는 것도, 여기서 권한 규칙이 한 번 분리되어 있기 때문이다.

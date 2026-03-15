@@ -1,12 +1,10 @@
 # self-hosted operator surface
 
-앞 글까지 오면 `v2`가 왜 공식 제출 버전인지 이해할 수 있다. 추천 결과가 compare, compatibility, release gate, artifact export까지 이어지기 때문이다. 이번 글은 그다음 질문에 답한다. 이미 만든 proof pipeline을, 실제 팀이 설치해서 운영할 수 있는 표면으로 바꾸면 어떤 모습이 될까?
+`v2`가 proof chain을 완성했다면, `v3-oss-hardening`은 그 proof를 운영자가 다룰 수 있는 표면으로 옮긴 단계다. 여기서 중요한 점은 새 recommendation algorithm이 추가된 것이 아니라는 것이다. 오히려 `eval -> compare -> compatibility -> release-gate -> artifact-export`라는 기존 체인을 queue와 RBAC 뒤로 감쌌다는 점이 핵심이다.
 
-`v3-oss-hardening`의 핵심은 새 ranking 기능이 아니다. 이미 있는 `eval -> compare -> compatibility -> release-gate -> artifact-export` 체인을 로그인과 job queue 뒤로 옮기고, 역할에 따라 다르게 보이는 운영 화면으로 감싼 것이 핵심이다.
+## 백엔드 전환점은 proof를 job queue로 이름 붙이는 순간이다
 
-백엔드에서 그 전환점이 가장 잘 드러나는 파일은 `capstone/v3-oss-hardening/node/src/services/job-service.ts`다. 여기서는 이전까지 사람이 순서대로 실행하던 검증 단계를, 이름이 있는 작업 큐로 선언한다.
-
-아래 배열이 중요한 이유는, `v2`에서 손으로 실행하던 proof가 `v3`에서 운영자가 다루는 "작업 목록"으로 바뀌는 순간을 보여 주기 때문이다.
+`job-service.ts`는 운영자가 다룰 작업 큐를 이렇게 선언한다.
 
 ```ts
 const jobQueues = [
@@ -18,34 +16,49 @@ const jobQueues = [
 ] satisfies JobName[];
 ```
 
-이후 `performJob`은 각 큐가 어떤 데이터를 읽고 어떤 결과를 남기는지 분명하게 정리한다. compare job은 uplift를 남기고, release-gate job은 pass/fail과 uplift를 남기고, artifact-export job은 새 artifact id를 남긴다. 즉 이전까지는 명령어 흐름이었던 것이, 이제는 운영자가 기다릴 수 있는 상태 변화로 바뀐다.
+이 배열이 중요한 이유는 `v2`에서 사람이 CLI로 순서대로 실행하던 proof가, `v3`에서는 백엔드가 관리하는 named job이 된다는 사실을 보여 주기 때문이다. `performJob()` 안을 보면 각 작업은 결국 `v2`에서 보던 service들을 다시 호출한다.
 
-프런트엔드 쪽 대응물은 `react/components/mcp-dashboard.tsx`다. 여기서는 owner/operator/viewer 역할을 나누고, job 등록 뒤 polling으로 완료 여부를 확인한다.
+- `eval`: `evaluateOfflineCases()`
+- `compare`: `runCompare()`
+- `compatibility`: `runCompatibilityGate()`
+- `release-gate`: `runReleaseGate()`
+- `artifact-export`: `buildSubmissionArtifact()`
 
-이 코드가 중요한 이유는 사용 방식 자체를 바꾸기 때문이다. 사용자는 더 이상 `pnpm release:gate ...` 같은 명령을 외우지 않아도 된다. 로그인해서 job을 등록하고, 완료 요약과 audit log를 같은 화면에서 확인할 수 있다.
+즉 `v3`는 기존 proof를 버리는 게 아니라 orchestration만 바꾼다.
+
+## 프런트 전환점은 owner/operator/viewer가 서로 다른 surface를 갖는다는 점이다
+
+`mcp-dashboard.tsx`는 로그인 세션과 role을 읽고 다음처럼 권한을 나눈다.
 
 ```ts
 const canOperate = session?.user.role === "owner" || session?.user.role === "operator";
-
-async function waitForJob(jobId: string) {
-  for (let attempt = 0; attempt < 20; attempt += 1) {
-    const response = await apiFetch<{ item: JobRun }>(`/api/jobs/${jobId}`);
+const isOwner = session?.user.role === "owner";
 ```
 
-좋은 점은 역할 구분도 분명하다는 것이다. viewer는 읽기 전용으로 남고, owner만 audit log와 settings를 다룬다. 그래서 recommendation project가 제품화될 때 필요한 최소한의 운영 질서가 이 단계에서 보이기 시작한다.
+이후 대시보드는 recommendation preview, job history, latest eval/compare/compatibility/gate/artifact, audit log, settings를 하나의 운영 콘솔에 묶는다. 중요한 건 사용자가 더 이상 `pnpm release:gate ...`를 외우지 않아도 된다는 점이다. 로그인 후 job을 enqueue하고, polling으로 결과를 기다리며, latest artifact까지 같은 화면에서 확인할 수 있다.
 
-실제 회귀 신호도 확보돼 있다.
+소스 안에 helper가 꽤 많이 들어 있는 것도 이 흐름을 보여 준다.
 
-```bash
-cd capstone/v3-oss-hardening
-pnpm test
-```
+- `buildSampleCatalogEntry()`
+- `buildSampleExperiment()`
+- `buildSampleReleaseCandidate()`
+- `apiFetch()`와 `sleep()`
 
-```text
-node: 8 passed | 2 skipped
-react: 2 passed
-```
+즉 이 대시보드는 pretty mock이 아니라, self-hosted 운영 흐름을 데모하기 위한 실제 task surface다.
 
-이 출력이 증명하는 것은, self-hosted surface가 단순한 화면 mock이 아니라는 점이다. node와 react दोनों에서 실제 동작 경로를 검증하고 있고, owner 로그인과 job flow도 테스트에 들어가 있다. 다만 `2 skipped`가 남아 있다는 점도 같이 읽어야 한다. 이 버전은 방향을 충분히 보여 주지만, 모든 route integration이 완전히 끝난 production-hardening 상태라고 과장하진 않는다.
+## 이번 재실행에서 확인된 현재 경계
 
-그래도 이 단계가 중요한 이유는 분명하다. `v2`에서 이미 완성한 deterministic proof를 버리지 않고, 더 안전한 운영 표면으로 다시 배치했기 때문이다. 그래서 이 프로젝트의 전체 흐름은 `catalog -> ranking -> release proof -> operator jobs` 순서로 읽을 때 가장 설득력이 크다.
+2026-03-14에 `capstone/v3-oss-hardening`에서 `pnpm test`를 다시 돌린 결과는 아래와 같았다.
+
+- node: `8 passed | 2 skipped`
+- react: `2 passed`
+
+react 테스트 중 하나는 실제로 `logs in as owner and runs export plus release-gate job flow`를 검증한다. 반면 node 쪽 route integration 2개는 아직 skipped다. 즉 `v3`는 operator flow를 설명할 만큼은 충분히 살아 있지만, 모든 route path를 production-hardening 수준으로 닫아 둔 상태는 아니다.
+
+이 점을 문서에서 숨길 필요는 없다. 오히려 `v3`의 역할을 정확히 보여 준다. 현재 단계의 목적은 proof chain을 운영 표면으로 옮기는 것이지, 완전한 self-hosted SaaS를 보증하는 것이 아니기 때문이다.
+
+## 왜 이 확장이 설득력 있는가
+
+좋은 확장은 이전 단계를 부정하지 않는다. `v3`가 설득력 있는 이유는 `v2`에서 이미 deterministic하게 만들었던 proof를 그대로 재사용한다는 점이다. recommendation quality, compatibility, release gate, artifact export라는 핵심 판단은 여전히 같은 서비스가 담당한다. 바뀐 것은 누가, 어떤 surface에서, 어떤 권한으로 그 판단을 실행하고 기다릴 수 있느냐다.
+
+그래서 이 프로젝트의 전체 흐름은 `catalog contract -> ranking trace -> release proof -> operator job surface` 순서로 읽을 때 가장 자연스럽다. `v3`는 새 알고리즘의 승리가 아니라, 이미 검증된 proof 체인을 운영자가 다룰 수 있게 만드는 제품화 단계다.

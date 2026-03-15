@@ -2,6 +2,12 @@
 
 이 디렉터리는 두 인포뱅크 과제를 `공식 제출 답`과 `확장 답` 기준으로 다시 묶는다.
 
+## 문제지 빠른 진입
+
+- [../problem-subject-essential/README.md](../problem-subject-essential/README.md): 과제 핵심 경로와 stage를 먼저 읽는 문제지
+- [../problem-subject-elective/README.md](../problem-subject-elective/README.md): baseline/hardening 버전을 따로 모은 문제지
+- [../problem-subject-capstone/README.md](../problem-subject-capstone/README.md): 공식 제출 답과 확장 답을 따로 모은 문제지
+
 | 프로젝트 | 공식 답 | 확장 답 | stage 인덱스 | 검증 매트릭스 |
 | --- | --- | --- | --- | --- |
 | [`01-mcp-recommendation-demo`](./01-mcp-recommendation-demo/README.md) | [`capstone/v2-submission-polish`](./01-mcp-recommendation-demo/capstone/v2-submission-polish/README.md) | [`capstone/v3-oss-hardening`](./01-mcp-recommendation-demo/capstone/v3-oss-hardening/README.md) | [`docs/stage-catalog.md`](./01-mcp-recommendation-demo/docs/stage-catalog.md) | [`docs/verification-matrix.md`](./01-mcp-recommendation-demo/docs/verification-matrix.md) |

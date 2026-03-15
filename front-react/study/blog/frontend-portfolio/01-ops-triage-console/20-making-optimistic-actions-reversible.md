@@ -1,95 +1,52 @@
 # Making Optimistic Actions Reversible
 
-운영 도구에서 빠른 UI는 분명 중요하다. 하지만 빠르기만 한 UI는 금방 신뢰를 잃는다. 방금 바꾼 상태가 실패하면 어떻게 되는지, 목록과 상세가 서로 다른 값을 보여 주지는 않는지, 한 번의 bulk action을 잘못 눌렀을 때 되돌릴 수 있는지까지 같이 설명되어야 한다. Ops Triage Console의 진짜 중심은 바로 여기 있었다.
+이 콘솔의 진짜 기술 포인트는 테이블이 아니라 mutation 경로다. 운영자는 queue에서 결정을 빨리 내려야 하므로, status/route/label 변화가 느리게 반영되면 도구 자체가 답답해진다. 하지만 optimistic update를 넣는 순간 rollback과 undo까지 같이 설계해야 한다. 이 프로젝트는 그 부분을 꽤 정직하게 드러낸다.
 
-이 프로젝트가 흥미로운 이유는 optimistic update를 "빨리 보이게 만드는 트릭"으로 다루지 않는다는 점이다. 오히려 snapshot을 얼마나 넓게 잡고, 실패했을 때 어떤 surface로 복구를 보여 줄 것인가에 훨씬 더 무게를 둔다.
+## optimistic patch는 activity log까지 같이 바꾼다
 
-그래서 이 글은 internal tool의 두 번째 핵심 축, 즉 reversible mutation이 어떻게 만들어졌는지를 따라간다.
-
-## 구현 순서를 먼저 짚으면
-
-- single issue mutation부터 list/detail snapshot을 함께 잡는 방식으로 만들었다.
-- 그 규칙을 bulk mutation에도 확장해 selected rows 전체를 같은 방식으로 되돌릴 수 있게 했다.
-- integration 테스트로 summary, queue, detail이 같이 움직이는지 확인했다.
-
-## 낙관적 업데이트의 핵심은 빠른 반응이 아니라 snapshot 범위였다
-
-`useIssueMutation()`의 `onMutate`를 보면 이 프로젝트가 어디에 신경을 썼는지 분명히 드러난다. 목록 query만 고치는 것이 아니라, 현재 열려 있는 detail query snapshot도 같이 잡는다.
+[`next/src/lib/optimistic.ts`](/Users/woopinbell/work/book-task-3/front-react/study/frontend-portfolio/01-ops-triage-console/next/src/lib/optimistic.ts)의 `applyIssuePatch()`는 단순 필드 overwrite가 아니라 activity entry까지 같이 쌓는다.
 
 ```ts
-onMutate: async ({ issueId, patch }) => {
-  setPendingIds([issueId]);
-
-  const issueLists = queryClient.getQueriesData<IssueListResult>({
-    queryKey: issueKeys.lists(),
-  });
-  const detailSnapshot = queryClient.getQueryData<Issue | undefined>(
-    issueKeys.detail(issueId),
+if (patch.status && patch.status !== issue.status) {
+  nextIssue = pushActivity(
+    { ...nextIssue, status: patch.status },
+    `Status set to ${patch.status}.`,
+    "status_changed",
   );
-
-  for (const [key, listResult] of issueLists) {
-    queryClient.setQueryData<IssueListResult>(key, {
-      ...listResult,
-      items: listResult.items.map((issue) =>
-        issue.id === issueId ? applyIssuePatch(issue, patch) : issue,
-      ),
-    });
-  }
-  return { issueLists, detailSnapshot };
 }
 ```
 
-이 코드는 낙관적 업데이트를 단순히 "먼저 바꿔 보여 준다"로 두지 않는다. 나중에 실패하거나 Undo 할 때 정확히 어디로 돌아가야 하는지를 같이 저장해 둔다. internal tool에서 이 차이는 치명적이다. 목록은 바뀌었는데 상세는 안 바뀌거나, 반대로 상세만 복구되고 queue는 그대로 남아 있으면 operator는 시스템을 신뢰할 수 없게 된다.
+이 점이 중요한 이유는 optimistic UI가 "겉으로만 빨라 보이는 상태"가 아니라, detail panel과 activity timeline까지 함께 일관되게 보여 주려는 시도라는 뜻이기 때문이다. status, priority, label, route, operator note가 모두 같은 helper 위에서 바뀌므로, list와 detail이 다른 세계를 보지 않게 된다.
 
-## bulk action도 같은 철학으로 설계돼야 했다
+## rollback과 retry는 React Query cache 전체를 되돌리는 쪽으로 설계됐다
 
-이 원칙은 bulk mutation에서도 그대로 반복된다. 오히려 bulk action이기 때문에 더 엄격해야 했다. 여러 row를 한 번에 바꾸는 순간, 실패와 복구도 같은 범위로 다뤄져야 하기 때문이다.
+[`next/src/hooks/use-ops-triage.ts`](/Users/woopinbell/work/book-task-3/front-react/study/frontend-portfolio/01-ops-triage-console/next/src/hooks/use-ops-triage.ts)의 `useIssueMutation()`은 `onMutate`에서 list queries와 detail snapshot을 모두 저장한 뒤 optimistic patch를 넣는다.
 
-```ts
-onMutate: async ({ issueIds, patch }) => {
-  setPendingIds(issueIds);
-
-  const issueLists = queryClient.getQueriesData<IssueListResult>({
-    queryKey: issueKeys.lists(),
-  });
-
-  for (const [key, listResult] of issueLists) {
-    queryClient.setQueryData<IssueListResult>(key, {
-      ...listResult,
-      items: applyBulkPatch(listResult.items, issueIds, patch),
-    });
-  }
-  return { issueLists, detailSnapshot };
-}
-```
-
-그리고 실패했을 때는 그대로 rollback surface를 드러낸다. 사용자는 "실패했다"는 사실만 듣는 것이 아니라, 선택한 rows가 되돌려졌고 다시 시도할 수 있다는 메시지를 바로 받는다.
+에러가 나면 그 snapshot으로 다시 되돌린다.
 
 ```ts
-setToast({
-  tone: "error",
-  title: "Bulk update failed",
-  description: "The selected rows were rolled back. Retry the bulk action.",
-  actionLabel: "Retry",
-  onAction: async () => {
-    mutation.mutate(variables);
-  },
+context?.issueLists.forEach(([key, value]) => {
+  queryClient.setQueryData(key as QueryKey, value);
 });
+
+if (context?.detailSnapshot) {
+  queryClient.setQueryData(
+    issueKeys.detail(variables.issueId),
+    context.detailSnapshot,
+  );
+}
 ```
 
-여기서 새로 분명해진 건 optimistic UI의 품질이 success toast보다 rollback surface에서 드러난다는 점이었다. 빠른 화면은 매력적이지만, 실패했을 때 무슨 일이 벌어졌는지 설명하지 못하면 internal tool로서는 절반짜리다.
+그리고 toast action으로 retry를 직접 붙인다. 성공했을 때는 반대로 undo action을 건다. 즉 이 콘솔의 optimistic update는 "빠르게 반영"에서 끝나지 않고, "실패하면 복구, 성공하면 되돌리기"까지 한 세트로 설계돼 있다.
 
-## 이 단계의 verify는 data consistency를 계속 물고 늘어진다
+bulk mutation도 같은 방식으로 list/detail snapshot을 저장하고, 성공 시 row selection과 bulk draft를 비운다. 내부도구형 UI에서 이 부분이 중요한 이유는, bulk action이 한번 꼬이면 운영자가 무엇이 실제로 적용됐는지 잃기 쉽기 때문이다.
 
-이 프로젝트의 테스트가 단순히 "변경 버튼이 잘 눌린다"를 확인하지 않는 이유도 여기에 있다. integration harness는 query가 바뀌면 visible row set이 바뀌는지, single mutation 뒤에 list와 detail이 같이 맞춰지는지, bulk mutation 뒤에 summary count까지 따라오는지를 본다.
+## 실패 시뮬레이션이 제품 surface에 직접 연결돼 있다는 점이 좋다
 
-```bash
-cd study
-npm run test --workspace @front-react/ops-triage-console
-```
+[`next/src/lib/simulate.ts`](/Users/woopinbell/work/book-task-3/front-react/study/frontend-portfolio/01-ops-triage-console/next/src/lib/simulate.ts)는 `stable`/`chaos`, `failureRate`, `failNextRequest`를 제공한다. 이게 좋은 이유는 테스트용 helper가 UI 밖에만 머물지 않고, runtime controls를 통해 제품 surface와 직접 연결된다는 점이다.
 
-2026-03-13 replay 기준으로 `vitest` 16개 테스트가 통과했다. 이 중 상당수는 optimistic helper와 simulation helper만이 아니라, query cache와 detail snapshot이 같은 방향으로 움직이는지 확인한다.
+즉 실패는 "개발자만 아는 설정"이 아니라, case study에서 보여 줄 수 있는 운영 시나리오가 된다. 사용자는 실패를 재현하고, toast에서 retry를 누르고, rollback이 실제로 눈앞에서 일어나는 것을 확인할 수 있다.
 
-즉 이 글의 주제는 React Query 사용법이 아니다. 여러 surface가 동시에 존재하는 internal tool에서, mutation 하나가 어디까지 일관되어야 하는가를 정의하는 일에 더 가깝다.
+다만 이 runtime도 서버 플래그가 아니라 브라우저 쪽 state다. `readRuntimeConfig()`와 `writeRuntimeConfig()`는 `localStorage`와 in-memory clone을 함께 쓰므로, chaos/fail-next-request는 현재 탭/브라우저 데모 문맥에 묶인다. 이번 보강에서는 그래서 retry/rollback을 distributed backend recovery처럼 읽히지 않게 조정했다.
 
-다음 글에서는 이 reversible mutation이 실제 failure와 e2e 시나리오를 만나면 어떻게 읽히는지 본다. 결국 포트폴리오 결과물로서 결정적인 건 실패했을 때도 이 도구가 믿을 만하다는 사실을 보여 주는 쪽이기 때문이다.
+그래서 이 프로젝트의 두 번째 편에서 중요한 건 optimistic update 자체보다, 그 optimistic update를 되돌릴 수 있게 만들었다는 사실이다. 빠른 내부도구는 많지만, reversible optimistic workflow를 끝까지 설계한 내부도구는 훨씬 적다. 다만 그 rollback/undo도 single-operator, single-browser cache 문맥 안의 일관성을 보여 주는 수준이라는 점은 같이 기억해야 한다.

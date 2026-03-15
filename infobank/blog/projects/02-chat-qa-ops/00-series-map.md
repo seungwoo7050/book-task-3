@@ -1,48 +1,53 @@
 # Chat QA Ops 시리즈 맵
 
-이 시리즈는 `projects/02-chat-qa-ops`를 "챗봇이 얼마나 잘 답하는가"보다 "상담 품질을 어떻게 정의하고 증명 가능한 형태로 운영하는가"라는 질문으로 다시 읽는다. 처음에는 rule, evidence, judge를 묶은 평가 파이프라인이 등장하고, 그다음에는 golden regression과 compare proof가 붙고, 마지막에는 self-hosted review ops로 확장된다.
+이 프로젝트를 제대로 읽으려면 챗봇 품질 평가를 "점수 하나"로 보지 말아야 한다. 실제 소스는 더 복합적인 구조를 갖는다. rule/guardrail이 먼저 실패를 자르고, evidence verifier가 근거를 남기고, judge/scorer가 점수를 합치고, dashboard/CLI가 같은 evaluation row를 다시 읽어 compare proof를 만든다. 마지막에는 그 same evaluation grammar가 로그인, dataset upload, async job, selected-job review UI를 가진 self-hosted 운영 표면으로 옮겨 간다.
 
-이번 버전은 2026-03-13에 `isolate-and-rewrite` 방식으로 다시 썼다. 예전 blog는 [`../../_legacy/2026-03-13-isolate-and-rewrite/projects/02-chat-qa-ops/`](../../_legacy/2026-03-13-isolate-and-rewrite/projects/02-chat-qa-ops/)에 옮겨 두었고, 이번 시리즈는 현재 소스와 실제 CLI 결과만 사용했다.
+## 이 프로젝트를 읽는 질문
 
-## 왜 독립 프로젝트로 보았는가
-
-`projects/02-chat-qa-ops`는 하나의 완결된 문제를 스스로 설명할 수 있다. 이 프로젝트는 "상담 품질을 어떤 기준으로 평가하고, 그 평가를 어떻게 회귀 증빙과 운영 화면까지 연결할 것인가"라는 질문에 답한다. 진입점도 분명하고, 검증 명령도 따로 있으며, `v0 -> v3` 흐름도 다른 디렉터리와 섞이지 않는다.
-
-반면 루트 redirect인 `chat-qa-ops/`는 현재 위치를 가리키는 README만 남아 있어 독립 프로젝트 기준을 충족하지 못했다.
+- 왜 Rule -> Evidence -> Judge 순서가 평가 파이프라인의 첫 고정점이 되었는가
+- regression proof는 어떤 데이터 모델과 저장 구조 위에 세워졌는가
+- historical improvement artifact와 현재 재실행 결과는 왜 분리해서 읽어야 하는가
+- `v3` 확장은 새 evaluator보다 어떤 운영 surface를 추가한 것인가
 
 ## 이번에 사용한 근거
 
-- 프로젝트 경계: `README.md`, `problem/README.md`
-- 흐름 복원 기준: `docs/stage-catalog.md`, `docs/verification-matrix.md`
+- 문제 정의: `projects/02-chat-qa-ops/problem/README.md`
+- 단계 지도: `docs/stage-catalog.md`, `docs/verification-matrix.md`
 - 공식 답: `capstone/v2-submission-polish/README.md`
-- proof 자료:
-  - `docs/demo/demo-runbook.md`
-  - `docs/demo/phase1-vs-phase2-diff-matrix.md`
-  - `docs/demo/proof-artifacts/improvement-report.json`
-  - `docs/demo/proof-artifacts/cli-report.txt`
-  - `docs/demo/proof-artifacts/cli-compare.txt`
 - 핵심 코드:
-  - `python/backend/src/evaluator/pipeline.py`
-  - `python/backend/src/api/routes/dashboard.py`
-  - `python/backend/src/cli/main.py`
-  - `v3 python/backend/src/core/auth.py`
-  - `v3 python/backend/src/services/jobs.py`
-  - `v3 react/src/App.tsx`
-  - `v3 react/src/pages/Jobs.tsx`
+  - `capstone/v2-submission-polish/python/backend/src/evaluator/pipeline.py`
+  - `capstone/v2-submission-polish/python/backend/src/api/routes/dashboard.py`
+  - `capstone/v2-submission-polish/python/backend/src/cli/main.py`
+  - `capstone/v3-self-hosted-oss/python/backend/src/core/auth.py`
+  - `capstone/v3-self-hosted-oss/python/backend/src/services/jobs.py`
+  - `capstone/v3-self-hosted-oss/react/src/App.tsx`
+  - `capstone/v3-self-hosted-oss/react/src/pages/Jobs.tsx`
+- proof 자료:
+  - `capstone/v2-submission-polish/docs/demo/demo-runbook.md`
+  - `capstone/v2-submission-polish/docs/demo/proof-artifacts/improvement-report.json`
+  - `capstone/v2-submission-polish/docs/demo/proof-artifacts/cli-compare.txt`
 - 실제 검증:
-  - `UV_PYTHON=python3.12 make gate-all`
-  - `UV_PYTHON=python3.12 make smoke-postgres`
-  - `v3 UV_PYTHON=python3.12 make gate-all`
+  - `PATH="$HOME/.local/bin:$PATH" UV_PYTHON=python3.12 make gate-all`
+  - `PATH="$HOME/.local/bin:$PATH" UV_PYTHON=python3.12 make smoke-postgres`
+  - `PATH="$HOME/.local/bin:$PATH" UV_PYTHON=python3.12 uv run python -m cli.main compare v1.0 v1.1`
+  - `v3 PATH="$HOME/.local/bin:$PATH" UV_PYTHON=python3.12 make gate-all`
+
+## 이번 재실행에서 먼저 드러난 사실
+
+2026-03-14에 현재 snapshot을 다시 검증했을 때, `gate-all`과 `smoke-postgres`는 정상 통과했다. 다만 regression proof는 둘로 나뉘어 읽어야 했다.
+
+- historical proof artifact: `avg_score 84.06 -> 87.76`, `critical_count 2 -> 0`, `pass_count 16 -> 19`, `fail_count 14 -> 11`
+- current local rerun on the same snapshot: `avg_score 87.76 -> 87.76`, delta `0.0`
+
+이 차이는 중요하다. 현재 `v2` snapshot 안에는 baseline `v1` 코드가 따로 살아 있지 않고, run label만 바꿔 같은 snapshot에서 golden evaluation을 다시 만들면 improvement가 재현되지 않는다. 즉 docs/demo proof artifact는 historical compare evidence이고, 현재 로컬 재실행은 "이 snapshot 하나만으로는 그 uplift를 다시 만들 수 없다"는 현재 상태를 보여 준다.
+
+또 하나 드러난 사실은 `Makefile`의 `compare` 타깃이 현재 CLI 시그니처와 맞지 않는다는 점이다. `make compare`는 `--baseline/--candidate` 옵션을 넘기지만, `cli.main compare`는 positional args를 요구한다. 그래서 compare는 `python -m cli.main compare v1.0 v1.1`로 직접 호출해야 했다.
 
 ## 챕터 구성
 
-1. [`10-first-qa-evaluation-loop.md`](./10-first-qa-evaluation-loop.md)  
-   rule, evidence, judge, scoring이 어떤 순서로 묶였는지, 그리고 왜 CLI가 먼저 중요한 운영 출구가 되었는지 본다.
-2. [`20-regression-hardening-and-proof.md`](./20-regression-hardening-and-proof.md)  
-   golden compare, dashboard version compare, smoke-postgres, proof artifact가 어떻게 하나의 증빙 흐름을 만드는지 본다.
-3. [`30-self-hosted-review-ops.md`](./30-self-hosted-review-ops.md)  
-   이미 만든 proof surface가 `v3`에서 login, dataset import, evaluation job, selected-job review UI로 어떻게 확장되는지 본다.
-
-## 이 시리즈를 읽을 때의 핵심 질문
-
-이 트랙에서 중요한 건 점수 계산식 하나를 이해하는 것이 아니다. 더 중요한 질문은 `rule/evidence/judge -> regression proof -> operator review`가 어떤 순서로 서로 기대게 되었는가다.
+1. [10-first-qa-evaluation-loop.md](./10-first-qa-evaluation-loop.md)
+   - 평가 파이프라인이 왜 단계별 trace를 남기는 구조로 시작했는지 본다.
+2. [20-regression-hardening-and-proof.md](./20-regression-hardening-and-proof.md)
+   - dashboard/CLI/proof artifact가 어떤 개선 증빙을 만들고, 현재 snapshot 재실행과는 어디서 갈라지는지 본다.
+3. [30-self-hosted-review-ops.md](./30-self-hosted-review-ops.md)
+   - 같은 평가 문법이 `v3`에서 auth, dataset, job, selected review surface로 어떻게 이동하는지 본다.

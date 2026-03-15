@@ -1,26 +1,30 @@
-# Selective Repeat blog
+# Selective Repeat Blog
 
-`Selective Repeat` 문서 묶음은 개별 ACK과 수신 버퍼링이 Go-Back-N 다음 단계에서 어떤 차이를 만드는가?라는 질문에 답하기 위해 준비한 읽기 경로다. 결과만 요약하지 않고, 어디서부터 구현이나 분석이 무거워졌는지 따라갈 수 있게 구성했다.
+이 문서 묶음은 `selective-repeat`를 "GBN의 다음 이름"이 아니라 "재전송과 수신 버퍼링을 packet 단위로 분해하면 sender와 receiver 상태가 얼마나 달라지는가"라는 질문으로 다시 읽는다. 현재 구현은 `acked` 집합, `timers` 딕셔너리, `recv_buffer`를 따로 두고, timeout이 난 packet만 다시 보낸다. 따라서 이 lab의 핵심은 sliding window 자체보다 packet별 state를 끝까지 유지하는 비용을 드러내는 데 있다.
 
-이 프로젝트의 본문은 `Go-Back-N`의 한계를 보강하기 위해 추가한 선택 재전송 프로젝트입니다.`라는 한 줄 설명을 실제 파일, CLI, 테스트 신호로 다시 풀어 쓰는 데 초점을 둔다.
+이번 재작성은 기존 blog 본문이 아니라 다음 근거만 사용했다.
 
-## 이 폴더에서 기대할 수 있는 것
+- 문제 정의: `study/02-Reliable-Transport/selective-repeat/problem/README.md`
+- 구현 경계: `README.md`, `python/README.md`, `python/src/selective_repeat.py`
+- 테스트 근거: `python/tests/test_selective_repeat.py`, `problem/script/test_selective_repeat.sh`
+- 실제 검증: 2026-03-14 재실행한 `make -C network-atda/study/02-Reliable-Transport/selective-repeat/problem test`
+- 보조 실행 로그: `python3 python/src/selective_repeat.py --loss 0.2 --corrupt 0.1 --window 4`
 
-- 문제 경계와 읽는 순서: [00-series-map.md](00-series-map.md)
-- 단계별 근거 압축본: [01-evidence-ledger.md](01-evidence-ledger.md)
-- 글의 편집 개요: [02-structure.md](02-structure.md)
-- 실제 서사형 기록: [10-development-timeline.md](10-development-timeline.md)
+## 읽는 순서
 
-## 근거로 사용한 source set
+1. [`00-series-map.md`](./00-series-map.md)
+2. [`10-development-timeline.md`](./10-development-timeline.md)
+3. [`01-evidence-ledger.md`](./01-evidence-ledger.md)
+4. [`02-structure.md`](./02-structure.md)
 
-- 프로젝트 루트: `study/02-Reliable-Transport/selective-repeat`
-- 정식 검증 명령: `make -C study/02-Reliable-Transport/selective-repeat/problem test`
-- 구현 파일: `study/02-Reliable-Transport/selective-repeat/python/src`
-- 테스트 파일: `study/02-Reliable-Transport/selective-repeat/python/tests`
-- 제외한 입력: 기존 `study/blog/**`, `notion/**`, `notion-archive/**`
+## 이번에 다시 확인한 검증 상태
 
-## 먼저 읽을 순서
+- 정식 검증 명령: `make -C network-atda/study/02-Reliable-Transport/selective-repeat/problem test`
+- 결과: `2 passed, 0 failed`
+- 보조 실행: 손실/손상 채널에서도 최종 `SUCCESS`와 `Retransmitting seq=` 로그를 확인
 
-1. `00-series-map.md`에서 질문과 근거를 먼저 잡는다.
-2. `01-evidence-ledger.md`에서 세 단계 흐름을 짧게 본다.
-3. `10-development-timeline.md`에서 코드/trace와 CLI를 따라 내려간다.
+## 지금 남기는 한계
+
+- sequence wraparound를 구현하지 않는다.
+- 실제 병렬 timer thread 없이 단일 loop에서 `timers`를 순회한다.
+- GBN 대비 성능 요약 표나 throughput 측정은 별도로 남기지 않는다.

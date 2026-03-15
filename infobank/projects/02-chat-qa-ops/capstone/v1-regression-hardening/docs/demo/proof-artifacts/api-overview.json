@@ -3,7 +3,7 @@
   "fail_rate": 6.67,
   "critical_count": 2,
   "evaluation_count": 30,
-  "avg_latency_ms": 0.03,
+  "avg_latency_ms": 0.0,
   "grade_distribution": {
     "A": 24,
     "B": 4,

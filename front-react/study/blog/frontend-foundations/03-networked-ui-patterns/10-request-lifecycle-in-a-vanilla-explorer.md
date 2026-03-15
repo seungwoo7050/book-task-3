@@ -1,42 +1,25 @@
 # Request Lifecycle In A Vanilla Explorer
 
-비동기 UI를 다룬다는 말은 흔히 loading spinner를 하나 더 붙이는 일처럼 들린다. 하지만 이 프로젝트를 읽다 보면 진짜 문제는 그보다 훨씬 앞에서 시작한다. 사용자가 검색어를 빠르게 바꾸고, 목록을 다시 읽어 오고, 상세 패널이 뒤늦게 응답하고, 한 번은 실패한 요청이 retry를 통해 회복될 때, 도대체 어떤 응답이 지금 화면을 바꿀 자격이 있는가.
+이 프로젝트를 다시 읽을 때 가장 먼저 정리해야 했던 건 "비동기 데이터 불러오기"가 아니라 "어느 요청 결과를 믿을 것인가"였다. 검색어를 바꾸고, category를 바꾸고, 항목을 열고, 실패를 일부러 주입하고, retry까지 하려면 loading 화면 자체보다 stale response와 navigation state가 더 큰 문제가 되기 때문이다.
 
-이 질문은 프레임워크를 쓰느냐와 크게 상관이 없다. 오히려 vanilla explorer처럼 도구가 적을수록, request lifecycle을 직접 설계해야 한다는 사실이 더 선명하게 보인다. 이 프로젝트가 mock service를 직접 만든 이유도 여기에 있다. 네트워크를 추상적으로 설명하지 않고, 지연과 실패와 abort를 코드로 만들겠다는 선택이다.
+## list와 detail을 아예 다른 비동기 상태로 나눴다
 
-그 덕분에 글의 흐름도 명확하다. 먼저 실패와 지연을 재현할 수 있는 service를 만들고, 그다음 "가장 마지막 요청만 화면을 바꿀 수 있다"는 invariant를 세우고, 마지막에 브라우저에서 retry와 query-driven navigation을 확인한다.
+[`vanilla/src/app.ts`](/Users/woopinbell/work/book-task-3/front-react/study/frontend-foundations/03-networked-ui-patterns/vanilla/src/app.ts)는 상태를 꽤 노골적으로 나눈다.
 
-## 구현 순서를 먼저 짚으면
+- `listState`
+- `detailState`
+- `items`
+- `currentItem`
+- `errorMessage`
+- `detailErrorMessage`
+- `selectedId`
+- `simulateFailureNext`
 
-- `service.ts`에서 latency, failure, abort를 가진 deterministic service를 만들었다.
-- `createRequestTracker()`와 `AbortController`를 같이 사용해 stale response를 걸러냈다.
-- `npm run verify`로 retry, URL navigation, keyboard viability를 실제 브라우저에서 확인했다.
+이 분리가 중요한 이유는 list 실패와 detail 실패가 같은 화면에서 일어나더라도 UI 의미가 다르기 때문이다. list가 실패하면 전체 directory panel이 retry UI로 바뀌고, detail이 실패하면 현재 선택된 item의 detail panel만 retry 대상이 된다. 비슷해 보이는 로딩 화면 둘을 분리해 둔 덕분에, 실패가 어디서 났는지 사용자와 코드가 동시에 잃지 않는다.
 
-## 먼저 네트워크를 외부 환경이 아니라 코드로 만들었다
+## stale response 보호는 `AbortController`와 token 두 겹으로 잡았다
 
-이 프로젝트에서 가장 좋은 선택은 `wait()`를 직접 구현한 일이었다. 이 함수는 timeout이 끝나기 전에 `AbortSignal`이 오면 즉시 `AbortError`를 던진다. 즉 네트워크는 더 이상 운에 맡긴 외부 세계가 아니라, 테스트 가능한 로컬 규칙이 된다.
-
-```ts
-function wait(ms: number, signal: AbortSignal): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const timer = window.setTimeout(() => {
-      signal.removeEventListener("abort", onAbort);
-      resolve();
-    }, ms);
-
-    const onAbort = () => {
-      window.clearTimeout(timer);
-      reject(new DOMException("The operation was aborted.", "AbortError"));
-    };
-```
-
-이 위에서 `listDirectory()`는 query 길이에 비례한 지연을 만들고, `simulateFailure`가 켜지면 명시적으로 에러를 던진다. 덕분에 loading, error, retry는 README의 문장으로만 남지 않고 실제 코드 경로가 된다.
-
-`service.test.ts`가 가장 먼저 abort 시 `AbortError`를 확인하는 것도 같은 이유다. request lifecycle을 배우려면 무엇이 성공하는지보다 무엇이 중간에 취소되는지가 먼저 보여야 했다.
-
-## abort만으로는 부족했고, latest-request invariant가 따로 필요했다
-
-요청을 취소하는 것과, 늦게 도착한 응답이 state를 덮어쓰지 못하게 하는 것은 다른 문제다. 이 프로젝트가 `createRequestTracker()`를 따로 둔 이유가 바로 그것이다.
+이 project의 진짜 중심은 [`vanilla/src/state.ts`](/Users/woopinbell/work/book-task-3/front-react/study/frontend-foundations/03-networked-ui-patterns/vanilla/src/state.ts)의 `createRequestTracker()`와 [`vanilla/src/app.ts`](/Users/woopinbell/work/book-task-3/front-react/study/frontend-foundations/03-networked-ui-patterns/vanilla/src/app.ts)의 `loadList`/`loadDetail` 조합이다.
 
 ```ts
 export function createRequestTracker() {
@@ -54,54 +37,77 @@ export function createRequestTracker() {
 }
 ```
 
-실제 `loadList()`는 새 요청이 시작될 때마다 이전 controller를 abort하고, 동시에 새 token을 발급한다. 응답이 돌아오면 `isLatest(token)`를 통과한 경우에만 state를 갱신한다.
+`loadList()`는 새 요청을 시작할 때 이전 controller를 abort하고, 새 token을 발급한다.
 
 ```ts
-const token = listTracker.next();
 listController?.abort();
 listController = new AbortController();
+const token = listTracker.next();
+```
 
-const items = await service.listDirectory(
-  { ...state.query, simulateFailure: shouldFail },
-  listController.signal,
-);
+그리고 응답이 돌아오면 두 가지를 확인한다.
 
-if (!listTracker.isLatest(token)) {
+- abort된 요청인가
+- 최신 token인가
+
+```ts
+if ((error as Error).name === "AbortError" || !listTracker.isLatest(token)) {
   return;
 }
 ```
 
-여기서 배운 것은 abort와 stale-response 방지가 별개의 invariant라는 점이었다. abort는 불필요한 일을 멈추는 장치이고, request tracker는 늦게 도착한 값이 화면을 덮어쓰지 못하게 하는 장치다. 둘 중 하나만 있으면 race를 완전히 설명할 수 없다.
+이 구조가 좋은 이유는 mock API라도 request race가 현실적으로 모델링되기 때문이다. 사용자가 검색어를 빠르게 바꾸거나 category를 연속으로 바꾸면, 늦게 끝난 옛 요청 결과가 화면을 덮어쓰지 않는다.
 
-## 마지막에는 retry와 navigation을 브라우저에서 끝까지 밀어붙였다
+## query navigation은 "선택된 item도 URL로 복원 가능해야 한다"는 전제를 따른다
 
-이 프로젝트의 검증은 helper 함수 수준에서 끝나지 않는다. query string이 실제로 바뀌고, 목록과 상세가 분리된 상태로 움직이며, 실패 뒤에 retry가 가능해야만 request lifecycle이 제품처럼 읽힌다.
-
-```bash
-cd study
-npm run verify --workspace @front-react/networked-ui-patterns
-```
-
-2026-03-13 replay 기준으로 `vitest`는 4개 테스트를, `playwright`는 2개 시나리오를 통과했다. 브라우저 시나리오는 단순히 데이터를 불러오는지 보는 것이 아니라, query params가 바뀌는지, detail이 목록과 함께 이동하는지, simulated failure 뒤 retry가 회복되는지를 함께 확인한다.
-
-코드에서도 list와 detail이 같은 상태가 아니라는 점이 드러난다. list가 성공했더라도 detail은 다시 loading이 될 수 있고, 반대로 list가 실패하면 detail은 empty로 돌아간다. `docs/concepts/request-lifecycle.md`가 `loading`, `success`, `empty`, `error`를 하나의 불린으로 뭉개지 않는 이유도 바로 여기에 있다.
+이 프로젝트는 search/category뿐 아니라 selected item도 URL에 넣는다. `buildUrlState()`가 그것을 보여 준다.
 
 ```ts
-state = {
-  ...state,
-  listState: "error",
-  errorMessage: error instanceof Error ? error.message : "Directory request failed.",
-  items: [],
-  currentItem: null,
-  detailState: "empty",
-  detailErrorMessage: null,
-};
+function buildUrlState(state: ExplorerState): ExplorerUrlState {
+  return {
+    ...state.query,
+    item: state.selectedId,
+  };
+}
 ```
 
-이 조각은 요청 실패를 "그냥 실패"로 남겨 두지 않는다. 무엇이 비어야 하고, 무엇이 다시 retry 가능 상태로 남아야 하는지까지 함께 정리한다.
+그래서 e2e 첫 시나리오가 `search=policy`와 `item=doc-102`를 같이 확인한다. 이건 단순한 편의가 아니라, 탐색 상태를 주소창만으로 복원할 수 있어야 한다는 요구를 코드로 고정한 것이다.
 
-## 무엇이 아직 남았는가
+mock service [`vanilla/src/service.ts`](/Users/woopinbell/work/book-task-3/front-react/study/frontend-foundations/03-networked-ui-patterns/vanilla/src/service.ts)도 그 질문에 맞춰 설계돼 있다.
 
-이 explorer는 아직 실제 서버 캐시나 인증, SSR을 다루지 않는다. 하지만 여기까지 와서 하나는 분명해진다. 비동기 UI의 핵심은 데이터를 가져오는 코드보다 어떤 응답이 지금의 화면에 속하는지를 결정하는 규칙이다.
+- list는 `140 + query.search.length * 25` ms 지연
+- detail은 90 ms 지연
+- `simulateFailure`가 켜지면 list 요청은 명시적으로 실패
+- abort 시 `AbortError` 반환
 
-다음 트랙이 React internals로 넘어가는 이유도 이 지점과 연결된다. 화면 상태를 더 정교하게 다루려면 결국 JSX, VDOM, diff, commit 같은 더 아래 계층까지 이해해야 하기 때문이다.
+즉 서버처럼 보이는 UX를 만들되, 실패와 race를 일부러 관찰 가능한 형태로 압축해 둔 셈이다.
+
+## retry와 keyboard 흐름이 실제 브라우저에서도 이어진다
+
+이번 Todo에서 다시 돌린 검증은 아래 셋이다.
+
+```bash
+npm run build --workspace @front-react/networked-ui-patterns
+npm run test --workspace @front-react/networked-ui-patterns
+npm run e2e --workspace @front-react/networked-ui-patterns
+```
+
+결과는 다음과 같았다.
+
+- `vite build` 통과
+- `vitest` 4개 테스트 통과
+- `playwright` 2개 시나리오 통과
+
+테스트가 고정하는 핵심은 세 가지다.
+
+1. abort된 list request는 실제로 `AbortError`를 내야 한다.
+2. request tracker는 최신 token만 유효하게 봐야 한다.
+3. 브라우저에서는 `query update -> open item`과 `simulate failure -> retry -> keyboard open` 흐름이 끝까지 이어져야 한다.
+
+특히 두 번째 Playwright 시나리오는 의미가 크다. 실패를 일부러 주입하고 retry로 복구한 뒤, keyboard `Tab`과 `Enter`만으로 결과 항목을 열어 detail panel까지 도달하는지 본다. 이건 retry UI가 단순히 에러 메시지 옆 버튼이 아니라, 실패 이후에도 탐색 흐름을 다시 잇는 surface여야 한다는 걸 보여 준다.
+
+## 그래서 이 프로젝트는 fetch 예제가 아니라 async UI 규칙 연습에 가깝다
+
+여기에는 실제 서버도 없고 캐시도 없고 인증도 없다. 하지만 비동기 UI가 흔들리는 핵심 지점은 이미 다 들어 있다. loading, empty, error, retry, abort, stale response, URL navigation이 한 화면에서 서로 엮이기 때문이다.
+
+이 프로젝트의 성과는 그 복잡도를 프레임워크 없이도 설명 가능한 규칙으로 나눠 놓은 데 있다. list/detail 상태는 분리하고, 요청은 abort와 token으로 보호하고, selection은 URL에 남기며, retry 뒤에도 keyboard 흐름을 유지한다. 다음에 React나 data-fetching library를 써도, 실제로 무엇을 대신 맡기게 되는지 설명할 수 있는 이유가 바로 여기서 생긴다.

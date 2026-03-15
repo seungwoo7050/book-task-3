@@ -1,27 +1,42 @@
 # 02 Render Pipeline
 
-VDOM foundation 위에 diff, patch, cooperative work loop를 얹어 render와 commit을 분리한 프로젝트다. 이 단계부터는 "다시 그린다"는 말이 실제로 무엇을 뜻하는지, 그리고 DOM을 언제 건드려야 하는지가 코드로 드러난다.
+이 프로젝트의 핵심은 "VDOM이 있으니 빨라진다"가 아니라, 어떤 변경을 계산하는 단계와 실제 DOM을 건드리는 단계를 분리해 두면 무엇을 설명할 수 있게 되는가에 있다. 이번 Todo에서는 prop delta, keyed/unkeyed child diff, `effectTag` 기반 fiber work loop, `flushSync` commit 경계를 중심으로 다시 정리했다.
 
 ## 왜 이 순서로 읽는가
 
-이 프로젝트는 change detection, patch ordering, commit timing이라는 세 가지 주제가 하나의 파이프라인으로 이어진다. 한 편 안에서 순차적으로 읽는 편이 가장 자연스럽다.
+구현 흐름이 명확하다. `diff.ts`가 변경 계산 범위를 먼저 고정하고, `fiber.ts`가 render phase에서 effect를 모으며, `patch.ts`와 `scheduler.ts`가 commit 시점과 DOM-safe ordering을 책임진다. 그래서 이 프로젝트도 `series map + 본문 1편` 구조가 가장 자연스럽다.
 
-## 근거로 사용한 자료
+## 이번 재작성의 근거
 
-- `react-internals/02-render-pipeline/README.md`
-- `react-internals/02-render-pipeline/docs/concepts/render-vs-commit.md`
+- `react-internals/02-render-pipeline/problem/README.md`
+- `react-internals/02-render-pipeline/docs/README.md`
+- `react-internals/02-render-pipeline/ts/README.md`
 - `react-internals/02-render-pipeline/ts/src/diff.ts`
+- `react-internals/02-render-pipeline/ts/src/fiber.ts`
 - `react-internals/02-render-pipeline/ts/src/patch.ts`
 - `react-internals/02-render-pipeline/ts/src/scheduler.ts`
 - `react-internals/02-render-pipeline/ts/tests/diff.test.ts`
+- `react-internals/02-render-pipeline/ts/tests/patch.test.ts`
 - `react-internals/02-render-pipeline/ts/tests/scheduler.test.ts`
 
 ## 현재 검증 상태
 
-- `npm run verify --workspace @front-react/render-pipeline`
-- 2026-03-13 replay 기준 `vitest` 8개, `tsc --noEmit` 통과
+```bash
+npm run verify --workspace @front-react/render-pipeline
+```
+
+- 2026-03-14 재실행 기준 `vitest` 8개 테스트 통과
+- `tsc --noEmit` typecheck 통과
+- verify 전체 통과
 
 ## 본문
 
 - [10-when-render-stops-being-commit.md](10-when-render-stops-being-commit.md)
-  - "렌더한다"는 말이 왜 diff 계산과 DOM 반영이라는 두 단계로 갈라져야 했는지 따라간다.
+  - diff 계산, fiber effect 수집, commit 시점, interrupted work 경계를 순서대로 따라간다.
+
+## 이번에 명시적으로 남긴 경계
+
+- render phase에서는 DOM mutation이 일어나지 않는다.
+- keyed diff는 reorder patch를 만들지 않고 create/remove/update 수준까지만 다룬다.
+- unkeyed diff는 child identity를 추적하지 않고 index 위치를 기준으로 같은 자리의 node를 update한다.
+- hooks, effects, priority lanes, delegated events는 아직 없다.

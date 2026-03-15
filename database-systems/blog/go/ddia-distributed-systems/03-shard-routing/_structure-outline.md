@@ -1,27 +1,20 @@
-# 03 Shard Routing — Structure Outline
+# Structure Outline
 
-최종 시리즈는 chronology를 매끈하게 재배열하지 않고, 범위 파악 -> 핵심 invariant -> 재검증과 경계의 순서를 유지한다.
+## Chosen arc
 
-## Planned Files
+1. control plane가 아니라 placement function과 rebalance accounting이라는 범위를 먼저 잡는다.
+2. demo와 추가 재실행으로 distribution과 moved-key 숫자를 먼저 보여 준다.
+3. virtual node insertion, wrap-around lookup, moved-key diffing을 invariant로 정리한다.
+4. 마지막에는 gossip/data movement 부재를 분리한다.
 
-- `00-series-map.md`: 프로젝트 질문, 읽는 순서, source-of-truth 파일, 재검증 명령을 잡는 지도
-- `10-chronology-scope-and-surface.md`: 파일 구조와 테스트 이름을 근거로 처음 가설이 바뀌는 구간
-- `20-chronology-core-invariants.md`: `Router`와 `ringEntry`가 실제로 invariant를 고정하는 구간
-- `30-chronology-verification-and-boundaries.md`: `go test`/`pytest`와 demo 출력으로 경계를 확정하는 구간
+## Why this structure
 
-## Article Goals
+- 이 랩은 key별 예시보다 aggregate distribution과 reassignment cost가 더 중요해서 수치 중심 구조가 맞다.
+- batch routing output도 실제로는 fan-out shape를 보여 주므로 초반 evidence로 가치가 있다.
+- duplicate add/remove idempotency는 source-only nuance라 invariant 장에서 분명히 적는 편이 좋다.
 
-1. `10-chronology-scope-and-surface.md`
-   범위를 `tests/`와 README에서 어떻게 다시 좁혔는지 보여 준다.
-   코드 앵커: `TestEmptyAndSingleNodeRouting`, `Router`
-   CLI: `find internal tests cmd -type f | sort`, `rg -n "^func Test" tests`
+## Rejected alternatives
 
-2. `20-chronology-core-invariants.md`
-   핵심 invariant가 `Router`와 `ringEntry` 사이에서 어떻게 고정되는지 보여 준다.
-   코드 앵커: `Router`, `ringEntry`
-   CLI: `rg -n "^(type|func) " internal cmd`, `rg -n "Router|ringEntry" internal cmd`
-
-3. `30-chronology-verification-and-boundaries.md`
-   테스트와 demo를 모두 남겨, pass 신호와 공개 표면을 구분해 설명한다.
-   코드 앵커: `TestBatchRouting`, `main.go`
-   CLI: GOWORK=off go test ./...; GOWORK=off go run ./cmd/shard-routing
+- sharding 일반론을 길게 푸는 구조는 버렸다.
+- demo 결과만 중심에 두는 구조도 버렸다.
+- replication factor나 relocation worker를 상상으로 확장하는 서사는 현재 범위를 벗어나 제외했다.

@@ -1,81 +1,77 @@
 # 03-rest-api-foundations development timeline
 
-`bridge`에서 프레임워크 없는 HTTP를 한 번 손으로 만져 본 뒤, 여기서 처음으로 Express와 NestJS를 나란히 세운다. 이 프로젝트의 재미는 CRUD 자체보다, 같은 문제를 두 프레임워크가 어디서부터 다르게 감싸는지가 코드 표면에 드러난다는 데 있다.
+`bridge` 구간에서는 frameworkless HTTP로 request/response를 직접 다뤘다. 이 lab부터는 같은 Books CRUD를 두 프레임워크에 올려 보면서, 프레임워크가 무엇을 대신해 주고 무엇은 여전히 직접 설계해야 하는지 비교하게 된다. 이번 재검토에서는 "Express vs NestJS"라는 익숙한 구도를 반복하기보다, 두 구현이 실제로 어떤 계약을 검증하고 무엇을 아직 검증하지 않는지부터 다시 정리했다.
 
 ## 흐름 먼저 보기
 
-1. Express에서 service와 router/controller 경계를 먼저 세운다.
-2. NestJS에서 같은 CRUD를 decorator와 container 위로 옮긴다.
-3. 두 레인이 정말 같은 계약을 통과하는지 테스트로 묶는다.
+1. Express lane에서 manual composition root와 controller/router 분리를 확인한다.
+2. NestJS lane에서 module, decorator, exception 기반 flow로 같은 CRUD를 다시 읽는다.
+3. 두 lane 모두 테스트는 통과하지만 runtime validation은 아직 비어 있음을 별도 재실행으로 확인한다.
 
-## Express에서 경계를 세운 장면
+## Express에서 경계를 손으로 세운 장면
 
-처음 비교 기준이 되는 건 `BookService`다. 이 서비스는 Express 프로젝트 안에 있지만 request/response를 전혀 모른다.
+Express 쪽의 출발점은 `createApp()`이다. 여기서 서비스와 컨트롤러와 라우터를 프레임워크 대신 직접 연결한다.
+
+```ts
+export function createApp() {
+  const app = express();
+  const bookService = new BookService();
+  const bookController = new BookController(bookService);
+
+  app.use(express.json());
+  app.use("/books", createBookRouter(bookController));
+  ...
+}
+```
+
+이 장면이 중요한 이유는 "누가 의존성을 만들고 누가 HTTP에 꽂는가"가 코드 표면에 남기 때문이다. `BookService`는 in-memory `Map`과 `randomUUID()`만 알고 있고, HTTP는 controller/router 바깥에서 덧씌워진다.
 
 ```ts
 export class BookService {
   private readonly books = new Map<string, Book>();
 
   create(dto: CreateBookDto): Book {
-    const book: Book = {
-      id: randomUUID(),
-      ...dto,
-    };
+    const book: Book = { id: randomUUID(), ...dto };
     this.books.set(book.id, book);
     return book;
   }
 }
 ```
 
-이 지점이 중요한 이유는, 비교의 기준선을 HTTP가 아니라 순수 CRUD 도메인 로직에 두기 때문이다. framework choice보다 먼저 "이 문제의 핵심 로직은 어디까지인가"를 고정해 둔 셈이다.
-
-router는 그 바깥에서 의존성을 연결한다.
+router는 다시 `asyncHandler()`를 써서 Express 비동기 오류 전달을 수동으로 정리한다.
 
 ```ts
-export function createBookRouter(controller: BookController): Router {
-  const router = Router();
-  router.get("/", asyncHandler(controller.findAll));
-  router.get("/:id", asyncHandler(controller.findById));
-  router.post("/", asyncHandler(controller.create));
-  router.put("/:id", asyncHandler(controller.update));
-  router.delete("/:id", asyncHandler(controller.delete));
-  return router;
-}
+router.get("/", asyncHandler(controller.findAll));
+router.get("/:id", asyncHandler(controller.findById));
+router.post("/", asyncHandler(controller.create));
+router.put("/:id", asyncHandler(controller.update));
+router.delete("/:id", asyncHandler(controller.delete));
 ```
 
-Express에서는 "누가 controller를 만들고 누가 router에 꽂는가"가 이처럼 그대로 보인다. 이게 manual DI가 남기는 표면이다.
+여기까지 보면 Express lane의 핵심은 CRUD 기능보다 수동 composition과 명시적인 request pipeline에 있다. 프레임워크가 숨겨 주지 않는 대신, 연결 지점을 모두 직접 볼 수 있다.
 
 ```bash
-$ COREPACK_ENABLE_AUTO_PIN=0 pnpm run build && pnpm run test
+$ COREPACK_ENABLE_AUTO_PIN=0 pnpm run build
+$ COREPACK_ENABLE_AUTO_PIN=0 pnpm run test
 Test Files  2 passed (2)
 Tests       18 passed (18)
-Duration    486ms
 ```
 
-이 검증 결과는 Express 레인이 이미 service unit과 HTTP flow를 한 묶음으로 통과하고 있다는 신호가 된다.
+unit 9개와 e2e 9개가 모두 통과하므로, 현재 Express lane은 service 계약과 HTTP surface를 함께 유지하고 있다는 점까지는 확인된다.
 
-## NestJS로 같은 문제를 옮긴 장면
+## NestJS에서 같은 경계를 프레임워크 안으로 옮긴 장면
 
-같은 CRUD를 NestJS로 옮기면 service 책임은 크게 바뀌지 않는다. 바뀌는 건 HTTP 경계가 보이는 방식이다.
+NestJS로 넘어오면 service의 책임 자체는 크게 달라지지 않는다. 대신 controller 선언, 의존성 주입, 예외 전파가 프레임워크 표면 안으로 들어간다.
 
 ```ts
-@Injectable()
-export class BooksService {
-  private readonly books = new Map<string, Book>();
-
-  findOne(id: string): Book {
-    const book = this.books.get(id);
-    if (!book) {
-      throw new NotFoundException(`Book with ID "${id}" not found`);
-    }
-    return book;
-  }
-}
+@Module({
+  controllers: [BooksController],
+  providers: [BooksService],
+})
+export class BooksModule {}
 ```
 
-service는 여전히 CRUD를 말하고 있지만, `undefined`를 반환하던 자리에 `NotFoundException`이 올라오면서 프레임워크 친화적인 오류 전파가 들어온다.
-
-controller는 আরও 노골적으로 달라진다.
+controller는 route 등록과 parameter binding을 decorator로 표현한다.
 
 ```ts
 @Controller("books")
@@ -89,34 +85,47 @@ export class BooksController {
 }
 ```
 
-Express에서 별도 파일이던 router가 controller 안으로 접히고, method/path 선언은 decorator가 맡는다. 즉 같은 CRUD여도 NestJS에서는 HTTP 표면이 더 안쪽으로, 더 선언적으로 들어온다.
+service도 CRUD 자체는 비슷하지만, 없는 리소스를 만났을 때 Express처럼 `undefined`를 올리지 않고 Nest exception을 던진다.
+
+```ts
+findOne(id: string): Book {
+  const book = this.books.get(id);
+  if (!book) {
+    throw new NotFoundException(`Book with ID "${id}" not found`);
+  }
+  return book;
+}
+```
+
+이 차이 덕분에 비교 포인트가 선명해진다. Express는 composition root와 error forwarding을 직접 보여 주고, NestJS는 module/DI/decorator가 그 반복 작업을 프레임워크 안으로 흡수한다.
 
 ```bash
-$ COREPACK_ENABLE_AUTO_PIN=0 pnpm run build && pnpm run test && pnpm run test:e2e
+$ COREPACK_ENABLE_AUTO_PIN=0 pnpm run build
+$ COREPACK_ENABLE_AUTO_PIN=0 pnpm run test
+$ COREPACK_ENABLE_AUTO_PIN=0 pnpm run test:e2e
 Tests       8 passed (8)
-test:e2e    8 passed (8)
 ```
 
-여기서부터는 "둘 다 된다"가 아니라, 같은 문제를 어떤 보일러플레이트 비용으로 풀고 있는지가 비교 포인트가 된다.
+Nest unit 8개와 e2e 8개가 모두 통과하므로, route surface와 `NotFoundException -> 404` 흐름은 현재 구현에서 안정적이라고 볼 수 있다.
 
-## 같은 계약을 두 방식으로 고정한 장면
+## 테스트가 말해 주지 않는 빈칸을 다시 확인한 장면
 
-이 프로젝트가 설명문으로 끝나지 않는 이유는 테스트가 두 레인의 차이를 다른 방식으로 붙잡고 있기 때문이다. Express는 service unit test가 강하고, NestJS는 e2e가 더 많은 이야기를 한다.
+이번 lab에서 가장 중요한 재확인 포인트는 둘 다 "DTO가 있으니 validation도 있겠지"라고 착각하기 쉽다는 점이었다. 실제 코드를 보면 Express DTO는 타입 별칭일 뿐이고, NestJS DTO 클래스도 `class-validator` decorator가 없으며 `main.ts`에도 `ValidationPipe`가 없다.
 
-```ts
-const created = service.create(dto);
-const found = service.findById(created.id);
-expect(found).toEqual(created);
+그래서 빌드 후 직접 빈 제목 payload를 보내 봤다.
+
+```bash
+$ node -e "const request=require('supertest'); const {createApp}=require('./dist/app.js'); request(createApp()).post('/books').send({title:''}).end((_,res)=>console.log(res.status,res.body))"
+201 { id: '...', title: '' }
 ```
 
-Express 쪽에서는 서비스가 HTTP 없이도 자기 계약을 지키는지를 먼저 확인한다. 반면 Nest e2e는 framework 전체를 포함한 route surface를 직접 친다.
-
-```ts
-const res = await request(app.getHttpServer()).get(`/books/${createRes.body.id}`);
-expect(res.status).toBe(200);
-expect(res.body.title).toBe("Test Book");
+```bash
+$ node -e "require('reflect-metadata'); ... request(app.getHttpServer()).post('/books').send({title:''}) ..."
+201 { id: '...', title: '' }
 ```
 
-그래서 이 프로젝트를 다 읽고 나면 "Express vs NestJS"라는 비교가 문체나 취향 문제가 아니라, 의존성 연결과 HTTP 경계가 어디에 드러나는지의 차이로 남게 된다.
+즉 이 lab은 "Express와 NestJS가 validation을 어떻게 다르게 제공하는가"를 보여 주는 단계가 아니라, 아직 둘 다 CRUD 골격과 404 계약까지만 고정한 단계다. validation은 다음 pipeline lab에서 별도 규약으로 세워야 할 일로 남아 있다.
 
-다음 프로젝트에서는 그 위에 validation, error handling, response envelope, logging 같은 공통 규약이 따로 서기 시작한다.
+## 여기서 남는 것
+
+이 문서를 다시 쓰고 나니, 핵심 비교는 더 단순해졌다. Express와 NestJS의 차이는 CRUD 기능 그 자체가 아니라, 같은 CRUD를 둘러싼 의존성 연결 방식과 HTTP 표면의 선언 방식에 있다. 그리고 둘 다 아직 payload validation은 넣지 않았다는 사실을 함께 봐야, 다음 `04-request-pipeline`에서 왜 validation과 error envelope가 주제가 되는지 자연스럽게 이어진다.

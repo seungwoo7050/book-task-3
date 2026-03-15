@@ -1,111 +1,53 @@
-# 20 01 RPC Framing에서 진짜 중요한 상태 전이만 붙잡기
+# 20 핵심 invariant 붙잡기: split chunk, correlation id, failure fan-out
 
-이 시리즈의 가운데 글이다. 여기서는 추상 설명을 줄이고, 실제 구현에서 invariant가 어디서 잠기는지 핵심 코드만 붙잡아 따라간다.
+이 슬롯의 코드는 네트워크 치고는 매우 작지만, wire contract는 꽤 또렷하다. `encode_frame`, `FrameDecoder`, `RPCClient.call/_read_loop/_fail_all`, `RPCServer._dispatch`만 따라가면 이 프로젝트가 무엇을 보장하고 어디까지 비워 두는지 거의 다 설명된다.
 
-## Phase 2 — 핵심 상태 전이를 붙잡는 구간
+## Phase 2-1. `FrameDecoder`는 byte stream에서 message boundary를 복구한다
 
-이번 글에서는 핵심 함수 두 곳을 따라가며 같은 invariant가 어디서 고정되고, 다른 각도에서 어떻게 반복되는지 본다.
+`encode_frame()`은 payload 길이를 4-byte big-endian으로 앞에 붙인다. 이건 단순하다. 더 중요한 건 `FrameDecoder.feed()`다. 내부 buffer에 chunk를 계속 누적하고, 최소 4바이트 header가 있을 때만 size를 읽는다. 그다음 `len(buffer) >= 4 + size`가 될 때까지 기다렸다가 frame 하나를 꺼낸다.
 
-### Session 1 — encode_frame에서 invariant가 잠기는 지점 보기
+이번 보조 재실행도 이 contract를 그대로 보여 줬다.
 
-이 구간에서 먼저 붙잡으려 한 것은 `encode_frame`가 어떤 입력을 받아 어떤 상태를 고정하는지 분해하는 것이었다. 처음 읽을 때는 `encode_frame` 하나를 이해하면 나머지 흐름도 거의 자동으로 따라올 거라고 생각했다.
-
-그런데 `rg -n "encode_frame|FrameDecoder" src`로 핵심 함수 위치를 다시 잡고, `encode_frame`가 문제 정의의 첫 번째 bullet과 정확히 맞물리는지 확인했다. 특히 `encode_frame` 안에서 상태가 한 번에 굳는지, 아니면 보조 구조로 넘겨지는지가 프로젝트의 설명 밀도를 갈랐다.
-
-변경 단위:
-- `database-systems/python/ddia-distributed-systems/projects/01-rpc-framing/src/rpc_framing/core.py`의 `encode_frame`
-
-CLI:
-
-```bash
-$ rg -n "encode_frame|FrameDecoder" src
-src/rpc_framing/core.py:13:def encode_frame(payload) -> bytes:
-src/rpc_framing/core.py:19:class FrameDecoder:
-src/rpc_framing/core.py:95:        decoder = FrameDecoder()
-src/rpc_framing/core.py:129:        frame = encode_frame(response)
-src/rpc_framing/core.py:142:        self._decoder = FrameDecoder()
-src/rpc_framing/core.py:178:            self._conn.sendall(encode_frame(request))
-src/rpc_framing/__init__.py:1:from .core import FrameDecoder, RPCClient, RPCServer, encode_frame
-src/rpc_framing/__init__.py:3:__all__ = ["FrameDecoder", "RPCClient", "RPCServer", "encode_frame"]
+```text
+split1 []
+split2 []
+split3 ['{"a": 1}', '{"b": 2}']
 ```
 
-검증 신호:
-- `encode_frame` 안에서 상태가 한 번에 굳는지, 아니면 보조 구조로 넘겨지는지가 프로젝트의 설명 밀도를 갈랐다.
-- `TCP stream에서 message boundary를 복구하는 방법을 익힙니다.`
+즉 split chunk가 들어와도 조급하게 half-frame을 내놓지 않고, 한 번에 두 frame이 붙어 들어와도 둘 다 정확히 분리한다.
 
-핵심 코드:
+## Phase 2-2. client의 핵심은 socket보다 pending map이다
 
-```python
-def encode_frame(payload) -> bytes:
-    if not isinstance(payload, bytes):
-        payload = json.dumps(payload).encode("utf-8")
-    return struct.pack(">I", len(payload)) + payload
+`RPCClient.call()`을 다시 보면 진짜 중심은 `correlation_id -> queue.Queue` 맵이다.
 
+1. 새 `correlation_id` 발급
+2. pending map에 response queue 등록
+3. frame 전송
+4. queue에서 timeout까지 응답 대기
 
-class FrameDecoder:
-    def __init__(self) -> None:
-        self._buffer = bytearray()
+응답이 오면 `_read_loop()`가 JSON을 decode하고 correlation id로 pending entry를 찾아 queue에 response를 넣는다. 이 구조 덕분에 응답 도착 순서가 요청 순서와 달라도 각 caller는 자기 queue에서 자기 응답만 받는다.
+
+즉 concurrent RPC의 진짜 계약은 request ordering이 아니라, pending map이 response routing을 보장하느냐다.
+
+## Phase 2-3. 실패는 각 층에서 caller 쪽 예외로 다시 번역된다
+
+`RPCServer._dispatch()`는 method lookup과 handler execution을 try/except로 감싸고, 실패하면 response에 `error` 문자열을 넣어 보낸다. client 쪽 `call()`은 응답에 `"error"`가 있으면 `RuntimeError`로 다시 올린다.
+
+timeout은 더 직접적이다. `response_queue.get(timeout=timeout)`이 `queue.Empty`면 pending map에서 entry를 제거하고 `TimeoutError("rpc call timed out")`를 던진다.
+
+이번 보조 재실행 결과도 그대로였다.
+
+```text
+unknown RuntimeError unknown method: unknown
+timeout TimeoutError rpc call timed out
 ```
 
-왜 여기서 판단이 바뀌었는가:
+즉 이 슬롯은 transport error를 그냥 내부 로그로 묻지 않고, caller 입장에서 잡을 수 있는 예외로 다시 번역하는 데 집중한다.
 
-`encode_frame`는 이 프로젝트에서 규칙이 가장 먼저 굳는 지점을 보여 준다. 테스트가 요구한 첫 번째 조건이 실제 코드 규칙으로 바뀌는 순간을 여기서 확인할 수 있었다.
+## Phase 2-4. source-based seam: disconnect fan-out은 구현돼 있지만 테스트가 직접 덮지는 않는다
 
-이번 구간에서 새로 이해한 것:
-- `Pending Map`에서 정리한 요점처럼, 동시에 여러 RPC를 보낼 수 있으므로 응답은 요청 순서와 다르게 도착할 수 있다. 그래서 client는 `correlation_id -> pending call` map을 유지한다.
+`_read_loop()`는 recv가 비면 `ConnectionError("connection closed")`를 던지고, 예외가 나면 `_fail_all(str(error))`를 호출한다. `_fail_all()`은 남아 있는 모든 pending queue에 `{"error": message}`를 넣는다. 구조상 disconnect fan-out은 분명히 구현돼 있다.
 
-다음으로 넘긴 질문:
-- `FrameDecoder`까지 읽어야 비로소 이 프로젝트가 '쓰는 방법'만이 아니라 '읽고 복원하는 방법'까지 같이 고정하는지 판단할 수 있다.
+하지만 현재 테스트는 unknown method와 timeout은 직접 다루어도, connection close로 pending call 전부가 실패하는 경로를 별도 테스트로 고정하진 않는다. `close()` 경로와 `_read_loop()` 예외 처리에 source-level seam이 남아 있는 셈이다.
 
-### Session 2 — FrameDecoder로 같은 규칙 다시 확인하기
-
-여기서 가장 먼저 확인한 것은 `FrameDecoder`가 `encode_frame`와 어떤 짝을 이루는지 확인한다. 처음에는 `FrameDecoder`는 단순 보조 함수일 거라고 생각했다.
-
-하지만 실제로는 두 번째 앵커를 읽고 나니, 실제로는 `encode_frame`가 만든 상태를 외부에서 관찰 가능하게 만드는 규칙이 여기 있었다. 결정적으로 방향을 잡아 준 신호는 `FrameDecoder`는 테스트의 뒤쪽 시나리오를 설명하는 열쇠였다.
-
-변경 단위:
-- `database-systems/python/ddia-distributed-systems/projects/01-rpc-framing/src/rpc_framing/core.py`의 `FrameDecoder`
-
-CLI:
-
-```bash
-$ rg -n "^(class|def) " src
-src/rpc_framing/core.py:13:def encode_frame(payload) -> bytes:
-src/rpc_framing/core.py:19:class FrameDecoder:
-src/rpc_framing/core.py:35:class RPCServer:
-src/rpc_framing/core.py:137:class RPCClient:
-src/rpc_framing/core.py:216:def demo() -> None:
-```
-
-검증 신호:
-- `FrameDecoder`는 테스트의 뒤쪽 시나리오를 설명하는 열쇠였다.
-- 특히 `test_rpc_propagates_server_errors_and_timeout` 같은 이름이 왜 필요한지, 이 함수에서야 연결이 됐다.
-
-핵심 코드:
-
-```python
-class FrameDecoder:
-    def __init__(self) -> None:
-        self._buffer = bytearray()
-
-    def feed(self, chunk: bytes) -> list[bytes]:
-        self._buffer.extend(chunk)
-        payloads: list[bytes] = []
-        while len(self._buffer) >= 4:
-            size = struct.unpack(">I", self._buffer[:4])[0]
-            if len(self._buffer) < 4 + size:
-                break
-            payloads.append(bytes(self._buffer[4 : 4 + size]))
-            del self._buffer[: 4 + size]
-        return payloads
-```
-
-왜 여기서 판단이 바뀌었는가:
-
-`FrameDecoder`가 없으면 `encode_frame`의 의미도 끝까지 설명되지 않는다. 이 코드를 보고 나서야, 이 프로젝트가 단일 API 구현이 아니라 ordering / visibility / recovery 규칙을 통째로 묶는 이유를 납득할 수 있었다.
-
-이번 구간에서 새로 이해한 것:
-- `Pending Map`에서 정리한 요점처럼, 동시에 여러 RPC를 보낼 수 있으므로 응답은 요청 순서와 다르게 도착할 수 있다. 그래서 client는 `correlation_id -> pending call` map을 유지한다.
-
-다음으로 넘긴 질문:
-- 실제 재검증 명령을 다시 돌려, 지금까지 읽은 invariant가 테스트와 demo 출력에서 같은 모양으로 보이는지 확인한다.
+이 차이는 문서에 남길 가치가 있다. 지금 구현은 꽤 그럴듯하지만, 테스트 coverage가 닿는 경계와 source가 암시하는 경계는 분리해서 읽어야 하기 때문이다.

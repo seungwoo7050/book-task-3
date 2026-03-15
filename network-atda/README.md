@@ -20,6 +20,10 @@
 | [`04. Network Diagnostics and Routing`](study/04-Network-Diagnostics-and-Routing/README.md) | ICMP, TTL, Bellman-Ford가 진단 도구와 라우팅 알고리즘으로 어떻게 이어지는가 | [`ICMP Pinger`](study/04-Network-Diagnostics-and-Routing/icmp-pinger/README.md) |
 | [`05. Game Server Capstone`](study/05-Game-Server-Capstone/README.md) | 앞선 학습을 하나의 설명 가능한 서버 프로젝트로 어떻게 통합할 것인가 | [`Tactical Arena Server`](study/05-Game-Server-Capstone/tactical-arena-server/README.md) |
 
+서버 개발자 관점에서 1회독 범위를 더 줄이고 싶다면 [`problem-subject-essential/README.md`](problem-subject-essential/README.md)를 먼저 읽는 편이 빠릅니다.
+필수에 포함되지 않은 나머지 문제지는 [`problem-subject-elective/README.md`](problem-subject-elective/README.md)에 따로 모아 두었습니다.
+종합 과제는 [`problem-subject-capstone/README.md`](problem-subject-capstone/README.md)에 따로 모아 둡니다.
+
 ## 프로젝트 카탈로그
 
 | 단계 | 프로젝트 | 문제 | 이 레포의 답 | 검증 | 상태 |

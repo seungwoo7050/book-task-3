@@ -12,6 +12,12 @@
 - `study/`: 실행 가능한 학습 프로젝트와 테스트
 - `docs/`: 저장소 공통 규칙, 커리큘럼, 검증 기준
 
+## 문제지 빠른 진입
+
+- [problem-subject-essential/README.md](problem-subject-essential/README.md): 프론트엔드 핵심 경로로 먼저 읽을 문제지
+- [problem-subject-elective/README.md](problem-subject-elective/README.md): essential에 포함되지 않은 나머지 문제지
+- [problem-subject-capstone/README.md](problem-subject-capstone/README.md): 대표 종합 과제만 따로 모은 문제지
+
 ## 읽는 순서
 
 1. [docs/README.md](docs/README.md)에서 저장소 공통 규칙과 문서 역할을 먼저 확인한다.

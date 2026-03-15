@@ -1,126 +1,56 @@
-# 20 05 Leveled Compaction에서 진짜 중요한 상태 전이만 붙잡기
+# Core Invariants
 
-이 시리즈의 가운데 글이다. 이제부터는 README 요약보다 코드가 더 많은 말을 한다. 핵심 함수 두 곳을 골라 상태 전이가 어떻게 고정되는지 확인한다.
+## 1. L0 input은 newest-first로 뒤집어서 merge에 들어간다
 
-## Phase 2 — 핵심 상태 전이를 붙잡는 구간
-
-이번 글에서는 핵심 함수 두 곳을 따라가며 같은 invariant가 어디서 고정되고, 다른 각도에서 어떻게 반복되는지 본다.
-
-### Session 1 — KWayMerge에서 invariant가 잠기는 지점 보기
-
-여기서 가장 먼저 확인한 것은 `KWayMerge`가 어떤 입력을 받아 어떤 상태를 고정하는지 분해한다. 처음에는 `KWayMerge` 하나를 이해하면 나머지 흐름도 거의 자동으로 따라올 거라고 생각했다.
-
-하지만 실제로는 `rg -n "KWayMerge|NeedsL0Compaction" internal cmd`로 핵심 함수 위치를 다시 잡고, `KWayMerge`가 문제 정의의 첫 번째 bullet과 정확히 맞물리는지 확인했다. 결정적으로 방향을 잡아 준 신호는 `KWayMerge` 안에서 상태가 한 번에 굳는지, 아니면 보조 구조로 넘겨지는지가 프로젝트의 설명 밀도를 갈랐다.
-
-변경 단위:
-- `database-systems/go/database-internals/projects/05-leveled-compaction/internal/compaction/compaction.go`의 `KWayMerge`
-
-CLI:
-
-```bash
-$ rg -n "KWayMerge|NeedsL0Compaction" internal cmd
-internal/compaction/compaction.go:50:func (manager *Manager) NeedsL0Compaction() bool {
-internal/compaction/compaction.go:80:	merged := KWayMerge(sources, dropTombstones)
-internal/compaction/compaction.go:153:func KWayMerge(sources [][]serializer.Record, dropTombstones bool) []serializer.Record {
-```
-
-검증 신호:
-- `KWayMerge` 안에서 상태가 한 번에 굳는지, 아니면 보조 구조로 넘겨지는지가 프로젝트의 설명 밀도를 갈랐다.
-- `newest-first 우선순위를 유지한 k-way merge를 구현합니다.`
-
-핵심 코드:
+docs의 [`merge-ordering.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/05-leveled-compaction/docs/concepts/merge-ordering.md)는 L0 file list를 reverse 해서 newest-first source 배열로 만든다고 설명한다. 소스도 그대로다.
 
 ```go
-func KWayMerge(sources [][]serializer.Record, dropTombstones bool) []serializer.Record {
-	if len(sources) == 0 {
-		return []serializer.Record{}
-	}
-	merged := append([]serializer.Record(nil), sources[0]...)
-	for i := 1; i < len(sources); i++ {
-		merged = mergeTwo(merged, sources[i])
-	}
-	if !dropTombstones {
-		return merged
-	}
-```
-
-왜 여기서 판단이 바뀌었는가:
-
-`KWayMerge`는 이 프로젝트에서 규칙이 가장 먼저 굳는 지점을 보여 준다. 테스트가 요구한 첫 번째 조건이 실제 코드 규칙으로 바뀌는 순간을 여기서 확인할 수 있었다.
-
-이번 구간에서 새로 이해한 것:
-- `Merge Ordering`에서 정리한 요점처럼, Compaction에서 같은 key가 여러 source에 동시에 존재하면 최신 source의 값만 살아남아야 한다. 이 프로젝트는 `sources[0]`을 newest로 보고 pairwise merge를 왼쪽에서 오른쪽으로 진행한다.
-
-다음으로 넘긴 질문:
-- `NeedsL0Compaction`까지 읽어야 비로소 이 프로젝트가 '쓰는 방법'만이 아니라 '읽고 복원하는 방법'까지 같이 고정하는지 판단할 수 있다.
-
-### Session 2 — NeedsL0Compaction로 같은 규칙 다시 확인하기
-
-이번 세션의 목표는 `NeedsL0Compaction`가 `KWayMerge`와 어떤 짝을 이루는지 확인하는 것이었다. 초기 가설은 `NeedsL0Compaction`는 단순 보조 함수일 거라고 생각했다.
-
-막상 다시 펼쳐 보니 두 번째 앵커를 읽고 나니, 실제로는 `KWayMerge`가 만든 상태를 외부에서 관찰 가능하게 만드는 규칙이 여기 있었다. 특히 `NeedsL0Compaction`는 테스트의 뒤쪽 시나리오를 설명하는 열쇠였다.
-
-변경 단위:
-- `database-systems/go/database-internals/projects/05-leveled-compaction/internal/compaction/compaction.go`의 `NeedsL0Compaction`
-
-CLI:
-
-```bash
-$ rg -n "^(type|func) " internal cmd
-internal/compaction/compaction.go:14:type Result struct {
-internal/compaction/compaction.go:20:type Manager struct {
-internal/compaction/compaction.go:28:type manifest struct {
-internal/compaction/compaction.go:33:func New(dataDir string, l0MaxFiles int) *Manager {
-internal/compaction/compaction.go:46:func (manager *Manager) AddToLevel(level int, fileName string) {
-internal/compaction/compaction.go:50:func (manager *Manager) NeedsL0Compaction() bool {
-internal/compaction/compaction.go:54:func (manager *Manager) CompactL0ToL1() (Result, error) {
-internal/compaction/compaction.go:109:func (manager *Manager) SaveManifest() error {
-internal/compaction/compaction.go:121:func (manager *Manager) LoadManifest() error {
-internal/compaction/compaction.go:153:func KWayMerge(sources [][]serializer.Record, dropTombstones bool) []serializer.Record {
-internal/compaction/compaction.go:174:func mergeTwo(newer []serializer.Record, older []serializer.Record) []serializer.Record {
-internal/compaction/compaction.go:197:func readAll(path string) ([]serializer.Record, error) {
-internal/compaction/compaction.go:202:func sequenceFileName(sequence int) string {
-internal/compaction/compaction.go:206:func cloneLevels(levels map[int][]string) map[int][]string {
-internal/compaction/compaction.go:214:func isNotExist(err error) bool {
-cmd/leveled-compaction/main.go:12:func main() {
-cmd/leveled-compaction/main.go:41:func seed(manager *compaction.Manager, sequence int, records []serializer.Record) {
-cmd/leveled-compaction/main.go:53:func deref(value *string) string {
-internal/sstable/sstable.go:14:type IndexEntry struct {
-internal/sstable/sstable.go:19:type SSTable struct {
-internal/sstable/sstable.go:25:func New(filePath string) *SSTable {
-internal/sstable/sstable.go:29:func (table *SSTable) Write(records []serializer.Record) error {
-internal/sstable/sstable.go:90:func (table *SSTable) LoadIndex() error {
-internal/sstable/sstable.go:139:func (table *SSTable) Get(key string) (*string, bool, error) {
-internal/sstable/sstable.go:179:func (table *SSTable) ReadAll() ([]serializer.Record, error) {
-internal/sstable/sstable.go:211:func FileName(dataDir string, sequence int) string {
-internal/sstable/sstable.go:215:func validateSorted(records []serializer.Record) error {
-internal/sstable/sstable.go:224:func binarySearch(index []IndexEntry, key string) int {
-```
-
-검증 신호:
-- `NeedsL0Compaction`는 테스트의 뒤쪽 시나리오를 설명하는 열쇠였다.
-- 특히 `TestKWayMergeDropsTombstonesAtDeepestLevel` 같은 이름이 왜 필요한지, 이 함수에서야 연결이 됐다.
-
-핵심 코드:
-
-```go
-func (manager *Manager) NeedsL0Compaction() bool {
-	return len(manager.Levels[0]) >= manager.L0MaxFiles
+for i := len(l0Files) - 1; i >= 0; i-- {
+    records, err := readAll(filepath.Join(manager.DataDir, l0Files[i]))
+    ...
+    sources = append(sources, records)
 }
-
-func (manager *Manager) CompactL0ToL1() (Result, error) {
-	l0Files := append([]string(nil), manager.Levels[0]...)
-	if len(l0Files) == 0 {
-		return Result{}, nil
-	}
 ```
 
-왜 여기서 판단이 바뀌었는가:
+이 reversal이 없으면 flush append 순서 때문에 oldest 값이 최신 값을 가릴 수 있다. 즉 compaction semantics의 첫 번째 invariant는 input ordering부터 시작한다.
 
-`NeedsL0Compaction`가 없으면 `KWayMerge`의 의미도 끝까지 설명되지 않는다. 이 코드를 보고 나서야, 이 프로젝트가 단일 API 구현이 아니라 ordering / visibility / recovery 규칙을 통째로 묶는 이유를 납득할 수 있었다.
+## 2. mergeTwo는 같은 key에서 항상 왼쪽, 즉 newer source를 남긴다
 
-이번 구간에서 새로 이해한 것:
-- `Merge Ordering`에서 정리한 요점처럼, Compaction에서 같은 key가 여러 source에 동시에 존재하면 최신 source의 값만 살아남아야 한다. 이 프로젝트는 `sources[0]`을 newest로 보고 pairwise merge를 왼쪽에서 오른쪽으로 진행한다.
+`KWayMerge()`는 sources를 왼쪽에서 오른쪽으로 pairwise merge한다. `mergeTwo(newer, older)`의 충돌 분기는 아래처럼 구현돼 있다.
 
-다음으로 넘긴 질문:
-- 실제 재검증 명령을 다시 돌려, 지금까지 읽은 invariant가 테스트와 demo 출력에서 같은 모양으로 보이는지 확인한다.
+```go
+case newer[i].Key == older[j].Key:
+    merged = append(merged, newer[i])
+    i++
+    j++
+```
+
+즉 동일 key가 충돌하면 무조건 newer source record가 이긴다. tombstone도 예외가 아니다. 최신 tombstone이 있으면 오래된 live value는 결과에서 가려진다.
+
+## 3. tombstone은 deepest level일 때만 제거된다
+
+`CompactL0ToL1()`은 `dropTombstones := len(manager.Levels[2]) == 0`로 deepest 여부를 결정한다. 그리고 `KWayMerge(..., dropTombstones)`가 true면 merge 결과에서 `Value == nil`인 record를 걸러 낸다.
+
+추가 재실행 결과도 이 조건을 뒷받침한다.
+
+- `drop_at_deepest true ...` 뒤 `lookup_after_drop false true`
+- `keep_above_deepest false ...` 뒤 `lookup_after_keep true true`
+
+즉 더 깊은 level에 older version이 남아 있을 가능성이 있으면 tombstone을 남겨야 하고, 더 이상 아래가 없을 때만 삭제 표지를 실제로 없앨 수 있다.
+
+## 4. manifest atomicity는 "새 결과 파일 먼저" 순서에 걸려 있다
+
+docs의 [`manifest-atomicity.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/05-leveled-compaction/docs/concepts/manifest-atomicity.md)가 설명하는 순서는 소스와 같다.
+
+1. 새 SSTable write
+2. 메모리상의 `Levels` 갱신
+3. `SaveManifest()` 호출
+4. old input file removal
+
+`SaveManifest()`는 shared `fileio.AtomicWrite()`를 사용한다. 즉 manifest 자체는 temp file write 후 rename으로 바뀐다. 이 설계 덕분에 적어도 "새 manifest가 절반만 써진 상태"는 피한다.
+
+## 5. 하지만 메모리 state는 manifest write 전에 먼저 바뀐다
+
+소스만 읽으면 보이는 중요한 경계도 있다. `CompactL0ToL1()`은 새 SSTable write 뒤 곧바로 `manager.Levels[0] = []string{}`와 `manager.Levels[1] = []string{newFileName}`를 적용하고, 그 다음에야 `SaveManifest()`를 호출한다.
+
+즉 process 내부 메모리 state는 manifest atomic write보다 먼저 바뀐다. manifest 저장이 실패하면 in-memory state와 on-disk metadata가 잠시 어긋날 수 있다. 지금 프로젝트는 이 실패 복구를 다루지 않는다. 이것도 현재 범위의 분명한 한계다.

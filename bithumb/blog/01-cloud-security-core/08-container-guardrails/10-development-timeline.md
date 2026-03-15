@@ -1,160 +1,66 @@
-# 08 Container Guardrails: manifest와 image metadata로 guardrail 세우기
+# 08 Container Guardrails: 클러스터 없이 어디까지 판단할 수 있는가
 
-실제 클러스터 없이도 manifest와 image metadata만으로 설명 가능한 컨테이너 보안 규칙을 만드는 scanner다. 이 글은 결과만 요약하지 않고, 어떤 기준을 먼저 세우고 어떤 검증으로 다음 단계로 넘어갔는지를 차근차근 따라간다.
-
-아래 phase를 순서대로 읽으면 "클러스터 없이도 어떤 manifest 규칙은 충분히 설명 가능한가"라는 질문에 답이 어떻게 만들어졌는지 자연스럽게 연결된다.
+이 lab은 컨테이너 보안을 "실제 EKS를 띄워야만 배울 수 있는 것"으로 다루지 않는다. 대신 manifest와 image metadata만 읽고도 꽤 많은 위험을 설명할 수 있다는 전제에서 출발한다. 그래서 chronology도 플랫폼 통합보다, 어떤 정적 입력을 근거로 어떤 finding을 만들었는지에 맞춰 읽는 편이 자연스럽다.
 
 ## 구현 순서 요약
-먼저 전체 흐름을 짧게 잡아 두면, 각 phase가 왜 그 순서로 배치됐는지 훨씬 덜 버겁게 읽힌다.
-1. manifest에서 `hostPath`, `latest`, `privileged`, `runAsRoot`, broad capability를 읽는 규칙을 만들었다.
-2. image metadata 쪽에서도 같은 위험 신호를 별도 source로 스캔했다.
-3. secure fixture 0건 테스트로 scanner의 상한선을 분명히 했다.
+1. manifest에서 설명 가능한 위험을 먼저 추렸다.
+2. image metadata를 붙여 같은 위험을 다른 evidence source로 다시 읽었다.
+3. secure fixture 0건으로 scanner의 경계를 닫았다.
 
-## Phase 1. manifest에서 설명 가능한 위험 설정을 먼저 골랐다
+## Phase 1. manifest만으로도 설명 가능한 위험을 먼저 고정했다
 
-여기서부터 흐름이 한 단계 또렷해진다. 먼저 `manifest에서 설명 가능한 위험 설정을 먼저 골랐다`를 단단히 잡아야 뒤에서 나오는 테스트와 CLI가 왜 필요한지 설명할 수 있기 때문이다.
+`scan_manifest()`는 이 lab의 태도를 분명하게 보여 준다. YAML을 읽고, `spec.template.spec`가 있으면 Deployment template 안으로 내려가고, 없으면 현재 `spec`를 그대로 본다. 즉 "클러스터가 어떻게 실행할까"를 추론하기보다, manifest 파일에 명시된 것만 근거로 삼겠다는 선택이다.
 
-- 당시 목표: 클러스터 없이도 static file만 읽고 설명할 수 있는 규칙을 고른다.
-- 변경 단위: `python/src/container_guardrails/scanner.py`의 `scan_manifest`
-- 처음 가설: 좋은 학습용 guardrail은 admission controller 전체를 흉내 내기보다, manifest만 보고도 납득할 수 있는 몇 개 위험 설정에 집중하는 편이 낫다.
-- 실제 진행: scanner는 `spec.template.spec`까지 내려가 pod template를 평탄화한 뒤, `hostPath` volume 사용 여부를 먼저 확인했다. 그 다음 container 단위로 image tag와 securityContext를 읽는 구조를 세웠다.
+이 기준에서 첫 번째로 잡는 것은 `hostPath` volume이다. insecure fixture에서는 `/var/run/docker.sock` hostPath가 있고, 이게 곧바로 `K8S-001`이 된다. 그다음 container loop 안에서 `:latest`, `privileged`, `runAsUser == 0`, `capabilities.add`의 `ALL`을 각각 `K8S-002`부터 `K8S-005`로 나눈다. 모두 runtime 없이도 설명 가능한 규칙들이다.
 
-CLI:
+이번 CLI 재실행 결과도 이 구조를 그대로 보여 줬다. manifest 쪽에서만 `K8S-001`부터 `K8S-005`까지 다섯 건이 나왔고, `resource_id`는 모두 workload 이름 `insecure-api`로 묶였다. 즉 triage의 기준축은 "어느 Deployment가 문제인가"다.
 
-```bash
-$ PYTHONPATH=01-cloud-security-core/08-container-guardrails/python/src .venv/bin/python -m container_guardrails.cli 01-cloud-security-core/08-container-guardrails/problem/data/insecure_k8s.yaml 01-cloud-security-core/08-container-guardrails/problem/data/insecure_image.json
-```
+## Phase 2. image metadata를 붙여 evidence 축을 하나 더 만들었다
 
-검증 신호:
-- CLI 첫 finding이 바로 `K8S-001` hostPath volume 사용이었다.
-- resource_id가 `insecure-api`로 고정돼 later triage가 쉬워졌다.
+다음 단계는 이미지 자체를 manifest와 분리해서 읽는 일이었다. `scan_image_metadata()`는 이미지 JSON에서 `latest`, `run_as_root`, `capabilities=["ALL"]`를 각각 `IMG-001`, `IMG-002`, `IMG-003`로 만든다. 결과적으로 insecure fixture는 총 8건이 된다.
 
-핵심 코드:
+여기서 중요한 건 중복처럼 보이는 finding을 없애지 않는다는 점이다. `nginx:latest`는 manifest에서도 `K8S-002`, image metadata에서도 `IMG-001`로 잡힌다. root 실행도 `K8S-004`와 `IMG-002`가 둘 다 남는다. 이 scanner는 dedupe보다 source separation을 택한 셈이다. "워크로드 정의가 위험한가"와 "이미지 속성이 위험한가"를 분리해서 보여 주려는 의도다.
 
-```python
-def scan_manifest(manifest_path: Path) -> list[Finding]:
-    findings: list[Finding] = []
-    docs = list(yaml.safe_load_all(manifest_path.read_text()))
-    for document in docs:
-        if not isinstance(document, dict):
-            continue
-        metadata = document.get("metadata", {})
-        resource_id = metadata.get("name", "unknown") if isinstance(metadata, dict) else "unknown"
-        spec = document.get("spec", {})
-        if isinstance(spec, dict) and isinstance(spec.get("template"), dict):
-            spec = spec["template"].get("spec", {})
-        if not isinstance(spec, dict):
-            continue
+이번 CLI 출력에서도 이 차이는 분명했다.
 
-        for volume in spec.get("volumes", []):
-            if isinstance(volume, dict) and "hostPath" in volume:
-                findings.append(
-                    Finding("k8s-manifest", "K8S-001", "HIGH", "volume", str(resource_id), "hostPath volume is used", str(resource_id))
-                )
-```
+- manifest findings: `resource_id = insecure-api`
+- image findings: `resource_id = nginx:latest`
 
-왜 이 코드가 중요했는가: manifest를 어떻게 평탄화하느냐가 guardrail의 시작이었다. pod template를 놓치면 실제로 많이 보는 Deployment 형태를 아예 스캔하지 못한다.
+같은 문제처럼 보여도 운영적으로는 remediation 위치가 다를 수 있으니, 이 분리는 꽤 실용적이다.
 
-새로 배운 것: 컨테이너 보안의 많은 위험은 runtime 전에 이미 manifest에서 읽힌다. static guardrail이 유효한 이유가 여기 있다.
+## Phase 3. secure fixture 0건으로 scanner의 경계를 닫았다
 
-다음: 이제 container-level securityContext 규칙을 더 붙여야 했다.
+좋은 guardrail은 많이 잡는 것만으로 충분하지 않다. 안전한 입력을 조용히 통과시키는지도 중요하다. 이 lab은 그 점을 `test_secure_inputs_report_no_findings()`로 못 박는다. secure manifest와 secure image metadata를 함께 넣으면 결과는 반드시 `[]`여야 한다.
 
-## Phase 2. securityContext를 broad privilege 신호로 묶었다
-
-여기서부터 흐름이 한 단계 또렷해진다. 먼저 `securityContext를 broad privilege 신호로 묶었다`를 단단히 잡아야 뒤에서 나오는 테스트와 CLI가 왜 필요한지 설명할 수 있기 때문이다.
-
-- 당시 목표: `latest`, `privileged`, root 실행, `ALL` capability 같은 위험 신호를 container-level finding으로 만든다.
-- 변경 단위: `python/src/container_guardrails/scanner.py`의 container loop
-- 처음 가설: 주니어도 바로 설명할 수 있는 규칙을 고르면 guardrail의 가치가 더 선명해진다.
-- 실제 진행: container loop는 image tag가 `latest`인지, `privileged`가 켜져 있는지, `runAsUser`가 0인지, `ALL` capability가 추가됐는지를 차례대로 검사해 `K8S-002`~`K8S-005`로 분리했다.
-
-CLI:
+이번 Todo에서는 그 happy path도 다시 확인했다. 보조 재실행에서 secure fixture 조합은 실제로 빈 배열을 돌려줬다. 그리고 pytest도 다음처럼 통과했다.
 
 ```bash
-$ PYTHONPATH=01-cloud-security-core/08-container-guardrails/python/src .venv/bin/python -m container_guardrails.cli 01-cloud-security-core/08-container-guardrails/problem/data/insecure_k8s.yaml 01-cloud-security-core/08-container-guardrails/problem/data/insecure_image.json
+PYTHONPATH=/Users/woopinbell/work/book-task-3/bithumb/01-cloud-security-core/08-container-guardrails/python/src \
+/Users/woopinbell/work/book-task-3/bithumb/.venv/bin/python \
+-m pytest \
+/Users/woopinbell/work/book-task-3/bithumb/01-cloud-security-core/08-container-guardrails/python/tests
 ```
 
-검증 신호:
-- CLI 출력에서 `K8S-002`부터 `K8S-005`까지 네 개 control이 `nginx:latest` evidence와 함께 나왔다.
-- manifest source만으로도 root 실행과 broad capability를 설명 가능한 finding으로 남겼다.
-
-핵심 코드:
-
-```python
-        for container in spec.get("containers", []):
-            if not isinstance(container, dict):
-                continue
-            image = str(container.get("image", ""))
-            security_context = container.get("securityContext", {})
-            if not isinstance(security_context, dict):
-                security_context = {}
-
-            if image.endswith(":latest"):
-                findings.append(
-                    Finding("k8s-manifest", "K8S-002", "MEDIUM", "container", str(resource_id), "Container uses latest tag", image)
-                )
-            if bool(security_context.get("privileged")):
-                findings.append(
-                    Finding("k8s-manifest", "K8S-003", "HIGH", "container", str(resource_id), "Privileged container is enabled", image)
-                )
-            if int(security_context.get("runAsUser", 0)) == 0:
-                findings.append(
-                    Finding("k8s-manifest", "K8S-004", "HIGH", "container", str(resource_id), "Container runs as root", image)
-                )
-            capabilities = security_context.get("capabilities", {})
-            if isinstance(capabilities, dict) and "ALL" in capabilities.get("add", []):
-                findings.append(
-                    Finding("k8s-manifest", "K8S-005", "HIGH", "container", str(resource_id), "Container adds broad Linux capabilities", image)
-                )
-    return findings
+```text
+..                                                                       [100%]
+2 passed in 0.02s
 ```
 
-왜 이 코드가 중요했는가: 이 분기들이 들어가면서 scanner는 단순 schema checker가 아니라 실제 guardrail처럼 동작했다. 각각이 서로 다른 수정 행동을 요구하기 때문이다.
+이 테스트 구조 덕분에 이 scanner는 "무조건 경고를 많이 뿌리는 도구"가 아니라, 적어도 제공된 학습 범위 안에서는 경계를 가진 rule set로 읽을 수 있다.
 
-새로 배운 것: `privileged`, root 실행, broad capability는 모두 “컨테이너 권한을 과하게 넓힌다”는 공통 축에 있지만, remediation 포인트는 미묘하게 다르다. control을 나누는 이유가 여기 있다.
+## 이번에 직접 확인한 rule semantics
 
-다음: manifest만으로 끝내지 않고 image metadata도 같은 finding 언어로 읽어야 했다.
+소스만 보면 지나치기 쉬운 부분도 하나 있었다. `runAsUser` 판단은 `int(security_context.get("runAsUser", 0)) == 0`이기 때문에, 값을 명시하지 않아도 기본적으로 root로 간주한다. 실제로 임시 Pod manifest에서 `runAsUser`를 생략하고 재실행했더니 `K8S-004`가 바로 나왔다.
 
-## Phase 3. image metadata와 secure fixture 0건으로 경계를 닫았다
+이건 꽤 중요한 현재 semantics다. "명시적으로 root"만 잡는 게 아니라, "명시가 없어서 root일 가능성이 열려 있는 상태"도 위험으로 본다는 뜻이기 때문이다.
 
-여기서부터 흐름이 한 단계 또렷해진다. 먼저 `image metadata와 secure fixture 0건으로 경계를 닫았다`를 단단히 잡아야 뒤에서 나오는 테스트와 CLI가 왜 필요한지 설명할 수 있기 때문이다.
+동시에 범위도 선명하다. scanner는 `containers`만 보고, `initContainers`, `ephemeralContainers`, pod-level `securityContext`는 아직 해석하지 않는다. 그래서 이 lab을 PodSecurity 전체 재현으로 읽으면 과장이고, 정적 입력 기반의 작은 guardrail set로 읽어야 맞다.
 
-- 당시 목표: manifest 외부의 이미지 정보도 같은 scanner에서 다루고, 안전한 입력은 조용히 지나가게 한다.
-- 변경 단위: `python/src/container_guardrails/scanner.py`의 `scan_image_metadata`, `python/tests/test_scanner.py`
-- 처음 가설: manifest와 image metadata를 함께 봐야 설명이 구체적이고, secure fixture 0건이 있어야 noisy scanner가 되지 않는다.
-- 실제 진행: image JSON에서도 `latest`, root 실행, `ALL` capability를 `IMG-*` finding으로 만들었다. 테스트는 insecure fixture에서 K8S/IMG control 전체 집합이 나오고, secure fixture에서는 완전히 비어야 한다고 못 박았다.
+## 지금 상태에서 분명한 한계
 
-CLI:
+- Kubernetes surface 일부만 본다.
+- deduplication과 suppression이 없다.
+- severity는 고정 상수라 context를 반영하지 않는다.
+- runtime event나 admission decision은 없다.
 
-```bash
-$ PYTHONPATH=01-cloud-security-core/08-container-guardrails/python/src .venv/bin/python -m pytest 01-cloud-security-core/08-container-guardrails/python/tests
-```
-
-검증 신호:
-- pytest가 `2 passed in 0.04s`로 통과했다.
-- `test_secure_inputs_report_no_findings`가 scanner의 noise floor를 제어한다.
-
-핵심 코드:
-
-```python
-def test_insecure_inputs_report_expected_findings() -> None:
-    findings = scan_manifest(_problem_data("insecure_k8s.yaml")) + scan_image_metadata(_problem_data("insecure_image.json"))
-    controls = {finding.control_id for finding in findings}
-    assert controls == {"K8S-001", "K8S-002", "K8S-003", "K8S-004", "K8S-005", "IMG-001", "IMG-002", "IMG-003"}
-
-
-def test_secure_inputs_report_no_findings() -> None:
-    findings = scan_manifest(_problem_data("secure_k8s.yaml")) + scan_image_metadata(_problem_data("secure_image.json"))
-    assert findings == []
-```
-
-왜 이 코드가 중요했는가: guardrail scanner의 신뢰도는 insecure에서 많이 잡는 것보다 secure에서 조용한지로 판가름 난다. 이 테스트가 그 경계를 선명하게 한다.
-
-새로 배운 것: 좋은 guardrail은 “무조건 많이 경고”하지 않는다. source가 여러 개여도 같은 severity/control discipline을 유지해야 운영에 얹기 쉽다.
-
-다음: 다음 프로젝트에서는 finding 이후의 거버넌스, 즉 exception/evidence/audit를 모델링한다.
-
-## 여기서 남는 질문
-이 문단은 단순한 회고가 아니라, 다음 프로젝트로 넘어갈 때 무엇을 들고 가야 하는지 짚어 두는 자리다.
-
-이 scanner는 클러스터 없는 학습 환경을 핑계로 대충 축소하지 않았다. manifest와 image metadata에서 바로 설명할 수 있는 위험만 골라 control로 분리했고, secure fixture 0건까지 지켜서 capstone에 그대로 실을 수 있는 guardrail 입력을 만들었다.
+그래도 이 lab의 가치는 분명하다. 클러스터 없이도 manifest와 image metadata만으로 납득 가능한 위험을 꽤 많이 설명할 수 있고, 그 결과를 source별 finding으로 분리해 남길 수 있다는 점을 아주 작은 코드로 보여 주기 때문이다.

@@ -9,7 +9,7 @@
       "resource_id": "study2-public-logs",
       "title": "S3 bucket does not fully block public access",
       "status": "open",
-      "detected_at": "2026-03-13T01:32:47.640767Z",
+      "detected_at": "2026-03-14T05:43:30.145833Z",
       "evidence_ref": "public_logs"
     },
     {
@@ -21,7 +21,7 @@
       "resource_id": "ssh_open",
       "title": "Security group exposes SSH or RDP to the internet",
       "status": "open",
-      "detected_at": "2026-03-13T01:32:47.640802Z",
+      "detected_at": "2026-03-14T05:43:30.145861Z",
       "evidence_ref": "ssh_open"
     },
     {
@@ -33,7 +33,7 @@
       "resource_id": "study2-analytics",
       "title": "Resource encryption is disabled",
       "status": "open",
-      "detected_at": "2026-03-13T01:32:47.640808Z",
+      "detected_at": "2026-03-14T05:43:30.145867Z",
       "evidence_ref": "analytics"
     },
     {
@@ -45,7 +45,7 @@
       "resource_id": "BroadAdmin",
       "title": "Policy allows every action",
       "status": "open",
-      "detected_at": "2026-03-13T01:32:47.645656Z",
+      "detected_at": "2026-03-14T05:43:30.149998Z",
       "evidence_ref": "BroadAdmin"
     },
     {
@@ -57,7 +57,7 @@
       "resource_id": "BroadAdmin",
       "title": "Policy applies to every resource",
       "status": "open",
-      "detected_at": "2026-03-13T01:32:47.645667Z",
+      "detected_at": "2026-03-14T05:43:30.150007Z",
       "evidence_ref": "BroadAdmin"
     },
     {
@@ -69,7 +69,7 @@
       "resource_id": "CreateAccessKey",
       "title": "Detected CreateAccessKey event",
       "status": "open",
-      "detected_at": "2026-03-13T01:32:47.667074Z",
+      "detected_at": "2026-03-14T05:43:30.170582Z",
       "evidence_ref": "arn:aws:iam::123456789012:user/devops"
     },
     {
@@ -81,7 +81,7 @@
       "resource_id": "DeleteTrail",
       "title": "Detected DeleteTrail event",
       "status": "open",
-      "detected_at": "2026-03-13T01:32:47.667093Z",
+      "detected_at": "2026-03-14T05:43:30.170599Z",
       "evidence_ref": "arn:aws:iam::123456789012:user/security-admin"
     },
     {
@@ -93,7 +93,7 @@
       "resource_id": "insecure-api",
       "title": "Manifest uses hostPath volume",
       "status": "open",
-      "detected_at": "2026-03-13T01:32:47.700153Z",
+      "detected_at": "2026-03-14T05:43:30.203295Z",
       "evidence_ref": "insecure-api"
     },
     {
@@ -105,7 +105,7 @@
       "resource_id": "insecure-api",
       "title": "Container uses latest tag",
       "status": "open",
-      "detected_at": "2026-03-13T01:32:47.700174Z",
+      "detected_at": "2026-03-14T05:43:30.203311Z",
       "evidence_ref": "nginx:latest"
     },
     {
@@ -117,7 +117,7 @@
       "resource_id": "insecure-api",
       "title": "Container security context is too broad",
       "status": "open",
-      "detected_at": "2026-03-13T01:32:47.700179Z",
+      "detected_at": "2026-03-14T05:43:30.203316Z",
       "evidence_ref": "nginx:latest"
     }
   ]

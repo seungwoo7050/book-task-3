@@ -1,131 +1,54 @@
-# 10 01 MemTable SkipList를 읽기 전에 범위를 다시 좁히기
+# Scope, Surface, And First Ordered Output
 
-이 시리즈의 첫 글이다. 여기서는 구현 세부사항을 서둘러 설명하지 않고, 무엇을 먼저 고정해야 하는지 범위부터 다시 좁힌다.
+## 1. 문제는 자료구조 일반론보다 MemTable semantics를 고정하는 쪽에 있다
 
-## Phase 1 — 범위를 다시 세우는 구간
+[`problem/README.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/01-memtable-skiplist/problem/README.md)는 다섯 가지를 요구한다. ordered `Put`, 상태를 구분하는 `Get`, tombstone 기반 `Delete`, 전체 ordered iteration, 그리고 flush threshold 판단용 byte-size tracking이다.
 
-이번 글에서는 먼저 테스트와 파일 구조로 문제의 테두리를 다시 잡고, 이어서 중심 타입이 어떤 책임을 끌어안는지 확인한다.
+중요한 건 일부러 빠진 범위다. 동시성 제어, lock-free 구현, 확률적 tuning, benchmark는 다루지 않는다. 즉 이 랩은 skip list를 최고 성능으로 만드는 단계가 아니라, 저장 엔진이 기대하는 MemTable contract를 작게 고정하는 단계다.
 
-### Session 1 — 테스트와 파일 구조로 범위를 다시 좁히기
+## 2. 코드 표면은 단순하지만 의도가 분명하다
 
-이번 세션의 목표는 `01 MemTable SkipList`가 어떤 invariant를 먼저 고정하는 슬롯인지 파악하는 것이었다. 초기 가설은 구현이 너무 작아서 단순 API 연습에 가까울 거라고 봤다.
+핵심 구현은 [`skiplist.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/01-memtable-skiplist/internal/skiplist/skiplist.go) 하나에 모여 있다.
 
-막상 다시 펼쳐 보니 `find internal tests cmd -type f | sort`로 구조를 펼친 뒤 `rg -n "^func Test" tests`로 테스트 이름을 나열했다. 특히 `TestEntriesIncludeTombstones`까지 테스트 이름을 훑고 나니, 이 프로젝트의 중심이 단순 기능 추가가 아니라 `Put` 주변의 invariant를 고정하는 일이라는 게 보였다. 여기서 해석을 바꾼 단서는 `TestPutAndGet`는 가장 기본 표면을 보여 줬고, `TestEntriesIncludeTombstones`는 이 프로젝트가 이미 경계 조건까지 포함한다는 신호였다.
+- `Put(key, value)`
+- `Delete(key)`
+- `Get(key) (string, ValueState)`
+- `Entries() []Entry`
+- `Size() int`
+- `ByteSize() int`
+- `Clear()`
 
-변경 단위:
-- `database-systems/go/database-internals/projects/01-memtable-skiplist/README.md`, `database-systems/go/database-internals/projects/01-memtable-skiplist/tests/skiplist_test.go`
+이 표면을 보면 곧바로 알 수 있다. API는 range query나 iterator abstraction보다 "flush 직전 상태를 어떻게 읽을 것인가"에 맞춰져 있다. 실제로 docs의 [`skiplist-invariants.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/01-memtable-skiplist/docs/concepts/skiplist-invariants.md)도 level-0 ordered list, tombstone 유지, byte-size 근사치를 핵심 invariant로 잡는다.
 
-CLI:
+## 3. deterministic level generation을 일부러 택했다
 
-```bash
-$ find internal tests cmd -type f | sort
-cmd/skiplist-demo/main.go
-internal/skiplist/skiplist.go
-tests/skiplist_test.go
-```
+`New()`는 `rand.New(rand.NewSource(7))`로 고정 시드를 만든다. 즉 이 skip list는 완전히 무작위인 production structure라기보다, 테스트와 학습 설명에서 재현 가능한 level 배치를 택한다.
 
-```bash
-$ rg -n "^func Test" tests
-tests/skiplist_test.go:9:func TestPutAndGet(t *testing.T) {
-tests/skiplist_test.go:22:func TestMissingKey(t *testing.T) {
-tests/skiplist_test.go:31:func TestUpdateKeepsLogicalSize(t *testing.T) {
-tests/skiplist_test.go:45:func TestManyInserts(t *testing.T) {
-tests/skiplist_test.go:59:func TestDeleteProducesTombstone(t *testing.T) {
-tests/skiplist_test.go:73:func TestEntriesStaySorted(t *testing.T) {
-tests/skiplist_test.go:88:func TestEntriesIncludeTombstones(t *testing.T) {
-tests/skiplist_test.go:103:func TestByteSizeTracking(t *testing.T) {
-tests/skiplist_test.go:115:func TestClear(t *testing.T) {
-```
+이 선택 덕분에 자료구조 내부는 여전히 probabilistic shape를 쓰지만, 테스트와 demo는 매번 같은 이야기로 반복된다. 학습용 repo에서 꽤 중요한 선택이다.
 
-검증 신호:
-- `TestPutAndGet`는 가장 기본 표면을 보여 줬고, `TestEntriesIncludeTombstones`는 이 프로젝트가 이미 경계 조건까지 포함한다는 신호였다.
-- 테스트 이름만으로도 문제의 중심이 `Put` 주변의 ordering / visibility 규칙이라는 점이 드러났다.
+## 4. demo 출력이 보여 주는 첫 사실
 
-핵심 코드:
-
-```go
-func TestEntriesIncludeTombstones(t *testing.T) {
-	list := skiplist.New()
-	list.Put("x", "1")
-	list.Put("y", "2")
-	list.Delete("x")
-
-	entries := list.Entries()
-	if len(entries) != 2 {
-		t.Fatalf("expected 2 entries, got %d", len(entries))
-	}
-	if entries[0].Value != nil {
-		t.Fatalf("expected first entry to be a tombstone")
-	}
-}
-```
-
-왜 여기서 판단이 바뀌었는가:
-
-`TestEntriesIncludeTombstones`는 README의 추상 설명보다 더 직접적으로, 어떤 실패를 막아야 하는지 보여 준다. 나는 여기서 구현 순서를 거꾸로 세우기보다 테스트가 요구하는 경계를 먼저 고정해야 한다고 판단했다.
-
-이번 구간에서 새로 이해한 것:
-- `SkipList Invariants`에서 정리한 요점처럼, level 0 연결 리스트는 전체 키 집합을 오름차순으로 포함한다.
-
-다음으로 넘긴 질문:
-- `Put`와 `Delete`를 코드에서 직접 확인해, 테스트 이름이 가리키는 invariant가 실제로 어디에 박혀 있는지 본다.
-
-### Session 2 — 중심 타입에서 책임이 모이는 지점 보기
-
-이 구간에서 먼저 붙잡으려 한 것은 소스 파일의 중심 타입/클래스가 어떤 책임을 한곳에 묶고 있는지 확인하는 것이었다. 처음 읽을 때는 구현이 작으면 책임도 단순하게 한 줄로 설명될 거라고 생각했다.
-
-그런데 가장 큰 구현 파일인 `database-systems/go/database-internals/projects/01-memtable-skiplist/internal/skiplist/skiplist.go`를 먼저 읽고, 테스트가 요구한 상태 전이가 정말 이 파일 안에서 닫히는지 확인했다. 특히 `Put` 같은 이름이 초기에 바로 보이면 write path의 중심이 선명해진다.
-
-변경 단위:
-- `database-systems/go/database-internals/projects/01-memtable-skiplist/internal/skiplist/skiplist.go`
-
-CLI:
+2026-03-14에 아래 명령을 다시 실행했다.
 
 ```bash
-$ rg -n "^(type|func) " internal cmd
-internal/skiplist/skiplist.go:14:type ValueState int
-internal/skiplist/skiplist.go:23:type Entry struct {
-internal/skiplist/skiplist.go:28:type node struct {
-internal/skiplist/skiplist.go:35:type SkipList struct {
-internal/skiplist/skiplist.go:44:func New() *SkipList {
-internal/skiplist/skiplist.go:51:func newNode(key string, value *string, level int) *node {
-internal/skiplist/skiplist.go:59:func (s *SkipList) randomLevel() int {
-internal/skiplist/skiplist.go:68:func (s *SkipList) Put(key, value string) {
-internal/skiplist/skiplist.go:74:func (s *SkipList) Delete(key string) {
-internal/skiplist/skiplist.go:78:func (s *SkipList) put(key string, value *string) {
-internal/skiplist/skiplist.go:115:func (s *SkipList) Get(key string) (string, ValueState) {
-internal/skiplist/skiplist.go:135:func (s *SkipList) Entries() []Entry {
-internal/skiplist/skiplist.go:146:func (s *SkipList) Size() int {
-internal/skiplist/skiplist.go:151:func (s *SkipList) ByteSize() int {
-internal/skiplist/skiplist.go:156:func (s *SkipList) Clear() {
-internal/skiplist/skiplist.go:163:func valueLen(value *string) int {
-cmd/skiplist-demo/main.go:9:func main() {
+cd /Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/01-memtable-skiplist
+GOWORK=off go run ./cmd/skiplist-demo
 ```
 
-검증 신호:
-- `Put` 같은 이름이 초기에 바로 보이면 write path의 중심이 선명해진다.
-- 반대로 `Delete`가 함께 보이면 read path나 visibility 규칙을 따로 떼어 설명할 수 없다는 뜻이다.
+출력은 아래와 같았다.
 
-핵심 코드:
-
-```go
-func (s *SkipList) Put(key, value string) {
-	copyValue := value
-	s.put(key, &copyValue)
-}
-
-// Delete는 key를 제거하지 않고 tombstone으로 바꾼다.
-func (s *SkipList) Delete(key string) {
-	s.put(key, nil)
-}
+```text
+ordered entries:
+- apple => green
+- banana => <tombstone>
+- carrot => orange
+size=3 byteSize=220
 ```
 
-왜 여기서 판단이 바뀌었는가:
+이 출력만으로도 세 가지가 보인다.
 
-`Put`는 이 프로젝트가 가장 먼저 고정해야 하는 상태 전이를 보여 준다. 이 조각을 보고 나서야 테스트 이름과 구현 책임이 같은 문제를 가리키고 있다는 확신이 생겼다.
+- insertion 순서와 무관하게 iteration은 key 오름차순이다
+- delete된 `banana`는 사라지지 않고 tombstone으로 남는다
+- tombstone도 logical size에 포함되며 byte size 추적도 함께 갱신된다
 
-이번 구간에서 새로 이해한 것:
-- `SkipList Invariants`에서 정리한 요점처럼, level 0 연결 리스트는 전체 키 집합을 오름차순으로 포함한다.
-
-다음으로 넘긴 질문:
-- 같은 상태를 반대 방향에서 고정하는 `Delete`를 읽어, write/read 혹은 append/replay가 서로 어떻게 잠기는지 확인한다.
+즉 demo는 "skip list가 동작한다"보다 "flush 직전에 어떤 ordered view가 손에 남는가"를 보여 주는 데 더 가깝다.

@@ -1,17 +1,54 @@
-# 02-http-and-api-basics evidence ledger
+# 02-http-and-api-basics Evidence Ledger
 
-이 프로젝트도 path 단위 `git log`는 `2026-03-12` 한 번의 이관 커밋만 보여 준다. 아래 표는 `app.ts`, `book-store.ts`, 테스트, 재검증 CLI를 바탕으로 구현 순서를 다시 세운 것이다.
+## 독립 Todo 판정
+- 판정: `done`
+- 이유: `problem/README.md`가 별도 성공 기준을 가진 독립 bridge 문제이고, `node/` 워크스페이스가 자체 build/test/server surface를 갖는다.
+- 이번 Todo에서도 기존 blog 본문은 입력 근거로 사용하지 않았다.
 
-| 순서 | 시간 표지 | 당시 목표 | 변경 단위 | 처음 가설 | 실제 조치 | CLI | 검증 신호 | 핵심 코드 앵커 | 새로 배운 것 | 다음 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Phase 1 | 프레임워크 없이 HTTP 서버의 최소 골격을 직접 세운다 | `node/src/app.ts`의 `readJsonBody`, `sendJson`, route 분기 | health와 books 몇 개면 조건문만으로 금방 끝날 것 같았다 | body 읽기, JSON 직렬화, `Content-Type`, route matching을 모두 명시적으로 적었다 | `COREPACK_ENABLE_AUTO_PIN=0 pnpm run build` | `build: ok` | `if (method === "GET" && url === "/health")` | 프레임워크가 숨겨 주는 일은 결국 body parsing, 헤더 설정, route 분기 같은 반복 작업이었다 | 도메인 규칙을 밖으로 빼야 한다 |
-| 2 | Phase 2 | 메모리 저장소와 payload 검증으로 HTTP 계층을 가볍게 만든다 | `node/src/book-store.ts`의 `BookStore`, `validateCreateBookPayload` | 작은 예제니까 `app.ts` 안에서 `Map`을 직접 조작해도 충분해 보였다 | 저장소와 validator를 분리해 route handler가 도메인 규칙을 전부 들고 있지 않게 했다 | `COREPACK_ENABLE_AUTO_PIN=0 pnpm run test` | `Test Files 1 passed`, `Tests 4 passed` | `if (typeof publishedYear !== "number" || !Number.isInteger(publishedYear))` | 작은 예제에서도 validation을 밖으로 빼는 순간 계층 경계가 생긴다 | 실패 경로를 status code로 분리해야 한다 |
-| 3 | Phase 3 | 400/404/415를 구분된 HTTP 계약으로 고정한다 | `node/src/app.ts`, `node/tests/app.test.ts` | 성공 CRUD만 되면 기본기 연습으로는 충분하다고 느끼기 쉽다 | wrong `Content-Type`, malformed JSON, invalid payload, missing book을 다른 status code로 돌려줬다 | `COREPACK_ENABLE_AUTO_PIN=0 pnpm run test` | health, create/fetch, invalid payload, wrong content-type 4개 시나리오가 모두 통과한다 | `sendJson(response, 415, { message: "content-type must be application/json" })` | HTTP 기본기는 성공 응답보다 실패를 어떤 code로 나누는지에서 더 잘 드러난다 | 다음 프로젝트에서 같은 CRUD를 Express와 NestJS로 비교한다 |
+## 이번 턴에 읽은 근거
+- `backend-node/README.md`
+- `backend-node/study/Node-Backend-Architecture/README.md`
+- `backend-node/study/Node-Backend-Architecture/bridge/02-http-and-api-basics/README.md`
+- `backend-node/study/Node-Backend-Architecture/bridge/02-http-and-api-basics/problem/README.md`
+- `backend-node/study/Node-Backend-Architecture/bridge/02-http-and-api-basics/problem/script/curl-examples.sh`
+- `backend-node/study/Node-Backend-Architecture/bridge/02-http-and-api-basics/node/package.json`
+- `backend-node/study/Node-Backend-Architecture/bridge/02-http-and-api-basics/node/src/app.ts`
+- `backend-node/study/Node-Backend-Architecture/bridge/02-http-and-api-basics/node/src/book-store.ts`
+- `backend-node/study/Node-Backend-Architecture/bridge/02-http-and-api-basics/node/src/main.ts`
+- `backend-node/study/Node-Backend-Architecture/bridge/02-http-and-api-basics/node/tests/app.test.ts`
+- `backend-node/study/Node-Backend-Architecture/bridge/02-http-and-api-basics/docs/concepts/frameworkless-http.md`
 
-## 근거 파일
+## 소스에서 확인한 핵심 사실
+- `createApp()`는 frameworkless HTTP 서버의 route dispatch를 직접 수행한다.
+- JSON body parsing은 request stream을 모두 읽은 뒤 `JSON.parse()`를 호출하는 수동 단계다.
+- response는 `sendJson()`이 `content-type`과 `JSON.stringify()`를 직접 책임진다.
+- `matchBookId()`는 regex로 path parameter를 직접 뽑는다.
+- `BookStore`는 in-memory `Map`과 auto-increment id를 사용한다.
+- `validateCreateBookPayload()`는 empty title/author와 non-integer `publishedYear`를 `Error`로 거절한다.
+- wrong content-type은 `415`, malformed JSON은 `400`, invalid payload도 `400`, missing book/route는 `404`다.
+- 테스트는 health, create/fetch, invalid payload, wrong content-type만 직접 덮고, malformed JSON과 missing book/route는 source-only branch다.
 
-- `bridge/02-http-and-api-basics/README.md`
-- `bridge/02-http-and-api-basics/problem/README.md`
-- `bridge/02-http-and-api-basics/node/src/app.ts`
-- `bridge/02-http-and-api-basics/node/src/book-store.ts`
-- `bridge/02-http-and-api-basics/node/tests/app.test.ts`
+## 검증 명령과 실제 결과
+
+| 명령 | 결과 | 메모 |
+| --- | --- | --- |
+| `COREPACK_ENABLE_AUTO_PIN=0 pnpm run build` | 통과 | `tsc` exit code `0` |
+| `COREPACK_ENABLE_AUTO_PIN=0 pnpm run test` | 통과 | `1` file, `4` tests passed |
+| `COREPACK_ENABLE_AUTO_PIN=0 pnpm start` | 통과 | `HTTP basics server listening on 3000` 출력 |
+| `curl -i http://localhost:3000/health` | 통과 | `200 {"status":"ok"}` |
+| `curl -i http://localhost:3000/books` | 통과 | 초기 상태 `200 []` |
+| `curl -i -X POST http://localhost:3000/books -H 'content-type: application/json' -d '{"title":"Node for Backend Engineers","author":"Alice","publishedYear":2026}'` | 통과 | `201`과 생성된 book 반환 |
+| 이후 `curl -i http://localhost:3000/books` | 통과 | `200`과 길이 1 배열 |
+| 이후 `curl -i http://localhost:3000/books/1` | 통과 | `200`과 생성된 book 반환 |
+| `curl -i -X POST http://localhost:3000/books -H 'content-type: text/plain' -d 'plain text'` | 통과 | `415 {"message":"content-type must be application/json"}` |
+
+## 이번 문서가 기대는 중심 앵커
+- HTTP skeleton 앵커: `node/src/app.ts`
+- 도메인 경계 앵커: `node/src/book-store.ts`
+- 테스트 앵커: `node/tests/app.test.ts`
+- 개념 앵커: `docs/concepts/frameworkless-http.md`
+
+## 이번 턴의 품질 메모
+- success path만이 아니라 test가 아직 직접 덮지 않는 실패 branch까지 source-based로 구분했다.
+- 병렬 요청이 아니라 같은 프로세스 안의 순차 요청으로 in-memory state를 검증했다.
+- frameworkless HTTP의 의미를 "불편함"보다 "프레임워크가 무엇을 추상화하는지 보이는 상태"로 다시 썼다.

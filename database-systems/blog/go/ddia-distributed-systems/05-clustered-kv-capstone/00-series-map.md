@@ -1,38 +1,45 @@
 # 05 Clustered KV Capstone 시리즈 맵
 
-`05 Clustered KV Capstone`은 DDIA Distributed Systems 트랙에서 5번째로 만나는 프로젝트다. 정적 shard topology와 정적 leader 배치를 가진 작은 clustered KV store로 routing, replication, disk-backed storage를 한 흐름으로 연결합니다. 여기서는 완성된 해설보다, 테스트와 코드가 어디서 같은 문제를 가리키는지 차례대로 따라간다.
+`05 Clustered KV Capstone`은 앞에서 만든 shard routing, leader-follower replication, disk-backed replay를 한 요청 경로로 다시 묶는 프로젝트다. 이번 문서 묶음은 "작은 분산 KV"라는 결과 설명보다, key 한 개가 어떤 shard로 가고, leader log에 어떻게 남고, follower가 언제 catch-up하며, restart 뒤 어디까지 복원되는지를 순서대로 따라가는 데 초점을 둔다.
 
-## 먼저 보고 갈 질문
+## 이번 Todo에서 다시 잡은 질문
 
-- key를 shard로 라우팅하고 shard별 leader/follower group을 선택해야 합니다.
-- leader write가 log-backed 또는 disk-backed store에 기록돼야 합니다.
+- key routing 규칙은 어디서 고정되고, leader/follower 배치는 어디까지 정적으로 박혀 있는가?
+- write 한 번이 leader append, follower catch-up, on-disk replay까지 어떻게 이어지는가?
+- 이 capstone이 보여 주는 복구는 "클러스터 recovery"가 아니라 정확히 어느 범위의 local recovery인가?
 
 ## 읽는 순서
 
-1. [10-chronology-scope-and-surface.md](10-chronology-scope-and-surface.md) — 테스트 이름과 파일 배치부터 훑으면서 문제의 테두리를 다시 좁히는 글
-2. [20-chronology-core-invariants.md](20-chronology-core-invariants.md) — 핵심 함수와 상태 전이에서 invariant가 실제로 어디서 잠기는지 따라가는 글
-3. [30-chronology-verification-and-boundaries.md](30-chronology-verification-and-boundaries.md) — 테스트와 demo를 다시 돌려 약속 범위와 남는 한계를 정리하는 글
+1. [10-chronology-scope-and-surface.md](10-chronology-scope-and-surface.md)
+2. [20-chronology-core-invariants.md](20-chronology-core-invariants.md)
+3. [30-chronology-verification-and-boundaries.md](30-chronology-verification-and-boundaries.md)
+
+## 이번 재작성의 근거
+
+- `database-systems/go/ddia-distributed-systems/projects/05-clustered-kv-capstone/problem/README.md`
+- `database-systems/go/ddia-distributed-systems/projects/05-clustered-kv-capstone/README.md`
+- `database-systems/go/ddia-distributed-systems/projects/05-clustered-kv-capstone/docs/concepts/static-topology.md`
+- `database-systems/go/ddia-distributed-systems/projects/05-clustered-kv-capstone/docs/concepts/replicated-write-pipeline.md`
+- `database-systems/go/ddia-distributed-systems/projects/05-clustered-kv-capstone/internal/capstone/capstone.go`
+- `database-systems/go/ddia-distributed-systems/projects/05-clustered-kv-capstone/tests/capstone_test.go`
+- `database-systems/go/ddia-distributed-systems/projects/05-clustered-kv-capstone/cmd/clustered-kv/main.go`
 
 ## 재검증 명령
 
 ```bash
 GOWORK=off go test ./...
-GOWORK=off go run ./cmd/clustered-kv
+rm -rf .demo-data && GOWORK=off go run ./cmd/clustered-kv
+find .demo-data -type f | sort
 ```
 
-## 이번 시리즈가 근거로 삼은 파일
+## 보조 문서
 
-- `database-systems/go/ddia-distributed-systems/projects/05-clustered-kv-capstone/internal/capstone/capstone.go`
-- `database-systems/go/ddia-distributed-systems/projects/05-clustered-kv-capstone/tests/capstone_test.go`
-- `database-systems/go/ddia-distributed-systems/projects/05-clustered-kv-capstone/README.md`
-- `database-systems/go/ddia-distributed-systems/projects/05-clustered-kv-capstone/problem/README.md`
-- `database-systems/go/ddia-distributed-systems/projects/05-clustered-kv-capstone/docs/README.md`
-- `database-systems/go/ddia-distributed-systems/projects/05-clustered-kv-capstone/cmd/clustered-kv/main.go`
+- [_evidence-ledger.md](_evidence-ledger.md)
+- [_structure-outline.md](_structure-outline.md)
 
-## 보조 메모
+## 이번에 명시적으로 남긴 경계
 
-작업 메모가 꼭 필요할 때만 [_evidence-ledger.md](_evidence-ledger.md)와 [_structure-outline.md](_structure-outline.md)를 보면 된다. 공개 시리즈는 `00 -> 10 -> 20 -> 30`만 따라가면 충분하다.
-
-## Git Anchor
-
-- `2026-03-11 bbb6673 Track 1에 대한 전반적인 개선 완료`
+- topology는 `NewCluster` 시점에 고정되며 membership change는 없다.
+- replication은 in-process orchestration이며 transport, quorum, election이 없다.
+- `RestartNode`는 노드가 이미 가진 log file을 다시 읽을 뿐이고, lagging follower를 자동 catch-up하지는 않는다.
+- ordinary `Read`는 항상 shard leader를 읽고, follower freshness 관찰은 `ReadFromNode` 같은 explicit debug surface에서만 드러난다.

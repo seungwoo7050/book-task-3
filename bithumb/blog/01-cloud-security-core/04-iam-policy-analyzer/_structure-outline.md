@@ -1,36 +1,34 @@
-# 04 IAM Policy Analyzer 구조 메모
+# 04 IAM Policy Analyzer structure outline
 
-이 문서는 최종 글을 쓰기 전에 서사 배치를 점검하는 메모다. 독자에게 무엇을 먼저 설명하고 어디서 코드와 CLI를 꺼내 올지 한눈에 보이도록 정리한다.
+## 중심 질문
 
-## 이번 문서가 맡는 일
-- foundation의 allow/deny 설명 계층을 “risk finding”으로 다시 해석하는 전환점을 보여 준다.
-- 글은 `finding shape -> broad permission 분해 -> escalation/false positive 경계`로 이어지게 배치한다.
+- 이 analyzer가 왜 "위험 정책을 찾는다"가 아니라 "remediation 가능한 control 단위로 자른다"는 이야기로 읽혀야 하는지
+- broad admin, passrole, safe policy가 각각 어떤 품질 기준 역할을 하는지
 
-## 먼저 붙들 소스 묶음
-- [`../../../01-cloud-security-core/04-iam-policy-analyzer/README.md`](../../../01-cloud-security-core/04-iam-policy-analyzer/README.md)
-- [`../../../01-cloud-security-core/04-iam-policy-analyzer/problem/README.md`](../../../01-cloud-security-core/04-iam-policy-analyzer/problem/README.md)
-- [`../../../01-cloud-security-core/04-iam-policy-analyzer/docs/concepts/least-privilege-findings.md`](../../../01-cloud-security-core/04-iam-policy-analyzer/docs/concepts/least-privilege-findings.md)
-- [`../../../01-cloud-security-core/04-iam-policy-analyzer/python/README.md`](../../../01-cloud-security-core/04-iam-policy-analyzer/python/README.md)
-- [`../../../01-cloud-security-core/04-iam-policy-analyzer/python/src/iam_policy_analyzer/analyzer.py`](../../../01-cloud-security-core/04-iam-policy-analyzer/python/src/iam_policy_analyzer/analyzer.py)
-- [`../../../01-cloud-security-core/04-iam-policy-analyzer/python/src/iam_policy_analyzer/cli.py`](../../../01-cloud-security-core/04-iam-policy-analyzer/python/src/iam_policy_analyzer/cli.py)
-- [`../../../01-cloud-security-core/04-iam-policy-analyzer/python/tests/test_analyzer.py`](../../../01-cloud-security-core/04-iam-policy-analyzer/python/tests/test_analyzer.py)
+## 글 흐름
 
-## 본문을 배치하는 순서
+1. 결과 스키마를 먼저 고정한 이유로 시작한다.
+2. broad admin을 `IAM-001`과 `IAM-002`로 나누는 장면을 두 번째 축으로 둔다.
+3. passrole fixture가 `IAM-002`와 `IAM-003`을 동시에 내는 구조를 세 번째 축으로 둔다.
+4. scoped policy 0건과 exact-match 기반 현재 한계를 마지막에 남긴다.
 
-- `00-series-map.md`
-  - least privilege finding이 어떤 질문을 추가하는지와 canonical verify를 먼저 세운다.
-- `10-development-timeline.md`
-  - 도입: 허용/거부 판단을 그대로 보여 주는 것만으로는 왜 위험한지 말할 수 없다는 점에서 시작한다.
-  - Phase 1. finding 스키마를 먼저 고정했다.
-  - Phase 2. broad admin을 두 control로 분해했다.
-  - Phase 3. escalation action과 false positive 경계를 함께 고정했다.
-  - 마무리: remediation이 이 finding shape를 어떻게 이어받는지 넘긴다.
+## 반드시 남길 증거
 
-## 강조할 코드와 CLI
-- 코드 앵커: `Finding` dataclass, wildcard broad permission check, `iam:PassRole` escalation rule, scoped policy 0건 테스트
-- CLI 앵커: `python -m iam_policy_analyzer.cli ...`, `pytest 01-cloud-security-core/04-iam-policy-analyzer/python/tests`
-- 개념 훅: least privilege 분석은 “허용 여부”가 아니라 “운영상 어떤 질문이 추가로 생기는가”를 control 단위로 분해하는 일이라는 점
+- `Finding` dataclass와 `findings_as_dicts()`
+- `IAM-001`, `IAM-002`, `IAM-003` 생성 조건
+- broad admin CLI 출력 2건
+- passrole CLI 출력 2건
+- scoped CLI `[]`
+- `2026-03-14` pytest `3 passed in 0.01s`
 
-## 리라이트 기준
-- chronology는 실제 commit timestamp보다 source, test, CLI가 묶이는 순서를 기준으로 읽는다.
-- 이 문서는 메타 기록보다 서사 배치와 강조점에 집중한다.
+## 반드시 피할 서술
+
+- 이 analyzer가 IAM 전체 위험 모델을 구현한 것처럼 보이게 하는 과장
+- passrole fixture를 `IAM-003`만 나오는 예제로 축소하는 문장
+- false positive 0건 기준을 빼먹고 탐지 개수만 강조하는 설명
+- `s3:*` 같은 wildcard family도 이미 세밀하게 해석한다고 오해하게 만드는 표현
+
+## 톤 체크
+
+- chronology는 `finding shape -> broad split -> escalation split -> safe 0건과 한계` 순서로 살아 있어야 한다.
+- 홍보문보다 "어떤 질문을 control 단위로 분리했는가"와 "무엇이 아직 exact rule 기반인가"가 함께 읽히는 탐색형 톤을 유지한다.

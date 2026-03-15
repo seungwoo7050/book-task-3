@@ -22,6 +22,13 @@
 - `2026-03-10`에 `labs/H-service-boundary-lab`부터 `labs/K-distributed-ops-lab`, `capstone/workspace-backend-v2-msa`를 재검증했습니다.
 - 세부 명령과 한계는 [docs/verification-report.md](docs/verification-report.md)에 기록했습니다.
 
+## 서버 문제지 빠른 진입
+
+- [problem-subject-essential/README.md](problem-subject-essential/README.md): 서버 공통 필수 기준으로 다시 고른 문제지
+- [problem-subject-elective/README.md](problem-subject-elective/README.md): essential에 포함되지 않은 나머지 문제지
+- [problem-subject-capstone/README.md](problem-subject-capstone/README.md): 랩을 다시 조합하는 종합 과제만 따로 모은 문제지
+- 아래 `필수` / `심화` 표기는 FastAPI 트랙 내부 진행 순서입니다. 서버 공통 essential/elective 판단은 위 두 문제지 인덱스를 기준으로 봅니다.
+
 ## 먼저 읽을 순서
 
 1. [docs/README.md](docs/README.md)에서 루트 문서 지도를 확인합니다.

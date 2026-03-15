@@ -1,6 +1,6 @@
 {
   "eval_count": 30,
-  "eval_total_ms_avg": 3.1,
+  "eval_total_ms_avg": 2.73,
   "judge_ms_avg": 0.0,
   "retrieval_hit_at_k": 1.0,
   "critical_short_circuit_rate": 0.0,

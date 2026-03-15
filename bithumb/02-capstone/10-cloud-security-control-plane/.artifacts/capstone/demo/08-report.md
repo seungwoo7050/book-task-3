@@ -13,7 +13,7 @@
 - `K8S-003` `HIGH` `open` `insecure-api`: Container security context is too broad
 
 ## Exceptions
-- `f96987c43e4a82dc` `approved` expires `2026-03-20T01:32:47.713170+00:00` reason: Temporary business exception for demo
+- `f96987c43e4a82dc` `approved` expires `2026-03-21T05:43:30.214206+00:00` reason: Temporary business exception for demo
 
 ## Remediation Plans
 - `cd605b1287dbef62` `manual_approval_required` `generated`: Dry-run remediation for CSPM-002

@@ -1,39 +1,72 @@
 # workspace-backend-v2-msa Evidence Ledger
 
-## 독립 프로젝트 판정
-- 판정: 처리 대상
-- 이유: capstone README, docs, compose, system test, verification report가 gateway + services 구조와 notification-service 장애 복구까지 독립적으로 설명한다.
-- 프로젝트 질문: v1과 같은 협업형 도메인을 MSA로 다시 풀었을 때 무엇이 단순해지고 무엇이 더 복잡해지는가.
-- 주의: finer-grained 구현 순서는 commit granularity가 거칠어서 README, docs, code surface, tests 의존 순서를 바탕으로 복원했다. 실제 날짜가 확인되는 부분은 git log와 검증 보고서에만 한정했다.
+## 독립 Todo 판정
+- 판정: `done`
+- 이유: `problem/README.md`가 v1과 구분되는 별도 성공 기준을 갖고 있고, `tests/test_system.py`가 recovery까지 포함한 독립 capstone 시나리오를 고정한다.
+- 이번 Todo에서도 기존 blog 본문은 입력 근거로 사용하지 않았다.
 
-## 소스 인벤토리
-- `capstone/workspace-backend-v2-msa/README.md`
-- `capstone/workspace-backend-v2-msa/problem/README.md`
-- `capstone/workspace-backend-v2-msa/docs/README.md`
-- `capstone/workspace-backend-v2-msa/fastapi/README.md`
-- `capstone/workspace-backend-v2-msa/fastapi/Makefile`
-- `capstone/workspace-backend-v2-msa/fastapi/compose.yaml`
-- `backend-fastapi/.github/workflows/labs-fastapi.yml`
-- `backend-fastapi/docs/verification-report.md`
+## 이번 턴에 읽은 근거
+- `backend-fastapi/capstone/workspace-backend-v2-msa/problem/README.md`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/README.md`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/docs/README.md`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/docs/aws-deployment.md`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/README.md`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/Makefile`
 - `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/compose.yaml`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/contracts/README.md`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/gateway/app/main.py`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/gateway/app/runtime.py`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/gateway/app/core/logging.py`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/gateway/app/core/security.py`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/gateway/app/api/v1/routes/auth.py`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/gateway/app/api/v1/routes/platform.py`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/gateway/app/api/v1/routes/health.py`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/gateway/app/api/v1/routes/ops.py`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/services/identity-service/app/api/v1/routes/auth.py`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/services/identity-service/app/api/v1/routes/ops.py`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/services/workspace-service/app/api/v1/routes/platform.py`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/services/workspace-service/app/api/v1/routes/health.py`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/services/workspace-service/app/api/v1/routes/ops.py`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/services/workspace-service/app/domain/services/platform.py`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/services/workspace-service/app/db/models/platform.py`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/services/notification-service/app/api/v1/routes/notifications.py`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/services/notification-service/app/api/v1/routes/ops.py`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/services/notification-service/app/domain/services/notifications.py`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/services/notification-service/app/db/models/notifications.py`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/tests/compose_harness.py`
+- `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/tests/smoke.py`
 - `backend-fastapi/capstone/workspace-backend-v2-msa/fastapi/tests/test_system.py`
-- `git log -- backend-fastapi/capstone/workspace-backend-v2-msa`
 
-## 프로젝트 표면 요약
-- 문제 요약: `workspace-backend` v1은 인증, 워크스페이스 도메인, 알림 전달을 한 프로세스 안에서 통합했다. v2의 목표는 같은 협업형 도메인을 MSA로 다시 분해해, public API를 유지한 채 내부 경계와 분산 복잡성이 어떻게 바뀌는지 설명 가능한 상태로 만드는 것이다. `gateway`가 public `/api/v1/auth/*`, `/api/v1/platform/*` 경로를 유지해야 한다. `identity-service`, `workspace-service`, `notification-service`는 각자 자기 DB만 읽어야 한다. 상세 성공 기준과 제외 범위는 problem/README.md에 둡니다.
-- 성공 기준: `gateway`가 public `/api/v1/auth/*`, `/api/v1/platform/*` 경로를 유지해야 한다. `identity-service`, `workspace-service`, `notification-service`는 각자 자기 DB만 읽어야 한다. 댓글 생성은 outbox에 기록되고, 이후 stream consumer와 websocket fan-out으로 이어져야 한다. notification-service가 잠시 내려가도 댓글 생성은 성공하고, 복구 후 consume로 알림이 전달되어야 한다. v1과 v2의 차이를 문서와 노트만 읽고 설명할 수 있어야 한다.
-- 설계 질문: 왜 `platform`을 그대로 두지 않고 `identity/workspace/notification`으로 나눴는가 public API는 왜 gateway에서 유지하는가 outbox, stream, pub/sub은 각각 어느 경계에 필요한가 v1보다 좋아진 점과 나빠진 점은 무엇인가 무엇이 실제 검증된 사실이고, 무엇이 아직 target shape 문서 수준의 가정인가
-- 실제 검증 surface: make lint make test make smoke docker compose up --build 실행과 환경 설명은 fastapi/README.md에서 다룹니다. 마지막 기록된 실제 검증 결과는 ../../docs/verification-report.md에 있습니다.
+## 소스에서 확인한 핵심 사실
+- public API shape는 gateway가 유지하고, 내부 auth는 `identity-service /internal/auth/*`, 내부 workspace는 `workspace-service /internal/*`, 내부 notification은 `notification-service /internal/notifications/*`로 분리된다.
+- gateway는 쿠키, CSRF, `X-Request-ID`, WebSocket edge, Redis pub/sub relay thread를 가진다.
+- gateway는 upstream 호출 때 `X-Request-ID`를 그대로 전달하고, JSON logging payload에 `service`, `request_id`를 포함한다.
+- `workspace-service`는 identity DB를 읽지 않는다. membership에 `user_email`을 저장하고 claims의 `sub/email`을 이용해 invite accept와 membership guard를 처리한다.
+- comment 생성은 `OutboxEvent(status="queued")`를 남기고, relay 단계에서 Redis Streams로 내보낸다.
+- `notification-service`는 stream을 `xread({stream: "0-0"})`로 읽고 `ConsumerReceipt(event_id)`로 dedupe 한 뒤, `Notification(status="delivered")`를 저장하고 Redis pub/sub으로 fan-out 한다.
+- `notification-service`는 stream을 `xread({stream: "0-0"}, count=100)`로 읽고 `ConsumerReceipt(event_id)`로 dedupe 한 뒤, `Notification(status="delivered")`를 저장하고 Redis pub/sub으로 fan-out 한다.
+- gateway의 `notifications/drain`은 `relay`와 `consume`을 조합한 수동 recovery surface다.
+- 따라서 recovery는 명시적이지만 backlog가 100건을 넘으면 drain 한 번으로 모두 비우지 못한다는 현재 배치 경계가 있다.
+- gateway ready는 세 내부 서비스 ready + Redis ping을 함께 확인하고, 각 서비스는 `/ops/metrics`에 한 줄 카운터를 제공한다.
+- `docs/aws-deployment.md`는 AWS target shape 문서일 뿐 실제 배포 성공을 주장하지 않는다.
 
-## 시간 표지
-- 2026-03-11 bbb6673 Track 1에 대한 전반적인 개선 완료
-- 2026-03-11 a6026ef 기본 과정 필수 / 심화 섹션 분류
-- 2026-03-11 89dc218 feat: add new project in fastapi (MSA)
+## 검증 명령과 실제 결과
 
-## Chronology Ledger
-| 순서 | 시간 표지 | 당시 목표 | 변경 단위 | 처음 가설 | 실제 조치 | CLI | 검증 신호 | 핵심 코드 앵커 | 새로 배운 것 | 다음 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Phase 1, 2026-03-11 add project commit 89dc218 + a6026ef를 기준으로 복원 | v1의 협업 도메인을 MSA 구조로 다시 풀기 | README.md, problem/README.md, docs/README.md | 서비스를 쪼개면 자동으로 구조가 더 좋아질 것 | gateway가 public API shape를 유지하고, identity/workspace/notification이 각자 DB를 소유하도록 재정의 | README의 `docker compose up --build`, `make test` | README가 v1과의 비교, DB ownership, eventual consistency를 한 답으로 설명 | README.md / docs/README.md 비교 질문 | MSA capstone의 핵심은 서비스 수가 아니라 v1보다 무엇이 복잡해졌는지 설명 가능해지는 데 있다 | runtime scope와 public path 고정 |
-| 2 | Phase 2, compose/runtime scope를 중심으로 복원 | gateway + identity + workspace + notification + redis를 실제 비교 대상 runtime으로 고정 | fastapi/compose.yaml, fastapi/README.md, gateway/app/api/v1/routes/platform.py | 문서만 있으면 MSA 경계가 충분히 전달될 것 | compose에 다섯 서비스와 healthcheck를 두고, gateway가 public `/api/v1/auth/*`, `/api/v1/platform/*`를 유지 | `docker compose up --build` | compose가 8015/8115/8116/8117/6395 포트의 runtime을 정의 | fastapi/compose.yaml | 비교 가능한 MSA는 먼저 실제 runtime surface가 분명해야 한다 | public flow와 장애 복구를 system test로 증명 |
-| 3 | Phase 3, system test가 v2의 차이를 드러냄 | owner local auth, collaborator Google login, invite, comment, notification failure/recovery, websocket fan-out을 한 번에 검증 | tests/test_system.py | 서비스별 unit test를 합치면 capstone 설명도 끝날 것 | public `/api/v1/*`만 호출해 협업 흐름을 수행하고, notification-service stop/start 사이의 drain 503과 recovery drain 성공까지 테스트화 | `python -m pytest tests/test_system.py -q`에 해당하는 흐름, `make test` | 첫 drain 성공 뒤 websocket 수신, notification-service 중단 중 drain 503, 복구 뒤 두 번째 알림 수신 | tests/test_system.py::test_v2_system_flow_and_notification_recovery | v2의 핵심 차이는 기능 수가 아니라, 성공 경로와 장애 경로가 다른 서비스에서 끝난다는 사실이다 | 실제 재검증과 Docker 이슈를 사실대로 기록 |
-| 4 | 2026-03-10 재검증 + 2026-03-11 track polish | v2의 실제 검증 범위와 아직 불안정한 fresh build 경로를 분리해서 기록 | docs/verification-report.md, fastapi/README.md | Compose runtime이 한 번 올라오면 fresh build도 성공한 것처럼 적어도 괜찮을 것 | service unit tests는 통과로 기록하고, fresh build 실패 징후와 Docker Desktop 재시작 후 prebuilt image 기준 end-to-end 재검증 사실을 분리해 적음 | `make test`, `docker compose up --build -d` 재시도, `docker build ...`, `docker pull python:3.12-slim`, 복구 후 `docker compose ... up -d --no-build` | fresh build 성공은 기록하지 않음. 대신 prebuilt image 기준 Compose runtime + end-to-end 협업 흐름 검증 완료 | docs/verification-report.md workspace-backend-v2-msa 항목 | 분산 capstone에서는 실패한 검증 경로까지 사실대로 분리해 적는 태도가 특히 중요하다 | v1과의 비교 정리 |
+| 명령 | 결과 | 메모 |
+| --- | --- | --- |
+| `make lint` | 실패 | `/opt/homebrew/opt/python@3.14/bin/python3.14: No module named ruff` |
+| `make test` | 실패 | `gateway/tests/conftest.py` import 단계에서 `ModuleNotFoundError: No module named 'fastapi'` |
+| `make smoke` | 실패 | `tests/compose_harness.py` import 단계에서 `ModuleNotFoundError: No module named 'httpx'` |
+| `python3 -m pytest tests/test_system.py -q` | 실패 | test collection 단계에서 `ModuleNotFoundError: No module named 'httpx'` |
+
+## 이번 문서가 기대는 중심 앵커
+- 브라우저 경계 앵커: `fastapi/gateway/app/api/v1/routes/auth.py`, `fastapi/gateway/app/main.py`
+- 서비스 간 계약 앵커: `fastapi/gateway/app/runtime.py`, `fastapi/contracts/README.md`
+- 이벤트 흐름 앵커: `fastapi/services/workspace-service/app/domain/services/platform.py`
+- dedupe/recovery 앵커: `fastapi/services/notification-service/app/domain/services/notifications.py`
+- end-to-end 증거 앵커: `fastapi/tests/test_system.py`
+
+## 이번 턴의 품질 메모
+- "MSA라서 더 좋다"는 서술을 피하고, v1 대비 늘어난 seam과 recovery 비용을 중심으로 다시 썼다.
+- stale verification report 대신 이번 턴의 실제 CLI 실패 결과를 그대로 반영했다.
+- AWS 문서는 target shape로만 취급하고, 검증 완료 주장과 분리했다.

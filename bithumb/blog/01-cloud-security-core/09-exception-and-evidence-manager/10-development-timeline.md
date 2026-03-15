@@ -1,163 +1,89 @@
-# 09 Exception and Evidence Manager: exception, evidence, audit를 따로 모델링하기
+# 09 Exception and Evidence Manager: 억제보다 먼저 남겨야 하는 기록들
 
-finding 이후의 거버넌스를 exception, evidence, audit trail로 분리해 모델링하는 작은 상태 관리기다. 이 글은 결과만 요약하지 않고, 어떤 기준을 먼저 세우고 어떤 검증으로 다음 단계로 넘어갔는지를 차근차근 따라간다.
-
-아래 phase를 순서대로 읽으면 "왜 예외를 mute 플래그가 아니라 record 집합으로 봐야 하는가"라는 질문에 답이 어떻게 만들어졌는지 자연스럽게 연결된다.
+보안 운영에서 예외는 보통 "알람을 잠깐 꺼 둔다"는 감각으로 소비되기 쉽다. 그런데 실제 거버넌스 관점에서는 그보다 먼저 남겨야 할 것이 많다. 왜 허용했는지, 누가 승인했는지, 언제 만료되는지, 어떤 증빙이 붙었는지, 그리고 그 모든 변화가 어떤 순서로 일어났는지다. 이 lab은 바로 그 최소 모델을 메모리 안에서 먼저 만든다.
 
 ## 구현 순서 요약
-먼저 전체 흐름을 짧게 잡아 두면, 각 phase가 왜 그 순서로 배치됐는지 훨씬 덜 버겁게 읽힌다.
-1. exception, evidence, audit를 서로 다른 record로 나눴다.
-2. pending -> approved 상태 전이와 expiry 기반 suppression 판정을 구현했다.
-3. evidence append와 append-only audit trail을 테스트로 잠가 capstone DB 모델의 씨앗을 만들었다.
+1. exception, evidence, audit를 각각 별도 record로 분리했다.
+2. approval과 expiry를 suppression 판정에 연결했다.
+3. append-only audit와 현재 key semantics의 한계를 함께 드러냈다.
 
-## Phase 1. 예외와 증적과 감사를 record로 분리했다
+## Phase 1. 예외를 mute가 아니라 record로 만들었다
 
-여기서부터 흐름이 한 단계 또렷해진다. 먼저 `예외와 증적과 감사를 record로 분리했다`를 단단히 잡아야 뒤에서 나오는 테스트와 CLI가 왜 필요한지 설명할 수 있기 때문이다.
+`manager.py`를 열면 가장 먼저 눈에 들어오는 것은 `ExceptionRecord`, `Evidence`, `AuditEvent` 세 dataclass다. 이건 꽤 중요한 선택이다. 예외를 bool 하나로 표현하면 "왜", "누가", "언제까지", "무슨 근거로"를 담을 곳이 없다. 그래서 이 lab은 suppression 로직보다 먼저 record 경계를 쪼갠다.
 
-- 당시 목표: 예외 관리를 단순 플래그가 아니라 추적 가능한 데이터 모델로 바꾼다.
-- 변경 단위: `python/src/exception_evidence_manager/manager.py`의 `ExceptionRecord`, `Evidence`, `AuditEvent`, `create_exception`
-- 처음 가설: exception이 그냥 boolean이면 만료일, 승인자, 증적, 감사 로그를 설명할 수 없다. record를 분리해야 거버넌스가 된다.
-- 실제 진행: `ExceptionRecord`, `Evidence`, `AuditEvent` 세 dataclass를 따로 두고, `ExceptionManager` 내부 저장소도 각각 분리했다. `create_exception`은 record 생성과 동시에 `exception.created` audit event를 남기게 했다.
+CLI demo도 이 구조를 그대로 보여 준다. 예외를 하나 만들고, 승인하고, 증적을 하나 붙이면 출력은 단순 성공 메시지가 아니라 `exception_id`, `approved_status`, `evidence_id`, `audit_event_count`를 JSON으로 보여 준다. 즉 이 lab의 첫 산출물은 억제 여부보다 governance record 집합이다.
 
-CLI:
+재실행:
 
 ```bash
-$ PYTHONPATH=01-cloud-security-core/09-exception-and-evidence-manager/python/src .venv/bin/python -m exception_evidence_manager.cli
+PYTHONPATH=/Users/woopinbell/work/book-task-3/bithumb/01-cloud-security-core/09-exception-and-evidence-manager/python/src \
+/Users/woopinbell/work/book-task-3/bithumb/.venv/bin/python \
+-m exception_evidence_manager.cli
 ```
 
-검증 신호:
-- CLI 출력에 `exception_id`, `evidence_id`, `audit_event_count`가 모두 나타났다.
-- README가 exception/evidence/audit를 별도 모델의 핵심 범위로 문서화한다.
+확인한 출력 핵심:
+- `approved_status`: `approved`
+- `audit_event_count`: `3`
 
-핵심 코드:
+create, approve, append evidence 세 단계가 모두 별도 기록이라는 뜻이다.
 
-```python
-    def create_exception(self, scope_type: str, scope_id: str, reason: str, days: int) -> ExceptionRecord:
-        record = ExceptionRecord(
-            id=str(uuid4()),
-            scope_type=scope_type,
-            scope_id=scope_id,
-            reason=reason,
-            expires_at=datetime.now(timezone.utc) + timedelta(days=days),
-            approved_by=None,
-            status="pending",
-        )
-        self.exceptions[record.id] = record
-        self._append_event("exception.created", record.id, {"scope_id": scope_id})
-        return record
-```
+## Phase 2. suppression은 예외 존재가 아니라 승인 + 미만료 상태다
 
-왜 이 코드가 중요했는가: 예외 생성이 audit event를 동반하게 만든 순간, 프로젝트의 중심이 단순 suppress/un-suppress에서 추적 가능한 거버넌스로 이동했다.
+다음으로 중요한 건 언제 suppression이 실제로 성립하느냐였다. `create_exception()`이 만든 record는 처음엔 `pending`이다. `approve_exception()`을 거쳐야만 `approved`가 되고, `is_suppressed()`는 여기에 더해 `expires_at > now` 조건까지 만족해야 `True`를 준다.
 
-새로 배운 것: 예외 관리에서 중요한 것은 “예외가 있는가”보다 “왜 있었고 누가 승인했고 언제 끝나는가”를 설명할 수 있는가다.
-
-다음: 이제 예외 승인과 만료를 suppression 판정과 연결해야 했다.
-
-## Phase 2. approval과 expiry를 suppression 판정에 연결했다
-
-여기서부터 흐름이 한 단계 또렷해진다. 먼저 `approval과 expiry를 suppression 판정에 연결했다`를 단단히 잡아야 뒤에서 나오는 테스트와 CLI가 왜 필요한지 설명할 수 있기 때문이다.
-
-- 당시 목표: 예외가 언제 finding을 실제로 억제하는지 코드로 정의한다.
-- 변경 단위: `python/src/exception_evidence_manager/manager.py`의 `approve_exception`, `is_suppressed`
-- 처음 가설: 예외가 존재하는 것만으로는 충분하지 않다. 승인되었고 아직 만료되지 않았을 때만 suppression이 성립해야 한다.
-- 실제 진행: `approve_exception`은 기존 record를 immutable하게 복사해 `approved_by`와 `status`를 갱신했고, `is_suppressed`는 같은 scope_id에 대해 승인 상태이면서 expiry가 미래인 경우만 True를 반환하게 했다.
-
-CLI:
+즉 이 모델은 예외가 있다고 해서 곧바로 finding을 누르지 않는다. 승인되었고 아직 살아 있는 예외만 suppression으로 친다. 이번 보조 재실행에서도 그 차이를 직접 확인했다.
 
 ```bash
-$ PYTHONPATH=01-cloud-security-core/09-exception-and-evidence-manager/python/src .venv/bin/python -m pytest 01-cloud-security-core/09-exception-and-evidence-manager/python/tests
+PYTHONPATH=/Users/woopinbell/work/book-task-3/bithumb/01-cloud-security-core/09-exception-and-evidence-manager/python/src \
+/Users/woopinbell/work/book-task-3/bithumb/.venv/bin/python - <<'PY'
+from exception_evidence_manager.manager import ExceptionManager
+
+m = ExceptionManager()
+r = m.create_exception('finding', 'shared-1', 'temp exception', 7)
+print('pending_suppressed', m.is_suppressed('shared-1'))
+m.approve_exception(r.id, 'security.manager')
+print('approved_suppressed', m.is_suppressed('shared-1'))
+PY
 ```
 
-검증 신호:
-- pytest가 `2 passed in 0.01s`로 통과했다.
-- `test_exception_suppresses_scope_until_expiry`가 3일짜리 예외는 지금은 suppress하고, 10일 뒤엔 풀려야 한다고 요구한다.
+출력은 이렇게 나왔다.
 
-핵심 코드:
+- `pending_suppressed False`
+- `approved_suppressed True`
 
-```python
-    def approve_exception(self, exception_id: str, approved_by: str) -> ExceptionRecord:
-        record = self.exceptions[exception_id]
-        approved = ExceptionRecord(
-            id=record.id,
-            scope_type=record.scope_type,
-            scope_id=record.scope_id,
-            reason=record.reason,
-            expires_at=record.expires_at,
-            approved_by=approved_by,
-            status="approved",
-        )
-        self.exceptions[exception_id] = approved
-        self._append_event("exception.approved", exception_id, {"approved_by": approved_by})
-        return approved
+그리고 pytest는 만료 이후엔 다시 `False`가 되어야 한다는 점까지 같이 잠가 둔다.
 
-    def append_evidence(self, finding_id: str, title: str, uri: str) -> Evidence:
-        evidence = Evidence(
-            id=str(uuid4()),
-            finding_id=finding_id,
-            title=title,
-            uri=uri,
-            added_at=datetime.now(timezone.utc),
-        )
-        self.evidence.append(evidence)
-        self._append_event("evidence.added", finding_id, {"uri": uri})
-        return evidence
+## Phase 3. audit는 append-only지만, suppression key는 아직 단순하다
 
-    def is_suppressed(self, scope_id: str, now: datetime | None = None) -> bool:
-        current = now or datetime.now(timezone.utc)
-        return any(
-            record.scope_id == scope_id
-            and record.status == "approved"
-            and record.expires_at > current
-            for record in self.exceptions.values()
-        )
-```
+마지막으로 본 것은 이 모델이 어디까지 정교한가였다. 좋은 쪽부터 보면 audit trail은 단순하고 분명하다. `create_exception()`은 `exception.created`, `approve_exception()`은 `exception.approved`, `append_evidence()`는 `evidence.added`를 계속 list 뒤에 붙인다. 그래서 변화 순서를 복원하기 쉽다.
 
-왜 이 코드가 중요했는가: 예외 관리는 여기서 비로소 운영 로직이 된다. approval과 expiry 둘 중 하나라도 빠지면 suppression은 너무 쉽게 남용된다.
+하지만 보조 재실행을 해 보니 현재 key semantics는 꽤 단순하다. `is_suppressed()`는 `scope_type`을 보지 않고 `scope_id`만 비교한다. 실제로 `scope_type='finding'`과 `scope_type='image'`를 다르게 두고, 둘 다 `scope_id='shared-1'`로 만든 뒤 승인해도 suppression 판정은 그냥 `shared-1` 하나로 묶여 버린다.
 
-새로 배운 것: suppression은 영구 mute가 아니라 시간과 승인에 의해 제한되는 상태 전이다.
+이 결과는 지금 단계에선 이해할 만하다. 이 lab의 목표는 DB 스키마 완성이 아니라 최소 governance flow이기 때문이다. 그래도 capstone으로 넘어갈 때 확장해야 할 지점이 어디인지 분명히 보여 준다.
 
-다음: 마지막으로 evidence append와 audit trail이 append-only로 쌓이는지 확인해야 했다.
+또 하나 눈에 띄는 점은 evidence audit의 `entity_id`다. evidence record 자체의 ID가 아니라 finding ID를 쓴다. 그래서 "이 finding에 증적이 붙었다"는 사실은 남지만, 특정 evidence 레코드를 중심으로 감사 이력을 추적하는 모델은 아직 아니다.
 
-## Phase 3. evidence append와 append-only audit trail을 잠갔다
-
-여기서부터 흐름이 한 단계 또렷해진다. 먼저 `evidence append와 append-only audit trail을 잠갔다`를 단단히 잡아야 뒤에서 나오는 테스트와 CLI가 왜 필요한지 설명할 수 있기 때문이다.
-
-- 당시 목표: 예외 흐름의 근거와 변경 이력이 함께 남는지 검증한다.
-- 변경 단위: `python/src/exception_evidence_manager/manager.py`의 `append_evidence`, `_append_event`, `python/tests/test_manager.py`
-- 처음 가설: 예외 승인만 기록하면 나중에 왜 그런 결정을 했는지 잊는다. evidence와 audit가 함께 쌓여야 거버넌스가 닫힌다.
-- 실제 진행: `append_evidence`는 증적 레코드를 추가하면서 `evidence.added` audit event도 남겼다. 테스트는 예외 생성, 승인, 증적 연결까지 세 단계가 지나면 audit event가 정확히 3개가 되어야 한다고 고정했다.
-
-CLI:
+## 검증
 
 ```bash
-$ PYTHONPATH=01-cloud-security-core/09-exception-and-evidence-manager/python/src .venv/bin/python -m exception_evidence_manager.cli
-$ PYTHONPATH=01-cloud-security-core/09-exception-and-evidence-manager/python/src .venv/bin/python -m pytest 01-cloud-security-core/09-exception-and-evidence-manager/python/tests
+PYTHONPATH=/Users/woopinbell/work/book-task-3/bithumb/01-cloud-security-core/09-exception-and-evidence-manager/python/src \
+/Users/woopinbell/work/book-task-3/bithumb/.venv/bin/python \
+-m pytest \
+/Users/woopinbell/work/book-task-3/bithumb/01-cloud-security-core/09-exception-and-evidence-manager/python/tests
 ```
 
-검증 신호:
-- CLI가 실제로 `audit_event_count: 3`을 출력했다.
-- 테스트도 첫 audit event가 `exception.created`임을 확인해 append order를 잠갔다.
-
-핵심 코드:
-
-```python
-def test_evidence_and_audit_events_are_appended() -> None:
-    manager = ExceptionManager()
-    created = manager.create_exception("finding", "finding-1", "temporary exception", 3)
-    manager.approve_exception(created.id, "security.manager")
-    manager.append_evidence("finding-1", "risk memo", "s3://bucket/risk.md")
-    assert len(manager.audit_events) == 3
-    assert manager.audit_events[0].event_type == "exception.created"
-
+```text
+..                                                                       [100%]
+2 passed in 0.01s
 ```
 
-왜 이 코드가 중요했는가: 이 검증이 없으면 audit trail은 그냥 존재만 하는 보조 데이터가 된다. event 개수와 순서를 함께 고정해야 append-only 특성이 살아난다.
+이 테스트 셋은 작지만 중요한 경계를 잠근다. 승인 전엔 억제되지 않고, 승인 후 만료 전까지만 억제되며, create/approve/evidence append 세 단계가 audit count `3`으로 남아야 한다.
 
-새로 배운 것: append-only audit trail의 핵심은 수정이 불가능하다는 사실보다, 변화의 순서를 복원할 수 있다는 점이다.
+## 지금 상태에서 분명한 한계
 
-다음: capstone에서는 이 모델을 SQLite/PostgreSQL 기반 DB 구조로 확장해 실제 API 흐름과 연결한다.
+- 메모리 모델이라 영속화가 없다.
+- suppression key가 `scope_id` 단일 축이라 세밀한 scope partition이 어렵다.
+- revoke, renew, evidence removal 같은 후속 동작은 없다.
+- approver와 evidence identity가 더 풍부한 governance system으로는 아직 확장 전 단계다.
 
-## 여기서 남는 질문
-이 문단은 단순한 회고가 아니라, 다음 프로젝트로 넘어갈 때 무엇을 들고 가야 하는지 짚어 두는 자리다.
-
-이 메모리 모델은 소박하지만, 보안 거버넌스가 어떤 record와 상태 전이를 필요로 하는지 정확히 보여 준다. 그래서 capstone에서는 이 구조를 DB와 API로 옮겨도 개념이 흐려지지 않았다.
+그래도 이 lab이 중요한 이유는 분명하다. finding 이후 운영을 "무시 처리"로 단순화하지 않고, record와 시간과 근거의 문제로 다시 정의하기 때문이다. capstone DB 모델이 커질 때도 결국 여기서 나눈 경계들을 그대로 가져가게 된다.

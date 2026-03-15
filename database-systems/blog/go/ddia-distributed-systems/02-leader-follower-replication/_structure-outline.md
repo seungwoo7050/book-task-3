@@ -1,27 +1,20 @@
-# 02 Leader-Follower Replication — Structure Outline
+# Structure Outline
 
-최종 시리즈는 chronology를 매끈하게 재배열하지 않고, 범위 파악 -> 핵심 invariant -> 재검증과 경계의 순서를 유지한다.
+## Chosen arc
 
-## Planned Files
+1. failover가 아니라 ordered mutation stream replication이라는 범위를 먼저 잡는다.
+2. demo와 추가 재실행으로 delete propagation과 duplicate replay를 먼저 보여 준다.
+3. sequential offset, watermark fetch, idempotent apply, delete-as-mutation을 invariant로 정리한다.
+4. 마지막에 election/quorum 부재를 분리해 과장을 막는다.
 
-- `00-series-map.md`: 프로젝트 질문, 읽는 순서, source-of-truth 파일, 재검증 명령을 잡는 지도
-- `10-chronology-scope-and-surface.md`: 파일 구조와 테스트 이름을 근거로 처음 가설이 바뀌는 구간
-- `20-chronology-core-invariants.md`: `Append`와 `ReplicateOnce`가 실제로 invariant를 고정하는 구간
-- `30-chronology-verification-and-boundaries.md`: `go test`/`pytest`와 demo 출력으로 경계를 확정하는 구간
+## Why this structure
 
-## Article Goals
+- 이 랩은 구현량보다 invariant가 중요해서 파일 설명보다 semantics 중심 구조가 더 잘 맞는다.
+- demo가 delete와 watermark를 동시에 보여 줘서 초반 evidence로 적합하다.
+- unknown operation ignore는 source-only nuance라 invariant 장에서 분명히 적는 편이 좋다.
 
-1. `10-chronology-scope-and-surface.md`
-   범위를 `tests/`와 README에서 어떻게 다시 좁혔는지 보여 준다.
-   코드 앵커: `TestReplicationLogAssignsSequentialOffsets`, `Append`
-   CLI: `find internal tests cmd -type f | sort`, `rg -n "^func Test" tests`
+## Rejected alternatives
 
-2. `20-chronology-core-invariants.md`
-   핵심 invariant가 `Append`와 `ReplicateOnce` 사이에서 어떻게 고정되는지 보여 준다.
-   코드 앵커: `Append`, `ReplicateOnce`
-   CLI: `rg -n "^(type|func) " internal cmd`, `rg -n "Append|ReplicateOnce" internal cmd`
-
-3. `30-chronology-verification-and-boundaries.md`
-   테스트와 demo를 모두 남겨, pass 신호와 공개 표면을 구분해 설명한다.
-   코드 앵커: `TestReplicateOnceIncrementalAndDeletes`, `main.go`
-   CLI: GOWORK=off go test ./...; GOWORK=off go run ./cmd/replication
+- replication 일반론을 길게 푸는 구조는 버렸다.
+- consensus나 election을 미리 끌어오는 구조도 버렸다.
+- network fault model을 상상으로 확장하는 서사는 현재 범위를 벗어나 제외했다.

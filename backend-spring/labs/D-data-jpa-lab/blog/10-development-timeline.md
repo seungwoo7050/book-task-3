@@ -1,44 +1,43 @@
-# D-data-jpa-lab: JPA를 CRUD 결과가 아니라 persistence 선택으로 보이게 만든 과정
+# D-data-jpa-lab: version 컬럼은 있지만 API 계약은 아직 수동 conflict check에 더 가까운 JPA scaffold
 
-`D-data-jpa-lab`은 이 트랙에서 persistence 이야기가 본격적으로 앞으로 나오는 첫 랩이다. 그래서 초점도 "엔티티가 저장된다"보다, schema와 entity, version guard를 어떤 순서로 붙였는지에 맞춰져 있다.
+`D-data-jpa-lab`은 제목만 보면 Spring Data JPA CRUD 실습처럼 보이지만, 실제로 읽어 보면 더 흥미로운 건 CRUD 자체보다 충돌과 경계가 어떻게 노출되는가다. `problem/README.md`는 pagination, optimistic locking, Flyway, Querydsl-ready structure를 같이 요구한다. 그런데 소스를 따라가 보면 이 랩은 그중 일부만 직접 구현했고, 일부는 아직 "다음 단계의 자리"로만 남겨 두었다.
 
-실제 구현은 세 단계로 읽힌다. `problem/README.md`에서 JPA의 초점을 pagination과 optimistic locking까지 포함한 persistence 선택으로 잡고, `DataApiTest`로 CRUD와 conflict check를 먼저 고정했다. 그다음 Flyway migration과 `ProductEntity`, `DataApiService.updatePrice()`를 연결해 충돌 감지 위치를 분명히 하고, 마지막에 docs와 검증 기록으로 Querydsl과 larger graph를 아직 뒤로 미룬 이유를 남겼다.
+2026-03-14에는 기존 blog를 입력 근거에서 제외하고, `DataApiController`, `DataApiService`, `ProductEntity`, Flyway migration, `DataApiTest`, 실제 컨테이너 검증과 `curl` 결과만으로 문서를 다시 썼다. 다시 읽고 나니 이 lab의 진짜 질문은 "JPA가 붙었는가"가 아니라 "JPA를 persistence contract처럼 보여 주는 요소가 어디까지 실제 동작으로 이어졌는가"였다.
 
-## Phase 1. CRUD보다 conflict check를 먼저 같은 테스트에 묶었다
+## Phase 1. 이 랩은 상품 CRUD보다 version conflict를 먼저 보여 주려고 한다
 
-JPA 랩은 자칫 create, read, update, delete 예제로만 끝나기 쉽다. 그런데 [`DataApiTest`](../spring/src/test/java/com/webpong/study2/app/DataApiTest.java)는 product 생성과 목록 조회 뒤에 바로 version conflict를 붙인다.
+controller surface는 단순하다. [`DataApiController`](../spring/src/main/java/com/webpong/study2/app/data/api/DataApiController.java)는 `POST /api/v1/products`, `GET /api/v1/products`, `PATCH /api/v1/products/{productId}` 세 엔드포인트만 둔다.
 
 ```java
-mockMvc.perform(
-        patch("/api/v1/products/{productId}", product.get("id").asLong())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"price\":149.99,\"version\":0}"))
-    .andExpect(status().isOk())
-    .andExpect(jsonPath("$.price").value(149.99));
+@PostMapping
+public DataApiService.ProductResponse create(@RequestBody CreateRequest request) {
+  return service.create(request.name(), request.price());
+}
 
-mockMvc.perform(
+@PatchMapping("/{productId}")
+public DataApiService.ProductResponse update(
+    @PathVariable long productId, @RequestBody UpdateRequest request) {
+  return service.updatePrice(productId, request.version(), request.price());
+}
+```
+
+겉보기에는 전형적인 CRUD 같지만, 테스트는 처음부터 충돌 branch를 같이 묶는다. [`DataApiTest`](../spring/src/test/java/com/webpong/study2/app/DataApiTest.java)는 상품 생성, 목록 조회, 첫 가격 수정 뒤에 곧바로 stale version으로 두 번째 수정 요청을 넣어 `400`을 기대한다.
+
+```java
+mockMvc
+    .perform(
         patch("/api/v1/products/{productId}", product.get("id").asLong())
             .contentType(MediaType.APPLICATION_JSON)
             .content("{\"price\":159.99,\"version\":0}"))
-    .andExpect(status().isBadRequest());
+    .andExpect(status().isBadRequest())
+    .andExpect(jsonPath("$.code").value("bad_request"));
 ```
 
-왜 이 코드가 중요했는가. CRUD 성공만으로는 이 랩의 차별점이 드러나지 않기 때문이다. 같은 version으로 두 번 수정했을 때 두 번째 요청을 실패시키는 순간, 이 프로젝트는 "데이터를 쓴다"가 아니라 "쓰는 시점의 충돌을 어디서 감지할지 정한다"는 문제로 바뀐다.
+즉 이 lab은 "product CRUD를 만들었다"보다 "쓰기 충돌을 어떻게 드러낼지 먼저 보여 준다"는 쪽에 가깝다. pagination도 있지만, 이야기의 중심은 update가 언제 거부되는가다.
 
-CLI도 이 단계에서는 단순하다.
+## Phase 2. schema, entity, service는 version을 같은 말로 가리키지만 enforcement 방식은 수동이다
 
-```bash
-cd spring
-make test
-```
-
-`2026-03-13` 테스트 XML 기준으로 `DataApiTest` 1개 테스트와 `HealthApiTest` 2개 테스트가 모두 통과했다. 숫자는 작지만 CRUD와 conflict branch를 같은 흐름으로 증명한다는 점이 중요하다.
-
-여기서 새로 선명해진 개념은 baseline JPA의 기준이었다. 엔드포인트 수보다 충돌 지점을 어디에 둘지가 먼저였다.
-
-## Phase 2. schema, entity, service guard를 한 줄로 묶었다
-
-다음 전환점은 migration과 entity를 따로 떼지 않은 데 있다. [`V2__lab_products.sql`](../spring/src/main/resources/db/migration/V2__lab_products.sql)은 `version bigint not null default 0`을 가진 `lab_products` 테이블을 만들고, [`ProductEntity`](../spring/src/main/java/com/webpong/study2/app/data/domain/ProductEntity.java)는 그 필드를 `@Version`으로 받는다.
+Flyway migration [`V2__lab_products.sql`](../spring/src/main/resources/db/migration/V2__lab_products.sql)은 `lab_products` 테이블에 `version bigint not null default 0`를 둔다. entity [`ProductEntity`](../spring/src/main/java/com/webpong/study2/app/data/domain/ProductEntity.java)는 이 필드를 `@Version`으로 받는다. 여기까지만 보면 JPA optimistic locking이 자연스럽게 surface까지 올라올 것처럼 보인다.
 
 ```sql
 create table if not exists lab_products (
@@ -49,51 +48,100 @@ create table if not exists lab_products (
 );
 ```
 
-서비스 계층에서는 [`DataApiService.updatePrice()`](../spring/src/main/java/com/webpong/study2/app/data/application/DataApiService.java)가 version이 다르면 즉시 충돌로 끊는다.
+```java
+@Version private long version;
+```
+
+하지만 실제 충돌 검사는 JPA가 flush 시점에 `OptimisticLockException`을 던져서 처리하는 형태가 아니다. [`DataApiService.updatePrice()`](../spring/src/main/java/com/webpong/study2/app/data/application/DataApiService.java)는 update 전에 현재 entity version과 request version을 직접 비교한다.
 
 ```java
-@Transactional
-public ProductResponse updatePrice(long productId, long version, BigDecimal price) {
-  ProductEntity product =
-      productRepository.findById(productId)
-          .orElseThrow(() -> new IllegalArgumentException("Product not found"));
-  if (product.getVersion() != version) {
-    throw new IllegalArgumentException("Version conflict");
-  }
-  product.changePrice(price);
-  return ProductResponse.from(product);
+if (product.getVersion() != version) {
+  throw new IllegalArgumentException("Version conflict");
 }
+product.changePrice(price);
+return ProductResponse.from(product);
 ```
 
-왜 이 코드가 중요했는가. 여기서 JPA는 더 이상 repository 호출만 하면 되는 마법이 아니다. 어떤 컬럼을 schema에 두고, entity에서 어떤 필드로 추적하고, service에서 어디서 멈출지를 같이 설명하는 설계 선택이 된다.
+이 차이는 꽤 중요했다. 2026-03-14 수동 재검증에서 첫 `PATCH` 응답은 아래처럼 `version: 0`을 그대로 돌려줬다.
 
-이 단계의 CLI는 smoke와 Compose까지 올라간다.
+```json
+{"id":1,"name":"Keyboard","price":149.99,"version":0}
+```
+
+그런데 직후 `GET /api/v1/products` 결과는 같은 row를 `version: 1`로 보여 줬다.
+
+```json
+{"content":[{"id":1,"name":"Keyboard","price":149.99,"version":1}],"page":0,"size":20,"totalElements":1,"totalPages":1,"hasNext":false}
+```
+
+즉 DB row와 subsequent read는 version 증가를 반영하지만, update response는 pre-flush 상태를 그대로 노출한다. 다시 말해 이 lab은 `@Version`을 갖고 있지만, 현재 API 계약은 "JPA가 관리하는 optimistic locking"이라기보다 "service가 stale write를 수동으로 막는 conflict check"에 더 가깝다.
+
+## Phase 3. validation과 paging error를 같이 보면 JPA 학습 포인트가 더 선명해진다
+
+controller record에는 `@NotBlank`, `@Min(0)`이 달려 있다.
+
+```java
+public record CreateRequest(@NotBlank String name, @Min(0) BigDecimal price) {}
+public record UpdateRequest(@Min(0) BigDecimal price, long version) {}
+```
+
+하지만 이전 backend-spring labs와 마찬가지로 `@RequestBody`에는 `@Valid`가 없다. 그래서 bean validation은 declaration만 있고 runtime enforcement로 이어지지 않는다. 2026-03-14 수동 호출에서 아래 요청은 `400`이 아니라 `200`이었다.
 
 ```bash
-cd spring
-make smoke
-docker compose up --build
+curl -i -X POST http://127.0.0.1:18083/api/v1/products \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"","price":-1}'
 ```
 
-`docs/verification-report.md`는 `2026-03-09`에 lint, test, smoke, Compose health 확인이 모두 통과했다고 남긴다. `LabInfoApiSmokeTest` XML도 1개 테스트가 실패 없이 끝났음을 보여 준다.
+응답 body도 그대로 invalid row를 저장했다.
 
-여기서 배운 건 optimistic locking의 역할이었다. 이 랩은 DB 락 일반론을 길게 풀지 않는다. 대신 읽은 버전과 지금 쓰려는 버전이 다를 때 어디서 멈출지를 서비스 코드 안에서 보여 준다.
+```json
+{"id":2,"name":"","price":-1,"version":0}
+```
 
-## Phase 3. Querydsl을 미루면서도 persistence 이야기를 흐리지 않았다
-
-JPA 이야기를 시작하면 금세 검색 조합, soft delete, 관계 그래프가 늘어난다. 하지만 [`docs/README.md`](../docs/README.md)는 Querydsl은 구조만 준비했고 deeper search와 larger graph는 다음 단계로 남긴다고 못 박는다. 이 선택 덕분에 현재 랩의 주제가 분산되지 않는다.
+반대로 pagination 쪽은 service layer에서 명시적으로 guard가 드러난다. `list()`는 `PageRequest.of(page, size)`를 사용하고, `page=-1` 요청은 `IllegalArgumentException`을 유발한다. 이 예외는 global handler가 받아 `400 problem detail`로 내려 준다.
 
 ```bash
-cd spring
-make lint
-make test
-make smoke
+curl -i 'http://127.0.0.1:18083/api/v1/products?page=-1&size=20'
 ```
 
-검증 신호는 아래처럼 정리된다.
+응답은 `400`이었고 detail은 `Page index must not be less than zero`였다. 결국 현재 error boundary는 validation annotation보다 service/library precondition에 더 많이 기대고 있다.
 
-- `2026-03-13` 기준 테스트 XML 4개 suite, 총 5개 테스트, 실패 0
-- `2026-03-09` 검증 보고서 기준 lint, test, smoke, Compose health 확인 통과
-- docs에 Querydsl, soft delete, larger graph가 다음 단계로 명시돼 있음
+## Phase 4. Querydsl-ready라는 설명은 아직 dependency 수준에 머문다
 
-이 랩이 남긴 가장 중요한 배움은 JPA 학습을 키워드 나열로 만들지 않는 방법이었다. migration, entity, version guard, conflict test를 한 줄로 묶고 나니, 지금 다루지 않은 범위도 오히려 더 선명하게 보였다. 다음으로 넘어갈 질문은 DB에 적은 사실을 다른 처리 경로로 넘길 때 어떤 경계가 필요한가이고, 그 답이 `E-event-messaging-lab`이다.
+문제 문서와 docs는 Querydsl-ready structure를 언급한다. 그런데 실제 구현을 찾으면 Querydsl은 현재 코드 안이 아니라 build에만 있다. [`build.gradle.kts`](../spring/build.gradle.kts)에는 `querydsl-jpa`와 `querydsl-apt`가 들어 있지만, source tree에는 `JPAQueryFactory`, Q-type, custom repository가 없다.
+
+```kotlin
+implementation("com.querydsl:querydsl-jpa:${querydslVersion}:jakarta")
+annotationProcessor("com.querydsl:querydsl-apt:${querydslVersion}:jakarta")
+```
+
+`rg`로 `querydsl`, `JPAQueryFactory`, `QProduct`를 찾아보면 실제 hits는 `build.gradle.kts`와 README 정도뿐이었다. 그래서 이 lab에서 "search-ready structure"는 구현 완료라기보다 확장 슬롯에 가깝다. 이런 상태를 문서에서 분리해서 적지 않으면, dependency를 넣은 것만으로 이미 검색 구조를 구축한 것처럼 읽히기 쉽다.
+
+## Phase 5. 이번 Todo는 테스트 통과와 실제 API 관찰을 같이 남겼다
+
+이번 Todo의 검증은 모두 2026-03-14에 다시 실행했다. 로컬 JRE가 없어서 host `make lint/test/smoke` 대신 `eclipse-temurin:21-jdk` 컨테이너를 썼다.
+
+```bash
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/D-data-jpa-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew spotlessCheck checkstyleMain checkstyleTest'
+
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/D-data-jpa-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew test'
+
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/D-data-jpa-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew test --tests "*SmokeTest"'
+```
+
+세 명령 모두 `BUILD SUCCESSFUL`이었다. 이후 `bootRun` 컨테이너를 18083 포트로 띄워 create, list, update, stale-version conflict, invalid create, negative page를 다시 확인했다. 이 재실행 덕분에 테스트만으로는 잘 보이지 않던 사실도 하나 더 잡혔다. 첫 update 응답의 version은 stale하고, 다음 GET에서만 incremented version이 보인다는 점이다.
+
+그래서 지금의 `D-data-jpa-lab`을 가장 정확하게 부르면 "JPA와 Flyway를 사용해 persistence 경계를 설명하는 scaffold"다. schema와 entity, repository, page listing, stale write rejection까지는 분명하다. 하지만 validation은 아직 선언만 돼 있고, Querydsl은 dependency 수준이며, optimistic locking surface도 완전히 다듬어지진 않았다. 이 상태를 솔직하게 적는 편이 다음 lab에서 메시징과 outbox 같은 다른 persistence boundary를 읽을 때 더 도움이 된다.

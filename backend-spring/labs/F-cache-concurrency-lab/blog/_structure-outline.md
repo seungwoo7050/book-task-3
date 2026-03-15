@@ -2,31 +2,45 @@
 
 ## 글 목표
 
-- cache, idempotency, concurrency를 inventory 시나리오 하나로 복원한다.
-- macOS + VSCode 통합 터미널 기준의 테스트와 Compose 흐름을 유지한다.
+- 이 lab을 "분산 락 전 단계"라는 추상 표현보다, 현재 어떤 잘못된 동작까지 포함한 baseline인지로 다시 쓴다.
+- stale cache와 loose idempotency semantics를 본문 중심에 둔다.
+- 테스트 통과와 실제 운영상 한계를 동시에 보여 준다.
 
 ## 글 순서
 
-1. idempotent reservation 시나리오를 먼저 고정한 단계
-2. `synchronized`, idempotency map, `@Cacheable`을 묶은 단계
-3. Redis와 distributed lock을 뒤로 미룬 이유를 닫는 단계
+1. 테스트가 무엇을 덮고 무엇을 놓치는지 먼저 정리한다.
+2. `synchronized`, idempotency map, `@Cacheable`, `ConcurrentMapCacheManager`를 따라가며 현재 보장 범위를 설명한다.
+3. manual HTTP로 stale read, same-key-different-request, missing-header error surface를 연결한다.
+4. Redis-backed cache/distributed lock으로 넘어가기 전 현재 경계를 닫는다.
 
 ## 반드시 넣을 코드 앵커
 
-- `CacheConcurrencyApiTest.idempotentReservationReturnsSameResult()`
+- `CacheConcurrencyController.reserve()`
 - `CacheConcurrencyDemoService.reserve()`
+- `CacheConcurrencyDemoService.inventoryStatus()`
 - `CacheConfig.cacheManager()`
+- `Study2Application`의 `@EnableCaching`
+- `CacheConcurrencyApiTest.idempotentReservationReturnsSameResult()`
 
-## 반드시 넣을 CLI
+## 반드시 넣을 검증 신호
 
 ```bash
-cd spring
-make test
-make smoke
-docker compose up --build
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/F-cache-concurrency-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew test'
+
+docker run --rm -u $(id -u):$(id -g) -p 18085:8080 \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/F-cache-concurrency-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew bootRun'
 ```
 
-## 핵심 개념
+## 반드시 남길 한계
 
-- cache와 concurrency는 실제 서비스에서 같이 온다.
-- idempotency는 이전 결과를 재사용하는 규칙이다.
+- reservation 이후 stale cache가 남는 점
+- same key + different payload를 막지 않는 점
+- global lock granularity
+- framework default 400과 custom problem detail이 섞여 있는 점

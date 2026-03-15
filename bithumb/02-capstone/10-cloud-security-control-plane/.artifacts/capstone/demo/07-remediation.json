@@ -1,6 +1,6 @@
 {
   "remediation": {
-    "id": "81832bc9-5896-4554-8bf1-31e76c3dcad8",
+    "id": "3439f2e2-0225-481f-aee3-fe1c1cecd8d0",
     "finding_id": "cd605b1287dbef62",
     "mode": "manual_approval_required",
     "summary": "Dry-run remediation for CSPM-002",

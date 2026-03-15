@@ -1,21 +1,10 @@
-# 30 05 Clustered KV Capstone를 다시 돌려 보며 검증 신호와 경계를 정리하기
+# 30 검증과 경계: 무엇이 확인됐고 무엇은 아직 없다
 
-이 시리즈의 마지막 글이다. pass 숫자만 적는 대신, 어떤 경계가 회귀 테스트로 남아 있는지와 demo가 무엇을 밖으로 드러내는지를 함께 본다.
+이번 Todo에서는 테스트 pass 숫자만 적지 않고, 실제 출력과 on-disk 흔적이 무엇을 말해 주는지까지 같이 남겼다. 이 project는 분산 시스템이라는 이름을 달고 있지만, 검증 신호는 의외로 로컬하고 구체적이다.
 
-## Phase 3 — 검증 신호와 한계를 확인하는 구간
+## Session 1 — 재실행 결과
 
-이번 글에서는 먼저 테스트가 남긴 회귀 신호를 다시 읽고, 이어서 demo가 공개하는 표면과 README가 남겨 둔 한계를 함께 정리한다.
-
-### Session 1 — 테스트가 남긴 회귀 신호 다시 보기
-
-여기서 가장 먼저 확인한 것은 테스트 명령을 다시 돌려 핵심 invariant가 실제 회귀 신호로 남아 있는지 확인한다. 처음에는 pass 수치만 확인하면 충분할 거라고 생각했다.
-
-하지만 실제로는 `GOWORK=off go test ./...`를 다시 실행하고, 어떤 테스트가 있는지 이미 알고 있는 상태에서 pass 신호를 다시 읽었다. 결정적으로 방향을 잡아 준 신호는 `go test ok, 3 tests`.
-
-변경 단위:
-- `database-systems/go/ddia-distributed-systems/projects/05-clustered-kv-capstone/tests/capstone_test.go`
-
-CLI:
+다시 실행한 명령과 결과는 아래와 같다.
 
 ```bash
 $ GOWORK=off go test ./...
@@ -24,87 +13,50 @@ $ GOWORK=off go test ./...
 ok  	study.local/go/ddia-distributed-systems/projects/05-clustered-kv-capstone/tests	(cached)
 ```
 
-검증 신호:
-- `go test ok, 3 tests`
-- `TestRestartNodeLoadsFromDisk`가 실제로 회귀 테스트 묶음 안에 남아 있다는 점이 중요했다.
-
-핵심 코드:
-
-```go
-func TestRestartNodeLoadsFromDisk(t *testing.T) {
-	cluster := newCluster(t)
-	shardID, err := cluster.Put("gamma", "3")
-	if err != nil {
-		t.Fatal(err)
-	}
-	group := cluster.Group(shardID)
-	follower := group.Followers[0]
-
-	if err := cluster.RestartNode(follower); err != nil {
-		t.Fatal(err)
-	}
-	if value, ok, err := cluster.ReadFromNode(follower, "gamma"); err != nil || !ok || value != "3" {
-		t.Fatalf("expected restarted node to recover value, got value=%q ok=%v err=%v", value, ok, err)
-```
-
-왜 여기서 판단이 바뀌었는가:
-
-`TestRestartNodeLoadsFromDisk`는 구현의 뒷부분에서 생길 수 있는 붕괴 지점을 문장보다 정확하게 고정한다. pass 숫자보다 더 중요했던 건, 어떤 경계가 계속 회귀 테스트로 남아 있느냐였다.
-
-이번 구간에서 새로 이해한 것:
-- 테스트는 단순 성공 여부보다, 어떤 invariant를 공개적으로 약속하는지 보여 주는 문서에 가깝다.
-
-다음으로 넘긴 질문:
-- demo entry point를 다시 실행해 테스트보다 얇은 표면에서 무엇을 보여 주는지 확인한다.
-
-### Session 2 — demo가 공개하는 표면과 한계 정리하기
-
-이번 세션의 목표는 demo 출력과 README의 한계를 함께 읽어, 공개 표면과 내부 경계를 분리하는 것이었다. 초기 가설은 demo는 테스트의 축약판일 뿐이라고 생각했다.
-
-막상 다시 펼쳐 보니 `GOWORK=off go run ./cmd/clustered-kv`를 다시 실행해 마지막 한 줄을 확인하고, README의 `한계와 확장` bullet과 나란히 읽었다. 특히 demo 핵심 줄: `key=alpha shard=shard-a follower=node-2 value=1 ok=true`라는 출력이 마지막 확인 지점이 됐다.
-
-변경 단위:
-- `database-systems/go/ddia-distributed-systems/projects/05-clustered-kv-capstone/cmd/clustered-kv/main.go`
-
-CLI:
-
 ```bash
-$ GOWORK=off go run ./cmd/clustered-kv
+$ rm -rf .demo-data && GOWORK=off go run ./cmd/clustered-kv
 key=alpha shard=shard-a follower=node-2 value=1 ok=true
 ```
 
-검증 신호:
-- demo 핵심 줄: `key=alpha shard=shard-a follower=node-2 value=1 ok=true`
-- 경계 메모: 현재 범위 밖: dynamic membership, automatic failover, consensus 기반 leader election은 포함하지 않습니다.
-- 경계 메모: 현재 범위 밖: production deployment와 운영 자동화는 포트폴리오 확장 범위로 남깁니다.
+이 출력이 확인해 주는 사실은 생각보다 명확하다.
 
-핵심 코드:
+- `alpha`는 실제로 `shard-a`로 라우팅된다.
+- leader write 뒤 follower `node-2`가 같은 값을 읽을 수 있다.
+- demo 수준에서도 replication 결과가 공개 표면으로 드러난다.
 
-```go
-package main
+여기서도 표현을 조금 더 줄여야 한다. demo가 follower visibility를 보여 주는 건 일반 `Read()`가 follower에 fan-out 하기 때문이 아니라, `cmd/clustered-kv/main.go`가 `group.Followers[0]`에 대해 `ReadFromNode(...)`를 명시적으로 호출하기 때문이다. 즉 ordinary read path는 여전히 leader 기준이고, stale follower나 replicated follower 상태를 보는 건 의도적으로 debug-style surface를 열었을 때만 가능하다.
 
-import (
-	"fmt"
-	"path/filepath"
+## Session 2 — demo가 남긴 파일이 더 직접적인 증거가 되는 부분
 
-	"study.local/go/ddia-distributed-systems/projects/05-clustered-kv-capstone/internal/capstone"
-)
+demo 실행 뒤 `.demo-data`를 직접 보면 routing과 replication이 파일 레벨에서도 보인다.
 
-func main() {
-	cluster, err := capstone.NewCluster(filepath.Join(".", ".demo-data"), []capstone.ReplicaGroup{
-		{ShardID: "shard-a", Leader: "node-1", Followers: []string{"node-2"}},
-		{ShardID: "shard-b", Leader: "node-2", Followers: []string{"node-3"}},
-	}, 64)
-	if err != nil {
-		panic(err)
+```bash
+$ find .demo-data -type f | sort
+.demo-data/node-1/shard-a.log
+.demo-data/node-2/shard-a.log
+.demo-data/node-2/shard-b.log
+.demo-data/node-3/shard-b.log
 ```
 
-왜 여기서 판단이 바뀌었는가:
+```bash
+$ sed -n '1,20p' .demo-data/node-1/shard-a.log
+{"offset":0,"type":"put","key":"alpha","value":"1"}
 
-demo entry point는 내부 구현을 전부 보여 주지는 않지만, 독자가 처음 마주치는 공개 표면을 결정한다. 테스트가 invariant를 지키는 장치라면, demo는 그중 무엇을 밖으로 보여 줄지 고르는 자리였다.
+$ sed -n '1,20p' .demo-data/node-2/shard-a.log
+{"offset":0,"type":"put","key":"alpha","value":"1"}
+```
 
-이번 구간에서 새로 이해한 것:
-- `Replicated Write Pipeline`에서 정리한 요점처럼, write pipeline은 다음 순서를 따른다.
+같은 entry가 leader와 follower 양쪽 log에 남아 있다는 점이 중요하다. 반면 `shard-b` 쪽 파일은 비어 있으므로, demo는 "두 shard 전체"가 아니라 하나의 routed write만 보여 준다. 이것도 좋은 경계 신호다. demo가 작기 때문에 오히려 무엇을 아직 보여 주지 않는지 분명하다.
 
-다음으로 넘긴 질문:
-- 이 프로젝트 이후에는 다음 트랙/다음 슬롯으로 넘어가더라도, 지금 고정한 invariant를 더 큰 저장 엔진이나 분산 경로 안에서 다시 만날 수 있다.
+## Session 3 — 현재 한계
+
+이번 Todo에서 최종적으로 남긴 경계는 다음과 같다.
+
+- topology는 초기화 시점에 고정된다. shard 추가/삭제, membership change가 없다.
+- follower sync는 직접 `SyncFollower`를 호출하는 방식이며, background replication worker가 없다.
+- restart는 local log replay일 뿐이다. lagging follower는 restart만으로 최신 상태가 되지 않는다.
+- default `Read`는 leader를 읽기 때문에, follower freshness 문제는 `ReadFromNode`를 일부러 호출할 때만 표면에 올라온다.
+- transport, timeout, quorum, leader election, split-brain handling이 없다.
+- read surface는 `Read`와 `ReadFromNode` 두 메서드뿐이며, stale follower read를 막는 안전장치가 없다.
+
+그래서 이 project는 "작은 production cluster"가 아니라 "분산 저장 경로의 최소 통합본"으로 읽는 편이 맞다. routing, append-only log, follower catch-up, restart replay가 한 경로에서 만나는 감각을 익히는 것이 이 capstone의 실제 목적이다.

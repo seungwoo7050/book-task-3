@@ -1,63 +1,150 @@
 # commerce-backend-v2 evidence ledger
 
-- 복원 방식: 세밀한 개발 로그가 부족해 `Phase 1 -> Phase 3`으로 대표 결과물의 진화를 복원했다.
-- 근거: `README.md`, `problem/README.md`, `docs/README.md`, `docs/architecture-overview.md`, `docs/verification.md`, `spring/Makefile`, `spring/build.gradle.kts`, `AuthApiTest.java`, `CommercePortfolioApiTest.java`, `CommerceMessagingIntegrationTest.java`, `RedisCartStoreTest.java`, `OrderService.java`, `PaymentService.java`, `OutboxPublisher.java`, `spring/build/test-results/test/*.xml`, `../../docs/verification-report.md`
-- 작업 환경 전제: macOS + VSCode 통합 터미널 기준.
+- 복원 원칙: 기존 blog 본문은 입력 근거에서 제외하고, `README/problem/docs`, 실제 소스, 테스트, `2026-03-14` 재실행 결과만 사용했다.
+- 날짜 고정: 아래 검증과 수동 확인은 모두 `2026-03-14` 기준이다.
+- 작업 환경 메모: 로컬 JRE가 없어 Gradle은 `eclipse-temurin:21-jdk` 컨테이너에서 다시 실행했고, Testcontainers suite는 `TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal`를 넣어야 통과했다.
 
-## Phase 1
+## 핵심 입력 근거
 
-- 당시 목표: baseline capstone이 남긴 얕은 부분을 같은 도메인에서 더 깊게 채운다.
-- 변경 단위: `README.md`, `problem/README.md`, `docs/architecture-overview.md`, `AuthApiTest.java`, `CommercePortfolioApiTest.java`
-- 처음 가설: 도메인을 바꾸거나 마이크로서비스로 쪼개야 더 강한 포트폴리오가 될 것 같았다.
-- 실제 조치: 도메인은 유지하고 modular monolith를 유지한 채, persisted auth와 end-to-end commerce flow를 확장했다.
-- CLI:
+- 문제/설명
+  - `README.md`
+  - `problem/README.md`
+  - `docs/README.md`
+  - `docs/architecture-overview.md`
+  - `docs/verification.md`
+  - `spring/README.md`
+  - `spring/compose.yaml`
+  - `spring/.env.example`
+- auth/security
+  - `spring/src/main/java/com/webpong/study2/app/auth/api/AuthController.java`
+  - `spring/src/main/java/com/webpong/study2/app/auth/application/AuthService.java`
+  - `spring/src/main/java/com/webpong/study2/app/auth/infrastructure/AdminBootstrapInitializer.java`
+  - `spring/src/main/java/com/webpong/study2/app/auth/infrastructure/JwtService.java`
+  - `spring/src/main/java/com/webpong/study2/app/auth/infrastructure/OAuthStateStore.java`
+  - `spring/src/main/java/com/webpong/study2/app/global/security/SecurityConfig.java`
+  - `spring/src/main/java/com/webpong/study2/app/global/security/JwtAuthenticationFilter.java`
+  - `spring/src/main/java/com/webpong/study2/app/global/security/AuthenticationFacade.java`
+- commerce flow
+  - `spring/src/main/java/com/webpong/study2/app/catalog/api/AdminCategoryController.java`
+  - `spring/src/main/java/com/webpong/study2/app/catalog/api/AdminProductController.java`
+  - `spring/src/main/java/com/webpong/study2/app/cart/api/CartController.java`
+  - `spring/src/main/java/com/webpong/study2/app/order/api/OrderController.java`
+  - `spring/src/main/java/com/webpong/study2/app/order/api/AdminOrderController.java`
+  - `spring/src/main/java/com/webpong/study2/app/order/application/OrderService.java`
+  - `spring/src/main/java/com/webpong/study2/app/payment/api/PaymentController.java`
+  - `spring/src/main/java/com/webpong/study2/app/payment/application/PaymentService.java`
+  - `spring/src/main/java/com/webpong/study2/app/global/error/GlobalExceptionHandler.java`
+  - `spring/src/main/resources/db/migration/V2__commerce.sql`
+- redis/kafka/ops
+  - `spring/src/main/java/com/webpong/study2/app/cart/infrastructure/RedisCartStore.java`
+  - `spring/src/main/java/com/webpong/study2/app/auth/infrastructure/RedisAttemptLimiter.java`
+  - `spring/src/main/java/com/webpong/study2/app/notification/infrastructure/OutboxPublisher.java`
+  - `spring/src/main/java/com/webpong/study2/app/notification/infrastructure/OrderPaidEventConsumer.java`
+  - `spring/src/main/java/com/webpong/study2/app/notification/domain/OutboxEventEntity.java`
+  - `spring/src/main/java/com/webpong/study2/app/notification/domain/OutboxEventRepository.java`
+  - `spring/src/main/java/com/webpong/study2/app/notification/application/NotificationService.java`
+  - `spring/src/main/java/com/webpong/study2/app/global/api/HealthController.java`
+  - `spring/src/main/java/com/webpong/study2/app/global/api/LabInfoController.java`
+  - `spring/src/main/resources/application.yml`
+- 테스트
+  - `spring/src/test/java/com/webpong/study2/app/AuthApiTest.java`
+  - `spring/src/test/java/com/webpong/study2/app/CommercePortfolioApiTest.java`
+  - `spring/src/test/java/com/webpong/study2/app/CommerceMessagingIntegrationTest.java`
+  - `spring/src/test/java/com/webpong/study2/app/RedisCartStoreTest.java`
+  - `spring/src/test/java/com/webpong/study2/app/LabInfoApiSmokeTest.java`
+
+## 재실행한 검증
+
+### 1. lint
 
 ```bash
-cd spring
-./gradlew testClasses --no-daemon
-make test
+docker run --rm \
+  -v "$PWD:/workspace" \
+  -w /workspace \
+  eclipse-temurin:21-jdk \
+  bash -lc './gradlew spotlessCheck checkstyleMain checkstyleTest'
 ```
 
-- 검증 신호: `AuthApiTest` 2개 테스트 통과, `CommercePortfolioApiTest` 1개 테스트 통과
-- 핵심 코드 앵커: `AuthApiTest.registerLoginRefreshLogoutFlowWorks()`, `CommercePortfolioApiTest.adminCatalogCustomerCheckoutAndPaymentFlowWorks()`
-- 새로 배운 것: 대표 결과물의 깊이는 같은 도메인에서 더 많은 경계와 상태 전이를 설명 가능하게 만드는 데서 나온다.
-- 다음: order, payment, outbox를 invariant 중심으로 묶는다.
+- 결과: `BUILD SUCCESSFUL`
 
-## Phase 2
+### 2. test
 
-- 당시 목표: checkout, payment, notification을 API 연결이 아니라 상태 전이와 idempotency 규칙으로 고정한다.
-- 변경 단위: `OrderService.java`, `PaymentService.java`
-- 처음 가설: 주문과 결제는 endpoint만 연결되면 포트폴리오 설명으로 충분할 수 있다고 봤다.
-- 실제 조치: checkout에서 inventory reservation을 만들고, payment confirm에서 idempotency key, `PAID` 전이, outbox row 생성을 묶었다.
-- CLI:
+처음에는 아래 명령이 `CommerceMessagingIntegrationTest`에서 `Could not connect to Ryuk at 172.17.0.1:54155`로 실패했다.
 
 ```bash
-cd spring
-make smoke
-docker compose up --build
+docker run --rm \
+  -v "$PWD:/workspace" \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -w /workspace \
+  eclipse-temurin:21-jdk \
+  bash -lc './gradlew test'
 ```
 
-- 검증 신호: `docs/verification.md` 기준 `2026-03-09` lint/test/smoke/Compose health 통과, `LabInfoApiSmokeTest` 1개 테스트 통과
-- 핵심 코드 앵커: `OrderService.checkout()`, `PaymentService.confirmMockPayment()`
-- 새로 배운 것: portfolio-grade commerce backend의 핵심은 기능 수보다 invariant와 replay 규칙을 어디서 강제하는가다.
-- 다음: Redis, Kafka, Testcontainers를 실제 검증과 연결한다.
-
-## Phase 3
-
-- 당시 목표: Redis cart, outbox publisher, Kafka consumer를 buzzword가 아니라 검증 가능한 구현으로 닫는다.
-- 변경 단위: `OutboxPublisher.java`, `CommerceMessagingIntegrationTest.java`, `RedisCartStoreTest.java`, `build.gradle.kts`, `docs/verification.md`
-- 처음 가설: Redis와 Kafka는 README에 등장만 해도 충분히 강한 인상을 줄 수 있다고 생각했다.
-- 실제 조치: `OutboxPublisher`를 scheduled publisher로 두고, Testcontainers로 order-paid event 소비를 검증했다. Redis cart는 직렬화/역직렬화 단위 테스트로 고정했다.
-- CLI:
+host override를 추가한 뒤 전체 suite가 통과했다.
 
 ```bash
-cd spring
-make lint
-make test
-make smoke
+docker run --rm \
+  -e TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal \
+  -v "$PWD:/workspace" \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -w /workspace \
+  eclipse-temurin:21-jdk \
+  bash -lc './gradlew test'
 ```
 
-- 검증 신호: `2026-03-13` 기준 9개 suite, 총 11개 테스트, 실패 0
-- 핵심 코드 앵커: `OutboxPublisher.publishPending()`, `CommerceMessagingIntegrationTest.orderPaidEventIsPublishedAndConsumed()`, `RedisCartStoreTest.cartPayloadCanBeSerializedAndReloaded()`
-- 새로 배운 것: Redis와 Kafka는 어느 경계에만 쓰였고 그 경계가 테스트로 증명됐을 때만 설득력이 생긴다.
-- 다음: live provider, real payment provider, live AWS provisioning은 여전히 다음 단계로 남는다.
+- 최종 결과: `BUILD SUCCESSFUL`
+
+### 3. smoke
+
+```bash
+docker run --rm \
+  -e TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal \
+  -v "$PWD:/workspace" \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -w /workspace \
+  eclipse-temurin:21-jdk \
+  bash -lc './gradlew test --tests "*SmokeTest"'
+```
+
+- 결과: `BUILD SUCCESSFUL`
+
+### 4. Compose 런타임
+
+`.env.example`를 기준으로 로컬 `.env`를 만든 뒤 Compose를 다시 올렸다.
+
+```bash
+docker compose up --build -d
+```
+
+- 결과: `postgres`, `redis`, `mailpit`, `redpanda`, `app` 모두 시작
+
+## 수동 HTTP/DB 확인
+
+- `GET /api/v1/health/live` -> `200`, `status: UP`
+- `GET /api/v1/health/ready` -> `200`, `status: UP`
+- `GET /actuator/health` -> `403`
+- `GET /api/v1/lab/info` -> `200`
+- `POST /api/v1/admin/categories` without auth -> `403`
+- `POST /api/v1/auth/login` as bootstrap admin -> `200`
+- `POST /api/v1/auth/register` as new customer -> `201`
+- `POST /api/v1/auth/login` as new customer -> `200`
+- `POST /api/v1/auth/refresh` with refresh cookie + csrf -> `200`
+- `GET /api/v1/me` with bearer -> `200`
+- `POST /api/v1/admin/categories` with customer bearer -> `403`
+- invalid `POST /api/v1/admin/products` -> `400`, validation errors 4개 반환
+- valid category create -> `201`
+- valid product create -> `201`
+- `POST /api/v1/cart/items` -> `200`
+- `POST /api/v1/orders` -> `200`, `PENDING_PAYMENT`
+- first `POST /api/v1/payments/mock/confirm` -> `200`, `replayed: false`
+- second same idempotency key -> `200`, `replayed: true`
+- product stock `3 -> 2`
+- postgres query `notifications` -> `order-paid:1|ORDER_PAID`
+- postgres query `outbox_events` -> `commerce.order-paid|pending`
+
+## 이 문서에서 사용한 해석
+
+- `refresh`가 같은 access token 문자열을 다시 돌려준 현상은 `JwtService`가 `jti` 없이 동일 claim set으로 토큰을 서명한다는 소스와 `2026-03-14` 수동 응답을 함께 본 source-based inference다.
+- notification row는 생겼지만 outbox row가 `pending`에 남는 현상은 `OutboxPublisher.publishPending()`에 `@Transactional` 또는 explicit save가 없다는 소스와 postgres 조회 결과를 함께 본 source-based inference다.
+- `CommerceMessagingIntegrationTest`가 assert하는 것은 notification row 존재까지이며, `publishedAt` persistence 자체는 자동 검증 범위에 들어 있지 않다는 점도 테스트 소스에서 직접 확인했다.
+- actuator health가 public probe surface가 아니라는 결론은 `SecurityConfig`의 permit 목록과 실제 `403` 응답을 함께 본 사실 판단이다.

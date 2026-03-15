@@ -1,35 +1,34 @@
-# 02 Terraform AWS Lab 구조 메모
+# 02 Terraform AWS Lab structure outline
 
-이 문서는 최종 글을 쓰기 전에 서사 배치를 점검하는 메모다. 독자에게 무엇을 먼저 설명하고 어디서 코드와 CLI를 꺼내 올지 한눈에 보이도록 정리한다.
+## 중심 질문
 
-## 이번 문서가 맡는 일
-- Terraform을 deploy 결과가 아니라 보안 스캐너가 먹는 입력 산출물로 다시 읽는다.
-- 본문은 `insecure/secure fixture 쌍 -> plan JSON 산출 -> resource contract 테스트` 순서로 배치해 후속 CSPM rule engine과의 연결을 선명하게 만든다.
+- 이 lab이 왜 "Terraform을 써 봤다"가 아니라 "분석 입력을 만들었다"는 이야기로 읽혀야 하는지
+- insecure/secure 차이를 사람이 아니라 다음 scanner가 읽을 수 있게 고정하려면 무엇이 먼저 필요했는지
 
-## 먼저 붙들 소스 묶음
-- [`../../../00-aws-security-foundations/02-terraform-aws-lab/README.md`](../../../00-aws-security-foundations/02-terraform-aws-lab/README.md)
-- [`../../../00-aws-security-foundations/02-terraform-aws-lab/problem/README.md`](../../../00-aws-security-foundations/02-terraform-aws-lab/problem/README.md)
-- [`../../../00-aws-security-foundations/02-terraform-aws-lab/docs/concepts/terraform-plan-reading.md`](../../../00-aws-security-foundations/02-terraform-aws-lab/docs/concepts/terraform-plan-reading.md)
-- [`../../../00-aws-security-foundations/02-terraform-aws-lab/python/README.md`](../../../00-aws-security-foundations/02-terraform-aws-lab/python/README.md)
-- [`../../../00-aws-security-foundations/02-terraform-aws-lab/python/src/terraform_aws_lab/verify.py`](../../../00-aws-security-foundations/02-terraform-aws-lab/python/src/terraform_aws_lab/verify.py)
-- [`../../../00-aws-security-foundations/02-terraform-aws-lab/python/tests/test_terraform_lab.py`](../../../00-aws-security-foundations/02-terraform-aws-lab/python/tests/test_terraform_lab.py)
+## 글 흐름
 
-## 본문을 배치하는 순서
+1. insecure/secure 예제가 어떤 보안 차이를 대표하는지로 시작한다.
+2. `verify.py`가 두 lab을 같은 Terraform 절차로 재생산하는 장면을 두 번째 축으로 둔다.
+3. `tfplan.json` 저장을 산출물 전환점으로 설명한다.
+4. resource-type 테스트와 병렬 state lock 메모로 입력 계약의 실제 성격을 마무리한다.
 
-- `00-series-map.md`
-  - apply 없이도 왜 이 lab이 독립 프로젝트인지, 어떤 verify 흐름을 공식 경로로 볼지 정리한다.
-- `10-development-timeline.md`
-  - 도입: Terraform의 핵심 산출물을 infra state가 아니라 scan input으로 전환하는 맥락을 먼저 준다.
-  - Phase 1. insecure/secure lab을 같은 검증 흐름에 묶었다.
-  - Phase 2. `terraform show -json`을 산출물로 남겼다.
-  - Phase 3. resource type 테스트로 입력 계약을 고정했다.
-  - 마무리: 다음 프로젝트에서 이 plan JSON이 CSPM finding으로 변하는 질문을 남긴다.
+## 반드시 남길 증거
 
-## 강조할 코드와 CLI
-- 코드 앵커: `verify_lab`, terraform subprocess 호출, insecure/secure fixture 비교, resource type assertions
-- CLI 앵커: `terraform init`, `terraform validate`, `terraform plan`, `terraform show -json`, `pytest 00-aws-security-foundations/02-terraform-aws-lab/python/tests`
-- 개념 훅: Terraform에서 중요한 것은 apply 이전에도 plan graph가 이미 보안 분석 입력이 된다는 점
+- `verify.py`의 `terraform_available`, `run_lab`, `json_path.write_text`
+- `test_terraform_lab.py`의 resource type assertion
+- insecure/secure `main.tf`와 `tfplan.json`의 public access / ingress / IAM policy 차이
+- `2026-03-14` verify 출력 `insecure: 5 resources`, `secure: 5 resources`
+- `2026-03-14` pytest `3 passed in 11.35s`
+- `2026-03-14` 병렬 검증 시 `Error acquiring the state lock`
 
-## 리라이트 기준
-- chronology는 실제 commit timestamp보다 source, test, CLI가 묶이는 순서를 기준으로 읽는다.
-- 이 문서는 메타 기록보다 서사 배치와 강조점에 집중한다.
+## 반드시 피할 서술
+
+- "Terraform 배포 실습"처럼 읽히는 설명
+- resource count만 말하고 실제 보안 차이를 숨기는 문장
+- 병렬 실행 충돌을 무시한 채 verifier가 완전히 견고한 것처럼 쓰는 서술
+- rule evaluation까지 이미 이 lab이 한다고 오해하게 만드는 표현
+
+## 톤 체크
+
+- chronology는 `fixture 차이 -> 재현 루프 -> plan JSON -> 테스트 계약` 순서로 살아 있어야 한다.
+- 홍보문보다 "어떤 입력을 다음 프로젝트에 넘겨주는가"와 "어디서 아직 충돌할 수 있는가"가 함께 읽혀야 한다.

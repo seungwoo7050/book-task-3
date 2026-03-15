@@ -1,27 +1,51 @@
-# A-auth-lab
+# A-auth-lab series map
 
-이 글은 회원가입과 로그인만 만드는 대신, 세션을 오래 안전하게 유지하는 규칙까지 어디서부터 설명해야 하는가라는 질문에서 출발한다. 로컬 계정 기반 인증 백엔드를 만든다고 가정하면 이메일 검증, 비밀번호 재설정, 세션 회전, CSRF 보호가 한 번에 엮이는데, A 랩은 그 묶음을 처음부터 끝까지 보여 주는 시작점이다.
+이 시리즈는 로컬 인증을 "로그인 API 하나"로 축소하지 않고, 이메일 검증, 비밀번호 재설정, refresh rotation, cookie 기반 CSRF 방어까지 한 번에 설명할 수 있는 최소 표면으로 다시 읽는다. 질문은 단순하다. 세션을 오래 들고 가는 규칙은 어디서부터 별도 설계가 되는가.
 
-## 이 글이 붙잡는 질문
-로컬 인증 백엔드에서 access token과 refresh token을 왜 나누는지, 이메일 검증과 비밀번호 재설정을 어떤 토큰 흐름으로 설명할지, 그리고 cookie 기반 세션에서 CSRF를 어디서 차단할지를 하나의 이야기로 묶을 수 있는가가 이 글의 핵심 질문이다.
+## 이 시리즈가 붙잡는 질문
 
-## 왜 이 프로젝트를 따로 읽어야 하나
-README, docs, auth route, 통합 테스트, compose probe가 모두 같은 범위를 가리킨다. 그래서 다른 랩을 빌리지 않고도 로컬 인증의 상태 전이와 실패 지점을 독립적으로 따라갈 수 있다.
+- access token과 refresh token을 왜 굳이 분리하는가
+- 이메일 검증과 비밀번호 재설정을 같은 token 발급/소비 문제로 어디까지 묶을 수 있는가
+- cookie 인증에서 CSRF 실패를 어느 진입점에서 끊어야 하는가
 
-## 이번 글에서 따라갈 흐름
-1. 회원가입과 로그인보다 넓은 인증 생애주기를 먼저 세운다.
-2. refresh rotation과 token family를 세션 경계의 중심으로 올린다.
-3. 재사용 공격과 계정 회복 시나리오를 테스트로 고정한다.
-4. 재검증 기록으로 live/ready 표면까지 닫는다.
+## 왜 이 순서로 읽는가
 
-## 마지막에 확인할 근거
-- 코드: `labs/A-auth-lab/fastapi/app/api/v1/routes/auth.py::refresh_token`
-- 테스트/런타임: `labs/A-auth-lab/fastapi/tests/integration/test_local_auth.py::test_local_login_refresh_rotation_and_logout`
-- CLI: `python3 -m compileall app tests`, `make lint`, `make test`, `make smoke`, `./tools/compose_probe.sh labs/A-auth-lab/fastapi 8000`
+1. `problem/README.md`와 상위 `README.md`로 이 랩의 성공 기준을 먼저 고정한다.
+2. `app/api/v1/routes/auth.py`에서 public auth surface가 어디까지 열려 있는지 확인한다.
+3. `app/domain/services/auth.py`, `app/db/models/auth.py`, `app/core/security.py`로 token family, reuse detection, CSRF 검증이 실제로 어디에 잠겨 있는지 따라간다.
+4. `tests/integration/test_local_auth.py`에서 공격자 시나리오와 recovery 흐름이 어떤 요청 순서로 고정됐는지 본다.
+5. 마지막에 `make lint`, `make test`, `make smoke`와 보조 재실행 결과를 붙여 현재 재현 가능 상태를 확인한다.
 
-## 이 글을 다 읽고 나면
-- 로컬 인증 흐름에서 토큰이 어떻게 상태 전이를 만든다.
-- 계정 회복 토큰을 로그인 토큰과 분리하는 이유가 선명해진다.
-- Mailpit 같은 로컬 도구가 왜 개발 속도를 높이면서도 운영 대체재는 아닌지 감이 잡힌다.
-- 검증 기록: 2026-03-09에 compile, lint, test, smoke, Compose live/ready probe가 모두 통과했다.
-- 다음으로 이어 볼 대상: B-federation-security-lab
+## 근거로 사용한 자료
+
+- `backend-fastapi/labs/A-auth-lab/README.md`
+- `backend-fastapi/labs/A-auth-lab/problem/README.md`
+- `backend-fastapi/labs/A-auth-lab/docs/README.md`
+- `backend-fastapi/labs/A-auth-lab/fastapi/README.md`
+- `backend-fastapi/labs/A-auth-lab/fastapi/Makefile`
+- `backend-fastapi/labs/A-auth-lab/fastapi/app/api/v1/routes/auth.py`
+- `backend-fastapi/labs/A-auth-lab/fastapi/app/api/deps.py`
+- `backend-fastapi/labs/A-auth-lab/fastapi/app/core/security.py`
+- `backend-fastapi/labs/A-auth-lab/fastapi/app/domain/services/auth.py`
+- `backend-fastapi/labs/A-auth-lab/fastapi/app/db/models/auth.py`
+- `backend-fastapi/labs/A-auth-lab/fastapi/tests/integration/test_local_auth.py`
+- `backend-fastapi/labs/A-auth-lab/fastapi/tests/smoke.py`
+
+## 현재 검증 상태
+
+- 2026-03-14 기준 `make lint`는 [`health.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/A-auth-lab/fastapi/app/api/v1/routes/health.py) 한 줄 길이 초과(`E501`) 때문에 실패했다.
+- 같은 날짜 `make test`는 `ModuleNotFoundError: No module named 'app'`로 멈췄다.
+- 같은 날짜 `make smoke`는 `python3`가 `/opt/homebrew/bin/python3`를 가리키면서 `ModuleNotFoundError: No module named 'fastapi'`로 실패했다.
+- 보조 확인으로 `PYTHONPATH=. pytest`와 `PYTHONPATH=. python -m tests.smoke`도 다시 돌렸고, 둘 다 `argon2-cffi` 미설치 때문에 `ModuleNotFoundError: No module named 'argon2'`에서 멈췄다.
+- 즉 구현 표면은 선명하지만, 현재 셸 기준 재검증 진입점은 그대로 통과하지 않는다.
+
+## 현재 범위 밖
+
+- Google OAuth 같은 외부 로그인
+- TOTP 2FA와 recovery code
+- 실제 외부 SMTP와 운영용 메일 인프라
+
+## 본문
+
+- [10-development-timeline.md](10-development-timeline.md)
+  - 로컬 인증 surface가 어떻게 token family, CSRF, recovery 흐름까지 확장되는지 구현 순서로 복원한다.

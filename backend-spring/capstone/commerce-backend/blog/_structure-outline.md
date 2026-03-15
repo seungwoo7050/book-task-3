@@ -2,31 +2,46 @@
 
 ## 글 목표
 
-- 7개 랩의 학습을 baseline commerce로 다시 묶는 과정을 복원한다.
-- macOS + VSCode 통합 터미널 기준의 검증 흐름을 유지한다.
+- 이 capstone을 "통합 완료본"이 아니라 deliberately thin baseline으로 다시 쓴다.
+- fake auth, public admin, validation 공백을 본문 핵심으로 올린다.
+- 통합 user journey가 있는 것과 production-grade commerce가 아닌 것을 동시에 보여 준다.
 
 ## 글 순서
 
-1. auth, catalog, cart, order surface를 먼저 고정한 단계
-2. modular monolith baseline을 세운 단계
-3. 왜 이 버전이 기준선인지 닫는 단계
+1. test와 auth controller를 보고 baseline user journey와 auth depth를 먼저 정리한다.
+2. controller/service/domain을 따라 catalog/cart/order 연결과 validation 공백을 설명한다.
+3. manual HTTP로 invalid inputs, stock decrement, second checkout failure를 확인한다.
+4. 왜 이 얕음이 v2 필요성을 만드는지 닫는다.
 
 ## 반드시 넣을 코드 앵커
 
 - `CommerceApiTest.catalogCartAndOrderFlowWork()`
-- `CommerceService.checkout()`
 - `CommerceAuthController.login()`
+- `CommerceAuthController.me()`
+- `CommerceController.createProduct()`
+- `CommerceService.checkout()`
+- `SecurityConfig.securityFilterChain()`
+- `V2__commerce.sql`
 
-## 반드시 넣을 CLI
+## 반드시 넣을 검증 신호
 
 ```bash
-cd spring
-make test
-make smoke
-docker compose up --build
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/capstone/commerce-backend/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew test'
+
+docker run --rm -u $(id -u):$(id -g) -p 18087:8080 \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/capstone/commerce-backend/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew bootRun'
 ```
 
-## 핵심 개념
+## 반드시 남길 한계
 
-- baseline capstone은 완성도보다 비교 가능성이 중요하다.
-- 일부러 남긴 빈칸이 있어야 v2의 개선 축이 선명해진다.
+- fixed token, unauthenticated `/me`
+- public admin endpoints
+- invalid product/cart inputs accepted
+- payment, async integration, strong authz 부재

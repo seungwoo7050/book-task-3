@@ -1,24 +1,13 @@
-# SMTP Client structure guide
+# SMTP Client 구조 메모
 
-## 이 글의 중심 질문
+## 문서 구성 의도
 
-- SMTP 대화를 raw socket 위에서 단계별 명령으로 어떻게 끝까지 완주했는가?
-- 한 줄 답: 텍스트 기반 명령-응답 프로토콜을 TCP 위에서 직접 수행하는 메일 클라이언트 과제입니다.
+- `00-series-map.md`: 이 lab를 어떤 질문으로 읽을지 먼저 잡는다.
+- `10-development-timeline.md`: TCP 연결, 명령 단계, `DATA`, 종료를 chronology로 복원한다.
+- `01-evidence-ledger.md`: 실제 소스와 테스트 근거를 짧게 묶는다.
 
-## 권장 흐름
+## 이번 재작성에서 강조한 점
 
-1. 실행 표면과 entrypoint를 먼저 고정하기
-2. 명령 전송과 응답 확인을 대화 단계에 맞춰 정리하기
-3. 테스트와 남은 범위를 정리하기
-
-## 꼭 살릴 근거
-
-- `problem/Makefile`의 공개 target과 `make -C study/01-Application-Protocols-and-Sockets/smtp-client/problem test`
-- `study/01-Application-Protocols-and-Sockets/smtp-client/python/src/smtp_client.py`의 `def send_command`
-- `study/01-Application-Protocols-and-Sockets/smtp-client/python/tests/test_smtp_client.py`의 `def test_full_smtp_dialogue`
-
-## 리라이트 주의점
-
-- `SMTP Client`를 개념 강의처럼 풀지 말고, 실제 파일과 CLI 순서로 보여 준다.
-- 전체 로그를 덤프하지 말고 판단을 바꾼 줄만 남긴다.
-- 마지막에는 `STARTTLS`는 구현하지 않았습니다. 같은 남은 경계를 사람 말로 다시 정리한다.
+- SMTP를 "메일 앱"이 아니라 "긴 텍스트 프로토콜 상태 기계"로 읽는다.
+- `DATA` 구간과 일반 command/reply 구간의 차이를 분리해서 설명한다.
+- 한계(`STARTTLS`, `AUTH LOGIN`, 외부 정책 미검증`)를 숨기지 않는다.

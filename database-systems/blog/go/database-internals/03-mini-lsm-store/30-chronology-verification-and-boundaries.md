@@ -1,111 +1,79 @@
-# 30 03 Mini LSM Store를 다시 돌려 보며 검증 신호와 경계를 정리하기
+# Verification And Boundaries
 
-이 시리즈의 마지막 글이다. pass 숫자만 적는 대신, 어떤 경계가 회귀 테스트로 남아 있는지와 demo가 무엇을 밖으로 드러내는지를 함께 본다.
+## 1. 자동 검증은 LSM의 핵심 계약을 넓게 덮는다
 
-## Phase 3 — 검증 신호와 한계를 확인하는 구간
-
-이번 글에서는 먼저 테스트가 남긴 회귀 신호를 다시 읽고, 이어서 demo가 공개하는 표면과 README가 남겨 둔 한계를 함께 정리한다.
-
-### Session 1 — 테스트가 남긴 회귀 신호 다시 보기
-
-여기서 가장 먼저 확인한 것은 테스트 명령을 다시 돌려 핵심 invariant가 실제 회귀 신호로 남아 있는지 확인한다. 처음에는 pass 수치만 확인하면 충분할 거라고 생각했다.
-
-하지만 실제로는 `GOWORK=off go test ./...`를 다시 실행하고, 어떤 테스트가 있는지 이미 알고 있는 상태에서 pass 신호를 다시 읽었다. 결정적으로 방향을 잡아 준 신호는 `go test ok, 9 tests`.
-
-변경 단위:
-- `database-systems/go/database-internals/projects/03-mini-lsm-store/tests/lsm_store_test.go`
-
-CLI:
+2026-03-14 기준 재실행 명령은 아래와 같다.
 
 ```bash
-$ GOWORK=off go test ./...
-?   	study.local/go/database-internals/projects/03-mini-lsm-store/cmd/mini-lsm-store	[no test files]
-?   	study.local/go/database-internals/projects/03-mini-lsm-store/internal/lsmstore	[no test files]
-?   	study.local/go/database-internals/projects/03-mini-lsm-store/internal/skiplist	[no test files]
-?   	study.local/go/database-internals/projects/03-mini-lsm-store/internal/sstable	[no test files]
+cd /Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/03-mini-lsm-store
+GOWORK=off go test ./...
+```
+
+결과는 아래처럼 통과했다.
+
+```text
 ok  	study.local/go/database-internals/projects/03-mini-lsm-store/tests	(cached)
 ```
 
-검증 신호:
-- `go test ok, 9 tests`
-- `TestPersistenceAfterReopen`가 실제로 회귀 테스트 묶음 안에 남아 있다는 점이 중요했다.
+테스트가 잡는 항목은 다음과 같다.
 
-핵심 코드:
+- put/get
+- missing key
+- update
+- delete tombstone
+- threshold-triggered flush
+- force flush 뒤 read
+- memtable precedence over SSTable
+- tombstone across levels
+- close/reopen persistence
 
-```go
-func TestPersistenceAfterReopen(t *testing.T) {
-	tempDir := t.TempDir()
-	store := lsmstore.New(tempDir, 1024)
-	if err := store.Open(); err != nil {
-		t.Fatal(err)
-	}
-	if err := store.Put("persist", "me"); err != nil {
-		t.Fatal(err)
-	}
-	if err := store.Close(); err != nil {
-		t.Fatal(err)
-	}
-```
+즉 작은 프로젝트지만, 현재 범위 안에서 중요한 read precedence와 persistence는 꽤 촘촘히 덮는다.
 
-왜 여기서 판단이 바뀌었는가:
+## 2. demo와 추가 재실행이 보여 준 관찰값
 
-`TestPersistenceAfterReopen`는 구현의 뒷부분에서 생길 수 있는 붕괴 지점을 문장보다 정확하게 고정한다. pass 숫자보다 더 중요했던 건, 어떤 경계가 계속 회귀 테스트로 남아 있느냐였다.
+demo 출력:
 
-이번 구간에서 새로 이해한 것:
-- 테스트는 단순 성공 여부보다, 어떤 invariant를 공개적으로 약속하는지 보여 주는 문서에 가깝다.
-
-다음으로 넘긴 질문:
-- demo entry point를 다시 실행해 테스트보다 얇은 표면에서 무엇을 보여 주는지 확인한다.
-
-### Session 2 — demo가 공개하는 표면과 한계 정리하기
-
-이번 세션의 목표는 demo 출력과 README의 한계를 함께 읽어, 공개 표면과 내부 경계를 분리하는 것이었다. 초기 가설은 demo는 테스트의 축약판일 뿐이라고 생각했다.
-
-막상 다시 펼쳐 보니 `GOWORK=off go run ./cmd/mini-lsm-store`를 다시 실행해 마지막 한 줄을 확인하고, README의 `한계와 확장` bullet과 나란히 읽었다. 특히 demo 핵심 줄: `missing => <missing>`라는 출력이 마지막 확인 지점이 됐다.
-
-변경 단위:
-- `database-systems/go/database-internals/projects/03-mini-lsm-store/cmd/mini-lsm-store/main.go`
-
-CLI:
-
-```bash
-$ GOWORK=off go run ./cmd/mini-lsm-store
+```text
 apple => <tombstone>
 banana => ripe
 missing => <missing>
 ```
 
-검증 신호:
-- demo 핵심 줄: `missing => <missing>`
-- 경계 메모: 현재 범위 밖: background compaction과 concurrent flush는 다루지 않습니다.
-- 경계 메모: 현재 범위 밖: range query와 compression 같은 production 기능은 후속 확장 항목으로 남깁니다.
+추가 재실행 출력:
 
-핵심 코드:
-
-```go
-package main
-
-import (
-	"fmt"
-	"os"
-
-	"study.local/go/database-internals/projects/03-mini-lsm-store/internal/lsmstore"
-)
-
-func main() {
-	tempDir, err := os.MkdirTemp("", "mini-lsm-demo-")
-	if err != nil {
-		panic(err)
-	}
-	defer os.RemoveAll(tempDir)
+```text
+sstables_after_flush 2 000002.sst
+beta_active_wins 3
+alpha_tombstone true
+reopened_sstables 2 000002.sst
+reopened_beta 3
+reopened_alpha_tombstone true
 ```
 
-왜 여기서 판단이 바뀌었는가:
+이 값들을 합치면 현재 구현은 아래 사실을 만족한다.
 
-demo entry point는 내부 구현을 전부 보여 주지는 않지만, 독자가 처음 마주치는 공개 표면을 결정한다. 테스트가 invariant를 지키는 장치라면, demo는 그중 무엇을 밖으로 보여 줄지 고르는 자리였다.
+- 새 write는 기존 SSTable보다 우선한다
+- tombstone은 디스크의 오래된 live value를 가린다
+- reopen 뒤에도 newest SSTable 순서와 최신 lookup semantics가 유지된다
 
-이번 구간에서 새로 이해한 것:
-- `Flush Lifecycle`에서 정리한 요점처럼, active MemTable은 write를 받는 유일한 구조다.
+## 3. 현재 구현이 일부러 다루지 않는 것
 
-다음으로 넘긴 질문:
-- 이 프로젝트 이후에는 다음 트랙/다음 슬롯으로 넘어가더라도, 지금 고정한 invariant를 더 큰 저장 엔진이나 분산 경로 안에서 다시 만날 수 있다.
+이 랩을 production LSM engine으로 읽으면 안 되는 이유도 분명하다.
+
+- WAL이 없다
+- background compaction이 없다
+- concurrent flush가 없다
+- range scan과 compression이 없다
+- flush failure rollback이나 manifest recovery가 없다
+
+즉 orchestration은 있지만 durability story는 아직 얕다.
+
+## 4. 이 문서에서 피한 과장
+
+이번 재작성에서는 아래 같은 표현을 쓰지 않았다.
+
+- "LSM storage engine을 완성했다"
+- "crash-safe flush를 구현했다"
+- "production-ready read/write path를 제공한다"
+
+현재 소스와 테스트가 실제로 보여 주는 것은 active/immutable/SSTable의 우선순위와 reopen 뒤 index 재적재까지다. 그보다 큰 durability claim은 근거가 없다.

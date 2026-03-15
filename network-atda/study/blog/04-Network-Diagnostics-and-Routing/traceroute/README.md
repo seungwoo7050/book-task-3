@@ -1,26 +1,31 @@
-# Traceroute blog
+# Traceroute Blog
 
-`Traceroute` 문서 묶음은 UDP probe와 ICMP 응답을 엮어 hop 단위 경로를 어떻게 복원했는가?라는 질문에 답하기 위해 준비한 읽기 경로다. 결과만 요약하지 않고, 어디서부터 구현이나 분석이 무거워졌는지 따라갈 수 있게 구성했다.
+이 문서 묶음은 `traceroute`를 "경로를 찍는 도구"보다 "TTL-limited UDP probe와 ICMP reply를 어떻게 서로 맞춰 hop line으로 바꾸는가"라는 질문으로 다시 읽는다. 현재 구현은 probe마다 고유 UDP dest port를 만들고, ICMP response 안의 embedded UDP header에서 그 port를 다시 꺼내 probe와 reply를 매칭한다. 따라서 이 lab의 핵심은 출력 형식보다 correlation rule과 termination rule을 명확히 세우는 데 있다.
 
-이 프로젝트의 본문은 `TTL 증가와 `ICMP Time Exceeded`를 이용해 hop-by-hop 경로를 드러내는 bridge 프로젝트입니다.`라는 한 줄 설명을 실제 파일, CLI, 테스트 신호로 다시 풀어 쓰는 데 초점을 둔다.
+이번 재작성은 기존 blog 본문이 아니라 다음 근거만 사용했다.
 
-## 이 폴더에서 기대할 수 있는 것
+- 문제 정의: `study/04-Network-Diagnostics-and-Routing/traceroute/problem/README.md`
+- 구현 경계: `README.md`, `python/README.md`, `python/src/traceroute.py`
+- 테스트 근거: `python/tests/test_traceroute.py`, `problem/Makefile`
+- 실제 검증: 2026-03-14 재실행한 `make -C network-atda/study/04-Network-Diagnostics-and-Routing/traceroute/problem test`
+- 보조 실행: `python3 python/src/traceroute.py example.com --max-hops 2 --probes 1 --timeout 0.2` 시도
 
-- 문제 경계와 읽는 순서: [00-series-map.md](00-series-map.md)
-- 단계별 근거 압축본: [01-evidence-ledger.md](01-evidence-ledger.md)
-- 글의 편집 개요: [02-structure.md](02-structure.md)
-- 실제 서사형 기록: [10-development-timeline.md](10-development-timeline.md)
+## 읽는 순서
 
-## 근거로 사용한 source set
+1. [`00-series-map.md`](./00-series-map.md)
+2. [`10-development-timeline.md`](./10-development-timeline.md)
+3. [`01-evidence-ledger.md`](./01-evidence-ledger.md)
+4. [`02-structure.md`](./02-structure.md)
 
-- 프로젝트 루트: `study/04-Network-Diagnostics-and-Routing/traceroute`
-- 정식 검증 명령: `make -C study/04-Network-Diagnostics-and-Routing/traceroute/problem test`
-- 구현 파일: `study/04-Network-Diagnostics-and-Routing/traceroute/python/src`
-- 테스트 파일: `study/04-Network-Diagnostics-and-Routing/traceroute/python/tests`
-- 제외한 입력: 기존 `study/blog/**`, `notion/**`, `notion-archive/**`
+## 이번에 다시 확인한 검증 상태
 
-## 먼저 읽을 순서
+- 정식 검증 명령: `make -C network-atda/study/04-Network-Diagnostics-and-Routing/traceroute/problem test`
+- 결과: `4 passed in 0.01s`
+- 보조 실행: live `example.com` run은 현재 세션에서 5초 안에 완료되지 않았다
+- 검증 구조 주의: problem spec이 명시하듯 canonical test는 raw socket 없이 parser/formatter를 확인하는 경로이고, live probing은 수동 재현 경로다
 
-1. `00-series-map.md`에서 질문과 근거를 먼저 잡는다.
-2. `01-evidence-ledger.md`에서 세 단계 흐름을 짧게 본다.
-3. `10-development-timeline.md`에서 코드/trace와 CLI를 따라 내려간다.
+## 지금 남기는 한계
+
+- IPv6 traceroute와 reverse DNS lookup은 지원하지 않는다.
+- 현재 live path는 network environment에 크게 의존한다.
+- ECMP, asymmetric routing, rate limiting 같은 internet-scale variability는 모델링하지 않는다.

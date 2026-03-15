@@ -1,100 +1,63 @@
-# 30 01 RPC Framing를 다시 돌려 보며 검증 신호와 경계를 정리하기
+# 30 다시 돌려 보기: 현재 RPC 계층이 실제로 보장하는 것
 
-이 시리즈의 마지막 글이다. pass 숫자만 적는 대신, 어떤 경계가 회귀 테스트로 남아 있는지와 demo가 무엇을 밖으로 드러내는지를 함께 본다.
+마지막으로 남는 건 demo와 테스트, 그리고 보조 재실행에서 나온 실제 신호다. framing 계층은 말로만 설명하면 쉽게 과장된다. 실제로 어떤 입력이 어떤 예외와 어떤 출력으로 돌아오는지 다시 확인해야 현재 구현의 크기가 보인다.
 
-## Phase 3 — 검증 신호와 한계를 확인하는 구간
+## Phase 3-1. pytest는 기본 wire contract는 잘 잠근다
 
-이번 글에서는 먼저 테스트가 남긴 회귀 신호를 다시 읽고, 이어서 demo가 공개하는 표면과 README가 남겨 둔 한계를 함께 정리한다.
+이번 재실행에서 pytest는 `5 passed, 1 warning in 0.05s`였다. 경고는 앞과 같은 `pytest_asyncio` deprecation이라 핵심과는 무관했다.
 
-### Session 1 — 테스트가 남긴 회귀 신호 다시 보기
+테스트가 잠그는 건 이렇다.
 
-여기서 가장 먼저 확인한 것은 테스트 명령을 다시 돌려 핵심 invariant가 실제 회귀 신호로 남아 있는지 확인한다. 처음에는 pass 수치만 확인하면 충분할 거라고 생각했다.
+- single frame decode
+- split chunk decode
+- request/response round trip
+- concurrent calls
+- server error와 timeout 전파
 
-하지만 실제로는 `PYTHONPATH=src .venv/bin/python -m pytest`를 다시 실행하고, 어떤 테스트가 있는지 이미 알고 있는 상태에서 pass 신호를 다시 읽었다. 결정적으로 방향을 잡아 준 신호는 `5 passed`.
+즉 이 프로젝트는 단순 `echo` 데모를 넘어서, 최소한의 concurrency와 failure propagation은 이미 공개 계약에 올린다.
 
-변경 단위:
-- `database-systems/python/ddia-distributed-systems/projects/01-rpc-framing/tests/test_rpc_framing.py`
+## Phase 3-2. demo는 "method call works"보다 "end-to-end wire path is alive"를 보여 준다
 
-CLI:
-
-```bash
-$ PYTHONPATH=src .venv/bin/python -m pytest
-============================= test session starts ==============================
-platform darwin -- Python 3.12.6, pytest-9.0.2, pluggy-1.6.0
-rootdir: /Users/woopinbell/work/book-task-3/database-systems/python/ddia-distributed-systems/projects/01-rpc-framing
-configfile: pyproject.toml
-collected 5 items
-
-tests/test_rpc_framing.py .....                                          [100%]
-
-============================== 5 passed in 0.04s ===============================
-```
-
-검증 신호:
-- `5 passed`
-- `test_rpc_propagates_server_errors_and_timeout`가 실제로 회귀 테스트 묶음 안에 남아 있다는 점이 중요했다.
-
-핵심 코드:
-
-```python
-def test_rpc_propagates_server_errors_and_timeout():
-    server = RPCServer()
-
-    def fail(_params):
-        raise ValueError("intentional failure")
-
-    def slow(_params):
-        time.sleep(0.2)
-        return {"status": "done"}
-```
-
-왜 여기서 판단이 바뀌었는가:
-
-`test_rpc_propagates_server_errors_and_timeout`는 구현의 뒷부분에서 생길 수 있는 붕괴 지점을 문장보다 정확하게 고정한다. pass 숫자보다 더 중요했던 건, 어떤 경계가 계속 회귀 테스트로 남아 있느냐였다.
-
-이번 구간에서 새로 이해한 것:
-- 테스트는 단순 성공 여부보다, 어떤 invariant를 공개적으로 약속하는지 보여 주는 문서에 가깝다.
-
-다음으로 넘긴 질문:
-- demo entry point를 다시 실행해 테스트보다 얇은 표면에서 무엇을 보여 주는지 확인한다.
-
-### Session 2 — demo가 공개하는 표면과 한계 정리하기
-
-이번 세션의 목표는 demo 출력과 README의 한계를 함께 읽어, 공개 표면과 내부 경계를 분리하는 것이었다. 초기 가설은 demo는 테스트의 축약판일 뿐이라고 생각했다.
-
-막상 다시 펼쳐 보니 `PYTHONPATH=src .venv/bin/python -m rpc_framing`를 다시 실행해 마지막 한 줄을 확인하고, README의 `한계와 확장` bullet과 나란히 읽었다. 특히 demo 핵심 줄: `{'msg': 'hello'}`라는 출력이 마지막 확인 지점이 됐다.
-
-변경 단위:
-- `database-systems/python/ddia-distributed-systems/projects/01-rpc-framing/src/rpc_framing/__main__.py`
-
-CLI:
+demo entry point를 다시 돌리면 이런 출력이 나온다.
 
 ```bash
-$ PYTHONPATH=src .venv/bin/python -m rpc_framing
+cd /Users/woopinbell/work/book-task-3/database-systems/python/ddia-distributed-systems/projects/01-rpc-framing
+PYTHONPATH=src python3 -m rpc_framing
+```
+
+```text
 {'msg': 'hello'}
 ```
 
-검증 신호:
-- demo 핵심 줄: `{'msg': 'hello'}`
-- 경계 메모: 현재 범위 밖: TLS, 인증, streaming RPC는 포함하지 않습니다.
-- 경계 메모: 현재 범위 밖: 서비스 디스커버리나 로드 밸런싱은 다음 단계 범위입니다.
+겉보기엔 단순한 echo지만, 실제로는 frame encode, socket send, server decode/dispatch, response encode, client decode, pending map routing까지 한 번씩 다 지난 결과다. demo는 이 최소 happy path를 밖으로 보여 주는 표면이다.
 
-핵심 코드:
+## Phase 3-3. 보조 재실행이 split/multi-frame과 caller-facing 예외를 더 선명하게 보여 줬다
 
-```python
-from .core import demo
+이번 Todo에서는 decoder와 failure path를 한 번 더 직접 확인했다.
 
+- split decode:
+  - `split1 []`
+  - `split2 []`
+  - `split3 ['{"a": 1}', '{"b": 2}']`
+- failure propagation:
+  - `unknown RuntimeError unknown method: unknown`
+  - `timeout TimeoutError rpc call timed out`
 
-if __name__ == "__main__":
-    demo()
-```
+이 결과는 현재 contract를 꽤 명확하게 보여 준다.
 
-왜 여기서 판단이 바뀌었는가:
+1. decoder는 half-frame을 절대 조급하게 내놓지 않는다
+2. multi-frame chunk도 한 번에 분리한다
+3. unknown method는 caller에게 `RuntimeError`
+4. 응답이 늦으면 caller에게 `TimeoutError`
 
-demo entry point는 내부 구현을 전부 보여 주지는 않지만, 독자가 처음 마주치는 공개 표면을 결정한다. 테스트가 invariant를 지키는 장치라면, demo는 그중 무엇을 밖으로 보여 줄지 고르는 자리였다.
+즉 이 RPC 계층은 transport-level 이벤트를 "결과가 없다"로 흐리지 않고, 호출자 입장에서 구분 가능한 실패 타입으로 다시 내보낸다.
 
-이번 구간에서 새로 이해한 것:
-- `Frame Boundary Recovery`에서 정리한 요점처럼, TCP는 message 단위가 아니라 byte stream이다. 따라서 sender가 한 번 `Write` 했다고 receiver가 한 번 `Read`로 같은 단위를 받는다는 보장이 없다.
+## Phase 3-4. 지금 상태에서 비워 둔 것
 
-다음으로 넘긴 질문:
-- 이 프로젝트 이후에는 다음 트랙/다음 슬롯으로 넘어가더라도, 지금 고정한 invariant를 더 큰 저장 엔진이나 분산 경로 안에서 다시 만날 수 있다.
+- disconnect fan-out은 구현돼 있지만 테스트가 직접 덮진 않는다
+- JSON codec 고정이라 binary codec pluggability가 없다
+- streaming RPC가 없다
+- backpressure, retry, tracing, service discovery가 없다
+- server는 malformed JSON payload를 조용히 무시하고 명시적 protocol error를 보내지 않는다
+
+그래도 이 슬롯이 중요한 이유는 분명하다. 분산 트랙의 나머지 프로젝트들이 replication이든 shard routing이든 결국 RPC transport 위에 올라가는데, 그 출발점인 frame boundary와 pending correlation을 아주 작고 선명한 코드로 먼저 고정하기 때문이다.

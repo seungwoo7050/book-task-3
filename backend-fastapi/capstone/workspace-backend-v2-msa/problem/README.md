@@ -12,6 +12,10 @@
 - notification-service가 잠시 내려가도 댓글 생성은 성공하고, 복구 후 consume로 알림이 전달되어야 한다.
 - v1과 v2의 차이를 문서와 노트만 읽고 설명할 수 있어야 한다.
 
+## canonical verification 시작 위치
+
+- 실행과 검증 진입점은 [../fastapi/README.md](../fastapi/README.md)입니다.
+
 ## 제외 범위
 
 - Kubernetes, service mesh, service discovery

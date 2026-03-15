@@ -1,9 +1,58 @@
-# 04 WAL Recovery — Evidence Ledger
+# Evidence Ledger
 
-기존 `blog/` 초안은 입력에서 제외하고, `README`, `problem/`, `docs/`, 실제 구현 파일, 테스트, 재검증 CLI만으로 chronology를 다시 세웠다.
+## Primary sources
 
-| 순서 | 시간 표지 | 당시 목표 | 변경 단위 | 처음 가설 | 실제 조치 | CLI | 검증 신호 | 핵심 코드 앵커 | 새로 배운 것 | 다음 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Phase 1 | 프로젝트 범위를 tests와 README로 다시 좁힌다 | `database-systems/go/database-internals/projects/04-wal-recovery/README.md`, `database-systems/go/database-internals/projects/04-wal-recovery/tests/wal_test.go` | README의 한 줄 설명만으로는 실제 핵심 invariant가 무엇인지 아직 흐릿했다. | 파일 목록과 테스트 이름을 먼저 훑어 문제의 중심을 다시 잡았다. | `find internal tests cmd -type f | sort`<br>`rg -n "^func Test" tests` | `TestForceFlushRotatesWAL`까지 테스트 이름을 훑고 나니, 이 프로젝트의 중심이 단순 기능 추가가 아니라 `AppendPut` 주변의 invariant를 고정하는 일이라는 게 보였다. | `TestRecoverPutRecords` | `Recovery Policy`에서 정리한 요점처럼, header가 13바이트보다 짧으면 truncated header로 보고 중단한다. | `AppendPut`와 `Recover`가 실제로 어떤 순서 제약을 만드는지 다시 본다. |
-| 2 | Phase 2 | 핵심 상태 전이와 invariant를 코드에서 확인한다 | `database-systems/go/database-internals/projects/04-wal-recovery/internal/wal/wal.go`의 `AppendPut` | `AppendPut`만 보면 충분할 거라고 생각했다. | `AppendPut`와 `Recover`를 함께 읽어 write/read ordering을 맞췄다. | `rg -n "^(type|func) " internal cmd`<br>`rg -n "AppendPut|Recover" internal cmd` | `AppendPut`와 `Recover`가 같은 상태를 다른 방향에서 고정한다는 점이 드러났다. | `AppendPut` | `WAL Record Format`에서 정리한 요점처럼, record는 `[crc32][type][keyLen][valLen][key][value]` 순서다. | 테스트와 demo를 다시 실행해 이 invariant가 실제 검증 신호와 맞물리는지 확인한다. |
-| 3 | Phase 3 | 실제 검증 명령으로 pass 신호를 다시 본다 | `database-systems/go/database-internals/projects/04-wal-recovery/tests/wal_test.go`와 `database-systems/go/database-internals/projects/04-wal-recovery/cmd/wal-recovery/main.go` | 테스트만 통과하면 경계까지 충분히 설명할 수 있을 거라고 봤다. | pytest/go test와 demo를 모두 다시 돌려, 테스트가 잡는 범위와 demo가 보여주는 표면을 분리했다. | `GOWORK=off go test ./...`<br>`GOWORK=off go run ./cmd/wal-recovery` | go test ok, 7 tests; demo 핵심 줄은 `missing => <missing>`였다. | `TestForceFlushRotatesWAL` | `WAL Record Format`에서 정리한 요점처럼, record는 `[crc32][type][keyLen][valLen][key][value]` 순서다. | 현재 범위 밖: group commit, fsync batching, 압축 로그 세그먼트는 포함하지 않습니다. |
+- [`problem/README.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/04-wal-recovery/problem/README.md)
+- [`README.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/04-wal-recovery/README.md)
+- [`docs/README.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/04-wal-recovery/docs/README.md)
+- [`docs/concepts/wal-record-format.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/04-wal-recovery/docs/concepts/wal-record-format.md)
+- [`docs/concepts/recovery-policy.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/04-wal-recovery/docs/concepts/recovery-policy.md)
+- [`internal/wal/wal.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/04-wal-recovery/internal/wal/wal.go)
+- [`internal/store/store.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/04-wal-recovery/internal/store/store.go)
+- [`tests/wal_test.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/04-wal-recovery/tests/wal_test.go)
+- [`cmd/wal-recovery/main.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/04-wal-recovery/cmd/wal-recovery/main.go)
+
+## Re-run commands
+
+```bash
+cd /Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/04-wal-recovery
+GOWORK=off go test ./...
+GOWORK=off go run ./cmd/wal-recovery
+```
+
+추가 재실행:
+
+```bash
+tmpfile=$(mktemp ./tmpcheck-XXXX.go)
+# project root 안에 임시 Go 파일을 만들어 internal/store와 internal/wal을 직접 호출
+GOWORK=off go run "$tmpfile"
+rm -f "$tmpfile"
+```
+
+## Observed outputs
+
+- `go test`: `ok   study.local/go/database-internals/projects/04-wal-recovery/tests (cached)`
+- demo:
+  - `name => Alice`
+  - `city => Seoul`
+  - `missing => <missing>`
+- extra snippet:
+  - `recovered_records 3 put delete beta`
+  - `alpha_tombstone_after_reopen true`
+  - `beta_after_reopen 2`
+  - `wal_size_after_flush 0 sstables 1`
+
+## Source-grounded claims
+
+- store writes to WAL before mutating memtable.
+- WAL record header is 13 bytes before key/value payload.
+- replay stops at truncated header, truncated payload, or CRC mismatch.
+- force flush closes, removes, and recreates `active.wal`.
+
+## Explicit boundaries
+
+- No group commit
+- No fsync batching policy analysis
+- No multi-writer coordination
+- No distributed recovery
+- No segmented WAL retention

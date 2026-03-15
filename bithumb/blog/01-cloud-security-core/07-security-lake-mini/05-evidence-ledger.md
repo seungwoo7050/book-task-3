@@ -1,60 +1,60 @@
 # 07 Security Lake Mini 근거 정리
 
-CloudTrail fixture를 local lake에 적재하고 preset detection query로 alert를 만드는 최소 security lake 실습이다. 이 문서는 그 흐름을 글로 풀기 전에, 실제 근거를 phase 단위로 다시 세워 둔 정리 노트다.
+이 문서는 "CloudTrail을 lake에 넣었다"는 요약보다, 어떤 코드와 어떤 재실행 결과 때문에 그렇게 말할 수 있는지를 고정하는 메모다. 이번 lab은 코드가 짧은 대신, 작은 함수 하나가 의미를 크게 바꾸는 지점이 많아서 그 차이를 분리해서 적는 게 중요했다.
 
-한 phase를 읽을 때는 `당시 목표 -> 실제 조치 -> CLI -> 검증 신호` 순서로 보면 무엇이 먼저 굳어졌는지 빠르게 따라갈 수 있다.
+## Phase 1. 적재 단계가 lake의 최소 shape를 고정한다
 
-## Phase 1. CloudTrail fixture를 local lake로 적재했다
-
-이 구간에서는 `CloudTrail fixture를 local lake로 적재했다`를 먼저 단단히 묶어 두면서, 다음 phase가 기대는 기준을 만들었다.
-
-- 시간 표지: Phase 1
-- 당시 목표: CloudTrail 이벤트를 DuckDB/Parquet lake 산출물로 바꾼다.
-- 변경 단위: `python/src/security_lake_mini/lake.py`의 `_normalize`, `ingest_cloudtrail`
-- 처음 가설: security lake를 설명하려면 먼저 로그가 질의 가능한 저장 구조 안에 있어야 한다.
-- 실제 조치: fixture의 `Records`를 순회해 `(occurred_at, source, event_name, actor)` 행으로 정규화하고, `lake_events` 테이블과 Parquet 파일에 동시에 적재했다. 이 과정에서 테이블은 매번 비우고 다시 채워 local demo 반복성을 높였다.
-- CLI:
-  - `mkdir -p .artifacts/security-lake-mini`
-  - `PYTHONPATH=01-cloud-security-core/07-security-lake-mini/python/src .venv/bin/python -m security_lake_mini.cli 01-cloud-security-core/07-security-lake-mini/problem/data/cloudtrail_suspicious.json .artifacts/security-lake-mini/lake.duckdb .artifacts/security-lake-mini/events.parquet`
+- 당시 목표: fixture 로그를 질의 가능한 local lake row로 바꾼다.
+- 핵심 근거:
+  - `_normalize()`는 `Records`를 `(occurred_at, source, event_name, actor)` 4열 row로 바꾼다.
+  - `userIdentity.arn`이 없으면 actor는 `"unknown"`으로 들어간다.
+  - `ingest_cloudtrail()`은 `CREATE TABLE IF NOT EXISTS lake_events` 뒤에 `DELETE FROM lake_events`를 수행하고 다시 insert 한다.
+  - 같은 함수가 Parquet export도 함께 수행한다.
+- 재실행:
+  - `mkdir -p /Users/woopinbell/work/book-task-3/bithumb/.artifacts/security-lake-mini`
+  - `PYTHONPATH=/Users/woopinbell/work/book-task-3/bithumb/01-cloud-security-core/07-security-lake-mini/python/src /Users/woopinbell/work/book-task-3/bithumb/.venv/bin/python -m security_lake_mini.cli /Users/woopinbell/work/book-task-3/bithumb/01-cloud-security-core/07-security-lake-mini/problem/data/cloudtrail_suspicious.json /Users/woopinbell/work/book-task-3/bithumb/.artifacts/security-lake-mini/lake.duckdb /Users/woopinbell/work/book-task-3/bithumb/.artifacts/security-lake-mini/events.parquet`
 - 검증 신호:
-  - CLI 실행 후 `lake.duckdb`와 `events.parquet` 경로가 채워졌다.
-  - README는 이 경로들을 명시적 입력/출력으로 노출한다.
-- 핵심 코드 앵커: `01-cloud-security-core/07-security-lake-mini/python/src/security_lake_mini/lake.py:37-56`
-- 새로 배운 것: security lake는 로그 저장소가 아니라, 탐지 쿼리가 반복 실행될 수 있는 저장 계층이다.
-- 다음: 적재만으로는 lake가 완성되지 않으니, preset detection query를 붙여 alert를 만들어야 했다.
+  - CLI가 `LAKE-001`부터 `LAKE-005`까지 5개 alert를 출력했다.
+  - 별도 DuckDB 조회에서 `select count(*) from lake_events` 결과가 `5`였다.
+  - 같은 조회에서 event 순서는 fixture chronology와 동일했다.
+- 해석:
+  - 이 lab은 lake를 "파일을 쌓아 두는 곳"이 아니라, rerun마다 같은 query를 태울 수 있는 resettable row store로 다룬다.
 
-## Phase 2. SQL query를 alert taxonomy로 썼다
+## Phase 2. alert taxonomy는 SQL query 안에서 고정된다
 
-이 구간에서는 `SQL query를 alert taxonomy로 썼다`를 먼저 단단히 묶어 두면서, 다음 phase가 기대는 기준을 만들었다.
-
-- 시간 표지: Phase 2
-- 당시 목표: 이벤트 이름 기반의 suspicious activity를 `LAKE-*` control로 매핑한다.
-- 변경 단위: `python/src/security_lake_mini/lake.py`의 `run_detection_queries`
-- 처음 가설: query preset이 있어야 “이 lake에서 뭘 찾는가”를 즉시 설명할 수 있다.
-- 실제 조치: `CASE` 문으로 `CreateAccessKey`, `PutBucketAcl`, `AuthorizeSecurityGroupIngress`, `DeleteTrail`, root `ConsoleLogin`을 각각 `LAKE-001`부터 `LAKE-005`로 매핑했다. 그 결과 rowset이 alert dataclass 배열로 다시 올라왔다.
-- CLI:
-  - `PYTHONPATH=01-cloud-security-core/07-security-lake-mini/python/src .venv/bin/python -m security_lake_mini.cli 01-cloud-security-core/07-security-lake-mini/problem/data/cloudtrail_suspicious.json .artifacts/security-lake-mini/lake.duckdb .artifacts/security-lake-mini/events.parquet`
+- 당시 목표: suspicious activity 예시를 사람이 바로 읽을 수 있는 control ID 목록으로 바꾼다.
+- 핵심 근거:
+  - `run_detection_queries()`는 `CASE` 문으로 다섯 event를 `LAKE-001`~`LAKE-005`에 매핑한다.
+  - `ConsoleLogin`은 actor가 `%:root`일 때만 `LAKE-005`가 된다.
+  - 반환 title은 모두 `Detected suspicious event: <event_name>` 형식이다.
+  - `eventSource`는 lake row에 저장되지만 detection query에서는 쓰이지 않는다.
+- 재실행:
+  - CLI 출력과 별도 DuckDB SQL 재조회로 control 순서를 다시 확인했다.
 - 검증 신호:
-  - 실제 CLI 출력에 `LAKE-001`부터 `LAKE-005`까지 다섯 개 alert가 순서대로 나타났다.
-  - 각 alert는 `event_name`, `actor`, `occurred_at`를 그대로 포함해 설명 가능한 형태가 됐다.
-- 핵심 코드 앵커: `01-cloud-security-core/07-security-lake-mini/python/src/security_lake_mini/lake.py:59-95`
-- 새로 배운 것: 좋은 detection preset은 “왜 잡혔는가”를 event_name 수준에서 바로 설명할 수 있어야 한다. query가 taxonomy 역할을 한다.
-- 다음: 이제 적재와 탐지를 한 번에 묶고, alert 순서를 테스트로 고정해야 했다.
+  - control 순서는 `LAKE-001`, `LAKE-002`, `LAKE-003`, `LAKE-004`, `LAKE-005`
+  - 대응 event는 각각 `CreateAccessKey`, `PutBucketAcl`, `AuthorizeSecurityGroupIngress`, `DeleteTrail`, root `ConsoleLogin`
+- 해석:
+  - 이 프로젝트의 taxonomy는 외부 rule registry가 아니라 SQL query 그 자체에 박혀 있다.
+- source-based inference:
+  - `CASE`에는 `ELSE 'INFO'`가 있지만, 바로 아래 `WHERE event_name IN (...)`가 같은 다섯 event만 허용하므로 현재 쿼리 결과에서 `INFO`는 사실상 나오지 않는다.
 
-## Phase 3. CLI와 테스트로 alert 순서를 잠갔다
+## Phase 3. CLI와 테스트가 rerun 가능성을 잠근다
 
-이 구간에서는 `CLI와 테스트로 alert 순서를 잠갔다`를 먼저 단단히 묶어 두면서, 다음 phase가 기대는 기준을 만들었다.
-
-- 시간 표지: Phase 3
-- 당시 목표: 로컬에서 같은 입력을 주면 같은 alert 집합이 재현되게 한다.
-- 변경 단위: `python/src/security_lake_mini/cli.py`, `python/tests/test_lake.py`
-- 처음 가설: detection demo는 결과가 존재하는 것만으로 부족하다. 어떤 순서와 control set이 나와야 하는지도 고정돼야 한다.
-- 실제 조치: CLI는 ingest 직후 `run_detection_queries`를 실행해 JSON alert 목록을 반환하게 했고, 테스트는 Parquet 파일 생성과 `LAKE-001`~`LAKE-005` 순서를 정확히 요구했다.
-- CLI:
-  - `PYTHONPATH=01-cloud-security-core/07-security-lake-mini/python/src .venv/bin/python -m pytest 01-cloud-security-core/07-security-lake-mini/python/tests`
+- 당시 목표: 로컬에서 같은 입력을 주면 같은 lake와 같은 alert 배열이 반복 재생산되게 한다.
+- 핵심 근거:
+  - CLI는 ingest 직후 `run_detection_queries(db_path)`를 호출해 JSON 배열을 출력한다.
+  - `test_security_lake_generates_expected_alerts()`는 Parquet 생성과 control 순서를 둘 다 확인한다.
+  - `test_cli_ingest_returns_json_alerts()`는 CLI stdout에 `LAKE-001`이 포함되는지와 Parquet 생성 여부를 본다.
+- 재실행:
+  - `PYTHONPATH=/Users/woopinbell/work/book-task-3/bithumb/01-cloud-security-core/07-security-lake-mini/python/src /Users/woopinbell/work/book-task-3/bithumb/.venv/bin/python -m pytest /Users/woopinbell/work/book-task-3/bithumb/01-cloud-security-core/07-security-lake-mini/python/tests`
 - 검증 신호:
-  - pytest가 `2 passed in 0.16s`로 통과했다.
-  - `test_security_lake_generates_expected_alerts`가 control_id 배열의 순서를 그대로 비교한다.
-- 핵심 코드 앵커: `01-cloud-security-core/07-security-lake-mini/python/tests/test_lake.py:6-21`
-- 새로 배운 것: detection demo에서는 alert 존재 여부보다 rule taxonomy와 ordering을 고정하는 편이 회귀를 잡기 쉽다.
-- 다음: 다음 프로젝트는 로그 대신 manifest와 image metadata를 대상으로 guardrail scanner를 만든다.
+  - `2 passed in 0.07s`
+- 해석:
+  - 이 lab이 보장하는 것은 "lake가 있다"가 아니라, 같은 fixture가 같은 control array로 재현된다는 점이다.
+
+## 이번 Todo에서 남긴 한계
+
+- detection은 단일 테이블, 단일 SQL에 고정돼 있다.
+- `eventSource`는 저장되지만 현재 detection에서는 unused field다.
+- `INFO` branch는 query 구조상 도달하지 않는다.
+- severity, suppression, windowed correlation 같은 운영형 detection 요소는 아직 없다.

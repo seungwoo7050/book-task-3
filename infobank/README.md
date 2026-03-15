@@ -9,6 +9,12 @@
 | 1번 `MCP 추천 최적화` | catalog, selector, compare, release gate를 갖춘 추천 시스템을 어떻게 설계하고 증명할까? | [`projects/01-mcp-recommendation-demo/capstone/v2-submission-polish`](./projects/01-mcp-recommendation-demo/capstone/v2-submission-polish/README.md) | [`projects/01-mcp-recommendation-demo/capstone/v3-oss-hardening`](./projects/01-mcp-recommendation-demo/capstone/v3-oss-hardening/README.md) | `pnpm db:up`, `pnpm migrate`, `pnpm seed`, `pnpm test`, `pnpm eval`, `pnpm compatibility rc-release-check-bot-1-5-0`, `pnpm release:gate rc-release-check-bot-1-5-0` | [`projects/01-mcp-recommendation-demo`](./projects/01-mcp-recommendation-demo/README.md) |
 | 2번 `챗봇 상담 품질 관리` | rubric, guardrail, evidence, regression, dashboard를 갖춘 QA Ops 계층을 어떻게 만들까? | [`projects/02-chat-qa-ops/capstone/v2-submission-polish`](./projects/02-chat-qa-ops/capstone/v2-submission-polish/README.md) | [`projects/02-chat-qa-ops/capstone/v3-self-hosted-oss`](./projects/02-chat-qa-ops/capstone/v3-self-hosted-oss/README.md) | `UV_PYTHON=python3.12 uv sync --extra dev`, `UV_PYTHON=python3.12 make gate-all`, `UV_PYTHON=python3.12 make smoke-postgres` | [`projects/02-chat-qa-ops`](./projects/02-chat-qa-ops/README.md) |
 
+## 문제지 빠른 진입
+
+- [problem-subject-essential/README.md](problem-subject-essential/README.md): 과제 핵심 경로와 stage를 먼저 읽는 문제지
+- [problem-subject-elective/README.md](problem-subject-elective/README.md): baseline/hardening 버전을 따로 모은 문제지
+- [problem-subject-capstone/README.md](problem-subject-capstone/README.md): 공식 제출 답과 확장 답을 따로 모은 문제지
+
 ## 구조
 
 ```text

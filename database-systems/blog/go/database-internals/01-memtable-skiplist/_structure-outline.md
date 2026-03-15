@@ -1,27 +1,20 @@
-# 01 MemTable SkipList — Structure Outline
+# Structure Outline
 
-최종 시리즈는 chronology를 매끈하게 재배열하지 않고, 범위 파악 -> 핵심 invariant -> 재검증과 경계의 순서를 유지한다.
+## Chosen arc
 
-## Planned Files
+1. 문제 범위를 먼저 MemTable contract로 좁힌다.
+2. SkipList surface와 demo ordered output을 보여 준다.
+3. level-0 ordering, tombstone, byte-size estimate, deterministic level generation을 invariant로 설명한다.
+4. 마지막에는 go test 범위와 의도적으로 빠진 부분을 분리해 과장을 막는다.
 
-- `00-series-map.md`: 프로젝트 질문, 읽는 순서, source-of-truth 파일, 재검증 명령을 잡는 지도
-- `10-chronology-scope-and-surface.md`: 파일 구조와 테스트 이름을 근거로 처음 가설이 바뀌는 구간
-- `20-chronology-core-invariants.md`: `Put`와 `Delete`가 실제로 invariant를 고정하는 구간
-- `30-chronology-verification-and-boundaries.md`: `go test`/`pytest`와 demo 출력으로 경계를 확정하는 구간
+## Why this structure
 
-## Article Goals
+- 이 랩은 자료구조 구현이지만 저장 엔진 맥락이 더 중요해서, skip list 일반론보다 MemTable semantics를 앞세우는 편이 맞다.
+- demo 출력이 tombstone과 ordered iteration을 함께 보여 줘서 본문 초반 증거로 쓰기 좋다.
+- Go `internal/` 패키지 경계 때문에 즉석 외부 스니펫보다는 기존 테스트와 demo 중심 증거 구성이 더 안정적이다.
 
-1. `10-chronology-scope-and-surface.md`
-   범위를 `tests/`와 README에서 어떻게 다시 좁혔는지 보여 준다.
-   코드 앵커: `TestPutAndGet`, `Put`
-   CLI: `find internal tests cmd -type f | sort`, `rg -n "^func Test" tests`
+## Rejected alternatives
 
-2. `20-chronology-core-invariants.md`
-   핵심 invariant가 `Put`와 `Delete` 사이에서 어떻게 고정되는지 보여 준다.
-   코드 앵커: `Put`, `Delete`
-   CLI: `rg -n "^(type|func) " internal cmd`, `rg -n "Put|Delete" internal cmd`
-
-3. `30-chronology-verification-and-boundaries.md`
-   테스트와 demo를 모두 남겨, pass 신호와 공개 표면을 구분해 설명한다.
-   코드 앵커: `TestEntriesIncludeTombstones`, `main.go`
-   CLI: GOWORK=off go test ./...; GOWORK=off go run ./cmd/skiplist-demo
+- skip list 알고리즘 일반론을 길게 풀어내는 구조는 버렸다.
+- 메서드별 API 문서처럼 나열하는 구조도 버렸다.
+- Python 버전과 1:1 대응 비교를 전면에 두는 구조는 버렸다. 이번 문서는 현재 Go 소스의 독립성을 먼저 보여 줘야 한다.

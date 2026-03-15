@@ -1,24 +1,13 @@
-# TLS Packet Analysis structure guide
+# TLS Packet Analysis 구조 메모
 
-## 이 글의 중심 질문
+## 문서 구성 의도
 
-- 암호화 이후에도 TLS handshake에서 무엇은 보이고 무엇은 숨는가?
-- 한 줄 답: TLS handshake, certificate, cipher suite, 버전 차이를 record/message 수준에서 읽는 보안 랩입니다.
+- `00-series-map.md`: TLS trace를 visibility boundary라는 질문으로 먼저 고정한다.
+- `10-development-timeline.md`: TCP handshake 뒤 TLS handshake, 이어 encrypted application data로 넘어가는 전환을 chronology로 정리한다.
+- `01-evidence-ledger.md`: answer markdown와 `tshark` 필터, 그리고 current env caveat를 짧게 묶는다.
 
-## 권장 흐름
+## 이번 재작성에서 강조한 점
 
-1. 질문과 trace 범위를 먼저 세우기
-2. ClientHello와 ServerHello/Certificate를 handshake 축으로 묶기
-3. verify 스크립트와 한계까지 정리하기
-
-## 꼭 살릴 근거
-
-- `problem/Makefile`의 공개 target과 `make -C study/03-Packet-Analysis-Top-Down/tls-ssl/problem test`
-- `study/03-Packet-Analysis-Top-Down/tls-ssl/analysis/src/tls-ssl-analysis.md`의 `## Part 2: ServerHello and Certificate (Q6–Q11)`
-- `study/03-Packet-Analysis-Top-Down/tls-ssl/analysis/src/tls-ssl-analysis.md`의 `## Part 3: ChangeCipherSpec and Application Data (Q12–Q16)`
-
-## 리라이트 주의점
-
-- `TLS Packet Analysis`를 개념 강의처럼 풀지 말고, 실제 파일과 CLI 순서로 보여 준다.
-- 전체 로그를 덤프하지 말고 판단을 바꾼 줄만 남긴다.
-- 마지막에는 제공 trace가 minimal synthetic capture라 일부 certificate detail과 extension은 제한적입니다. 같은 남은 경계를 사람 말로 다시 정리한다.
+- cipher suite와 version field를 암기 포인트보다 trace-reading signal로 다룬다.
+- malformed certificate와 current `tshark` field mismatch를 한계로 분명히 남긴다.
+- decryption이 없으면 어디까지밖에 말할 수 없는지 선을 긋는다.

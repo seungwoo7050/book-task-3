@@ -1,9 +1,51 @@
-# 08 Failure-Injected Log Replication — Evidence Ledger
+# Evidence Ledger
 
-기존 `blog/` 초안은 입력에서 제외하고, `README`, `problem/`, `docs/`, 실제 구현 파일, 테스트, 재검증 CLI만으로 chronology를 다시 세웠다.
+## Source files used
 
-| 순서 | 시간 표지 | 당시 목표 | 변경 단위 | 처음 가설 | 실제 조치 | CLI | 검증 신호 | 핵심 코드 앵커 | 새로 배운 것 | 다음 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Phase 1 | 프로젝트 범위를 tests와 README로 다시 좁힌다 | `database-systems/go/ddia-distributed-systems/projects/08-failure-injected-log-replication/README.md`, `database-systems/go/ddia-distributed-systems/projects/08-failure-injected-log-replication/tests/replication_test.go` | 구현이 너무 작아서 단순 API 연습에 가까울 거라고 봤다. | 파일 목록과 테스트 이름을 먼저 훑어 문제의 중심을 다시 잡았다. | `find internal tests cmd -type f | sort`<br>`rg -n "^func Test" tests` | `TestPausedFollowerLagsButRecoversAfterResume`까지 테스트 이름을 훑고 나니, 이 프로젝트의 중심이 단순 기능 추가가 아니라 `AppendPut` 주변의 invariant를 고정하는 일이라는 게 보였다. | `TestDroppedAppendRetriesUntilFollowerConverges` | `Failure Injection Harness`에서 정리한 요점처럼, 이 프로젝트의 하네스는 실제 네트워크를 흉내 내는 게 아니라, replication 코드가 어떤 실패에 반응해야 하는지 관찰 가능한 장면으로 압축하는 장치입니다. | `AppendPut`와 `Follower`가 실제로 어떤 순서 제약을 만드는지 다시 본다. |
-| 2 | Phase 2 | 핵심 상태 전이와 invariant를 코드에서 확인한다 | `database-systems/go/ddia-distributed-systems/projects/08-failure-injected-log-replication/internal/replication/replication.go`의 `AppendPut` | `AppendPut`만 보면 충분할 거라고 생각했다. | `AppendPut`와 `Follower`를 함께 읽어 write/read ordering을 맞췄다. | `rg -n "^(type|func) " internal cmd`<br>`rg -n "AppendPut|Follower" internal cmd` | `AppendPut`와 `Follower`가 같은 상태를 다른 방향에서 고정한다는 점이 드러났다. | `AppendPut` | `Quorum Commit and Retry`에서 정리한 요점처럼, leader는 모든 follower가 다 따라올 때까지 기다리지 않고, quorum ack가 모이면 commit index를 올립니다. 하지만 뒤처진 follower는 retry를 통해 결국 따라잡아야 합니다. | 테스트와 demo를 다시 실행해 이 invariant가 실제 검증 신호와 맞물리는지 확인한다. |
-| 3 | Phase 3 | 실제 검증 명령으로 pass 신호를 다시 본다 | `database-systems/go/ddia-distributed-systems/projects/08-failure-injected-log-replication/tests/replication_test.go`와 `database-systems/go/ddia-distributed-systems/projects/08-failure-injected-log-replication/cmd/failure-replication/main.go` | 테스트만 통과하면 경계까지 충분히 설명할 수 있을 거라고 봤다. | pytest/go test와 demo를 모두 다시 돌려, 테스트가 잡는 범위와 demo가 보여주는 표면을 분리했다. | `GOWORK=off go test ./...`<br>`GOWORK=off go run ./cmd/failure-replication` | go test ok, 3 tests; demo 핵심 줄은 `recover tick commit=2 node-2=2 node-3=2`였다. | `TestPausedFollowerLagsButRecoversAfterResume` | `Quorum Commit and Retry`에서 정리한 요점처럼, leader는 모든 follower가 다 따라올 때까지 기다리지 않고, quorum ack가 모이면 commit index를 올립니다. 하지만 뒤처진 follower는 retry를 통해 결국 따라잡아야 합니다. | 현재 범위 밖: full Raft term과 vote rule은 포함하지 않습니다. |
+- `problem/README.md`
+  - 구현 범위와 제외 항목을 먼저 고정했다.
+- `README.md`
+  - 검증 명령과 공개 demo surface를 다시 확인했다.
+- `docs/concepts/failure-injection-harness.md`
+  - drop, duplicate, pause가 각각 어떤 질문을 만들기 위한 장치인지 확인했다.
+- `docs/concepts/quorum-commit-and-retry.md`
+  - commit과 convergence를 분리해서 읽어야 하는 이유를 확인했다.
+- `internal/replication/replication.go`
+  - `AppendPut`, `advanceCommit`, `HandleAppend`, `NetworkHarness.Route`를 직접 추적했다.
+- `tests/replication_test.go`
+  - drop retry, duplicate idempotency, paused follower recovery를 확인했다.
+- `cmd/failure-replication/main.go`
+  - 공개 데모가 어떤 시퀀스로 상태를 드러내는지 다시 확인했다.
+
+## Commands rerun
+
+```bash
+GOWORK=off go test ./...
+GOWORK=off go run ./cmd/failure-replication
+```
+
+## Key outputs
+
+```text
+ok  	study.local/go/ddia-distributed-systems/projects/08-failure-injected-log-replication/tests	(cached)
+drop tick commit=0 node-2=-1 node-3=0
+retry tick commit=0 node-2=0 node-3=0
+duplicate tick commit=1 node-3-log=2 node-3-applied=2
+pause tick commit=2 node-2=1 node-3=2
+recover tick commit=2 node-2=2 node-3=2
+```
+
+## Manual boundary check
+
+임시 체크를 추가했다가 제거하고 아래를 기록했다.
+
+```text
+commit=-1 leader=true:1 node2=true:1 node3=true:1
+```
+
+이 결과는 leader local store뿐 아니라 append를 받은 follower store도 quorum commit보다 먼저 갱신된다는 점을 실행으로 확인한 것이다.
+
+## Inferences called out explicitly
+
+- client-visible committed read rule이 정의되지 않았다는 점은 leader/follower `Read` API와 commit 사용 위치를 함께 보고 판단했다.
+- convergence가 background retry에 맡겨진다는 점은 `nextIndex`, `outgoingAppends`, demo 출력의 조합에서 읽었다.

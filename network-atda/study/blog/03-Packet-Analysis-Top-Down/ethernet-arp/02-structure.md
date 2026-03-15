@@ -1,24 +1,13 @@
-# Ethernet and ARP Packet Analysis structure guide
+# Ethernet and ARP Packet Analysis 구조 메모
 
-## 이 글의 중심 질문
+## 문서 구성 의도
 
-- Ethernet frame과 ARP 교환을 링크 계층 주소 관점에서 어떻게 읽었는가?
-- 한 줄 답: 링크 계층 프레임과 IP-MAC 주소 해석 과정을 ARP request/reply 쌍으로 읽는 랩입니다.
+- `00-series-map.md`: 이 lab를 "3 frame로 보는 주소 해석"이라는 질문으로 먼저 묶는다.
+- `10-development-timeline.md`: request, reply, first IPv4 frame의 세 장면을 chronology로 복원한다.
+- `01-evidence-ledger.md`: `tshark` 필터와 answer markdown를 짧게 고정한다.
 
-## 권장 흐름
+## 이번 재작성에서 강조한 점
 
-1. 질문과 trace 범위를 먼저 세우기
-2. MAC 주소와 ARP 질의/응답을 한 시야로 붙들기
-3. verify 스크립트와 한계까지 정리하기
-
-## 꼭 살릴 근거
-
-- `problem/Makefile`의 공개 target과 `make -C study/03-Packet-Analysis-Top-Down/ethernet-arp/problem test`
-- `study/03-Packet-Analysis-Top-Down/ethernet-arp/analysis/src/ethernet-arp-analysis.md`의 `## Part 2: ARP Protocol`
-- `study/03-Packet-Analysis-Top-Down/ethernet-arp/analysis/src/ethernet-arp-analysis.md`의 `## Part 3: Broadcast and Caching`
-
-## 리라이트 주의점
-
-- `Ethernet and ARP Packet Analysis`를 개념 강의처럼 풀지 말고, 실제 파일과 CLI 순서로 보여 준다.
-- 전체 로그를 덤프하지 말고 판단을 바꾼 줄만 남긴다.
-- 마지막에는 trace가 작아 교재의 일부 확장 질문은 관찰 불가입니다. 같은 남은 경계를 사람 말로 다시 정리한다.
+- ARP를 개념 문서처럼 길게 설명하지 않고, 현재 trace가 보여 주는 3-step handoff에 집중한다.
+- HTTP GET offset, spoofing, gratuitous ARP는 trace 바깥 질문으로 분리한다.
+- Ethernet header와 ARP payload의 주소 필드를 한 번에 읽도록 연결해 준다.

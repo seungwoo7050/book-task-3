@@ -1,25 +1,39 @@
-# 00-language-and-typescript structure plan
+# 00-language-and-typescript Structure Plan
 
-이 문서는 TypeScript 문법 요약처럼 읽히기보다, 이후 프로젝트들이 기대하는 입력·출력 계약의 출발점처럼 읽혀야 한다. 글의 중심은 "타입을 배웠다"가 아니라 "정규화된 내부 표현을 먼저 세웠다"에 둔다.
+## 한 줄 초점
+- TypeScript 문법 소개가 아니라, 이후 Node 프로젝트들이 기대할 입력 정규화와 오류 계약의 출발점을 설명한다.
 
-## 읽기 구조
+## 독자 질문
+- 외부 입력을 언제 `NormalizedBook` 같은 내부 상태로 바꿔야 하는가?
+- 배치 비동기 실패를 전체 예외 대신 항목별 결과로 돌려주는 이유는 무엇인가?
+- CLI는 왜 출력 함수가 아니라 stderr와 exit code 계약이 되는가?
 
-1. 이 프로젝트가 왜 bridge의 첫 장면인지 짧게 설명한다.
-2. `normalizeTags`, `toNormalizedBook`로 정규화 경계를 먼저 세운 장면을 잡는다.
-3. `fetchInventorySnapshot`에서 항목별 실패 격리를 보여 준다.
-4. `runCli`에서 종료 코드와 stderr/stdout 계약으로 마무리한다.
+## 본문 구성
+1. 문제 재정의
+   bridge 첫 장면이 왜 문법 복습이 아니라 신뢰 경계 세우기인지 설명한다.
+2. 정규화 경계
+   `normalizeTags`, `toNormalizedBook`, summary fallback을 본다.
+3. 비동기 helper
+   `fetchInventorySnapshot`의 항목별 실패 흡수를 본다.
+4. CLI 계약
+   `parseArgs`, `runCli`, stdout/stderr/exit code를 본다.
+5. 현재 한계와 검증
+   inventory helper가 CLI에 연결되지 않은 점, year 메시지 어긋남, `run-example.sh` 경로 가정을 닫는다.
 
-## 반드시 남길 근거
+## 반드시 연결할 증거
+- `ts/src/catalog.ts`
+  정규화와 inventory helper
+- `ts/src/cli.ts`
+  플래그 파싱과 exit code
+- `ts/tests/catalog.test.ts`
+  성공/실패 계약
+- `problem/script/run-example.sh`
+  현재 재현 스크립트 한계
 
-- `normalizeTags`와 `toNormalizedBook`
-- `fetchInventorySnapshot`
-- `runCli`
-- `pnpm run build`
-- `pnpm run test`
-- `pnpm start -- --title ...`
+## 서술 원칙
+- 기존 blog 문장을 입력으로 삼지 않는다.
+- 타입 문법 자체보다 경계 설계가 바뀌는 순간을 강조한다.
+- 작은 구현의 불일치와 스크립트 한계도 숨기지 않는다.
 
-## 리라이트 톤
-
-- "처음부터 구조를 알고 있었다"는 느낌을 줄이지 않는다.
-- 설명은 짧게, 판단이 바뀐 순간은 선명하게 남긴다.
-- 코드가 왜 전환점이었는지 문단으로 풀고, 템플릿식 라벨 반복은 줄인다.
+## 이번 턴의 결론 문장
+- `00-language-and-typescript`는 언어 입문장이 아니라, 이후 모든 Node 백엔드 프로젝트의 입력 정리 방식과 오류 표면을 미리 연습하는 브리지다.

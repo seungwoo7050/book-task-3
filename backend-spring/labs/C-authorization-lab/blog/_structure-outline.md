@@ -2,31 +2,52 @@
 
 ## 글 목표
 
-- authorization을 membership lifecycle 중심 문제로 복원한다.
-- macOS + VSCode 통합 터미널에서 재현 가능한 검증 흐름을 남긴다.
+- 이 랩을 "authorization 완성본"이 아니라 "membership lifecycle 설명용 scaffold"로 다시 정의한다.
+- happy path만이 아니라 실제 enforcement 공백까지 같은 비중으로 적는다.
+- 2026-03-14 재검증 결과를 문서의 마지막이 아니라 본문 판단 근거로 연결한다.
 
 ## 글 순서
 
-1. invite와 role change 시나리오를 먼저 고정한 단계
-2. owner, pending, member 전이를 서비스 코드에 둔 단계
-3. method security를 미룬 이유를 닫는 단계
+1. controller와 problem statement를 보고 membership lifecycle 중심 랩이라는 점을 먼저 확정한다.
+2. service에서 owner, pending, accepted, role overwrite가 어떻게 표현되는지 추적한다.
+3. security/validation/error handling을 같이 보고 현재 authorization enforcement가 어디까지 비어 있는지 정리한다.
+4. lint/test/smoke/manual HTTP 재실행 결과로 지금 상태를 닫는다.
 
 ## 반드시 넣을 코드 앵커
 
-- `AuthorizationApiTest.inviteAcceptAndRoleChangeFlowWork()`
+- `AuthorizationController.createOrganization()`
+- `AuthorizationController.changeRole()`
 - `AuthorizationDemoService.invite()`
 - `AuthorizationDemoService.accept()`
+- `AuthorizationDemoService.changeRole()`
+- `SecurityConfig.securityFilterChain()`
+- `GlobalExceptionHandler.handleIllegalArgument()`
 
-## 반드시 넣을 CLI
+## 반드시 넣을 검증 신호
 
 ```bash
-cd spring
-make test
-make smoke
-docker compose up --build
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/C-authorization-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew spotlessCheck checkstyleMain checkstyleTest'
+
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/C-authorization-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew test'
+
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/C-authorization-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew test --tests "*SmokeTest"'
 ```
 
-## 핵심 개념
+## 반드시 남길 한계
 
-- authorization의 중심은 role 이름보다 membership lifecycle이다.
-- service logic으로 먼저 규칙을 고정해야 다음 단계가 선명해진다.
+- `/api/v1/**`가 모두 `permitAll()`인 상태
+- validation annotation이 `@Valid` 없이 선언만 되어 있는 상태
+- repeated accept와 blank role이 허용되는 상태
+- caller identity와 real ownership enforcement가 아직 없는 상태

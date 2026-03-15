@@ -1,27 +1,20 @@
-# 09 MVCC — Structure Outline
+# Structure Outline
 
-최종 시리즈는 chronology를 매끈하게 재배열하지 않고, 범위 파악 -> 핵심 invariant -> 재검증과 경계의 순서를 유지한다.
+## Chosen arc
 
-## Planned Files
+1. full transaction engine가 아니라 snapshot isolation의 최소 규칙이라는 범위를 먼저 잡는다.
+2. demo와 추가 재실행으로 snapshot read, conflict, GC 결과를 먼저 보여 준다.
+3. snapshot watermark, read-your-own-write, commit-time conflict, GC trimming을 invariant로 정리한다.
+4. 마지막에는 phantom control과 distributed transaction이 아직 없다는 점을 분리한다.
 
-- `00-series-map.md`: 프로젝트 질문, 읽는 순서, source-of-truth 파일, 재검증 명령을 잡는 지도
-- `10-chronology-scope-and-surface.md`: 파일 구조와 테스트 이름을 근거로 처음 가설이 바뀌는 구간
-- `20-chronology-core-invariants.md`: `Begin`와 `Read`가 실제로 invariant를 고정하는 구간
-- `30-chronology-verification-and-boundaries.md`: `go test`/`pytest`와 demo 출력으로 경계를 확정하는 구간
+## Why this structure
 
-## Article Goals
+- 이 랩은 버전 체인과 트랜잭션 메타데이터가 같이 움직여서, 두 축을 같이 설명하는 편이 읽기 쉽다.
+- conflict abort와 GC trimming은 테스트로도 보이지만 추가 관찰값으로 묶으면 훨씬 선명해진다.
+- source-only nuance인 "old versions 중 하나는 남긴다"를 GC 설명에 명시하는 편이 좋다.
 
-1. `10-chronology-scope-and-surface.md`
-   범위를 `tests/`와 README에서 어떻게 다시 좁혔는지 보여 준다.
-   코드 앵커: `TestBasicReadWrite`, `Begin`
-   CLI: `find internal tests cmd -type f | sort`, `rg -n "^func Test" tests`
+## Rejected alternatives
 
-2. `20-chronology-core-invariants.md`
-   핵심 invariant가 `Begin`와 `Read` 사이에서 어떻게 고정되는지 보여 준다.
-   코드 앵커: `Begin`, `Read`
-   CLI: `rg -n "^(type|func) " internal cmd`, `rg -n "Begin|Read" internal cmd`
-
-3. `30-chronology-verification-and-boundaries.md`
-   테스트와 demo를 모두 남겨, pass 신호와 공개 표면을 구분해 설명한다.
-   코드 앵커: `TestAbortAndDelete`, `main.go`
-   CLI: GOWORK=off go test ./...; GOWORK=off go run ./cmd/mvcc
+- 격리 수준 일반론을 길게 푸는 구조는 버렸다.
+- MVCC를 SQL 엔진 서사로 확대하는 구조도 버렸다.
+- lock manager까지 상상으로 연결하는 서사는 현재 범위를 벗어나 제외했다.

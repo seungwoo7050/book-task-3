@@ -1,122 +1,28 @@
-# 05 CSPM Rule Engine: plan과 snapshot에서 triage finding 뽑기
+# 05 CSPM Rule Engine: plan과 snapshot을 같은 triage 언어로 묶은 첫 multi-source scanner
 
-Terraform plan과 운영 snapshot을 함께 읽어 triage 가능한 misconfiguration finding으로 바꾸는 규칙 엔진이다. 이 글은 결과만 요약하지 않고, 어떤 기준을 먼저 세우고 어떤 검증으로 다음 단계로 넘어갔는지를 차근차근 따라간다.
+이 프로젝트가 의미 있는 이유는 CSPM을 막연한 제품명이 아니라, 입력이 다른 위험 신호들을 같은 finding 구조로 정리하는 규칙 엔진으로 보여 주기 때문이다. `problem/README.md`가 말하듯 핵심은 규칙 개수를 늘리는 것이 아니라 입력 스키마와 출력 구조를 분명하게 만드는 일이다. `2026-03-14`에 CLI와 pytest를 다시 돌려 보니, 이 engine은 plan misconfiguration과 aged access key를 같은 JSON 배열에 담는 순간부터 다음 remediation 단계와 자연스럽게 이어졌다.
 
-아래 phase를 순서대로 읽으면 "Terraform plan에서 어떤 resource-level 규칙을 먼저 고정했는가"라는 질문에 답이 어떻게 만들어졌는지 자연스럽게 연결된다.
+## Step 1. 먼저 Terraform plan 안의 resource를 control 단위로 분기했다
 
-## 구현 순서 요약
-먼저 전체 흐름을 짧게 잡아 두면, 각 phase가 왜 그 순서로 배치됐는지 훨씬 덜 버겁게 읽힌다.
-1. Terraform plan의 resource 목록을 기준으로 S3 public access, open ingress, encryption 규칙을 구현했다.
-2. 운영 snapshot 쪽에서는 access key age 규칙을 별도로 추가해 plan-only 스캐너를 넘어서게 했다.
-3. secure fixture 0건과 output schema를 테스트로 잠가 triage 가능한 engine으로 마감했다.
+`scan_plan()`은 복잡한 graph traversal부터 시작하지 않는다. `_resources()`로 `planned_values.root_module.resources`를 꺼내고, resource type 기준으로 rule을 분기한다. 이 단순한 구조 덕분에 왜 어떤 finding이 나왔는지 소스에서 바로 따라갈 수 있다.
 
-## Phase 1. Terraform plan 규칙부터 세웠다
+`2026-03-14`에 insecure plan fixture를 다시 보면, rule이 보는 차이는 분명했다.
 
-여기서부터 흐름이 한 단계 또렷해진다. 먼저 `Terraform plan 규칙부터 세웠다`를 단단히 잡아야 뒤에서 나오는 테스트와 CLI가 왜 필요한지 설명할 수 있기 때문이다.
+- S3 public access block 네 플래그 모두 `false`
+- security group ingress가 `22`와 `0.0.0.0/0`
+- DB `storage_encrypted = false`
 
-- 당시 목표: 정적 plan JSON만으로 설명 가능한 misconfiguration을 먼저 잡는다.
-- 변경 단위: `python/src/cspm_rule_engine/scanner.py`의 `_resources`, `scan_plan`
-- 처음 가설: 좋은 CSPM v1은 규칙 수를 늘리기보다 입력 스키마가 선명한 몇 개 규칙을 정확히 잡는 쪽이 낫다.
-- 실제 진행: `planned_values.root_module.resources`를 읽는 helper를 만들고, S3 public access block 플래그, SSH/RDP 0.0.0.0/0 ingress, storage encryption 비활성화를 각각 다른 control로 매핑했다. 각 finding에는 `evidence_ref`와 `resource_id`를 남겨 triage를 바로 이어갈 수 있게 했다.
+`scan_plan()`은 이 세 경우를 각각 다른 control로 만든다.
 
-CLI:
+- `CSPM-001`: S3 bucket does not fully block public access
+- `CSPM-002`: Security group exposes SSH or RDP to the internet
+- `CSPM-003`: Resource encryption is disabled
 
-```bash
-$ PYTHONPATH=01-cloud-security-core/05-cspm-rule-engine/python/src .venv/bin/python -m cspm_rule_engine.cli 01-cloud-security-core/05-cspm-rule-engine/problem/data/insecure_plan.json 01-cloud-security-core/05-cspm-rule-engine/problem/data/access_keys_snapshot.json
-```
+즉 이 엔진은 "이 plan이 안전한가?"를 한 번에 묻지 않고, 운영자가 따로 조치할 수 있는 세 질문으로 위험을 분해한다. broad finding을 잘게 쪼개 remediation-friendly하게 만든다는 점에서 앞선 IAM analyzer와 결이 같다.
 
-검증 신호:
-- CLI 출력에 `CSPM-001`, `CSPM-002`, `CSPM-003`이 한 번에 나타났다.
-- `study2-public-logs`, `ssh_open`, `study2-analytics`처럼 remediation에 바로 쓸 resource_id가 남았다.
+## Step 2. 그리고 access key snapshot을 같은 finding 배열에 합쳤다
 
-핵심 코드:
-
-```python
-def scan_plan(plan_payload: dict[str, Any]) -> list[Finding]:
-    findings: list[Finding] = []
-    for resource in _resources(plan_payload):
-        resource_type = str(resource["type"])
-        name = str(resource["name"])
-        values = dict(resource.get("values", {}))
-
-        if resource_type == "aws_s3_bucket_public_access_block":
-            flags = (
-                values.get("block_public_acls"),
-                values.get("block_public_policy"),
-                values.get("ignore_public_acls"),
-                values.get("restrict_public_buckets"),
-            )
-            if not all(flags):
-                findings.append(
-                    Finding(
-                        source="terraform-plan",
-                        control_id="CSPM-001",
-                        severity="HIGH",
-                        resource_type=resource_type,
-                        resource_id=str(values.get("bucket", name)),
-                        title="S3 bucket does not fully block public access",
-                        evidence_ref=name,
-                    )
-                )
-
-        if resource_type == "aws_security_group":
-            for ingress in values.get("ingress", []):
-                port = int(ingress.get("from_port", -1))
-                cidrs = ingress.get("cidr_blocks", [])
-                if port in {22, 3389} and "0.0.0.0/0" in cidrs:
-                    findings.append(
-                        Finding(
-                            source="terraform-plan",
-                            control_id="CSPM-002",
-                            severity="HIGH",
-                            resource_type=resource_type,
-                            resource_id=name,
-                            title="Security group exposes SSH or RDP to the internet",
-                            evidence_ref=name,
-                        )
-                    )
-
-        if resource_type in {"aws_db_instance", "aws_ebs_volume"} and values.get("storage_encrypted") is False:
-            findings.append(
-                Finding(
-                    source="terraform-plan",
-                    control_id="CSPM-003",
-                    severity="MEDIUM",
-                    resource_type=resource_type,
-                    resource_id=str(values.get("identifier", name)),
-                    title="Resource encryption is disabled",
-                    evidence_ref=name,
-                )
-            )
-    return findings
-```
-
-왜 이 코드가 중요했는가: 이 루프가 프로젝트의 핵심이었다. plan JSON에서 resource type을 읽고 control을 붙이는 패턴이 생기면서, CSPM이 “제품”이 아니라 “설명 가능한 rule 묶음”으로 보이기 시작했다.
-
-새로 배운 것: 좋은 rule은 왜 발동했는지를 운영자가 바로 이해할 수 있어야 한다. input schema가 명확해야 false positive도 줄어든다.
-
-다음: 이제 CSPM을 static plan에만 가두지 않고, 운영 snapshot까지 확장해 볼 차례였다.
-
-## Phase 2. access key snapshot으로 입력 범위를 넓혔다
-
-여기서부터 흐름이 한 단계 또렷해진다. 먼저 `access key snapshot으로 입력 범위를 넓혔다`를 단단히 잡아야 뒤에서 나오는 테스트와 CLI가 왜 필요한지 설명할 수 있기 때문이다.
-
-- 당시 목표: CSPM이 선언형 plan만 읽는 정적 분석에 머무르지 않도록 한다.
-- 변경 단위: `python/src/cspm_rule_engine/scanner.py`의 `scan_access_keys`
-- 처음 가설: 실무의 CSPM은 plan만으로 끝나지 않는다. 계정 상태 snapshot 같은 운영 데이터도 같은 finding shape로 묶어야 한다.
-- 실제 진행: snapshot payload의 `access_keys`를 순회하면서 age가 90일을 넘으면 `CSPM-004`를 추가했다. source만 `access-key-snapshot`으로 다르게 주고, 나머지 필드는 plan findings와 같은 구조를 유지했다.
-
-CLI:
-
-```bash
-$ PYTHONPATH=01-cloud-security-core/05-cspm-rule-engine/python/src .venv/bin/python -m cspm_rule_engine.cli 01-cloud-security-core/05-cspm-rule-engine/problem/data/insecure_plan.json 01-cloud-security-core/05-cspm-rule-engine/problem/data/access_keys_snapshot.json
-```
-
-검증 신호:
-- CLI 출력 마지막에 `CSPM-004`와 `AKIAOLD123`가 나타났다.
-- 같은 JSON 배열 안에 `terraform-plan` source와 `access-key-snapshot` source가 함께 들어갔다.
-
-핵심 코드:
+이 프로젝트가 plan parser를 넘어서 CSPM engine처럼 보이는 지점은 `scan_access_keys()`다. snapshot payload의 `access_keys`를 순회하면서 `age_days > 90`이면 `CSPM-004`를 추가한다.
 
 ```python
 def scan_access_keys(snapshot_payload: dict[str, Any], max_age_days: int = 90) -> list[Finding]:
@@ -134,61 +40,55 @@ def scan_access_keys(snapshot_payload: dict[str, Any], max_age_days: int = 90) -
                     evidence_ref=str(entry["user"]),
                 )
             )
-    return findings
 ```
 
-왜 이 코드가 중요했는가: 이 함수가 생기면서 engine은 단일 parser가 아니라 multi-source scanner가 됐다. source가 달라도 결과 shape가 같다는 점이 중요했다.
-
-새로 배운 것: CSPM의 가치는 입력 종류를 늘리는 데 있는 게 아니라, 서로 다른 입력을 같은 triage 언어로 묶는 데 있다.
-
-다음: 이제 secure fixture 0건과 output consistency를 테스트로 잠가 rule 품질을 고정해야 했다.
-
-## Phase 3. secure fixture 0건을 품질 기준으로 삼았다
-
-여기서부터 흐름이 한 단계 또렷해진다. 먼저 `secure fixture 0건을 품질 기준으로 삼았다`를 단단히 잡아야 뒤에서 나오는 테스트와 CLI가 왜 필요한지 설명할 수 있기 때문이다.
-
-- 당시 목표: 불필요한 finding이 나오지 않는 기준선을 만든다.
-- 변경 단위: `python/tests/test_scanner.py`
-- 처음 가설: insecure fixture에서 많이 잡는 것보다 secure fixture에서 조용해야 rule engine이 실제로 쓸 만하다.
-- 실제 진행: 테스트는 insecure plan에서 세 control이 모두 나오는지, secure plan에서는 0건인지, access key snapshot에서는 오래된 키 한 건만 잡히는지 확인했다. 이 세 축이 있어야 ruleset이 과하게 noisy해지지 않는다.
-
-CLI:
+`2026-03-14` CLI 재실행 결과는 이 multi-source 구조를 그대로 보여 줬다.
 
 ```bash
-$ PYTHONPATH=01-cloud-security-core/05-cspm-rule-engine/python/src .venv/bin/python -m pytest 01-cloud-security-core/05-cspm-rule-engine/python/tests
+PYTHONPATH=01-cloud-security-core/05-cspm-rule-engine/python/src \
+  .venv/bin/python -m cspm_rule_engine.cli \
+  01-cloud-security-core/05-cspm-rule-engine/problem/data/insecure_plan.json \
+  01-cloud-security-core/05-cspm-rule-engine/problem/data/access_keys_snapshot.json
 ```
 
-검증 신호:
-- pytest가 `3 passed in 0.01s`로 통과했다.
-- `test_secure_plan_reports_no_findings`가 ruleset의 상한선을 정했다.
+출력에는 아래 네 control이 같이 들어 있었다.
 
-핵심 코드:
+- `CSPM-001`
+- `CSPM-002`
+- `CSPM-003`
+- `CSPM-004`
+
+그리고 마지막 finding은 `resource_id = AKIAOLD123`, `evidence_ref = devops`였다. 즉 source는 달라도 triage 언어는 하나로 유지된다. 이게 다음 remediation runner와 capstone이 이 출력을 그대로 재사용할 수 있는 이유다.
+
+## Step 3. secure plan 0건을 품질 기준으로 삼되, combined CLI와 혼동하지 않았다
+
+이 프로젝트에서 가장 헷갈리기 쉬운 부분은 "secure fixture에서 0건"이라는 말이 정확히 어디까지를 뜻하는가다. `test_scanner.py`는 세 가지를 따로 잠근다.
+
+- insecure plan -> `CSPM-001`, `CSPM-002`, `CSPM-003`
+- secure plan -> `[]`
+- access key snapshot -> `CSPM-004` 한 건
+
+즉 secure 0건은 `scan_plan(secure_plan)` 기준의 말이다. 반면 CLI는 항상 아래처럼 두 출력을 합친다.
 
 ```python
-def test_insecure_plan_reports_expected_findings() -> None:
-    findings = scan_plan(_data("insecure_plan.json"))
-    controls = {finding.control_id for finding in findings}
-    assert controls == {"CSPM-001", "CSPM-002", "CSPM-003"}
-
-
-def test_secure_plan_reports_no_findings() -> None:
-    findings = scan_plan(_data("secure_plan.json"))
-    assert findings == []
-
-
-def test_access_key_snapshot_reports_old_key() -> None:
-    findings = scan_access_keys(_data("access_keys_snapshot.json"))
-    assert len(findings) == 1
-    assert findings[0].control_id == "CSPM-004"
+findings = scan_plan(plan) + scan_access_keys(snapshot)
 ```
 
-왜 이 코드가 중요했는가: 규칙 엔진의 설득력은 여기서 결정됐다. secure fixture를 통과하지 못하면 rule이 아무리 많아도 운영에선 쓰기 어렵다.
+그래서 secure plan에 같은 aged access key snapshot을 넣으면 plan layer는 깨끗해도 combined CLI 전체는 여전히 `CSPM-004`를 낸다. 이 차이는 `2026-03-14`에 소스와 테스트 구조를 같이 확인하면서 더 선명해졌다. 즉 "secure fixture 0건"은 전체 입력 묶음이 0건이라는 뜻이 아니라, plan rule set의 false positive 기준이라는 뜻이다. 이 문장은 테스트와 CLI 소스를 함께 본 source-based inference다.
 
-새로 배운 것: false positive는 rule 수보다 input 경계가 흐릴 때 생기기 쉽다. secure fixture는 그 경계를 테스트 코드로 고정하는 장치다.
+이 구분을 문서에 남겨 두는 이유는, 그렇지 않으면 사용자가 secure plan CLI 결과에 aged key finding이 나왔을 때 engine이 모순된다고 오해하기 쉽기 때문이다.
 
-다음: 다음 프로젝트는 이 finding을 바로 실행하지 않고, review 가능한 remediation plan으로 바꾼다.
+## Step 4. v1의 입력 범위는 분명하지만 좁다
 
-## 여기서 남는 질문
-이 문단은 단순한 회고가 아니라, 다음 프로젝트로 넘어갈 때 무엇을 들고 가야 하는지 짚어 두는 자리다.
+현재 scanner의 장점은 규칙이 설명 가능하다는 점이고, 동시에 한계도 선명하다.
 
-이 엔진은 plan parser를 늘어놓는 데서 멈추지 않고, 서로 다른 입력을 같은 finding 언어로 묶었다. 그래서 다음 remediation runner와 capstone이 source가 다른 finding도 같은 절차로 다룰 수 있었다.
+- `_resources()`는 root module resource만 읽는다.
+- nested module resource는 현재 ruleset 대상이 아니다.
+- encryption 규칙은 `aws_db_instance`와 `aws_ebs_volume`만 본다.
+- key-age는 single snapshot 기준으로만 판단한다.
+
+즉 이 engine은 실제 CSPM 제품 전체를 흉내 내는 것이 아니라, local fixture에서 재현 가능한 위험 규칙 네 개를 같은 finding shape로 묶는 데 집중한다. `docs/concepts/rule-design.md`가 말하는 "좋은 rule은 설명 가능해야 하고 false positive를 줄여야 한다"는 기준을 충실히 따른 v1 규칙 세트라고 보는 편이 맞다.
+
+## 정리
+
+`05-cspm-rule-engine`의 성취는 rule을 많이 넣은 데 있지 않다. plan resource rule 세 개와 snapshot rule 하나를 같은 finding 배열에 묶고, secure plan 0건을 품질 기준으로 잠가 "multi-source triage engine"으로 성격을 바꿨다는 데 있다. 그래서 다음 remediation runner는 source가 Terraform이든 snapshot이든 상관없이 같은 control ID와 evidence shape를 받아 후속 조치를 설계할 수 있다.

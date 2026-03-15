@@ -1,38 +1,28 @@
-# 02 Leader-Follower Replication 시리즈 맵
+# 02 Leader-Follower Replication
 
-DDIA Distributed Systems 트랙의 2번째 슬롯인 `02 Leader-Follower Replication`에서는 append-only mutation log와 watermark 기반 incremental sync로 leader-follower replication을 구현합니다. 이 시리즈는 결과 요약보다 실제 구현 순서가 어디서 선명해지는지 보여 주는 데 초점을 둔다.
+## 이 랩의 실제 초점
 
-## 먼저 보고 갈 질문
+이 프로젝트는 replication을 "두 store 상태를 맞춘다"는 수준보다 더 정확하게, ordered mutation log와 follower watermark를 이용해 incremental sync를 만든다. leader는 local state와 append-only log를 함께 유지하고, follower는 자신이 마지막으로 적용한 offset 이후 entry만 받아 적용한다. 같은 batch를 다시 받아도 `offset <= watermark`면 건너뛰므로 replay가 idempotent하다. delete 역시 ordinary mutation으로 복제된다.
 
-- 순차 offset을 갖는 mutation log를 유지해야 합니다.
-- `put`과 `delete`가 복제돼야 합니다.
+즉 이 랩의 핵심은 consensus나 failover가 아니라, replication을 가능하게 만드는 가장 작은 ordered log contract를 source-first로 드러내는 데 있다.
 
-## 읽는 순서
+이번 시리즈는 기존 blog를 입력 근거로 쓰지 않고 [`problem/README.md`](/Users/woopinbell/work/book-task-3/database-systems/go/ddia-distributed-systems/projects/02-leader-follower-replication/problem/README.md), [`replication.go`](/Users/woopinbell/work/book-task-3/database-systems/go/ddia-distributed-systems/projects/02-leader-follower-replication/internal/replication/replication.go), [`replication_test.go`](/Users/woopinbell/work/book-task-3/database-systems/go/ddia-distributed-systems/projects/02-leader-follower-replication/tests/replication_test.go), [`main.go`](/Users/woopinbell/work/book-task-3/database-systems/go/ddia-distributed-systems/projects/02-leader-follower-replication/cmd/replication/main.go), 그리고 2026-03-14 재실행 결과만으로 다시 썼다.
 
-1. [10-chronology-scope-and-surface.md](10-chronology-scope-and-surface.md) — 테스트 이름과 파일 배치부터 훑으면서 문제의 테두리를 다시 좁히는 글
-2. [20-chronology-core-invariants.md](20-chronology-core-invariants.md) — 핵심 함수와 상태 전이에서 invariant가 실제로 어디서 잠기는지 따라가는 글
-3. [30-chronology-verification-and-boundaries.md](30-chronology-verification-and-boundaries.md) — 테스트와 demo를 다시 돌려 약속 범위와 남는 한계를 정리하는 글
+## 이번에 붙드는 질문
 
-## 재검증 명령
+- leader는 local state와 replication log를 어떤 순서로 함께 갱신하는가
+- follower watermark는 incremental sync 경계를 어디서 자르는가
+- duplicate replay는 왜 결과를 바꾸지 않는가
+- delete는 ordered mutation stream 안에서 어떻게 보존되는가
 
-```bash
-GOWORK=off go test ./...
-GOWORK=off go run ./cmd/replication
-```
+## 문서 지도
 
-## 이번 시리즈가 근거로 삼은 파일
+- [10-chronology-scope-and-surface.md](/Users/woopinbell/work/book-task-3/database-systems/blog/go/ddia-distributed-systems/02-leader-follower-replication/10-chronology-scope-and-surface.md): 문제 범위, leader/follower 표면, demo 결과를 시간순으로 정리한다.
+- [20-chronology-core-invariants.md](/Users/woopinbell/work/book-task-3/database-systems/blog/go/ddia-distributed-systems/02-leader-follower-replication/20-chronology-core-invariants.md): sequential offset, watermark-based fetch, idempotent apply, delete propagation을 소스 기준으로 해부한다.
+- [30-chronology-verification-and-boundaries.md](/Users/woopinbell/work/book-task-3/database-systems/blog/go/ddia-distributed-systems/02-leader-follower-replication/30-chronology-verification-and-boundaries.md): go test와 demo, 추가 재실행을 묶어 현재 검증 범위와 한계를 정리한다.
+- [_evidence-ledger.md](/Users/woopinbell/work/book-task-3/database-systems/blog/go/ddia-distributed-systems/02-leader-follower-replication/_evidence-ledger.md): 근거 파일과 재실행 명령, 관찰값을 남긴다.
+- [_structure-outline.md](/Users/woopinbell/work/book-task-3/database-systems/blog/go/ddia-distributed-systems/02-leader-follower-replication/_structure-outline.md): 문서 구조 선택 이유와 버린 접근을 적는다.
 
-- `database-systems/go/ddia-distributed-systems/projects/02-leader-follower-replication/internal/replication/replication.go`
-- `database-systems/go/ddia-distributed-systems/projects/02-leader-follower-replication/tests/replication_test.go`
-- `database-systems/go/ddia-distributed-systems/projects/02-leader-follower-replication/README.md`
-- `database-systems/go/ddia-distributed-systems/projects/02-leader-follower-replication/problem/README.md`
-- `database-systems/go/ddia-distributed-systems/projects/02-leader-follower-replication/docs/README.md`
-- `database-systems/go/ddia-distributed-systems/projects/02-leader-follower-replication/cmd/replication/main.go`
+## 지금 기준의 결론
 
-## 보조 메모
-
-작업 메모가 꼭 필요할 때만 [_evidence-ledger.md](_evidence-ledger.md)와 [_structure-outline.md](_structure-outline.md)를 보면 된다. 공개 시리즈는 `00 -> 10 -> 20 -> 30`만 따라가면 충분하다.
-
-## Git Anchor
-
-- `2026-03-11 bbb6673 Track 1에 대한 전반적인 개선 완료`
+이 랩은 Go 분산 시스템 트랙의 두 번째 단계에서 "state replication보다 mutation stream replication이 핵심"이라는 사실을 보여 준다. election, quorum, multi-leader는 아직 없다. 대신 ordered offset log, watermark fetch, idempotent replay, delete propagation은 분명하게 드러난다.

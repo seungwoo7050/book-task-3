@@ -1,51 +1,10 @@
-# 20 08 Failure-Injected Log Replication에서 진짜 중요한 상태 전이만 붙잡기
+# 20 핵심 상태 전이: eager leader apply, quorum commit, idempotent follower retry
 
-이 시리즈의 가운데 글이다. 기능 목록을 다시 적기보다, 규칙이 실제 코드에서 언제 강제되는지 보여 주는 데 초점을 둔다.
+이 lab에서 중요한 건 메시지 종류가 세 개라는 사실보다, 어떤 상태가 언제 바뀌는가다. leader는 append 순간 local state를 바꾸고, commit은 ack quorum이 모인 뒤에야 오르며, follower는 duplicate/retry를 idempotent하게 흡수한다.
 
-## Phase 2 — 핵심 상태 전이를 붙잡는 구간
+## Session 1 — leader local state는 commit보다 먼저 바뀐다
 
-이번 글에서는 핵심 함수 두 곳을 따라가며 같은 invariant가 어디서 고정되고, 다른 각도에서 어떻게 반복되는지 본다.
-
-### Session 1 — AppendPut에서 invariant가 잠기는 지점 보기
-
-이번 세션의 목표는 `AppendPut`가 어떤 입력을 받아 어떤 상태를 고정하는지 분해하는 것이었다. 초기 가설은 `AppendPut` 하나를 이해하면 나머지 흐름도 거의 자동으로 따라올 거라고 생각했다.
-
-막상 다시 펼쳐 보니 `rg -n "AppendPut|Follower" internal cmd`로 핵심 함수 위치를 다시 잡고, `AppendPut`가 문제 정의의 첫 번째 bullet과 정확히 맞물리는지 확인했다. 특히 `AppendPut` 안에서 상태가 한 번에 굳는지, 아니면 보조 구조로 넘겨지는지가 프로젝트의 설명 밀도를 갈랐다.
-
-변경 단위:
-- `database-systems/go/ddia-distributed-systems/projects/08-failure-injected-log-replication/internal/replication/replication.go`의 `AppendPut`
-
-CLI:
-
-```bash
-$ rg -n "AppendPut|Follower" internal cmd
-internal/replication/replication.go:49:func (leader *Leader) AppendPut(key string, value string) LogEntry {
-internal/replication/replication.go:116:type Follower struct {
-internal/replication/replication.go:123:func NewFollower(id string) *Follower {
-internal/replication/replication.go:124:	return &Follower{
-internal/replication/replication.go:130:func (follower *Follower) HandleAppend(entry LogEntry) int {
-internal/replication/replication.go:148:func (follower *Follower) Watermark() int {
-internal/replication/replication.go:152:func (follower *Follower) Read(key string) (string, bool) {
-internal/replication/replication.go:157:func (follower *Follower) LogLength() int {
-internal/replication/replication.go:161:func (follower *Follower) AppliedCount() int {
-internal/replication/replication.go:165:func (follower *Follower) apply(entry LogEntry) {
-internal/replication/replication.go:175:func (follower *Follower) rebuildStore() {
-internal/replication/replication.go:242:	followers map[string]*Follower
-internal/replication/replication.go:250:		followers: map[string]*Follower{},
-internal/replication/replication.go:255:		cluster.followers[followerID] = NewFollower(followerID)
-internal/replication/replication.go:261:	return cluster.Leader.AppendPut(key, value)
-internal/replication/replication.go:268:func (cluster *Cluster) Follower(id string) (*Follower, error) {
-cmd/failure-replication/main.go:15:	node2 := mustFollower(cluster, "node-2")
-cmd/failure-replication/main.go:16:	node3 := mustFollower(cluster, "node-3")
-cmd/failure-replication/main.go:37:func mustFollower(cluster *replication.Cluster, id string) *replication.Follower {
-cmd/failure-replication/main.go:38:	follower, err := cluster.Follower(id)
-```
-
-검증 신호:
-- `AppendPut` 안에서 상태가 한 번에 굳는지, 아니면 보조 구조로 넘겨지는지가 프로젝트의 설명 밀도를 갈랐다.
-- `dropped append가 retry로 수렴하는 흐름을 익힙니다.`
-
-핵심 코드:
+가장 먼저 눈에 들어와야 하는 함수는 `AppendPut`다.
 
 ```go
 func (leader *Leader) AppendPut(key string, value string) LogEntry {
@@ -61,102 +20,63 @@ func (leader *Leader) AppendPut(key string, value string) LogEntry {
 }
 ```
 
-왜 여기서 판단이 바뀌었는가:
+여기서는 commit을 기다리지 않는다. log append와 동시에 leader local store가 바뀐다. 임시 검증에서도 양쪽 follower append를 모두 drop한 뒤 `commit=-1 leader_read=true:1`이 나왔다. 즉 이 구현에서 leader read visibility는 quorum commit과 분리돼 있다.
 
-`AppendPut`는 이 프로젝트에서 규칙이 가장 먼저 굳는 지점을 보여 준다. 테스트가 요구한 첫 번째 조건이 실제 코드 규칙으로 바뀌는 순간을 여기서 확인할 수 있었다.
+이 점을 문서에 남겨야 하는 이유는, commit index를 "누구나 읽어도 되는 시점"으로 혼동하기 쉽기 때문이다. 이 lab에서 commit은 majority replication 진척을 뜻할 뿐, leader local apply와 같은 사건은 아니다.
 
-이번 구간에서 새로 이해한 것:
-- `Quorum Commit and Retry`에서 정리한 요점처럼, leader는 모든 follower가 다 따라올 때까지 기다리지 않고, quorum ack가 모이면 commit index를 올립니다. 하지만 뒤처진 follower는 retry를 통해 결국 따라잡아야 합니다.
+## Session 2 — quorum commit은 lagging follower를 그냥 남겨 둘 수 있다
 
-다음으로 넘긴 질문:
-- `Follower`까지 읽어야 비로소 이 프로젝트가 '쓰는 방법'만이 아니라 '읽고 복원하는 방법'까지 같이 고정하는지 판단할 수 있다.
-
-### Session 2 — Follower로 같은 규칙 다시 확인하기
-
-이 구간에서 먼저 붙잡으려 한 것은 `Follower`가 `AppendPut`와 어떤 짝을 이루는지 확인하는 것이었다. 처음 읽을 때는 `Follower`는 단순 보조 함수일 거라고 생각했다.
-
-그런데 두 번째 앵커를 읽고 나니, 실제로는 `AppendPut`가 만든 상태를 외부에서 관찰 가능하게 만드는 규칙이 여기 있었다. 특히 `Follower`는 테스트의 뒤쪽 시나리오를 설명하는 열쇠였다.
-
-변경 단위:
-- `database-systems/go/ddia-distributed-systems/projects/08-failure-injected-log-replication/internal/replication/replication.go`의 `Follower`
-
-CLI:
-
-```bash
-$ rg -n "^(type|func) " internal cmd
-cmd/failure-replication/main.go:9:func main() {
-cmd/failure-replication/main.go:37:func mustFollower(cluster *replication.Cluster, id string) *replication.Follower {
-internal/replication/replication.go:10:type LogEntry struct {
-internal/replication/replication.go:17:type Message struct {
-internal/replication/replication.go:25:type Leader struct {
-internal/replication/replication.go:34:func NewLeader(id string, followerIDs []string) *Leader {
-internal/replication/replication.go:49:func (leader *Leader) AppendPut(key string, value string) LogEntry {
-internal/replication/replication.go:61:func (leader *Leader) CommitIndex() int {
-internal/replication/replication.go:65:func (leader *Leader) Read(key string) (string, bool) {
-internal/replication/replication.go:70:func (leader *Leader) LogLength() int {
-internal/replication/replication.go:74:func (leader *Leader) outgoingAppends() []Message {
-internal/replication/replication.go:93:func (leader *Leader) handleAck(followerID string, index int) {
-internal/replication/replication.go:101:func (leader *Leader) advanceCommit() {
-internal/replication/replication.go:116:type Follower struct {
-internal/replication/replication.go:123:func NewFollower(id string) *Follower {
-internal/replication/replication.go:130:func (follower *Follower) HandleAppend(entry LogEntry) int {
-internal/replication/replication.go:148:func (follower *Follower) Watermark() int {
-internal/replication/replication.go:152:func (follower *Follower) Read(key string) (string, bool) {
-internal/replication/replication.go:157:func (follower *Follower) LogLength() int {
-internal/replication/replication.go:161:func (follower *Follower) AppliedCount() int {
-internal/replication/replication.go:165:func (follower *Follower) apply(entry LogEntry) {
-internal/replication/replication.go:175:func (follower *Follower) rebuildStore() {
-internal/replication/replication.go:183:type NetworkHarness struct {
-internal/replication/replication.go:189:func NewNetworkHarness() *NetworkHarness {
-internal/replication/replication.go:197:func (network *NetworkHarness) PauseNode(id string) {
-internal/replication/replication.go:201:func (network *NetworkHarness) ResumeNode(id string) {
-internal/replication/replication.go:205:func (network *NetworkHarness) DropNext(kind string, to string, index int, count int) {
-internal/replication/replication.go:209:func (network *NetworkHarness) DuplicateNext(kind string, to string, index int, count int) {
-internal/replication/replication.go:213:func (network *NetworkHarness) Route(messages []Message, handler func(Message) []Message) {
-internal/replication/replication.go:240:type Cluster struct {
-internal/replication/replication.go:247:func NewCluster(leaderID string, followerIDs []string) *Cluster {
-internal/replication/replication.go:260:func (cluster *Cluster) Put(key string, value string) LogEntry {
-internal/replication/replication.go:264:func (cluster *Cluster) Tick() {
-internal/replication/replication.go:268:func (cluster *Cluster) Follower(id string) (*Follower, error) {
-internal/replication/replication.go:276:func (cluster *Cluster) PauseNode(id string) {
-internal/replication/replication.go:280:func (cluster *Cluster) ResumeNode(id string) {
-internal/replication/replication.go:284:func (cluster *Cluster) DropNext(kind string, to string, index int, count int) {
-internal/replication/replication.go:288:func (cluster *Cluster) DuplicateNext(kind string, to string, index int, count int) {
-internal/replication/replication.go:292:func (cluster *Cluster) handleMessage(message Message) []Message {
-internal/replication/replication.go:313:func majority(size int) int {
-internal/replication/replication.go:317:func ruleKey(kind string, to string, index int) string {
-internal/replication/replication.go:321:func equalEntry(left LogEntry, right LogEntry) bool {
-internal/replication/replication.go:335:func stringPtr(value string) *string {
-```
-
-검증 신호:
-- `Follower`는 테스트의 뒤쪽 시나리오를 설명하는 열쇠였다.
-- 특히 `TestPausedFollowerLagsButRecoversAfterResume` 같은 이름이 왜 필요한지, 이 함수에서야 연결이 됐다.
-
-핵심 코드:
+leader 쪽 quorum 계산은 `advanceCommit()`에 있다.
 
 ```go
-type Follower struct {
-	ID           string
-	log          []LogEntry
-	store        map[string]string
-	appliedCount int
-}
-
-func NewFollower(id string) *Follower {
-	return &Follower{
-		ID:    id,
-		store: map[string]string{},
+func (leader *Leader) advanceCommit() {
+	for index := len(leader.log) - 1; index > leader.commitIndex; index-- {
+		replicated := 1
+		for _, matchIndex := range leader.matchIndex {
+			if matchIndex >= index {
+				replicated++
+			}
+		}
+		if replicated >= majority(len(leader.matchIndex)+1) {
+			leader.commitIndex = index
+			return
+		}
 	}
 }
 ```
 
-왜 여기서 판단이 바뀌었는가:
+leader 자신이 이미 `1표`로 들어가고, follower 둘 중 하나만 ack해도 majority가 된다. 그래서 demo 첫 줄의 `drop tick commit=0 node-2=-1 node-3=0`이 가능하다. `node-2`는 완전히 lagging인데도 commit은 이미 0으로 올라간다.
 
-`Follower`가 없으면 `AppendPut`의 의미도 끝까지 설명되지 않는다. 이 코드를 보고 나서야, 이 프로젝트가 단일 API 구현이 아니라 ordering / visibility / recovery 규칙을 통째로 묶는 이유를 납득할 수 있었다.
+이게 바로 docs의 `quorum-commit-and-retry.md`가 말하는 핵심이다. commit은 "성공으로 인정할 수 있는가"의 질문이고, convergence는 "뒤처진 follower가 결국 따라오는가"의 질문이다.
 
-이번 구간에서 새로 이해한 것:
-- `Quorum Commit and Retry`에서 정리한 요점처럼, leader는 모든 follower가 다 따라올 때까지 기다리지 않고, quorum ack가 모이면 commit index를 올립니다. 하지만 뒤처진 follower는 retry를 통해 결국 따라잡아야 합니다.
+## Session 3 — duplicate와 retry는 follower idempotency 위에서 성립한다
 
-다음으로 넘긴 질문:
-- 실제 재검증 명령을 다시 돌려, 지금까지 읽은 invariant가 테스트와 demo 출력에서 같은 모양으로 보이는지 확인한다.
+follower 쪽 핵심은 `HandleAppend`다.
+
+```go
+func (follower *Follower) HandleAppend(entry LogEntry) int {
+	if entry.Index < len(follower.log) {
+		if equalEntry(follower.log[entry.Index], entry) {
+			return follower.Watermark()
+		}
+		follower.log = append([]LogEntry(nil), follower.log[:entry.Index]...)
+		follower.rebuildStore()
+	}
+	if entry.Index > len(follower.log) {
+		return follower.Watermark()
+	}
+	if entry.Index == len(follower.log) {
+		follower.log = append(follower.log, entry)
+		follower.apply(entry)
+	}
+	return follower.Watermark()
+}
+```
+
+여기서 세 갈래가 중요하다.
+
+- 같은 index에 같은 entry가 오면 watermark만 돌려주고 끝낸다.
+- 더 작은 index에 다른 entry가 오면 suffix를 자르고 store를 rebuild한다.
+- 너무 앞선 index가 오면 현재 watermark만 돌려준다.
+
+이 덕분에 duplicate delivery는 `log length`와 `appliedCount`를 두 번 늘리지 않고, lagging follower는 `nextIndex` 기반 retry로 결국 수렴한다. demo의 `duplicate tick commit=1 node-3-log=2 node-3-applied=2`는 index 1 entry가 중복 전달돼도 follower가 총 두 entry만 가진다는 사실을 보여 준다.

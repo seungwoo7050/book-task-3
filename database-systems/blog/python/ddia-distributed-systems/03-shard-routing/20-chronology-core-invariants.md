@@ -1,111 +1,62 @@
-# 20 03 Shard Routing에서 진짜 중요한 상태 전이만 붙잡기
+# Core Invariants
 
-이 시리즈의 가운데 글이다. 여기서는 추상 설명을 줄이고, 실제 구현에서 invariant가 어디서 잠기는지 핵심 코드만 붙잡아 따라간다.
+## 1. placement는 sha256 첫 8바이트 정수 위에서 결정된다
 
-## Phase 2 — 핵심 상태 전이를 붙잡는 구간
-
-이번 글에서는 핵심 함수 두 곳을 따라가며 같은 invariant가 어디서 고정되고, 다른 각도에서 어떻게 반복되는지 본다.
-
-### Session 1 — Router에서 invariant가 잠기는 지점 보기
-
-이 구간에서 먼저 붙잡으려 한 것은 `Router`가 어떤 입력을 받아 어떤 상태를 고정하는지 분해하는 것이었다. 처음 읽을 때는 `Router` 하나를 이해하면 나머지 흐름도 거의 자동으로 따라올 거라고 생각했다.
-
-그런데 `rg -n "Router|hash_value" src`로 핵심 함수 위치를 다시 잡고, `Router`가 문제 정의의 첫 번째 bullet과 정확히 맞물리는지 확인했다. 특히 `Router` 안에서 상태가 한 번에 굳는지, 아니면 보조 구조로 넘겨지는지가 프로젝트의 설명 밀도를 갈랐다.
-
-변경 단위:
-- `database-systems/python/ddia-distributed-systems/projects/03-shard-routing/src/shard_routing/core.py`의 `Router`
-
-CLI:
-
-```bash
-$ rg -n "Router|hash_value" src
-src/shard_routing/core.py:8:def hash_value(value: str) -> int:
-src/shard_routing/core.py:14:    hash_value: int
-src/shard_routing/core.py:29:            entry = RingEntry(hash_value(f"{node_id}#v{index}"), node_id)
-src/shard_routing/core.py:42:        target = hash_value(key)
-src/shard_routing/core.py:43:        hashes = [entry.hash_value for entry in self.ring]
-src/shard_routing/core.py:62:class Router:
-src/shard_routing/core.py:82:    router = Router(ring)
-src/shard_routing/__init__.py:1:from .core import Ring, Router
-src/shard_routing/__init__.py:3:__all__ = ["Ring", "Router"]
-```
-
-검증 신호:
-- `Router` 안에서 상태가 한 번에 굳는지, 아니면 보조 구조로 넘겨지는지가 프로젝트의 설명 밀도를 갈랐다.
-- `consistent hash ring이 key를 물리 node에 매핑하는 방식을 익힙니다.`
-
-핵심 코드:
+[`hash_value()`](/Users/woopinbell/work/book-task-3/database-systems/python/ddia-distributed-systems/projects/03-shard-routing/src/shard_routing/core.py)는 문자열을 SHA-256으로 해시한 뒤 앞 8바이트를 big-endian 정수로 바꾼다.
 
 ```python
-class Router:
-    def __init__(self, ring: Ring) -> None:
-        self.ring = ring
-
-    def route(self, key: str) -> tuple[str, bool]:
-        return self.ring.node_for_key(key)
-
-    def route_batch(self, keys: list[str]) -> dict[str, list[str]]:
-        grouped: dict[str, list[str]] = {}
-        for key in keys:
-            node_id, ok = self.ring.node_for_key(key)
-            if ok:
-                grouped.setdefault(node_id, []).append(key)
-        return grouped
+return int.from_bytes(hashlib.sha256(value.encode("utf-8")).digest()[:8], "big")
 ```
 
-왜 여기서 판단이 바뀌었는가:
+즉 이 랩의 consistent hashing은 "언어 런타임 기본 hash"가 아니라 프로세스 간에도 재현 가능한 crypto hash 기반 deterministic mapping 위에 서 있다.
 
-`Router`는 이 프로젝트에서 규칙이 가장 먼저 굳는 지점을 보여 준다. 테스트가 요구한 첫 번째 조건이 실제 코드 규칙으로 바뀌는 순간을 여기서 확인할 수 있었다.
+## 2. lookup은 lower bound 검색과 wrap-around로 끝난다
 
-이번 구간에서 새로 이해한 것:
-- `Virtual Nodes`에서 정리한 요점처럼, 물리 node마다 ring에 하나의 점만 두면 hash 편차 때문에 분산이 쉽게 치우친다. virtual node는 물리 node 하나를 ring 위의 여러 점으로 쪼개서 더 고르게 분산되도록 만든다.
-
-다음으로 넘긴 질문:
-- `hash_value`까지 읽어야 비로소 이 프로젝트가 '쓰는 방법'만이 아니라 '읽고 복원하는 방법'까지 같이 고정하는지 판단할 수 있다.
-
-### Session 2 — hash_value로 같은 규칙 다시 확인하기
-
-여기서 가장 먼저 확인한 것은 `hash_value`가 `Router`와 어떤 짝을 이루는지 확인한다. 처음에는 `hash_value`는 단순 보조 함수일 거라고 생각했다.
-
-하지만 실제로는 두 번째 앵커를 읽고 나니, 실제로는 `Router`가 만든 상태를 외부에서 관찰 가능하게 만드는 규칙이 여기 있었다. 결정적으로 방향을 잡아 준 신호는 `hash_value`는 테스트의 뒤쪽 시나리오를 설명하는 열쇠였다.
-
-변경 단위:
-- `database-systems/python/ddia-distributed-systems/projects/03-shard-routing/src/shard_routing/core.py`의 `hash_value`
-
-CLI:
-
-```bash
-$ rg -n "^(class|def) " src
-src/shard_routing/core.py:8:def hash_value(value: str) -> int:
-src/shard_routing/core.py:13:class RingEntry:
-src/shard_routing/core.py:18:class Ring:
-src/shard_routing/core.py:62:class Router:
-src/shard_routing/core.py:78:def demo() -> None:
-```
-
-검증 신호:
-- `hash_value`는 테스트의 뒤쪽 시나리오를 설명하는 열쇠였다.
-- 특히 `test_batch_routing` 같은 이름이 왜 필요한지, 이 함수에서야 연결이 됐다.
-
-핵심 코드:
+`node_for_key()`는 target hash보다 크거나 같은 첫 ring entry를 `bisect_left`로 찾는다. 끝을 넘으면 `index = 0`으로 감아 돌아간다.
 
 ```python
-def hash_value(value: str) -> int:
-    return int.from_bytes(hashlib.sha256(value.encode("utf-8")).digest()[:8], "big")
-
-
-@dataclass(slots=True, order=True)
-class RingEntry:
-    hash_value: int
-    node_id: str
+index = bisect.bisect_left(hashes, target)
+if index == len(self.ring):
+    index = 0
 ```
 
-왜 여기서 판단이 바뀌었는가:
+이 두 줄이 consistent hash ring의 핵심이다. empty ring이면 `("", False)`를 반환하고, ring이 비어 있지 않으면 항상 어떤 node 하나를 돌려준다. 수동 재실행에서도 `empty ('', False)`를 확인했다.
 
-`hash_value`가 없으면 `Router`의 의미도 끝까지 설명되지 않는다. 이 코드를 보고 나서야, 이 프로젝트가 단일 API 구현이 아니라 ordering / visibility / recovery 규칙을 통째로 묶는 이유를 납득할 수 있었다.
+## 3. duplicate add와 remove는 membership set으로 흡수한다
 
-이번 구간에서 새로 이해한 것:
-- `Virtual Nodes`에서 정리한 요점처럼, 물리 node마다 ring에 하나의 점만 두면 hash 편차 때문에 분산이 쉽게 치우친다. virtual node는 물리 node 하나를 ring 위의 여러 점으로 쪼개서 더 고르게 분산되도록 만든다.
+`Ring`은 `_nodes: set[str]`를 따로 유지한다. 그래서 이미 있는 node를 다시 `add_node()`해도 즉시 return하고, 없는 node를 `remove_node()`해도 `discard()`로 조용히 넘긴다. 이 설계 덕분에 membership 연산이 idempotent하다. 다만 version이나 epoch는 없다. 즉 "누가 최신 membership을 말하고 있는가"를 판단하는 분산 제어면은 아직 존재하지 않는다.
 
-다음으로 넘긴 질문:
-- 실제 재검증 명령을 다시 돌려, 지금까지 읽은 invariant가 테스트와 demo 출력에서 같은 모양으로 보이는지 확인한다.
+## 4. moved key 계산은 이전 assignment와 현재 assignment의 차이만 센다
+
+`moved_keys()`는 이전 assignment map과 현재 ring에서 다시 계산한 assignment를 비교해, 값이 달라진 key 수를 센다.
+
+```python
+current = self.assignments(keys)
+return sum(1 for key in keys if previous.get(key) and previous[key] != current.get(key))
+```
+
+이 함수는 data movement를 수행하지 않는다. 대신 "이 membership change가 대략 얼마나 비싼가"를 정량화한다. docs의 [`rebalance-accounting.md`](/Users/woopinbell/work/book-task-3/database-systems/python/ddia-distributed-systems/projects/03-shard-routing/docs/concepts/rebalance-accounting.md)가 말하는 핵심이 바로 이 비교다.
+
+2026-03-14 수동 실행에서는 1000개 key 기준으로 node-d 추가 후 아래 결과가 나왔다.
+
+```python
+moved_after_add 237
+```
+
+즉 전체의 23.7%만 이동했다. consistent hashing의 장점이 "절반 이하만 움직인다"는 테스트 조건으로 실제 수치화된 셈이다.
+
+## 5. batch routing은 분산도보다 전송 단위를 위해 존재한다
+
+`Router.route_batch()`는 각 key를 조회한 뒤 node별 배열로 묶는다.
+
+```python
+grouped.setdefault(node_id, []).append(key)
+```
+
+이 결과 shape는 demo 출력에서도 확인됐다.
+
+```python
+{'node-a': ['k1', 'k3', 'k4'], 'node-b': ['k2']}
+```
+
+즉 이 랩에서 batch routing의 목적은 "대량 key를 더 빨리 계산한다"가 아니라, "같은 node로 갈 요청을 한 번에 묶는다"는 downstream-friendly shape에 있다.

@@ -1,24 +1,13 @@
-# DNS Packet Analysis structure guide
+# DNS Packet Analysis 구조 메모
 
-## 이 글의 중심 질문
+## 문서 구성 의도
 
-- DNS trace에서 query, response, authoritative 여부를 어떤 필드로 구분했는가?
-- 한 줄 답: DNS query/response 구조와 TTL 기반 캐시를 Wireshark로 해석하는 랩입니다.
+- `00-series-map.md`: 이 lab를 "짧은 trace가 허락하는 해석 범위"라는 질문으로 먼저 고정한다.
+- `10-development-timeline.md`: nslookup trace에서 web trace로 넘어가며 보이는 것과 안 보이는 것을 chronology로 정리한다.
+- `01-evidence-ledger.md`: answer markdown와 `tshark` 필터 출력을 짧게 묶는다.
 
-## 권장 흐름
+## 이번 재작성에서 강조한 점
 
-1. 질문과 trace 범위를 먼저 세우기
-2. query/response 흐름과 권한 정보를 필드 단위로 확인하기
-3. verify 스크립트와 한계까지 정리하기
-
-## 꼭 살릴 근거
-
-- `problem/Makefile`의 공개 target과 `make -C study/03-Packet-Analysis-Top-Down/dns/problem test`
-- `study/03-Packet-Analysis-Top-Down/dns/analysis/src/dns-analysis.md`의 `## Part 2: Authoritative and Non-Authoritative`
-- `study/03-Packet-Analysis-Top-Down/dns/analysis/src/dns-analysis.md`의 `## Part 3: DNS Responses and Records`
-
-## 리라이트 주의점
-
-- `DNS Packet Analysis`를 개념 강의처럼 풀지 말고, 실제 파일과 CLI 순서로 보여 준다.
-- 전체 로그를 덤프하지 말고 판단을 바꾼 줄만 남긴다.
-- 마지막에는 제공된 trace가 짧아 일부 질문은 관찰 불가로 남습니다. 같은 남은 경계를 사람 말로 다시 정리한다.
+- trace limitation을 첫 문단에서 숨기지 않는다.
+- malformed MX answer와 extraneous data 문제를 "답을 못 했다"가 아니라 "현재 증거가 끊기는 지점"으로 설명한다.
+- DNS 일반론보다 실제 frame 번호와 필터 출력으로 돌아오는 습관을 중심에 둔다.

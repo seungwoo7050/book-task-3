@@ -1,31 +1,27 @@
 # 10 Cloud Security Control Plane 읽기 지도
 
-앞선 아홉 개 프로젝트의 판단 로직을 scan, ingestion, exception, remediation, report 흐름으로 묶어 내는 통합 capstone이다.
-
-이 문서는 본문으로 바로 들어가기 전에 무엇을 붙들고 읽어야 하는지 정리해 두는 입구다. 먼저 질문과 흐름을 잡고 내려가면 phase 사이 점프가 훨씬 덜 갑작스럽다.
+이 capstone은 앞선 bithumb labs를 한 서비스 안에 묶지만, 모든 로직을 그대로 복제하지는 않는다. 읽을 때도 "많은 scanner가 있다"보다 `어떤 입력이 어떤 경로로 들어와 같은 DB와 report로 합쳐지는가`를 먼저 붙드는 편이 정확하다.
 
 ## 먼저 붙들 질문
-- 통합 capstone에서 먼저 세워야 할 경계는 API인가, scanner 로직인가?
-- 왜 worker 계층을 따로 두고 pending/completed 상태를 만들었는가?
-- demo capture와 fallback 경로가 왜 capstone의 신뢰도를 높였는가?
+- 이 capstone의 진짜 중심은 scanner 추가인가, 아니면 상태 저장소와 운영 흐름 통합인가?
+- scan job queue를 타는 입력과 동기 ingestion으로 바로 저장되는 입력은 어떻게 나뉘는가?
+- 앞선 labs의 rule set이 여기서 어떻게 축약되거나 변형되는가?
 
-## 이 글은 이렇게 흘러간다
-1. 시작점: 문제 정의와 이 프로젝트가 고정하려는 입력/출력 경계
-2. Phase 1. API 표면과 상태 저장소 경계를 먼저 세웠다: 여러 보안 입력이 한 서비스 안으로 들어오는 기본 통로를 만든다.
-3. Phase 2. worker가 scanner와 저장소를 연결했다: scan 요청과 remediation 요청이 상태 전이를 거쳐 결과를 저장하게 만든다.
-4. Phase 3. remediation과 report로 운영 흐름을 닫았다: finding이 예외와 조치안과 보고서까지 이어지는 마지막 경로를 만든다.
-5. Phase 4. demo capture와 fallback으로 재현성을 마감했다: 사람이 수동으로 API를 두드리지 않아도 end-to-end 시나리오를 다시 만들 수 있게 한다.
-6. 마무리: 다음 프로젝트로 이어지는 질문과 남은 한계
+## 이 글은 이렇게 읽으면 된다
+1. `create_app()`와 `db.py`를 먼저 본다. FastAPI, session factory, SQLite/Postgres 경계를 확인한다.
+2. `workers.py`와 `scanners.py`를 본다. terraform/IAM scan job, cloudtrail/k8s ingestion, remediation worker가 어떻게 다르게 움직이는지 본다.
+3. 마지막으로 `reporting.py`, `demo_capture.py`, `Makefile`을 본다. 실제 demo가 무엇을 남기고 어떤 fallback을 쓰는지 확인한다.
 
 ## 특히 눈여겨볼 장면
-- API 표면과 session factory를 먼저 보여 주고, 왜 control plane이 얇은 통합 계층인지 설명한다.
-- worker가 scan/remediation 요청을 처리하는 구조를 중간 축으로 둔다.
-- demo capture와 report 생성을 마지막에 두어 end-to-end 검증이 어떻게 남는지 보여 준다.
+- scan job queue는 현재 `terraform-plan`, `iam-policy`만 처리한다.
+- cloudtrail과 k8s는 worker queue를 거치지 않고 동기 ingestion endpoint에서 바로 findings를 저장한다.
+- capstone의 rule set은 앞선 labs보다 작다. IAM은 `IAM-001/002`만, CloudTrail은 `LAKE-001/004`만, k8s는 `K8S-001/002/003`만 생성한다.
+- exception API는 `scope_type`을 받지만, findings suppression은 사실상 `scope_id == finding.id`일 때만 반영된다.
 
 ## 먼저 열 문서
-- [10-development-timeline.md](10-development-timeline.md): 아홉 개의 판단 로직을 control plane으로 묶기
+- [10-development-timeline.md](10-development-timeline.md)
 
-## 근거로 삼은 파일
+## 이번 문서의 근거
 - `README.md`
 - `problem/README.md`
 - `python/README.md`
@@ -34,10 +30,12 @@
 - `python/src/cloud_security_control_plane/app.py`
 - `python/src/cloud_security_control_plane/cli.py`
 - `python/src/cloud_security_control_plane/db.py`
-- `python/src/cloud_security_control_plane/workers.py`
 - `python/src/cloud_security_control_plane/scanners.py`
+- `python/src/cloud_security_control_plane/workers.py`
+- `python/src/cloud_security_control_plane/remediation.py`
 - `python/src/cloud_security_control_plane/reporting.py`
 - `python/src/cloud_security_control_plane/demo_capture.py`
 - `python/tests/test_api.py`
-- `.artifacts/capstone/demo/02-worker-response.json`
+- `.artifacts/capstone/demo/05-findings.json`
+- `.artifacts/capstone/demo/07-remediation.json`
 - `.artifacts/capstone/demo/08-report.md`

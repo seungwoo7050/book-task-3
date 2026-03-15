@@ -1,62 +1,124 @@
 # E-event-messaging-lab evidence ledger
 
-- 복원 방식: 세밀한 세션 기록 대신 `Phase 1 -> Phase 3`로 복원했다.
-- 근거: `README.md`, `problem/README.md`, `docs/README.md`, `spring/Makefile`, `EventMessagingService.java`, `OutboxEventEntity.java`, `V2__outbox_events.sql`, `EventMessagingApiTest.java`, `spring/build/test-results/test/*.xml`, `../../docs/verification-report.md`
-- 작업 환경 전제: macOS + VSCode 통합 터미널 기준.
+- 작성 기준일: 2026-03-14
+- 복원 원칙: 기존 blog 본문은 입력 근거로 쓰지 않고, source, tests, build config, 재실행 결과만 사용했다.
+- 핵심 근거: `problem/README.md`, `docs/README.md`, `spring/build.gradle.kts`, `spring/Makefile`, `EventMessagingController.java`, `EventMessagingService.java`, `OutboxEventEntity.java`, `OutboxEventRepository.java`, `V2__outbox_events.sql`, `EventMessagingApiTest.java`, `HealthApiTest.java`, `LabInfoApiSmokeTest.java`
 
-## Phase 1
+## Phase 1. API contract와 테스트 기준 확인
 
-- 당시 목표: 이벤트 랩의 baseline을 broker 연동이 아니라 outbox lifecycle로 자른다.
-- 변경 단위: `README.md`, `problem/README.md`, `EventMessagingApiTest.java`
-- 처음 가설: Kafka나 Redpanda가 바로 등장해야 이벤트 랩이 된다고 생각했다.
-- 실제 조치: order event 생성, publish, outbox list 조회를 한 테스트 흐름으로 고정했다.
-- CLI:
+- 목표: 이 lab이 실제 broker publish를 검증하는지, 아니면 outbox 상태 전이를 검증하는지 먼저 확인한다.
+- 확인 파일:
+  - `spring/src/main/java/com/webpong/study2/app/events/api/EventMessagingController.java`
+  - `spring/src/test/java/com/webpong/study2/app/EventMessagingApiTest.java`
+- 확인 결과:
+  - API는 emit, publish, list 세 개뿐이다.
+  - 테스트는 order event 생성 -> publish -> outbox list 확인만 다룬다.
+  - topic, producer ack, consumer side assert는 없다.
+- 핵심 앵커:
 
-```bash
-cd spring
-make test
+```java
+mockMvc
+    .perform(post("/api/v1/outbox-events/publish"))
+    .andExpect(status().isOk())
+    .andExpect(jsonPath("$[0].status").value("PUBLISHED"));
 ```
 
-- 검증 신호: `EventMessagingApiTest` 1개 테스트 통과, `HealthApiTest` 2개 테스트 통과
-- 핵심 코드 앵커: `EventMessagingApiTest.outboxEventLifecycleWorks()`
-- 새로 배운 것: 이벤트 아키텍처의 첫 기준은 broker client가 아니라 outbox 상태 전이다.
-- 다음: `PENDING -> PUBLISHED` 전이를 schema와 서비스 코드에 연결한다.
+## Phase 2. schema와 service에서 publish 의미 확인
 
-## Phase 2
+- 목표: publish가 실제 runtime에서 무엇을 하는지 확인한다.
+- 확인 파일:
+  - `spring/src/main/resources/db/migration/V2__outbox_events.sql`
+  - `spring/src/main/java/com/webpong/study2/app/events/application/EventMessagingService.java`
+  - `spring/src/main/java/com/webpong/study2/app/events/domain/OutboxEventEntity.java`
+- 확인 결과:
+  - outbox schema에는 payload와 status만 있고, retry/failure/timestamp metadata가 없다.
+  - `emitOrderPlaced()`는 JSON payload 문자열을 직접 조합해 `PENDING` row를 저장한다.
+  - `publishPending()`은 `findByStatus("PENDING")` 후 `markPublished()`만 수행한다.
+- 핵심 앵커:
 
-- 당시 목표: 이벤트 생성과 publish를 서로 다른 단계로 남긴다.
-- 변경 단위: `V2__outbox_events.sql`, `OutboxEventEntity.java`, `EventMessagingService.java`
-- 처음 가설: 이벤트를 만들면서 바로 publish 처리해도 학습 목적에는 충분할 수 있다고 봤다.
-- 실제 조치: `emitOrderPlaced()`는 `PENDING` row만 만들고, `publishPending()`이 `PUBLISHED`로 전이하게 분리했다.
-- CLI:
-
-```bash
-cd spring
-make smoke
-docker compose up --build
+```java
+pending.forEach(OutboxEventEntity::markPublished);
 ```
 
-- 검증 신호: `LabInfoApiSmokeTest` 1개 테스트 통과, `2026-03-09` 검증 보고서 기준 lint/test/smoke/Compose health 통과
-- 핵심 코드 앵커: `V2__outbox_events.sql`, `OutboxEventEntity.markPublished()`, `EventMessagingService.publishPending()`
-- 새로 배운 것: outbox의 핵심은 메시지 전송이 아니라 아직 보내지 않은 사실을 DB에 남기는 단계 분리다.
-- 다음: worker와 runtime guarantee를 아직 하지 않았다는 점을 docs에 고정한다.
+- 메모:
+  - KafkaTemplate이나 producer client 호출이 없다.
+  - publish는 row state transition이지 external delivery가 아니다.
 
-## Phase 3
+## Phase 3. Kafka dependency와 실제 runtime 거리 확인
 
-- 당시 목표: outbox baseline이 증명한 범위와 아직 미완인 worker/runtime 영역을 닫는다.
-- 변경 단위: `docs/README.md`, `spring/README.md`, `TEST-com.webpong.study2.app.EventMessagingApiTest.xml`
-- 처음 가설: outbox row와 publish 상태 전이만 있으면 나머지도 자연스럽게 읽힐 줄 알았다.
-- 실제 조치: long-running worker, real consumer contract, DLQ/retry 심화가 아직 문서 단계라는 점을 남겼다.
-- CLI:
+- 목표: 문서가 말하는 Kafka-oriented structure가 runtime에서 어디까지 실제인지 확인한다.
+- 확인 파일:
+  - `spring/build.gradle.kts`
+  - `spring/src/main/resources/application.yml`
+- 확인 결과:
+  - build에는 `spring-kafka`와 kafka testcontainers가 들어 있다.
+  - config에는 `spring.kafka.bootstrap-servers`가 있다.
+  - 하지만 main source에서 Kafka client/API 사용 흔적은 없다.
+- 메모:
+  - 2026-03-14 `bootRun`은 Kafka/Redpanda 없이 정상 기동했다.
+  - 즉 현재 runtime은 broker-independent하다.
+
+## Phase 4. 2026-03-14 재실행 검증
+
+- lint:
 
 ```bash
-cd spring
-make lint
-make test
-make smoke
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/E-event-messaging-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew spotlessCheck checkstyleMain checkstyleTest'
 ```
 
-- 검증 신호: `2026-03-13` 기준 4개 suite, 총 5개 테스트, 실패 0
-- 핵심 코드 앵커: `docs/README.md`의 의도적 단순화, `verification-report.md`
-- 새로 배운 것: 이벤트 랩은 범위를 작게 잘라야 outbox 경계가 더 선명해진다.
-- 다음: cache, idempotency, concurrency는 `F-cache-concurrency-lab`에서 묶어 본다.
+- 결과: `BUILD SUCCESSFUL in 1m 29s`
+
+- test:
+
+```bash
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/E-event-messaging-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew test'
+```
+
+- 결과: `BUILD SUCCESSFUL in 1m 22s`
+
+- smoke:
+
+```bash
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/E-event-messaging-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew test --tests "*SmokeTest"'
+```
+
+- 결과: `BUILD SUCCESSFUL in 1m 15s`
+
+- manual boot run:
+
+```bash
+docker run --rm -u $(id -u):$(id -g) -p 18084:8080 \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/E-event-messaging-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew bootRun'
+```
+
+- manual HTTP checks:
+  - initial `GET /api/v1/outbox-events` -> `[]`
+  - emit `ORDER-1` -> `PENDING`
+  - emit `ORDER-2` -> `PENDING`
+  - first `POST /api/v1/outbox-events/publish` -> 두 row 모두 `PUBLISHED`
+  - second `POST /api/v1/outbox-events/publish` -> `[]`
+  - final `GET /api/v1/outbox-events` -> 두 row 모두 `PUBLISHED`
+  - `GET /api/v1/health/live` -> `200`, `X-Trace-Id` 확인
+
+## 이번 Todo의 결론
+
+- 이 lab은 outbox boundary 설명에는 성공하지만, broker integration을 구현한 단계는 아니다.
+- 문서에 반드시 남겨야 할 현재 한계:
+  - Kafka/Redpanda 없이도 동일하게 동작하는 local status transition
+  - retry, DLQ, failure metadata 부재
+  - payload와 delivery metadata를 외부에서 관찰할 표면 부재

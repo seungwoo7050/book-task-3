@@ -7,8 +7,8 @@
     "openai",
     "ollama"
   ],
-  "upstage_configured": false,
-  "openai_configured": false,
+  "upstage_configured": true,
+  "openai_configured": true,
   "ollama_reachable": false,
   "chroma_reachable": false,
   "models_configured": true,

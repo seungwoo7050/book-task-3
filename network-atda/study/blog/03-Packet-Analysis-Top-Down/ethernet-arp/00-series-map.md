@@ -1,28 +1,24 @@
-# Ethernet and ARP Packet Analysis series map
+# Ethernet and ARP Packet Analysis 시리즈 맵
 
-이 프로젝트를 읽을 때 붙들 질문은 하나다. Ethernet frame과 ARP 교환을 링크 계층 주소 관점에서 어떻게 읽었는가?
+이 lab의 중심 질문은 "IP packet을 보내기 전에 링크 계층에서 어떤 주소 해석이 먼저 일어나는가"다. 현재 trace는 그 질문에 필요한 최소 장면만 보여 준다. frame `1`은 `ff:ff:ff:ff:ff:ff` broadcast로 `192.168.0.1`의 MAC을 묻고, frame `2`는 `66:77:88:99:aa:bb`가 자기 MAC이라고 답하며, frame `3`은 곧바로 그 MAC을 destination으로 쓰는 IPv4 frame이다.
 
-## 무엇을 근거로 복원했는가
+## 이 lab를 읽는 질문
 
-- 프로젝트 README: `study/03-Packet-Analysis-Top-Down/ethernet-arp/README.md`
-- 문제 문서와 실행 표면: `study/03-Packet-Analysis-Top-Down/ethernet-arp/problem/README.md`, `study/03-Packet-Analysis-Top-Down/ethernet-arp/problem/Makefile`
-- 분석 본문: `study/03-Packet-Analysis-Top-Down/ethernet-arp/analysis/src/ethernet-arp-analysis.md`
-- 정식 검증 출력: `make -C study/03-Packet-Analysis-Top-Down/ethernet-arp/problem test`
+- 왜 ARP request의 Ethernet destination은 broadcast지만 reply는 unicast인가
+- ARP payload 안의 IP/MAC 필드와 Ethernet header의 source/destination은 어떻게 대응되는가
+- 같은 48-bit MAC 주소라도 ARP phase와 이후 IPv4 data phase에서 역할이 어떻게 바뀌는가
 
-## 어떤 순서로 읽으면 되는가
+## 이번에 사용한 근거
 
-1. `problem/README.md`로 문제 조건과 성공 기준을 확인한다.
-2. 이 문서에서 어떤 입력을 근거로 썼는지 먼저 본다.
-3. `01-evidence-ledger.md`로 세 단계 흐름을 짧게 파악한다.
-4. `10-development-timeline.md`에서 코드나 trace, CLI를 따라간다.
+- `problem/README.md`
+- `analysis/src/ethernet-arp-analysis.md`
+- `problem/Makefile`
+- `problem/script/verify_answers.sh`
+- 2026-03-14 재실행한 `filter-arp`, `filter-ethernet`, `filter-broadcast`
 
-## 이번 리라이트에서 의도적으로 제외한 입력
+## 이번 재실행에서 고정한 사실
 
-- 현재 `study/blog/**`의 이전 본문
-- `notion/`, `notion-archive/` 아래의 서술형 메모
-
-## 짧은 판정 메모
-
-- 독립 프로젝트로 본 이유: `Ethernet and ARP Packet Analysis`는 자기 README와 정식 검증 명령으로 범위를 독립적으로 설명할 수 있다.
-- 보관본 위치: `study/blog/_legacy`
-- 이번 글의 중심 답: 링크 계층 프레임과 IP-MAC 주소 해석 과정을 ARP request/reply 쌍으로 읽는 랩입니다.
+- frame `1`의 destination MAC은 `ff:ff:ff:ff:ff:ff`, `arp.opcode=1`, target MAC은 `00:00:00:00:00:00`이다.
+- frame `2`의 destination MAC은 `00:11:22:33:44:55`, `arp.opcode=2`, sender MAC은 `66:77:88:99:aa:bb`이다.
+- frame `3`의 EtherType은 `0x0800`이고 destination MAC은 frame `2`에서 알려 준 `66:77:88:99:aa:bb`와 일치한다.
+- HTTP GET byte offset 질문은 현재 trace에 HTTP frame이 없어 `Not observable`로 남는다.

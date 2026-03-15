@@ -1,38 +1,28 @@
-# 01 MemTable SkipList 시리즈 맵
+# 01 MemTable SkipList
 
-`01 MemTable SkipList`은 Database Internals 트랙에서 1번째로 만나는 프로젝트다. LSM-Tree의 active memtable을 독립적인 SkipList로 구현해 정렬된 쓰기 경로와 tombstone semantics를 먼저 고정합니다. 여기서는 완성된 해설보다, 테스트와 코드가 어디서 같은 문제를 가리키는지 차례대로 따라간다.
+## 이 랩의 실제 목적
 
-## 먼저 보고 갈 질문
+이 프로젝트는 SkipList 자료구조 자체를 뽐내는 과제가 아니다. 소스와 테스트를 다시 읽으면 더 정확한 목표는 LSM write path의 첫 단계인 MemTable semantics를 고정하는 데 있다. key는 항상 정렬된 순서로 유지돼야 하고, delete는 physical remove가 아니라 tombstone이어야 하며, ordered iteration과 대략적인 byte-size accounting이 다음 flush 판단의 재료가 된다.
 
-- `Put(key, value)`는 새 키를 삽입하거나 기존 키를 갱신하면서 key 오름차순을 유지해야 합니다.
-- `Get(key)`는 존재하는 값, tombstone, 미존재를 구분해야 합니다.
+즉 여기서 중요한 질문은 "SkipList를 구현했는가"보다 "flush 이전의 in-memory state가 어떤 계약을 만족해야 SSTable, recovery, compaction으로 이어질 수 있는가"에 가깝다.
 
-## 읽는 순서
+이번 시리즈는 기존 blog를 입력 근거로 쓰지 않고 [`problem/README.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/01-memtable-skiplist/problem/README.md), [`skiplist.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/01-memtable-skiplist/internal/skiplist/skiplist.go), [`skiplist_test.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/01-memtable-skiplist/tests/skiplist_test.go), [`main.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/01-memtable-skiplist/cmd/skiplist-demo/main.go), 그리고 2026-03-14 재실행 결과만으로 다시 썼다.
 
-1. [10-chronology-scope-and-surface.md](10-chronology-scope-and-surface.md) — 테스트 이름과 파일 배치부터 훑으면서 문제의 테두리를 다시 좁히는 글
-2. [20-chronology-core-invariants.md](20-chronology-core-invariants.md) — 핵심 함수와 상태 전이에서 invariant가 실제로 어디서 잠기는지 따라가는 글
-3. [30-chronology-verification-and-boundaries.md](30-chronology-verification-and-boundaries.md) — 테스트와 demo를 다시 돌려 약속 범위와 남는 한계를 정리하는 글
+## 이번에 붙드는 질문
 
-## 재검증 명령
+- ordered write structure는 어떤 invariant를 유지해야 하는가
+- tombstone은 왜 remove보다 중요한가
+- update와 delete 뒤 logical size와 byte size는 어떻게 달라지는가
+- 이 구현이 아직 일부러 다루지 않는 운영 문제는 무엇인가
 
-```bash
-GOWORK=off go test ./...
-GOWORK=off go run ./cmd/skiplist-demo
-```
+## 문서 지도
 
-## 이번 시리즈가 근거로 삼은 파일
+- [10-chronology-scope-and-surface.md](/Users/woopinbell/work/book-task-3/database-systems/blog/go/database-internals/01-memtable-skiplist/10-chronology-scope-and-surface.md): 문제 범위와 SkipList surface를 시간순으로 정리한다.
+- [20-chronology-core-invariants.md](/Users/woopinbell/work/book-task-3/database-systems/blog/go/database-internals/01-memtable-skiplist/20-chronology-core-invariants.md): sorted level-0 list, tombstone semantics, byte-size accounting, deterministic level generation을 소스 기준으로 해부한다.
+- [30-chronology-verification-and-boundaries.md](/Users/woopinbell/work/book-task-3/database-systems/blog/go/database-internals/01-memtable-skiplist/30-chronology-verification-and-boundaries.md): go test와 demo 재실행을 묶어 현재 검증 범위와 한계를 정리한다.
+- [_evidence-ledger.md](/Users/woopinbell/work/book-task-3/database-systems/blog/go/database-internals/01-memtable-skiplist/_evidence-ledger.md): 사용한 근거와 재실행 명령, 관찰값을 남긴다.
+- [_structure-outline.md](/Users/woopinbell/work/book-task-3/database-systems/blog/go/database-internals/01-memtable-skiplist/_structure-outline.md): 문서 구조 선택 이유와 버린 접근을 적는다.
 
-- `database-systems/go/database-internals/projects/01-memtable-skiplist/internal/skiplist/skiplist.go`
-- `database-systems/go/database-internals/projects/01-memtable-skiplist/tests/skiplist_test.go`
-- `database-systems/go/database-internals/projects/01-memtable-skiplist/README.md`
-- `database-systems/go/database-internals/projects/01-memtable-skiplist/problem/README.md`
-- `database-systems/go/database-internals/projects/01-memtable-skiplist/docs/README.md`
-- `database-systems/go/database-internals/projects/01-memtable-skiplist/cmd/skiplist-demo/main.go`
+## 지금 기준의 결론
 
-## 보조 메모
-
-작업 메모가 꼭 필요할 때만 [_evidence-ledger.md](_evidence-ledger.md)와 [_structure-outline.md](_structure-outline.md)를 보면 된다. 공개 시리즈는 `00 -> 10 -> 20 -> 30`만 따라가면 충분하다.
-
-## Git Anchor
-
-- `2026-03-11 bbb6673 Track 1에 대한 전반적인 개선 완료`
+이 랩은 Go로 옮겨 온 ordered MemTable의 최소 계약을 보여 준다. 동시성이나 benchmark는 없다. 대신 tombstone을 포함한 ordered entries, logical size 유지, flush threshold용 byte estimate라는 실제 저장 엔진 연결 지점이 선명하다.

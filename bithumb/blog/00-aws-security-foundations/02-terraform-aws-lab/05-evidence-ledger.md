@@ -1,59 +1,81 @@
-# 02 Terraform AWS Lab 근거 정리
+# 02 Terraform AWS Lab evidence ledger
 
-Terraform을 apply 도구가 아니라 이후 보안 스캐너가 읽을 선언형 입력으로 다루게 만드는 실습이다. 이 문서는 그 흐름을 글로 풀기 전에, 실제 근거를 phase 단위로 다시 세워 둔 정리 노트다.
+- 복원 원칙: 기존 blog 본문은 제외하고 `README/problem/docs`, Terraform 소스, Python 검증 스크립트, pytest, 실제 재실행 결과만 사용했다.
+- 날짜 고정: 아래 실행 결과는 `2026-03-14` 기준이다.
+- 프로젝트 성격: 이 lab의 산출물은 "배포 성공"이 아니라 다음 프로젝트가 읽을 수 있는 `tfplan.json`이다.
 
-한 phase를 읽을 때는 `당시 목표 -> 실제 조치 -> CLI -> 검증 신호` 순서로 보면 무엇이 먼저 굳어졌는지 빠르게 따라갈 수 있다.
+## 사용한 입력 근거
 
-## Phase 1. insecure/secure lab을 같은 검증 흐름에 묶었다
+- 설명 문서
+  - `README.md`
+  - `problem/README.md`
+  - `python/README.md`
+  - `docs/README.md`
+  - `docs/concepts/terraform-plan-reading.md`
+- 구현
+  - `python/src/terraform_aws_lab/verify.py`
+  - `terraform/insecure/main.tf`
+  - `terraform/secure/main.tf`
+  - `terraform/insecure/tfplan.json`
+  - `terraform/secure/tfplan.json`
+- 테스트
+  - `python/tests/test_terraform_lab.py`
 
-이 구간에서는 `insecure/secure lab을 같은 검증 흐름에 묶었다`를 먼저 단단히 묶어 두면서, 다음 phase가 기대는 기준을 만들었다.
+## 다시 실행한 명령
 
-- 시간 표지: Phase 1
-- 당시 목표: 두 Terraform 실습을 사람이 수동 비교하지 않고 같은 코드 경로로 돌릴 수 있게 만든다.
-- 변경 단위: `python/src/terraform_aws_lab/verify.py`의 `AWS_ENV`, `terraform_available`, `run_lab` 진입부
-- 처음 가설: 후속 프로젝트가 plan JSON을 입력으로 쓰려면, 먼저 lab 두 개가 같은 루틴으로 재현돼야 한다.
-- 실제 조치: 스크립트는 Terraform CLI 유무를 먼저 확인하고, 로컬 더미 AWS 환경 변수를 주입한 뒤 각 lab 디렉터리에서 같은 명령을 반복하게 만들었다. 핵심은 실제 apply 없이도 같은 입력 구조를 계속 얻을 수 있게 하는 쪽이었다.
-- CLI:
-  - `PYTHONPATH=00-aws-security-foundations/02-terraform-aws-lab/python/src .venv/bin/python -m terraform_aws_lab.verify`
-- 검증 신호:
-  - 검증 스크립트 실행 결과가 `insecure: 5 resources`, `secure: 5 resources`로 떨어졌다.
-  - Terraform 1.5.7 환경에서 실제 명령 경로가 살아 있어 로컬에서 그대로 재현됐다.
-- 핵심 코드 앵커: `00-aws-security-foundations/02-terraform-aws-lab/python/src/terraform_aws_lab/verify.py:22-44`
-- 새로 배운 것: CSPM 관점에서 Terraform의 핵심 산출물은 apply 결과보다 `planned_values.root_module.resources` 같은 plan 구조다. 분석은 선언형 변경 의도를 읽는 데서 시작한다.
-- 다음: 이제 plan 결과를 파일로 남겨, 다른 프로젝트가 바로 읽을 수 있는 형태로 고정해야 했다.
+```bash
+PYTHONPATH=00-aws-security-foundations/02-terraform-aws-lab/python/src \
+  .venv/bin/python -m terraform_aws_lab.verify
 
-## Phase 2. plan JSON을 산출물로 남겼다
+PYTHONPATH=00-aws-security-foundations/02-terraform-aws-lab/python/src \
+  .venv/bin/python -m pytest \
+  00-aws-security-foundations/02-terraform-aws-lab/python/tests
+```
 
-이 구간에서는 `plan JSON을 산출물로 남겼다`를 먼저 단단히 묶어 두면서, 다음 phase가 기대는 기준을 만들었다.
+## 재실행 결과
 
-- 시간 표지: Phase 2
-- 당시 목표: `terraform show -json` 결과를 후속 스캐너가 읽을 실제 파일로 남긴다.
-- 변경 단위: `python/src/terraform_aws_lab/verify.py`의 `plan -> show -json -> tfplan.json` 경로
-- 처음 가설: stdout만 보고 끝내면 다음 단계에서 다시 Terraform CLI를 호출해야 한다. JSON 파일이 남아야 rule engine이 입력을 재사용할 수 있다.
-- 실제 조치: `terraform plan`으로 binary plan을 만든 뒤 `terraform show -json`으로 렌더링해 `tfplan.json`으로 저장했다. 마지막에는 `planned_values.root_module.resources` 길이를 세어 lab별 resource count를 바로 확인하게 했다.
-- CLI:
-  - `PYTHONPATH=00-aws-security-foundations/02-terraform-aws-lab/python/src .venv/bin/python -m terraform_aws_lab.verify`
-- 검증 신호:
-  - 스크립트는 insecure/secure 모두 5개 resource를 읽었다.
-  - `tfplan.json`이 실제 파일로 남아서 05번 CSPM scanner가 fixture처럼 재사용할 수 있는 상태가 됐다.
-- 핵심 코드 앵커: `00-aws-security-foundations/02-terraform-aws-lab/python/src/terraform_aws_lab/verify.py:45-75`
-- 새로 배운 것: “배포 전에 읽는 보안”은 실행 결과가 아니라 plan의 구조화된 표현을 다룬다. JSON으로 렌더링하는 순간부터 Terraform은 분석 입력이 된다.
-- 다음: 이제 테스트로 insecure/secure lab이 각각 어떤 자원을 포함하는지 잠가 두어야 했다.
+- `python -m terraform_aws_lab.verify` -> `insecure: 5 resources`, `secure: 5 resources`
+- pytest 최종 결과 -> `3 passed in 11.35s`
 
-## Phase 3. resource type 테스트로 입력 계약을 고정했다
+## 이번 재검증에서 추가로 확인한 사실
 
-이 구간에서는 `resource type 테스트로 입력 계약을 고정했다`를 먼저 단단히 묶어 두면서, 다음 phase가 기대는 기준을 만들었다.
+- `2026-03-14`에 `verify`와 `pytest`를 병렬로 돌렸을 때 insecure lab의 `terraform plan`이 state lock으로 실패했다.
+- 실패 메시지 핵심은 `Error acquiring the state lock`이었다.
+- 같은 명령을 순차로 다시 돌리면 pytest는 정상 통과했다.
+- `run_lab()`가 각 lab 디렉터리 안의 고정 파일명 `tfplan`과 `tfplan.json`을 덮어쓰는 구조이기 때문에, 이 동작은 소스와 재실행 결과를 함께 본 source-based inference로 설명할 수 있다.
 
-- 시간 표지: Phase 3
-- 당시 목표: 다음 프로젝트가 기대하는 자원 종류가 실제 plan에 들어 있는지 테스트로 확인한다.
-- 변경 단위: `python/tests/test_terraform_lab.py`의 insecure/secure 검증
-- 처음 가설: plan JSON 파일이 만들어지기만 해서는 부족하다. insecure lab과 secure lab이 어떤 보안 차이를 대표하는지도 테스트가 말해줘야 한다.
-- 실제 조치: 테스트는 insecure lab에서 `aws_s3_bucket`, `aws_security_group`가 보이는지 확인하고, secure lab에서는 `aws_s3_bucket_public_access_block`, `aws_iam_policy`가 있는지 확인했다. 이 검증이 있어야 05번 프로젝트가 S3 public access나 ingress 규칙을 안정적으로 읽을 수 있다.
-- CLI:
-  - `PYTHONPATH=00-aws-security-foundations/02-terraform-aws-lab/python/src .venv/bin/python -m pytest 00-aws-security-foundations/02-terraform-aws-lab/python/tests`
-- 검증 신호:
-  - 직렬 재검증 기준 pytest가 `3 passed in 17.61s`로 통과했다.
-  - insecure/secure가 서로 다른 resource type 집합을 대표한다는 계약이 테스트에 남았다.
-- 핵심 코드 앵커: `00-aws-security-foundations/02-terraform-aws-lab/python/tests/test_terraform_lab.py:19-30`
-- 새로 배운 것: 보안용 fixture는 단순히 파일이 존재하는 것으로 충분하지 않다. 어떤 resource type을 담고 있어야 하는지까지 계약으로 고정해야 false positive가 줄어든다.
-- 다음: 다음 프로젝트는 이 plan JSON을 직접 읽어 misconfiguration finding을 만든다.
+## 단계별 근거
+
+### 1. insecure/secure를 같은 재현 루프로 묶었다
+
+- 근거 소스: `verify.py`
+- 핵심 코드: `terraform_available()`, `AWS_ENV`, `run_lab()` 앞부분
+- 확인한 사실:
+  - Terraform CLI가 없으면 바로 실패한다.
+  - AWS 계정 없이도 돌 수 있도록 dummy credential과 region을 주입한다.
+  - `init -> validate -> plan -> show -json`이 insecure/secure 둘 다 같은 순서로 실행된다.
+
+### 2. plan JSON을 후속 입력으로 저장했다
+
+- 근거 소스: `verify.py`, `tfplan.json`
+- 핵심 코드: `json_path.write_text(rendered.stdout)`
+- 확인한 사실:
+  - binary plan을 만든 뒤 `terraform show -json`으로 렌더링한다.
+  - 결과를 stdout으로만 소비하지 않고 각 lab 디렉터리에 `tfplan.json`으로 남긴다.
+  - 메인 스크립트는 `planned_values.root_module.resources` 길이를 세어 `5 resources` 요약을 출력한다.
+
+### 3. insecure/secure 차이를 resource contract로 고정했다
+
+- 근거 소스: `test_terraform_lab.py`, `main.tf`, `tfplan.json`
+- 확인한 사실:
+  - insecure plan에는 `aws_s3_bucket`, `aws_security_group`, `aws_iam_policy broad_admin`가 포함된다.
+  - secure plan에는 `aws_s3_bucket_public_access_block`, `aws_iam_policy scoped_read`가 포함된다.
+  - `public_access_block` 값은 insecure에서 모두 `false`, secure에서 모두 `true`다.
+  - security group ingress는 insecure `0.0.0.0/0`, secure `10.10.10.0/24`다.
+  - IAM policy는 insecure `Action: "*" / Resource: "*"`, secure는 S3 read 범위로 제한된다.
+
+## 남은 한계
+
+- `problem/README.md`가 명시한 대로 apply는 하지 않는다.
+- drift detection과 misconfiguration rule evaluation은 아직 없다.
+- `run_lab()`는 고정 파일명 `tfplan`을 사용하므로 병렬 실행에 안전하지 않다. 이 문장은 `verify.py` 구조와 `2026-03-14` state lock 실패를 함께 본 source-based inference다.

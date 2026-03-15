@@ -1,38 +1,46 @@
-# H-service-boundary-lab Structure Plan
+# H-service-boundary-lab 구조 계획
 
-## 한 줄 약속
-- 공유 DB를 끊고, identity와 workspace를 claims로만 이어 보기
+## 문서 목표
 
-## 독자 질문
-- 단일 백엔드에서 자연스럽게 함께 있던 인증과 워크스페이스 도메인을 어디서 끊을 것인가.
-- 인증 서비스와 워크스페이스 서비스를 왜 분리하는가 어떤 데이터는 claim으로 넘기고 어떤 데이터는 넘기지 않는가 서비스별 DB ownership을 어디까지 강제할 것인가 공유 ORM 모델을 금지하면 무엇이 불편해지고 무엇이 명확해지는가
+이 랩을 "인증과 워크스페이스를 처음 분리하는 순간"으로 읽게 만든다. 독자가 repo 안의 gateway, notification-service, Redis event seam을 먼저 보고 범위를 오해하지 않도록, 문제 정의의 최소 범위와 실제 코드의 확장 흔적을 분리해서 안내한다.
 
-## 서술 원칙
-- 기존 `blog/` 초안은 입력 근거로 사용하지 않는다.
-- 사실로 확인되는 날짜와 명령은 `git log`와 `docs/verification-report.md`에서만 가져온다.
-- finer-grained chronology는 코드/테스트 의존 순서를 바탕으로 복원했다고 명시한다.
+## 중심 논지
 
-## 글 흐름
-1. 서비스 분리를 기능 추가가 아니라 경계 선택 문제로 보기
-2. compose runtime을 두 서비스로 제한하기
-3. system test로 claims-only 협업을 고정하기
-4. 2026-03-10 재검증으로 MSA 시작점을 닫기
-5. 남은 범위와 다음 비교 대상 정리
+현재 검증된 핵심은 두 가지다.
 
-## Evidence Anchor
-- 주 코드 앵커: `labs/H-service-boundary-lab/fastapi/compose.yaml::__compose__` — runtime이 identity-service와 workspace-service 두 개로만 닫혀 있음을 보여 준다.
-- 보조 앵커: `labs/H-service-boundary-lab/fastapi/tests/test_system.py::test_identity_token_then_workspace_creation` — identity에서 받은 token claims만으로 workspace를 생성하는 최소 경계를 보여 준다.
-- 문서 앵커: `labs/H-service-boundary-lab/problem/README.md`, `labs/H-service-boundary-lab/docs/README.md`
-- CLI 앵커:
-- `make lint`
-- `make test`
-- `make smoke`
-- `docker compose up --build`
+- `identity-service`가 사용자 계약을 담은 access token을 발급한다.
+- `workspace-service`가 그 claims만으로 자기 DB 안에서 도메인 흐름을 이어 간다.
 
-## 글에서 강조할 개념
-- `identity-service`와 `workspace-service`의 책임 경계 bearer claims가 경계 계약으로 쓰이는 이유 공유 ORM 모델을 피하는 이유 서비스 분리를 시작할 때 gateway나 event broker를 일부러 뒤로 미루는 이유
-- `identity-service`와 `workspace-service` 분리 기준 서비스별 DB ownership bearer claims 기반 사용자 전달 이벤트 브로커와 gateway는 아직 넣지 않습니다. 로컬 런타임은 SQLite 두 개로 제한합니다.
+이 두 줄이 무너지지 않도록 서술하고, 나머지 요소는 "이미 심어진 다음 경계"로만 배치한다.
 
-## 끝맺음
-- 제외 범위: 이벤트 브로커 edge gateway websocket과 실시간 전달
-- 검증 문장: 2026-03-10에 lint, service unit test, system test, smoke가 통과했다.
+## 본문 순서
+
+1. 문제 정의의 범위를 먼저 고정한다.
+2. compose 런타임이 실제로 두 서비스만 띄운다는 점을 보여 준다.
+3. identity token payload와 workspace claims decode 경로를 연결한다.
+4. workspace 도메인 흐름이 자기 DB ownership 안에서 닫히는지 설명한다.
+5. outbox, gateway, notification-service를 현재 핵심이 아닌 seam으로 정리한다.
+6. 실제 재실행 명령과 성공/실패를 분리해 기록한다.
+
+## 반드시 포함할 근거
+
+- `compose.yaml`의 두 서비스 분리
+- identity access token payload
+- `workspace-service`의 `get_current_claims()`와 membership 기반 정책
+- `create_comment()`의 outbox 적재
+- `contracts/README.md`의 notification/event 계약
+- `make lint`, `make test`, `make smoke`, `python3 -m pytest tests/test_system.py -q` 재실행 결과
+
+## 반드시 피할 서술
+
+- gateway와 notification-service가 이 랩의 현재 검증 범위에 포함된 것처럼 쓰지 않는다.
+- "MSA 전체를 이미 완성했다"는 톤으로 과장하지 않는다.
+- 단순한 README 확장판처럼 기능 목록만 늘어놓지 않는다.
+- 기존 blog 문장 재활용처럼 보이는 상투적 회고문으로 쓰지 않는다.
+
+## 품질 체크
+
+- chronology가 살아 있는가
+- 실제 코드 경계와 문서 경계를 구분했는가
+- 검증 명령의 현재 상태를 숨기지 않았는가
+- 다음 랩으로 넘어갈 seam을 암시하되 현재 랩의 논지를 흐리지 않았는가

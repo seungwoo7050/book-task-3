@@ -1,27 +1,20 @@
-# 01 RPC Framing — Structure Outline
+# Structure Outline
 
-최종 시리즈는 chronology를 매끈하게 재배열하지 않고, 범위 파악 -> 핵심 invariant -> 재검증과 경계의 순서를 유지한다.
+## Chosen arc
 
-## Planned Files
+1. business RPC가 아니라 transport minimum viable path라는 범위를 먼저 잡는다.
+2. demo와 추가 재실행으로 successful round trip과 split/error 경계를 먼저 보여 준다.
+3. frame boundary recovery, pending correlation map, timeout/disconnect cleanup을 invariant로 정리한다.
+4. 마지막에는 TLS, streaming, discovery가 아직 없다는 점을 분리한다.
 
-- `00-series-map.md`: 프로젝트 질문, 읽는 순서, source-of-truth 파일, 재검증 명령을 잡는 지도
-- `10-chronology-scope-and-surface.md`: 파일 구조와 테스트 이름을 근거로 처음 가설이 바뀌는 구간
-- `20-chronology-core-invariants.md`: `Encode`와 `Decoder`가 실제로 invariant를 고정하는 구간
-- `30-chronology-verification-and-boundaries.md`: `go test`/`pytest`와 demo 출력으로 경계를 확정하는 구간
+## Why this structure
 
-## Article Goals
+- 이 랩은 transport semantics가 전부라서 framing과 pending map을 초반부터 함께 보여 주는 편이 맞다.
+- split chunk와 timeout은 작은 실험 출력이 강한 근거라서 early evidence로 적합하다.
+- malformed JSON ignore 정책은 source-only nuance라 invariant 장에서 분명히 적는 편이 좋다.
 
-1. `10-chronology-scope-and-surface.md`
-   범위를 `tests/`와 README에서 어떻게 다시 좁혔는지 보여 준다.
-   코드 앵커: `TestDecoderHandlesSingleMessage`, `Encode`
-   CLI: `find internal tests cmd -type f | sort`, `rg -n "^func Test" tests`
+## Rejected alternatives
 
-2. `20-chronology-core-invariants.md`
-   핵심 invariant가 `Encode`와 `Decoder` 사이에서 어떻게 고정되는지 보여 준다.
-   코드 앵커: `Encode`, `Decoder`
-   CLI: `rg -n "^(type|func) " internal cmd`, `rg -n "Encode|Decoder" internal cmd`
-
-3. `30-chronology-verification-and-boundaries.md`
-   테스트와 demo를 모두 남겨, pass 신호와 공개 표면을 구분해 설명한다.
-   코드 앵커: `TestRPCPropagatesServerErrorsAndTimeout`, `main.go`
-   CLI: GOWORK=off go test ./...; GOWORK=off go run ./cmd/rpc-framing
+- RPC 일반론을 길게 푸는 구조는 버렸다.
+- handler 구현을 중심에 두는 구조도 버렸다.
+- discovery나 retry 얘기를 미리 끌어오는 서사는 현재 범위를 벗어나 제외했다.

@@ -1,28 +1,30 @@
-# Tactical Arena Server series map
+# Tactical Arena Server 시리즈 맵
 
-이 프로젝트를 읽을 때 붙들 질문은 하나다. 제어 채널, authoritative simulation, persistence, 검증 하네스를 한 서버 안에서 어떻게 맞물리게 했는가?
+이 capstone의 중심 질문은 "authoritative game server를 설명 가능하게 만들려면 어떤 경계를 코드와 테스트에서 분리해야 하는가"다. 현재 구현은 TCP line protocol로 lobby/control을, UDP binary packets로 realtime input/snapshot을, `RoomContext` strand와 `MatchState`로 simulation을, `SqliteRepository`로 persistence를, integration/load/demo scripts로 end-to-end verification을 각각 나눈다.
 
-## 무엇을 근거로 복원했는가
+## 이 capstone을 읽는 질문
 
-- 프로젝트 README: `study/05-Game-Server-Capstone/tactical-arena-server/README.md`
-- 문제 문서와 실행 표면: `study/05-Game-Server-Capstone/tactical-arena-server/problem/README.md`, `study/05-Game-Server-Capstone/tactical-arena-server/problem/Makefile`
-- 핵심 구현과 테스트: `study/05-Game-Server-Capstone/tactical-arena-server/cpp/src/state.cpp`, `study/05-Game-Server-Capstone/tactical-arena-server/problem/script/integration_test.py`
-- 정식 검증 출력: `make -C study/05-Game-Server-Capstone/tactical-arena-server/problem test`
+- 왜 control plane은 TCP line protocol이고 realtime plane은 UDP binary packet인가
+- room-local strand와 `MatchState`가 authoritative simulation의 경계를 어떻게 만든다
+- unit test, integration scenario, load smoke, bot demo는 서로 어떤 다른 시스템 속성을 고정하는가
 
-## 어떤 순서로 읽으면 되는가
+## 이번에 사용한 근거
 
-1. `problem/README.md`로 문제 조건과 성공 기준을 확인한다.
-2. 이 문서에서 어떤 입력을 근거로 썼는지 먼저 본다.
-3. `01-evidence-ledger.md`로 세 단계 흐름을 짧게 파악한다.
-4. `10-development-timeline.md`에서 코드나 trace, CLI를 따라간다.
+- `problem/README.md`
+- `cpp/src/arena_server.cpp`
+- `cpp/src/protocol.cpp`
+- `cpp/src/state.cpp`
+- `cpp/src/repository.cpp`
+- `cpp/tests/test_protocol.cpp`
+- `cpp/tests/test_state.cpp`
+- `cpp/tests/test_repository.cpp`
+- `problem/script/integration_test.py`
+- `problem/script/load_smoke_test.py`
+- 2026-03-14 재실행한 `make test`, `run-bot-demo`
 
-## 이번 리라이트에서 의도적으로 제외한 입력
+## 이번 재실행에서 고정한 사실
 
-- 현재 `study/blog/**`의 이전 본문
-- `notion/`, `notion-archive/` 아래의 서술형 메모
-
-## 짧은 판정 메모
-
-- 독립 프로젝트로 본 이유: `Tactical Arena Server`는 자기 README와 정식 검증 명령으로 범위를 독립적으로 설명할 수 있다.
-- 보관본 위치: `study/blog/_legacy`
-- 이번 글의 중심 답: C++20 + Boost.Asio + SQLite + CMake/CTest` 기반으로 구현한 `2~4인 authoritative tactical arena server`입니다.
+- control line parser는 `VERB key=value ...` 형식을 쓰고 newline으로 종료한다.
+- UDP packet codec은 `InputPacket`, `HeartbeatPacket`, `SnapshotPacket`을 big-endian binary로 encode/decode한다.
+- `MatchState`는 projectile hit, respawn, disconnect forfeit, winner selection까지 authoritative state transition을 가진다.
+- full `make test`는 CTest unit 3개 뒤 integration scenario와 load smoke를 연속 실행한다.

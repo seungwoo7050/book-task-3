@@ -1,155 +1,97 @@
-# 01 AWS Security Primitives: statement match에서 explainable decision까지
+# 01 AWS Security Primitives: IAM을 외우는 대신 "왜 이런 decision이 나왔는가"를 먼저 고정한 가장 작은 엔진
 
-IAM을 외우는 대신 결과가 어떻게 만들어지는지 설명 가능한 JSON으로 남기는 가장 작은 평가 엔진이다. 이 글은 결과만 요약하지 않고, 어떤 기준을 먼저 세우고 어떤 검증으로 다음 단계로 넘어갔는지를 차근차근 따라간다.
+이 프로젝트는 기능적으로는 작다. AWS 계정을 붙이지도 않고, policy language 전체를 구현하지도 않는다. 대신 `problem/README.md`가 요구한 아주 좁은 질문 하나, 즉 "`Effect`, `Action`, `Resource`, explicit deny가 최종 decision에 어떤 순서로 반영되는가"를 코드와 출력으로 설명하는 데 집중한다. `2026-03-14`에 CLI와 pytest를 다시 돌려 보니, 이 프로젝트의 가치는 기능 양이 아니라 이후 analyzer들이 가져다 쓸 판단 문법을 얼마나 깔끔하게 고정했는가에 있었다.
 
-아래 phase를 순서대로 읽으면 "allow/deny 결과를 블랙박스가 아니라 statement-level evidence로 설명하려면 무엇이 먼저 필요했는가"라는 질문에 답이 어떻게 만들어졌는지 자연스럽게 연결된다.
+## Step 1. 먼저 statement match 자체를 근거로 남기게 만들었다
 
-## 구현 순서 요약
-먼저 전체 흐름을 짧게 잡아 두면, 각 phase가 왜 그 순서로 배치됐는지 훨씬 덜 버겁게 읽힌다.
-1. statement를 단일 구조로 정규화하고 wildcard 매칭을 순수 함수로 고정했다.
-2. `explicit deny > allow > implicit deny` 우선순위를 `Decision` 반환값에 박아 테스트로 잠갔다.
-3. CLI가 `matches[]`까지 JSON으로 내보내게 만들어 이후 IAM analyzer의 설명 계층으로 재사용할 수 있게 했다.
+처음부터 allow/deny 결론으로 바로 가면 나중에 "왜 그 결론이 나왔는가"를 되짚기 어려워진다. `engine.py`가 먼저 한 일은 statement를 비교 가능한 같은 shape로 바꾸고, match 여부를 `StatementResult`로 남기는 것이었다.
 
-## Phase 1. statement match를 순수 함수로 고정했다
+`evaluate_policy()`는 두 가지 정규화를 먼저 수행한다.
 
-여기서부터 흐름이 한 단계 또렷해진다. 먼저 `statement match를 순수 함수로 고정했다`를 단단히 잡아야 뒤에서 나오는 테스트와 CLI가 왜 필요한지 설명할 수 있기 때문이다.
+- `Statement`가 dict이면 list 한 개로 감싼다.
+- `Action`, `Resource`가 scalar든 list든 `_as_list()`로 리스트화한다.
 
-- 당시 목표: policy JSON과 request JSON을 같은 규칙으로 비교할 수 있는 최소 엔진을 세운다.
-- 변경 단위: `python/src/aws_security_primitives/engine.py`의 `_as_list`, `_matches`, `StatementResult`
-- 처음 가설: statement별 적용 여부와 mismatch 이유를 먼저 남기면, 최종 allow/deny 설명은 그 위에 얹기만 하면 된다.
-- 실제 진행: `Statement`가 dict이든 list든 같은 리스트 구조로 정규화하고, `Action`과 `Resource`를 리스트로 강제해 wildcard 비교를 한 함수에서 처리했다. 매칭 실패도 `action mismatch`, `resource mismatch`로 분리해서 남겼다.
+그 다음 `_matches()`에서 `fnmatchcase()`를 써 wildcard를 처리하고, action과 resource가 모두 맞아야 `matched = true`가 된다. 맞지 않으면 `action mismatch`, `resource mismatch`를 reason으로 남긴다. 즉 이 엔진은 처음부터 "결과"보다 "근거"를 쌓는 방식으로 시작한다.
 
-CLI:
+이 판단은 `2026-03-14` CLI 재실행에서도 그대로 드러났다.
 
 ```bash
-$ PYTHONPATH=00-aws-security-foundations/01-aws-security-primitives/python/src .venv/bin/python -m aws_security_primitives.cli 00-aws-security-foundations/01-aws-security-primitives/problem/data/policy_allow_read.json 00-aws-security-foundations/01-aws-security-primitives/problem/data/request_read.json
+PYTHONPATH=00-aws-security-foundations/01-aws-security-primitives/python/src \
+  .venv/bin/python -m aws_security_primitives.cli \
+  00-aws-security-foundations/01-aws-security-primitives/problem/data/policy_allow_read.json \
+  00-aws-security-foundations/01-aws-security-primitives/problem/data/request_read.json
 ```
 
-검증 신호:
-- CLI가 `allowed: true`, `reason: at least one allow matched`, `matched: true`를 함께 출력했다.
-- 출력 JSON 안에 `reason: action/resource matched`가 남아 “왜 붙었는지”가 bool 밖으로 나왔다.
+출력은 단순 `allowed: true`로 끝나지 않았다. `matches[0]` 안에 `sid: AllowRead`, `matched: true`, `reason: action/resource matched`가 함께 들어 있었다. 작은 프로젝트지만, 이 시점부터 이미 "explainable decision"의 모양이 만들어진 셈이다.
 
-핵심 코드:
+## Step 2. 그 위에 explicit deny precedence를 별도 합성 규칙으로 올렸다
+
+statement match를 남겼다고 IAM-like decision이 완성되는 건 아니다. 여러 statement가 동시에 맞을 수 있을 때 어떤 결론이 이기는지가 더 중요하다. 이 프로젝트는 그 결론 합성 규칙을 `deny_match`와 `allow_match` 두 플래그로 명시적으로 분리했다.
+
+`engine.py`의 마지막 분기는 단순하지만, 이후 프로젝트 전체에 가장 오래 남는 규칙이다.
 
 ```python
-    for index, statement in enumerate(normalized, start=1):
-        sid = str(statement.get("Sid", f"Statement{index}"))
-        actions = _as_list(statement.get("Action", "*"))
-        resources = _as_list(statement.get("Resource", "*"))
-        action_match = _matches(actions, request["Action"])
-        resource_match = _matches(resources, request["Resource"])
-        matched = action_match and resource_match
-
-        if matched:
-            reason = "action/resource matched"
-            effect = str(statement.get("Effect", "Deny"))
-            if effect == "Deny":
-                deny_match = True
-            elif effect == "Allow":
-                allow_match = True
-        else:
-            missing_parts: list[str] = []
-            if not action_match:
-                missing_parts.append("action mismatch")
-            if not resource_match:
-                missing_parts.append("resource mismatch")
-            reason = ", ".join(missing_parts)
-            effect = str(statement.get("Effect", "Deny"))
-        results.append(StatementResult(sid=sid, effect=effect, matched=matched, reason=reason))
+if deny_match:
+    return Decision(allowed=False, reason="explicit deny matched", matches=results)
+if allow_match:
+    return Decision(allowed=True, reason="at least one allow matched", matches=results)
+return Decision(allowed=False, reason="no allow statement matched", matches=results)
 ```
 
-왜 이 코드가 중요했는가: 이 루프가 생기면서 decision 엔진은 더 이상 “맞았다/틀렸다”만 반환하지 않고, statement 하나하나를 근거로 남기기 시작했다. 이후 글 전체의 서사는 여기서 시작한다.
-
-새로 배운 것: IAM 평가에서 중요한 첫 감각은 “statement가 적용되는가”와 “최종 decision이 무엇인가”를 분리하는 것이다. 적용 여부가 모호하면 deny precedence를 설명해도 설득력이 없다.
-
-다음: 이제 statement 단위 결과를 모아 deny precedence를 최종 반환값에 반영해야 했다.
-
-## Phase 2. deny precedence를 Decision에 박았다
-
-여기서부터 흐름이 한 단계 또렷해진다. 먼저 `deny precedence를 Decision에 박았다`를 단단히 잡아야 뒤에서 나오는 테스트와 CLI가 왜 필요한지 설명할 수 있기 때문이다.
-
-- 당시 목표: 매칭 결과를 모아서 실제 IAM-like 우선순위로 결론 내린다.
-- 변경 단위: `python/src/aws_security_primitives/engine.py`의 최종 return 경로와 `python/tests/test_engine.py`의 deny/no-match 시나리오
-- 처음 가설: allow statement 하나가 맞았더라도 더 구체적인 deny가 맞으면 그쪽이 이겨야 한다. 따라서 “첫 match wins” 같은 단순 규칙으로는 부족하다.
-- 실제 진행: `deny_match`와 `allow_match`를 따로 추적해 `explicit deny`를 가장 먼저 반환하게 바꿨다. 그 다음 allow가 있으면 허용하고, 둘 다 없으면 implicit deny로 떨어지게 구성했다.
-
-CLI:
+이 규칙은 `2026-03-14` pytest 재실행으로 다시 확인했다.
 
 ```bash
-$ PYTHONPATH=00-aws-security-foundations/01-aws-security-primitives/python/src .venv/bin/python -m pytest 00-aws-security-foundations/01-aws-security-primitives/python/tests
+PYTHONPATH=00-aws-security-foundations/01-aws-security-primitives/python/src \
+  .venv/bin/python -m pytest \
+  00-aws-security-foundations/01-aws-security-primitives/python/tests
 ```
 
-검증 신호:
-- 테스트가 `3 passed in 0.01s`로 통과했고, explicit deny / no allow / allow match 세 경우가 각각 고정됐다.
-- `test_explicit_deny_overrides_allow`가 secret prefix 요청에서 `explicit deny matched`를 요구했다.
+결과는 `3 passed in 0.01s`였다. 하지만 더 중요한 건 통과 숫자보다 시나리오다.
 
-핵심 코드:
+- allow match
+- explicit deny overrides allow
+- no allow statement matched
+
+즉 이 엔진은 "정상 허용"만 검증하지 않고, 실제로 가장 헷갈리기 쉬운 deny precedence와 no-match fallthrough를 함께 잠근다. 이후 `04-iam-policy-analyzer`가 broad permission을 위험 finding으로 바꿀 수 있는 것도, 여기서 이미 허용/거부 합성 규칙이 흔들리지 않기 때문이다.
+
+## Step 3. 마지막으로 CLI를 출력 스키마로 고정했다
+
+이 프로젝트가 단순 유틸리티를 넘어 트랙의 첫 기반이 되는 이유는 CLI가 엔진 내부 판단을 그대로 구조화된 JSON으로 내보내기 때문이다. `cli.py`는 `evaluate_policy()`의 결과를 받아 `allowed`, `reason`, `matches[]`를 그대로 직렬화한다.
 
 ```python
-    if deny_match:
-        return Decision(allowed=False, reason="explicit deny matched", matches=results)
-    if allow_match:
-        return Decision(allowed=True, reason="at least one allow matched", matches=results)
-    return Decision(allowed=False, reason="no allow statement matched", matches=results)
+output = {
+    "allowed": decision.allowed,
+    "reason": decision.reason,
+    "matches": [
+        {
+            "sid": match.sid,
+            "effect": match.effect,
+            "matched": match.matched,
+            "reason": match.reason,
+        }
+        for match in decision.matches
+    ],
+}
 ```
 
-왜 이 코드가 중요했는가: 결국 이 다섯 줄이 “설명 가능한 decision”의 결론부였다. 여기서 우선순위가 흐려지면 이후 least privilege 분석도 잘못된 전제를 물려받게 된다.
+이 출력 스키마 덕분에 이 프로젝트는 두 가지 역할을 동시에 한다.
 
-새로 배운 것: `explicit deny > allow > implicit deny`는 단순 암기 포인트가 아니라, 여러 statement가 동시에 맞을 때 결론을 정하는 합성 규칙이다.
+- 사람이 IAM 결과를 "왜 그런지" 읽는 입문 엔진
+- 다음 프로젝트가 재사용할 수 있는 설명 계층
 
-다음: 이제 내부 구조를 CLI로 노출해, 로컬 fixture만으로도 판단 과정을 재현할 수 있어야 했다.
+README가 강조한 "최종 allow/deny 결과뿐 아니라 어떤 statement가 매칭되었는지까지 JSON으로 출력"한다는 문장은 실제 소스와 `2026-03-14` CLI 출력에서 그대로 확인됐다. 여기서 explainability는 긴 문장을 쓰는 일이 아니라, 어떤 필드를 어떤 모양으로 고정하는가의 문제라는 점이 분명해진다.
 
-## Phase 3. CLI가 matches[]까지 드러내도록 마감했다
+## Step 4. 작지만 일부러 남긴 바깥 경계도 분명하다
 
-여기서부터 흐름이 한 단계 또렷해진다. 먼저 `CLI가 matches[]까지 드러내도록 마감했다`를 단단히 잡아야 뒤에서 나오는 테스트와 CLI가 왜 필요한지 설명할 수 있기 때문이다.
+문서를 좋게 쓰려면 이 프로젝트를 과하게 키우지 않는 것도 중요하다. `problem/README.md`와 `docs/concepts/iam-basics.md`는 둘 다 범위를 아주 좁게 둔다.
 
-- 당시 목표: 엔진 내부의 설명을 외부 JSON 인터페이스로 고정한다.
-- 변경 단위: `python/src/aws_security_primitives/cli.py`의 `explain` 커맨드
-- 처음 가설: 나중에 사람이 읽든 다른 프로젝트가 이어받든, bool 하나보다는 구조화된 JSON이 훨씬 재사용 가능하다.
-- 실제 진행: `Decision`과 `StatementResult`를 그대로 JSON으로 직렬화해서 `allowed`, `reason`, `matches[]`를 모두 출력하게 만들었다. README는 같은 명령을 재현 경로로 고정했고, 이후 04번 IAM analyzer가 이 설명 계층 위에 risk layer를 얹게 됐다.
+- `Condition` 제외
+- `Principal` 제외
+- policy variable 제외
+- 실제 AWS API 조회 제외
 
-CLI:
+소스도 그 선택을 그대로 따른다. `evaluate_policy()`는 well-formed input을 가정하고 `request["Action"]`, `request["Resource"]`, `policy["Statement"]`에 바로 접근한다. 따라서 malformed JSON을 친절하게 복구하는 엔진은 아니다. 이건 결함이라기보다 이 단계에서 "정책 평가 감각"만 먼저 배우겠다는 의도적 축소에 가깝다. 이 문장은 소스만 보고 적은 source-based inference다.
 
-```bash
-$ PYTHONPATH=00-aws-security-foundations/01-aws-security-primitives/python/src .venv/bin/python -m aws_security_primitives.cli 00-aws-security-foundations/01-aws-security-primitives/problem/data/policy_allow_read.json 00-aws-security-foundations/01-aws-security-primitives/problem/data/request_read.json
-$ PYTHONPATH=00-aws-security-foundations/01-aws-security-primitives/python/src .venv/bin/python -m pytest 00-aws-security-foundations/01-aws-security-primitives/python/tests
-```
+## 정리
 
-검증 신호:
-- CLI 출력의 첫 줄이 바로 `allowed: true`였고, `matches` 안에 `sid`, `effect`, `matched`, `reason`이 모두 포함됐다.
-- README가 같은 명령을 공식 재현 경로로 문서화했고, 실제 pytest도 그대로 통과했다.
-
-핵심 코드:
-
-```python
-@app.command()
-def explain(policy_path: Path, request_path: Path) -> None:
-    policy = json.loads(policy_path.read_text())
-    request = json.loads(request_path.read_text())
-    decision = evaluate_policy(policy, request)
-    output = {
-        "allowed": decision.allowed,
-        "reason": decision.reason,
-        "matches": [
-            {
-                "sid": match.sid,
-                "effect": match.effect,
-                "matched": match.matched,
-                "reason": match.reason,
-            }
-            for match in decision.matches
-        ],
-    }
-    typer.echo(json.dumps(output, indent=2))
-```
-
-왜 이 코드가 중요했는가: 이 직렬화 단계 덕분에 엔진의 내부 판단이 출력 스키마가 됐다. 04번 프로젝트가 `allow/deny`를 `finding`으로 바꿀 수 있었던 것도 이 설명 계층이 이미 있었기 때문이다.
-
-새로 배운 것: Explainability는 긴 문장을 출력한다고 생기지 않는다. 어떤 근거 필드를 어떤 shape로 내보내느냐가 설명 가능성의 핵심이다.
-
-다음: 다음 프로젝트에서는 같은 policy 입력을 “허용되는가”가 아니라 “왜 위험한가”라는 finding으로 다시 해석한다.
-
-## 여기서 남는 질문
-이 문단은 단순한 회고가 아니라, 다음 프로젝트로 넘어갈 때 무엇을 들고 가야 하는지 짚어 두는 자리다.
-
-이 프로젝트는 기능적으로는 작지만, 이후 모든 보안 프로젝트의 문법을 결정했다. statement match를 근거로 남기고, precedence를 테스트로 잠그고, 마지막에 JSON 인터페이스로 내보내는 순서가 있었기 때문에 나중 단계의 analyzer와 control plane도 같은 설명 감각을 재사용할 수 있었다.
+`01-aws-security-primitives`는 작지만 가볍지 않다. statement match를 먼저 근거로 남기고, 그 위에 deny precedence를 얹고, 마지막에 JSON explainability로 닫는 순서가 이후 IAM analyzer와 control plane의 설명 방식까지 결정한다. 즉 이 프로젝트의 성취는 AWS를 많이 흉내 낸 데 있지 않고, "왜 허용되었고 왜 거부되었는가"를 가장 작은 형태로 흔들리지 않게 고정한 데 있다.

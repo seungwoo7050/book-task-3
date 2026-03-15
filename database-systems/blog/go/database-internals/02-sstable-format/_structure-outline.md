@@ -1,27 +1,20 @@
-# 02 SSTable Format — Structure Outline
+# Structure Outline
 
-최종 시리즈는 chronology를 매끈하게 재배열하지 않고, 범위 파악 -> 핵심 invariant -> 재검증과 경계의 순서를 유지한다.
+## Chosen arc
 
-## Planned Files
+1. 문제 범위를 immutable file format으로 좁힌다.
+2. demo 출력으로 reopen 뒤 lookup surface를 먼저 보여 준다.
+3. sorted input, footer layout, tombstone sentinel, 2-step lookup read를 invariant로 정리한다.
+4. 마지막에 malformed footer와 현재 비워 둔 storage concerns를 분리해 적는다.
 
-- `00-series-map.md`: 프로젝트 질문, 읽는 순서, source-of-truth 파일, 재검증 명령을 잡는 지도
-- `10-chronology-scope-and-surface.md`: 파일 구조와 테스트 이름을 근거로 처음 가설이 바뀌는 구간
-- `20-chronology-core-invariants.md`: `Write`와 `IndexEntry`가 실제로 invariant를 고정하는 구간
-- `30-chronology-verification-and-boundaries.md`: `go test`/`pytest`와 demo 출력으로 경계를 확정하는 구간
+## Why this structure
 
-## Article Goals
+- 이 랩은 binary layout이 핵심이라 section 단위 설명이 자연스럽다.
+- shared serializer까지 짧게 연결해야 tombstone sentinel 설명이 소스 근거를 갖는다.
+- demo가 value, tombstone, missing을 모두 보여 줘서 초반 evidence로 쓰기 좋다.
 
-1. `10-chronology-scope-and-surface.md`
-   범위를 `tests/`와 README에서 어떻게 다시 좁혔는지 보여 준다.
-   코드 앵커: `TestReadAll`, `Write`
-   CLI: `find internal tests cmd -type f | sort`, `rg -n "^func Test" tests`
+## Rejected alternatives
 
-2. `20-chronology-core-invariants.md`
-   핵심 invariant가 `Write`와 `IndexEntry` 사이에서 어떻게 고정되는지 보여 준다.
-   코드 앵커: `Write`, `IndexEntry`
-   CLI: `rg -n "^(type|func) " internal cmd`, `rg -n "Write|IndexEntry" internal cmd`
-
-3. `30-chronology-verification-and-boundaries.md`
-   테스트와 demo를 모두 남겨, pass 신호와 공개 표면을 구분해 설명한다.
-   코드 앵커: `TestTombstones`, `main.go`
-   CLI: GOWORK=off go test ./...; GOWORK=off go run ./cmd/sstable-format
+- SSTable 일반론을 길게 설명하는 구조는 버렸다.
+- 테스트 목록만 나열하는 구조도 버렸다.
+- compaction까지 미리 끌어오는 서술은 현재 소스 범위를 벗어나서 제외했다.

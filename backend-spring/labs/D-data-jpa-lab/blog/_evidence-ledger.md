@@ -1,62 +1,131 @@
 # D-data-jpa-lab evidence ledger
 
-- 복원 방식: 세부 세션 로그 대신 `Phase 1 -> Phase 3` 흐름으로 다시 세웠다.
-- 근거: `README.md`, `problem/README.md`, `docs/README.md`, `spring/Makefile`, `DataApiService.java`, `ProductEntity.java`, `V2__lab_products.sql`, `DataApiTest.java`, `spring/build/test-results/test/*.xml`, `../../docs/verification-report.md`
-- 작업 환경 전제: macOS + VSCode 통합 터미널 기준.
+- 작성 기준일: 2026-03-14
+- 복원 원칙: 기존 blog 본문은 입력 근거에서 제외하고, source, tests, build config, 재실행 결과만 사용했다.
+- 핵심 근거: `problem/README.md`, `docs/README.md`, `spring/build.gradle.kts`, `spring/Makefile`, `DataApiController.java`, `DataApiService.java`, `ProductEntity.java`, `ProductRepository.java`, `V2__lab_products.sql`, `DataApiTest.java`, `HealthApiTest.java`, `LabInfoApiSmokeTest.java`
 
-## Phase 1
+## Phase 1. API surface와 test contract 확인
 
-- 당시 목표: JPA 랩을 CRUD가 아니라 persistence 선택을 설명하는 랩으로 자른다.
-- 변경 단위: `README.md`, `problem/README.md`, `DataApiTest.java`
-- 처음 가설: create/list/update 정도면 JPA 랩 범위를 설명할 수 있을 것 같았다.
-- 실제 조치: product 생성, 목록 조회, price 수정, version conflict를 한 테스트에 묶었다.
-- CLI:
+- 목표: 이 lab이 단순 CRUD인지, 아니면 conflict branch까지 포함한 persistence lab인지 먼저 확인한다.
+- 확인 파일:
+  - `spring/src/main/java/com/webpong/study2/app/data/api/DataApiController.java`
+  - `spring/src/test/java/com/webpong/study2/app/DataApiTest.java`
+- 확인 결과:
+  - API는 create/list/update 세 개만 둔다.
+  - 테스트는 create -> list -> update -> stale version conflict까지 한 흐름으로 고정한다.
+- 핵심 앵커:
 
-```bash
-cd spring
-make test
+```java
+mockMvc
+    .perform(
+        patch("/api/v1/products/{productId}", product.get("id").asLong())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"price\":159.99,\"version\":0}"))
+    .andExpect(status().isBadRequest());
 ```
 
-- 검증 신호: `DataApiTest` 1개 테스트 통과, `HealthApiTest` 2개 테스트 통과
-- 핵심 코드 앵커: `DataApiTest.productCrudAndConflictCheckWork()`
-- 새로 배운 것: JPA 랩의 핵심은 엔드포인트 개수보다 충돌 지점을 어디에 두는가다.
-- 다음: Flyway schema와 `@Version`을 서비스 코드와 연결한다.
+- 메모:
+  - conflict는 lab의 부가 기능이 아니라, controller/test contract 중심에 있다.
+  - request DTO에 validation annotation은 있지만 `@Valid`는 없다.
 
-## Phase 2
+## Phase 2. schema/entity/service에서 version이 어떻게 연결되는지 확인
 
-- 당시 목표: migration, entity, optimistic-lock-style check를 한 이야기로 묶는다.
-- 변경 단위: `V2__lab_products.sql`, `ProductEntity.java`, `DataApiService.java`
-- 처음 가설: JPA가 동작하면 schema migration은 글에서 비중이 작아도 될 것 같았다.
-- 실제 조치: `lab_products` 테이블에 `version` 컬럼을 두고, entity와 `updatePrice()`의 version check를 연결했다.
-- CLI:
+- 목표: version conflict가 실제로 어떤 층에서 구현되는지 확인한다.
+- 확인 파일:
+  - `spring/src/main/resources/db/migration/V2__lab_products.sql`
+  - `spring/src/main/java/com/webpong/study2/app/data/domain/ProductEntity.java`
+  - `spring/src/main/java/com/webpong/study2/app/data/application/DataApiService.java`
+- 확인 결과:
+  - DB schema에 `version bigint not null default 0`
+  - entity에 `@Version`
+  - service는 `if (product.getVersion() != version)`으로 수동 conflict check
+- 핵심 앵커:
 
-```bash
-cd spring
-make smoke
-docker compose up --build
+```java
+if (product.getVersion() != version) {
+  throw new IllegalArgumentException("Version conflict");
+}
+product.changePrice(price);
+return ProductResponse.from(product);
 ```
 
-- 검증 신호: `LabInfoApiSmokeTest` 1개 테스트 통과, `2026-03-09` 검증 보고서 기준 lint/test/smoke/Compose health 통과
-- 핵심 코드 앵커: `V2__lab_products.sql`, `ProductEntity.version`, `DataApiService.updatePrice()`
-- 새로 배운 것: JPA는 repository 호출보다 schema -> entity -> service guard가 한 줄로 이어질 때 설계 선택으로 읽힌다.
-- 다음: Querydsl과 larger graph를 아직 뒤로 미룬 이유를 문서에 고정한다.
+- 메모:
+  - update response는 flush 이전 entity snapshot을 반환할 수 있다.
+  - 실제로 2026-03-14 수동 호출에서 update response는 `version: 0`, 직후 list 결과는 `version: 1`이었다.
 
-## Phase 3
+## Phase 3. Querydsl-ready 주장과 실제 구현 거리 확인
 
-- 당시 목표: 지금 증명한 persistence 범위와 다음 단계 범위를 분명히 나눈다.
-- 변경 단위: `docs/README.md`, `spring/README.md`, `TEST-com.webpong.study2.app.DataApiTest.xml`
-- 처음 가설: conflict check만 있으면 JPA 선택의 의미가 충분히 보일 줄 알았다.
-- 실제 조치: Querydsl은 구조만 준비했고 soft delete와 larger graph는 다음 단계라고 docs에 적었다.
-- CLI:
+- 목표: docs가 말하는 search-ready structure가 실제 코드에 얼마나 구현되어 있는지 확인한다.
+- 확인 파일:
+  - `spring/build.gradle.kts`
+  - `docs/README.md`
+- 확인 결과:
+  - build에는 `querydsl-jpa`, `querydsl-apt` dependency가 있다.
+  - source tree에는 `JPAQueryFactory`, generated Q type, custom search repository가 없다.
+- 메모:
+  - 현재 "Querydsl-ready"는 code path라기보다 extension slot에 가깝다.
+
+## Phase 4. 2026-03-14 재실행 검증
+
+- lint:
 
 ```bash
-cd spring
-make lint
-make test
-make smoke
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/D-data-jpa-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew spotlessCheck checkstyleMain checkstyleTest'
 ```
 
-- 검증 신호: `2026-03-13` 기준 4개 suite, 총 5개 테스트, 실패 0
-- 핵심 코드 앵커: `docs/README.md`의 의도적 단순화, `verification-report.md`
-- 새로 배운 것: JPA 랩은 무엇을 더 구현하지 않았는지까지 적어야 CRUD 데모로 흐르지 않는다.
-- 다음: DB와 메시지 경계는 `E-event-messaging-lab`으로 이어진다.
+- 결과: `BUILD SUCCESSFUL in 1m 33s`
+
+- test:
+
+```bash
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/D-data-jpa-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew test'
+```
+
+- 결과: `BUILD SUCCESSFUL in 1m 52s`
+
+- smoke:
+
+```bash
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/D-data-jpa-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew test --tests "*SmokeTest"'
+```
+
+- 결과: `BUILD SUCCESSFUL in 1m 40s`
+
+- manual boot run:
+
+```bash
+docker run --rm -u $(id -u):$(id -g) -p 18083:8080 \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/D-data-jpa-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew bootRun'
+```
+
+- manual HTTP checks:
+  - valid create -> `{"id":1,"name":"Keyboard","price":129.99,"version":0}`
+  - first list -> `version: 0`
+  - first patch with `version: 0` -> `200`, response still `version: 0`
+  - second patch with stale `version: 0` -> `400`, `detail="Version conflict"`
+  - next list -> same row now `version: 1`
+  - invalid create `{"name":"","price":-1}` -> `200`, invalid data persisted
+  - negative page query -> `400`, `detail="Page index must not be less than zero"`
+
+## 이번 Todo의 결론
+
+- 이 lab은 JPA persistence boundary를 설명하는 데는 성공하지만, API contract는 아직 완전히 polished optimistic locking surface가 아니다.
+- 문서에 반드시 남겨야 할 현재 한계:
+  - validation annotation이 runtime에서 적용되지 않음
+  - update response가 incremented version을 바로 보여 주지 않음
+  - Querydsl은 dependency만 있고 query path는 아직 없음

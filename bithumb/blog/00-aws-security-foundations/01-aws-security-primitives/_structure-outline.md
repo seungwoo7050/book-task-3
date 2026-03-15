@@ -1,36 +1,34 @@
-# 01 AWS Security Primitives 구조 메모
+# 01 AWS Security Primitives structure outline
 
-이 문서는 최종 글을 쓰기 전에 서사 배치를 점검하는 메모다. 독자에게 무엇을 먼저 설명하고 어디서 코드와 CLI를 꺼내 올지 한눈에 보이도록 정리한다.
+## 중심 질문
 
-## 이번 문서가 맡는 일
-- IAM decision을 거대한 서비스 모사가 아니라 `statement match -> deny precedence -> explainable JSON` 순서로 고정하는 작은 엔진으로 읽는다.
-- 최종 본문은 `05-evidence-ledger.md`를 그대로 압축하지 않고, 각 phase가 왜 다음 phase를 부르는지 드러내는 흐름으로 배치한다.
+- 이 작은 엔진이 왜 이후 프로젝트들의 사소한 준비물이 아니라 판단 문법의 출발점인지
+- allow/deny 결과보다 먼저 statement evidence와 precedence를 보여 주는 방식이 왜 중요한지
 
-## 먼저 붙들 소스 묶음
-- [`../../../00-aws-security-foundations/01-aws-security-primitives/README.md`](../../../00-aws-security-foundations/01-aws-security-primitives/README.md)
-- [`../../../00-aws-security-foundations/01-aws-security-primitives/problem/README.md`](../../../00-aws-security-foundations/01-aws-security-primitives/problem/README.md)
-- [`../../../00-aws-security-foundations/01-aws-security-primitives/docs/concepts/iam-basics.md`](../../../00-aws-security-foundations/01-aws-security-primitives/docs/concepts/iam-basics.md)
-- [`../../../00-aws-security-foundations/01-aws-security-primitives/python/README.md`](../../../00-aws-security-foundations/01-aws-security-primitives/python/README.md)
-- [`../../../00-aws-security-foundations/01-aws-security-primitives/python/src/aws_security_primitives/engine.py`](../../../00-aws-security-foundations/01-aws-security-primitives/python/src/aws_security_primitives/engine.py)
-- [`../../../00-aws-security-foundations/01-aws-security-primitives/python/src/aws_security_primitives/cli.py`](../../../00-aws-security-foundations/01-aws-security-primitives/python/src/aws_security_primitives/cli.py)
-- [`../../../00-aws-security-foundations/01-aws-security-primitives/python/tests/test_engine.py`](../../../00-aws-security-foundations/01-aws-security-primitives/python/tests/test_engine.py)
+## 글 흐름
 
-## 본문을 배치하는 순서
+1. 문제 범위를 축소한 이유를 짚고 시작한다.
+2. `Statement`/`Action`/`Resource` 정규화와 match reason 기록을 첫 축으로 둔다.
+3. `explicit deny > allow > implicit deny`를 두 번째 축으로 둔다.
+4. CLI JSON이 explainability를 외부 인터페이스로 고정하는 장면으로 닫는다.
+5. 제외한 범위와 malformed input 가정을 마지막에 남긴다.
 
-- `00-series-map.md`
-  - 프로젝트 질문, source set, canonical verify를 먼저 고정한다.
-- `10-development-timeline.md`
-  - 도입: 왜 IAM을 “허용/거부”보다 “설명 가능한 decision”으로 읽는지 잡는다.
-  - Phase 1. statement match를 순수 함수로 고정했다.
-  - Phase 2. deny precedence를 `Decision`에 박았다.
-  - Phase 3. CLI가 `matches[]`까지 드러내도록 마감했다.
-  - 마무리: 다음 프로젝트가 이 explainability 계층을 어떻게 finding으로 확장하는지 질문으로 넘긴다.
+## 반드시 남길 증거
 
-## 강조할 코드와 CLI
-- 코드 앵커: `_matches`, `StatementResult`, deny precedence return, CLI JSON 직렬화
-- CLI 앵커: `python -m aws_security_primitives.cli ...`, `pytest 00-aws-security-foundations/01-aws-security-primitives/python/tests`
-- 개념 훅: IAM에서 “statement 적용 여부”와 “최종 decision”은 같은 층위가 아니라는 점
+- `engine.py`의 `_as_list`, `_matches`, `Decision` return
+- `cli.py`의 JSON 직렬화
+- `test_engine.py`의 allow / deny override / no-match 세 시나리오
+- `2026-03-14` CLI 재실행 결과
+- `2026-03-14` pytest `3 passed in 0.01s`
 
-## 리라이트 기준
-- chronology는 실제 commit timestamp보다 source, test, CLI가 묶이는 순서를 기준으로 읽는다.
-- 이 문서는 메타 기록보다 서사 배치와 강조점에 집중한다.
+## 반드시 피할 서술
+
+- "IAM 엔진을 구현했다"는 식의 과장
+- deny precedence를 개념 설명만 하고 테스트 근거를 빼먹는 서술
+- explainability를 추상적 미덕으로만 적고 실제 `matches[]` shape를 숨기는 설명
+- malformed input 방어가 이미 갖춰진 것처럼 보이게 만드는 문장
+
+## 톤 체크
+
+- 작은 프로젝트라도 단순 요약문이 아니라, 다음 프로젝트로 이어지는 판단 감각이 어떻게 생겼는지 chronology가 살아 있어야 한다.
+- 홍보문보다 "무엇을 일부러 넣지 않았는지"까지 같이 읽히는 탐색형 톤을 유지한다.

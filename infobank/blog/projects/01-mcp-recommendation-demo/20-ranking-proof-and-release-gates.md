@@ -1,14 +1,26 @@
 # ranking proof와 release gate
 
-앞 글에서 봤듯이 이 프로젝트는 추천 후보를 잘 설명할 수 있는 contract와 ranking loop를 먼저 만들었다. 이번 글에서 다룰 질문은 그다음이다. 그렇게 만든 추천 결과를, 어떻게 "릴리즈해도 되는 후보"라는 판단까지 끌고 갔을까?
+앞 단계에서 catalog contract와 explanation trace를 세웠다면, 여기서부터 이 프로젝트는 추천 데모보다 제출 proof 시스템처럼 보이기 시작한다. 핵심 질문은 "candidate가 더 좋아 보이는가"가 아니라 "candidate를 release 가능한 상태라고 deterministic하게 말할 수 있는가"다. 그 답은 `compare-service.ts`, `release-gate-service.ts`, `export-artifact.ts`를 이어 읽을 때 드러난다.
 
-이 구간은 `v2-submission-polish`의 핵심을 보여 준다. 기능이 하나 더 늘어난 것이 아니라, compare와 compatibility, release 판단, artifact export가 하나의 승인 경로로 이어진다. 다시 말해 추천 품질 개선이 운영 결정과 문서 산출물까지 닿기 시작한다.
+## compare는 순위 비교만이 아니라 candidate uplift를 숫자로 남기는 장치다
 
-가장 먼저 눈에 띄는 문서는 `docs/compare-report.md`다. 여기에는 compare가 어떤 기준으로 통과되는지가 아주 분명하게 적혀 있다. `candidateNdcg3 >= baselineNdcg3`, 그리고 `uplift >= 0.02`. 좋은 점은 "좀 더 나아 보인다" 같은 모호한 설명을 허용하지 않고, 비교가 반드시 수치와 임계값으로 남게 했다는 점이다.
+`runCompare()`는 각 eval case에서 baseline recommendation과 reranked candidate를 모두 계산한 뒤 nDCG@3, top1 hit rate, average score를 집계한다. 여기서 눈에 띄는 부분은 uplift 계산이다.
 
-이 compare 결과를 실제로 받아서 최종 판정으로 바꾸는 곳이 `node/src/services/release-gate-service.ts`다.
+```ts
+const rankingUplift = candidateNdcg3 - baselineNdcg3;
+const scoreUplift =
+  baselineAverageScore === 0 ? 0 : (candidateAverageScore - baselineAverageScore) / baselineAverageScore;
+...
+uplift: Math.max(rankingUplift, scoreUplift)
+```
 
-이 코드가 중요한 이유는, compare 수치만 보고 끝내지 않기 때문이다. 여기서는 점수 개선뿐 아니라 제출용 문서와 artifact가 실제로 존재하는지도 같이 본다. 즉 이 프로젝트의 마지막 판단이 "추천이 좋아졌다"가 아니라 "이 후보가 제출 가능한 상태다"로 바뀐다.
+즉 이 프로젝트에서 uplift는 "nDCG가 얼마나 올랐는가" 하나로만 결정되지 않는다. ranking이 같더라도 candidate score 체계가 더 강해졌다면 uplift가 남는다. 2026-03-14 재실행 결과가 정확히 그 예였다. release gate가 읽은 metrics는 `baselineNdcg3 0.9758684958518087`, `candidateNdcg3 0.9758684958518087`, `uplift 0.11464081369730995`였다. 순위 nDCG는 같지만 score uplift가 비교 threshold를 넘긴 것이다.
+
+이건 약점이라기보다 현재 프로젝트의 철학을 드러낸다. compare는 "무조건 랭킹이 더 좋아져야 한다"보다 "candidate가 deterministic하게 더 강한 제안인가"를 본다. 그래서 이 단계의 pass/fail은 strict rerank victory보다 "non-regression on ranking + stronger score evidence"에 더 가깝다.
+
+## release gate는 quality signal과 제출 completeness를 한 번에 묶는다
+
+`release-gate-service.ts`는 compare metric만 보지 않는다. compatibility pass, eval acceptance, compare uplift, required docs/artifacts, release note completeness를 모두 검사한다.
 
 ```ts
 if (!(candidateNdcg3 >= baselineNdcg3 && uplift >= 0.02)) {
@@ -20,35 +32,57 @@ if (!requiredPathsExist(candidate.requiredDocs) || !requiredPathsExist(candidate
 }
 ```
 
-`docs/release-gate-proof.md`를 함께 읽으면 이 판단 기준이 더 또렷해진다. 여기서 gate는 compatibility pass, offline eval acceptance, compare uplift, required docs/artifacts, release note completeness까지 한 번에 검사한다. 중요한 이유는, 추천 시스템이 여기서부터 모델 점수만 보는 데모가 아니라 실제 제출 절차를 닮은 도구로 읽히기 시작하기 때문이다.
+좋은 점은 release 판단이 모델 수치만으로 끝나지 않는다는 것이다. 이 프로젝트에서 "릴리즈 가능"은 다음이 동시에 충족되어야 한다.
 
-이제 마지막 한 칸이 남는다. `node/src/scripts/export-artifact.ts`는 최신 compatibility, release gate, eval, compare 결과를 모아 artifact markdown을 만든다. 그래서 artifact export는 단순한 부가 기능이 아니라, release gate가 통과한 결과를 사람이 바로 읽을 수 있는 문서로 바꾸는 단계다.
+- 호환성 게이트를 통과했는가
+- offline eval acceptance를 통과했는가
+- compare uplift가 최소 threshold를 넘는가
+- 제출에 필요한 docs/artifact가 실제로 존재하는가
+- release note가 `변경 요약 / 검증 / 리스크` 섹션을 갖췄는가
 
-아래 CLI 재실행 결과를 보면 이 흐름이 한 번에 잡힌다.
+즉 추천 시스템을 실제 운영 승인이나 제출 직전 체크리스트처럼 읽게 만드는 부분이 바로 여기다.
+
+여기서 특히 중요하게 남겨 둘 점은 gate가 ranking delta만을 승인 근거로 쓰지 않는다는 사실이다. 2026-03-14 rerun은 `baseline nDCG@3 == candidate nDCG@3`였지만 gate는 통과했다. 다시 말해 이 프로젝트의 release proof는 "순위가 더 좋아졌는가"보다 "후보안이 baseline보다 뒤로 가지 않았고, score/explanation/compatibility/doc completeness까지 포함한 제출 증거가 충분한가"를 묻는다.
+
+## artifact export는 proof를 사람이 읽을 수 있는 문서로 바꾸는 마지막 단계다
+
+`export-artifact.ts`는 latest compatibility, latest gate, latest eval, latest compare를 읽어서 `buildSubmissionArtifact()` 결과를 저장하고 콘솔로도 출력한다.
+
+```ts
+const artifact = buildSubmissionArtifact(
+  candidate,
+  compatibilityReport,
+  gateReport,
+  latestEval,
+  latestCompare
+);
+console.log(artifact.content);
+```
+
+이 단계가 중요한 이유는 proof chain의 마지막 결과가 JSON row가 아니라 Markdown artifact라는 점이다. 운영자나 심사자가 DB를 다시 조회할 필요 없이, 현재 candidate가 왜 통과했는지 한 문서로 읽을 수 있다.
+
+이번 재실행에서도 실제로 다음 출력이 나왔다.
+
+- `compatibility passed: true`
+- `release gate passed: true`
+- `Offline Eval`: `top3 recall 0.958`, `explanation completeness 1.000`, `forbidden hit rate 0.000`
+- `Compare Snapshot`: `baseline nDCG@3 0.976`, `candidate nDCG@3 0.976`, `uplift 0.115`
+- `Compatibility Issues`: `none`
+- `Release Gate Reasons`: `none`
+
+## 이번 단계의 검증 신호
 
 ```bash
+cd /Users/woopinbell/work/book-task-3/infobank/projects/01-mcp-recommendation-demo/capstone/v2-submission-polish
 pnpm compatibility rc-release-check-bot-1-5-0
 pnpm release:gate rc-release-check-bot-1-5-0
 pnpm artifact:export rc-release-check-bot-1-5-0
 ```
 
-```text
-compatibility passed: true
-release gate passed: true
-top3Recall: 0.9583333333333334
-uplift: 0.11464081369730995
+재실행 결과:
 
-# release-check-bot v1.5.0
-- compatibility passed: true
-- release gate passed: true
-## Release Notes
-변경 요약 ...
-검증 ...
-리스크 ...
-```
+- compatibility: 5개 check 모두 pass
+- release gate: pass, reasons 없음
+- artifact export: release candidate, eval, compare, gate 결과를 묶은 Markdown 생성
 
-이 출력이 증명하는 것은 세 가지다. 첫째, candidate가 compare와 compatibility를 동시에 통과했다. 둘째, offline eval과 uplift 수치가 release 판단까지 그대로 이어졌다. 셋째, 최종 결과가 다시 사람 읽을 수 있는 Markdown artifact로 정리됐다. CLI가 끝난 뒤 운영자가 JSON 조각을 다시 꿰맞출 필요가 없다는 뜻이다.
-
-좋은 점은 이 단계에서 프로젝트의 무게중심이 분명해진다는 것이다. `MCP 추천 최적화`는 더 이상 ranking demo가 아니라, 추천 개선을 어떻게 release 판단과 제출 문서로 연결할 것인지 보여 주는 시스템이 된다. `v2`를 공식 답으로 둔 이유도 바로 여기에 있다.
-
-다음 글에서는 이 흐름을 한 걸음 더 밀어붙인다. 이미 만든 gate와 artifact pipeline이 `v3-self-hosted-oss`에서 RBAC, async jobs, audit log, polling UI를 가진 운영자 화면으로 어떻게 바뀌는지 본다.
+이 단계의 결론은 분명하다. 이 프로젝트는 추천 품질을 수치로만 주장하지 않는다. release proof와 문서 completeness까지 묶어 deterministic submission path로 바꾼다.

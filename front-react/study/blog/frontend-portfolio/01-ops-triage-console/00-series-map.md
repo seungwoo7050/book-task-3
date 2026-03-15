@@ -1,31 +1,51 @@
-# 01 Ops Triage Console
+# Ops Triage Console
 
-support, QA, customer feedback, monitoring에서 올라온 이슈를 한 명의 운영자가 빠르게 triage하도록 만든 Next.js internal tool이다. 이 프로젝트는 화면 밀도만 높은 데모가 아니라, optimistic update와 rollback, retry, keyboard path까지 포함한 "운영 surface"를 만드는 데 초점이 맞춰져 있다.
+이 프로젝트의 핵심은 "운영용 대시보드를 만들었다"가 아니라, dense queue, issue detail, bulk action, optimistic rollback, retry, keyboard flow를 한 내부도구 화면 안에서 끝까지 묶었다는 데 있다. 이번 Todo에서는 제품 표면, optimistic mutation 경로, 실패와 복구 검증을 source와 실제 verify 결과 기준으로 다시 정리했다.
 
-## 왜 글을 세 편으로 나눴는가
+## 왜 이 순서로 읽는가
 
-이 프로젝트는 구현 축이 세 갈래로 뚜렷하게 갈린다. 먼저 운영자가 실제로 머무는 화면 surface를 만들고, 그다음 낙관적 변경을 되돌릴 수 있게 만들고, 마지막에 failure와 e2e 시나리오로 그 선택을 증명한다. 한 편에 모두 넣으면 화면 설계와 상태 복구 이야기가 서로를 가리기 쉬워서 본문을 분리했다.
+구현 축이 세 갈래로 뚜렷하다.
 
-## 근거로 사용한 자료
+1. console surface를 어떻게 배치했는가
+2. optimistic update와 undo/retry를 어떻게 만들었는가
+3. 실패와 keyboard path까지 실제로 버티는가
 
-- `frontend-portfolio/01-ops-triage-console/README.md`
-- `frontend-portfolio/01-ops-triage-console/docs/concepts/ux-and-state-flow.md`
+그래서 본문도 세 편으로 나눠 읽는 편이 맞았다.
+
+## 이번 재작성의 근거
+
+- `frontend-portfolio/01-ops-triage-console/problem/README.md`
+- `frontend-portfolio/01-ops-triage-console/docs/README.md`
+- `frontend-portfolio/01-ops-triage-console/next/README.md`
 - `frontend-portfolio/01-ops-triage-console/next/src/components/console/ops-triage-console.tsx`
 - `frontend-portfolio/01-ops-triage-console/next/src/hooks/use-ops-triage.ts`
+- `frontend-portfolio/01-ops-triage-console/next/src/lib/optimistic.ts`
+- `frontend-portfolio/01-ops-triage-console/next/src/lib/query.ts`
 - `frontend-portfolio/01-ops-triage-console/next/src/lib/simulate.ts`
+- `frontend-portfolio/01-ops-triage-console/next/tests/unit/*.ts`
 - `frontend-portfolio/01-ops-triage-console/next/tests/integration/ops-triage-console.test.tsx`
 - `frontend-portfolio/01-ops-triage-console/next/tests/e2e/ops-triage.spec.ts`
 
 ## 현재 검증 상태
 
-- `npm run verify --workspace @front-react/ops-triage-console`
-- 2026-03-13 replay 기준 typecheck 통과, `vitest` 16개, Playwright 4개 시나리오 통과
+```bash
+npm run verify --workspace @front-react/ops-triage-console
+```
 
-## 읽는 순서
+- 2026-03-14 재실행 기준 `typecheck` 통과
+- `vitest` 16개 테스트 통과
+- `playwright` 4개 시나리오 통과
 
-1. [10-building-the-triage-surface.md](10-building-the-triage-surface.md)
-   - 운영자가 실제로 머무는 dense surface를 어떻게 구성했는지
-2. [20-making-optimistic-actions-reversible.md](20-making-optimistic-actions-reversible.md)
-   - 빠른 UI보다 rollback 가능한 mutation이 더 중요했던 이유
-3. [30-proving-the-console-under-failure.md](30-proving-the-console-under-failure.md)
-   - failure simulation, retry, keyboard-only path를 검증으로 증명한 기록
+## 본문
+
+- [10-building-the-triage-surface.md](10-building-the-triage-surface.md)
+- [20-making-optimistic-actions-reversible.md](20-making-optimistic-actions-reversible.md)
+- [30-proving-the-console-under-failure.md](30-proving-the-console-under-failure.md)
+
+## 이번에 명시적으로 남긴 경계
+
+- mock service와 local persistence 위에서 완결되는 데모다.
+- saved view는 사용자가 저장하는 서버 객체가 아니라 shipped constant preset이다.
+- single-operator 시나리오에 집중하며 multi-user real-time sync는 없다.
+- E2E의 `No matching issues`는 전체 시스템 queue가 0건이라는 뜻이 아니라, 현재 필터링된 view 결과가 비었다는 뜻이다.
+- retry/undo는 제품형 경험을 보여 주지만 실제 backend transaction 보장은 아니다.

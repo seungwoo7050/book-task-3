@@ -1,28 +1,24 @@
-# Traceroute series map
+# Traceroute 시리즈 맵
 
-이 프로젝트를 읽을 때 붙들 질문은 하나다. UDP probe와 ICMP 응답을 엮어 hop 단위 경로를 어떻게 복원했는가?
+이 lab의 중심 질문은 "ICMP Time Exceeded를 받는다"가 아니라 "어느 probe에 대한 어떤 ICMP reply인지 어떻게 안정적으로 판정하는가"다. 현재 구현은 `build_probe_port()`로 TTL과 probe index를 port space에 매핑하고, `parse_icmp_response()`가 embedded UDP dest port를 다시 읽어 매칭한다. 종료 조건도 destination IP로부터 `ICMP type 3 code 3`이 오느냐로 명확하게 고정한다.
 
-## 무엇을 근거로 복원했는가
+## 이 lab를 읽는 질문
 
-- 프로젝트 README: `study/04-Network-Diagnostics-and-Routing/traceroute/README.md`
-- 문제 문서와 실행 표면: `study/04-Network-Diagnostics-and-Routing/traceroute/problem/README.md`, `study/04-Network-Diagnostics-and-Routing/traceroute/problem/Makefile`
-- 핵심 구현과 테스트: `study/04-Network-Diagnostics-and-Routing/traceroute/python/src/traceroute.py`, `study/04-Network-Diagnostics-and-Routing/traceroute/python/tests/test_traceroute.py`
-- 정식 검증 출력: `make -C study/04-Network-Diagnostics-and-Routing/traceroute/problem test`
+- probe마다 별도 UDP dest port를 만드는 이유는 무엇인가
+- ICMP outer header가 아니라 embedded original datagram을 다시 읽어야 하는 이유는 무엇인가
+- hop line formatting은 path discovery logic과 어떻게 분리돼 있는가
 
-## 어떤 순서로 읽으면 되는가
+## 이번에 사용한 근거
 
-1. `problem/README.md`로 문제 조건과 성공 기준을 확인한다.
-2. 이 문서에서 어떤 입력을 근거로 썼는지 먼저 본다.
-3. `01-evidence-ledger.md`로 세 단계 흐름을 짧게 파악한다.
-4. `10-development-timeline.md`에서 코드나 trace, CLI를 따라간다.
+- `problem/README.md`
+- `python/src/traceroute.py`
+- `python/tests/test_traceroute.py`
+- `problem/Makefile`
+- 2026-03-14 재실행한 unit tests와 live rerun 시도
 
-## 이번 리라이트에서 의도적으로 제외한 입력
+## 이번 재실행에서 고정한 사실
 
-- 현재 `study/blog/**`의 이전 본문
-- `notion/`, `notion-archive/` 아래의 서술형 메모
-
-## 짧은 판정 메모
-
-- 독립 프로젝트로 본 이유: `Traceroute`는 자기 README와 정식 검증 명령으로 범위를 독립적으로 설명할 수 있다.
-- 보관본 위치: `study/blog/_legacy`
-- 이번 글의 중심 답: TTL 증가와 `ICMP Time Exceeded`를 이용해 hop-by-hop 경로를 드러내는 bridge 프로젝트입니다.
+- `build_probe_port(1,0,3)=33434`, `(2,0,3)=33437`처럼 TTL/probe index가 stable port mapping을 만든다.
+- `parse_icmp_response()`는 `(icmp_type, icmp_code, embedded_udp_dest_port)`를 반환한다.
+- synthetic integration test는 hop `10.0.0.1 -> 10.0.1.1 -> 203.0.113.9`까지 출력하고 ત્યાં서 종료한다.
+- live rerun은 현재 환경에서 5초 내 완료되지 않았다.

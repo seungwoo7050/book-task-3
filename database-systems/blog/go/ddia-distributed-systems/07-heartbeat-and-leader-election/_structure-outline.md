@@ -1,27 +1,21 @@
-# 07 Heartbeat and Leader Election — Structure Outline
+# Structure Outline
 
-최종 시리즈는 chronology를 매끈하게 재배열하지 않고, 범위 파악 -> 핵심 invariant -> 재검증과 경계의 순서를 유지한다.
+## Core thesis
 
-## Planned Files
+이 lab의 핵심은 full consensus가 아니라, heartbeat silence와 majority vote만으로 authority가 어떻게 옮겨 가는지 결정적 tick 시뮬레이션으로 보여 주는 데 있다.
 
-- `00-series-map.md`: 프로젝트 질문, 읽는 순서, source-of-truth 파일, 재검증 명령을 잡는 지도
-- `10-chronology-scope-and-surface.md`: 파일 구조와 테스트 이름을 근거로 처음 가설이 바뀌는 구간
-- `20-chronology-core-invariants.md`: `heartbeatRequest`와 `startElection`가 실제로 invariant를 고정하는 구간
-- `30-chronology-verification-and-boundaries.md`: `go test`/`pytest`와 demo 출력으로 경계를 확정하는 구간
+## Writing plan
 
-## Article Goals
+1. problem 문서로 election-only 범위를 먼저 고정한다.
+2. `NewCluster`의 fixed TTL ladder로 deterministic leader selection을 설명한다.
+3. `Tick`으로 suspicion/election 분리를 설명한다.
+4. `startElection`과 `HandleHeartbeat`로 majority와 step-down을 설명한다.
+5. demo와 테스트로 검증 및 한계를 정리한다.
 
-1. `10-chronology-scope-and-surface.md`
-   범위를 `tests/`와 README에서 어떻게 다시 좁혔는지 보여 준다.
-   코드 앵커: `TestHealthyLeaderKeepsSendingHeartbeats`, `heartbeatRequest`
-   CLI: `find internal tests cmd -type f | sort`, `rg -n "^func Test" tests`
+## Must-keep evidence
 
-2. `20-chronology-core-invariants.md`
-   핵심 invariant가 `heartbeatRequest`와 `startElection` 사이에서 어떻게 고정되는지 보여 준다.
-   코드 앵커: `heartbeatRequest`, `startElection`
-   CLI: `rg -n "^(type|func) " internal cmd`, `rg -n "heartbeatRequest|startElection" internal cmd`
-
-3. `30-chronology-verification-and-boundaries.md`
-   테스트와 demo를 모두 남겨, pass 신호와 공개 표면을 구분해 설명한다.
-   코드 앵커: `TestLeaderFailureTriggersSingleReelection`, `main.go`
-   CLI: GOWORK=off go test ./...; GOWORK=off go run ./cmd/leader-election
+- `tick=4 leader=node-1 term=1`
+- `tick=8 suspected=[node-2]`
+- `tick=9 reelected=node-2 term=2`
+- `recovered=node-1 state=follower term=2`
+- `TestIsolatedNodeCannotPromoteItself`

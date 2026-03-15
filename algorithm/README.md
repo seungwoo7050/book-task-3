@@ -9,6 +9,12 @@
 | 현재 상태 | `verified 53/53` |
 | 최신 확인 | `2026-03-11` |
 
+## 문제지 빠른 진입
+
+- [problem-subject-essential/README.md](problem-subject-essential/README.md): 알고리즘 핵심 트랙부터 읽는 문제지
+- [problem-subject-elective/README.md](problem-subject-elective/README.md): essential에 포함되지 않은 나머지 문제지
+- [problem-subject-capstone/README.md](problem-subject-capstone/README.md): 현재 종합 capstone 여부를 정리한 문제지
+
 ## 이 레포가 푸는 문제군
 - 작은 BOJ 문제를 자료구조, 탐색, DP, greedy, 그래프 후반부까지 학습 순서로 다시 묶는 문제군
 - 문제 원문과 풀이 코드를 분리하고, 공개 해설과 장문 노트까지 함께 보이게 만드는 학습 아카이브 설계 문제

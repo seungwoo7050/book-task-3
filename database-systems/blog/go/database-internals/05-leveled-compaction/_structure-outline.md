@@ -1,27 +1,20 @@
-# 05 Leveled Compaction — Structure Outline
+# Structure Outline
 
-최종 시리즈는 chronology를 매끈하게 재배열하지 않고, 범위 파악 -> 핵심 invariant -> 재검증과 경계의 순서를 유지한다.
+## Chosen arc
 
-## Planned Files
+1. scheduler가 아니라 merge semantics와 manifest atomicity가 중심이라는 범위를 먼저 잡는다.
+2. demo와 추가 재실행으로 overwrite precedence와 tombstone drop 조건을 먼저 보여 준다.
+3. newest-first merge, conditional tombstone drop, manifest write 순서를 invariant로 정리한다.
+4. 마지막에 multi-level balancing과 rollback 부재를 별도 boundary로 분리한다.
 
-- `00-series-map.md`: 프로젝트 질문, 읽는 순서, source-of-truth 파일, 재검증 명령을 잡는 지도
-- `10-chronology-scope-and-surface.md`: 파일 구조와 테스트 이름을 근거로 처음 가설이 바뀌는 구간
-- `20-chronology-core-invariants.md`: `KWayMerge`와 `NeedsL0Compaction`가 실제로 invariant를 고정하는 구간
-- `30-chronology-verification-and-boundaries.md`: `go test`/`pytest`와 demo 출력으로 경계를 확정하는 구간
+## Why this structure
 
-## Article Goals
+- 이 랩은 compaction을 설명하면서도 metadata atomicity를 같이 다뤄야 해서, merge와 manifest를 같은 축에 두는 편이 맞다.
+- tombstone drop은 deepest 여부에 따라 달라지므로 demo만으로는 부족했고, 추가 관찰값을 early evidence로 포함했다.
+- in-memory level mutation이 manifest write보다 먼저 일어나는 점은 source-only nuance라 invariant 장에서 분명히 적는 편이 좋다.
 
-1. `10-chronology-scope-and-surface.md`
-   범위를 `tests/`와 README에서 어떻게 다시 좁혔는지 보여 준다.
-   코드 앵커: `TestKWayMergeKeepsNewerValue`, `KWayMerge`
-   CLI: `find internal tests cmd -type f | sort`, `rg -n "^func Test" tests`
+## Rejected alternatives
 
-2. `20-chronology-core-invariants.md`
-   핵심 invariant가 `KWayMerge`와 `NeedsL0Compaction` 사이에서 어떻게 고정되는지 보여 준다.
-   코드 앵커: `KWayMerge`, `NeedsL0Compaction`
-   CLI: `rg -n "^(type|func) " internal cmd`, `rg -n "KWayMerge|NeedsL0Compaction" internal cmd`
-
-3. `30-chronology-verification-and-boundaries.md`
-   테스트와 demo를 모두 남겨, pass 신호와 공개 표면을 구분해 설명한다.
-   코드 앵커: `TestKWayMergeDropsTombstonesAtDeepestLevel`, `main.go`
-   CLI: GOWORK=off go test ./...; GOWORK=off go run ./cmd/leveled-compaction
+- compaction 일반론을 길게 설명하는 구조는 버렸다.
+- 테스트 요약만 나열하는 구조도 버렸다.
+- scheduler나 benchmark 얘기를 상상으로 확장하는 서사는 현재 범위를 벗어나 제외했다.

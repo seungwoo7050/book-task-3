@@ -1,35 +1,34 @@
 # commerce-backend-v2 structure outline
 
-## 글 목표
+## 중심 질문
 
-- 같은 도메인을 더 깊게 판 대표 capstone의 구현 순서를 복원한다.
-- macOS + VSCode 통합 터미널 기준의 `./gradlew`, `make`, Compose, Testcontainers 흐름을 유지한다.
+- `commerce-backend-v2`가 왜 baseline의 "기능 확장판"이 아니라 더 깊어진 대표 capstone인지
+- 그 깊이를 설명할 때 어떤 runtime signal은 살리고, 어떤 미완료 seam은 숨기지 말아야 하는지
 
-## 글 순서
+## 글 흐름
 
-1. persisted auth와 end-to-end commerce flow를 먼저 고정한 단계
-2. checkout, payment, outbox를 invariant 중심으로 묶은 단계
-3. Redis, Kafka, Testcontainers 검증으로 대표 결과물로 닫은 단계
+1. auth가 persisted user/session/role guard로 바뀐 지점부터 시작한다.
+2. validation, cart, checkout, payment idempotency가 baseline과 달라진 실제 계약을 보여 준다.
+3. Redis/Kafka wiring와 Testcontainers 검증을 설명하되, outbox `published_at` 미반영 결함을 같이 드러낸다.
+4. custom health는 공개돼 있지만 actuator는 `403`인 ops 표면 차이로 마무리한다.
 
-## 반드시 넣을 코드 앵커
+## 반드시 남길 증거
 
-- `CommercePortfolioApiTest.adminCatalogCustomerCheckoutAndPaymentFlowWorks()`
-- `OrderService.checkout()`
-- `PaymentService.confirmMockPayment()`
-- `OutboxPublisher.publishPending()`
+- `SecurityConfig`, `JwtAuthenticationFilter`, `AuthService`
+- `AdminCategoryController`, `AdminProductController`, `OrderService`, `PaymentService`
+- `OutboxPublisher`, `OrderPaidEventConsumer`, `OutboxEventEntity`
+- `CommercePortfolioApiTest`, `CommerceMessagingIntegrationTest`
+- `2026-03-14` 재실행 lint/test/smoke 결과
+- `2026-03-14` Compose HTTP/DB 확인 결과
 
-## 반드시 넣을 CLI
+## 반드시 피할 서술
 
-```bash
-cd spring
-./gradlew testClasses --no-daemon
-make lint
-make test
-make smoke
-docker compose up --build
-```
+- "Google OAuth까지 완전 구현됐다"는 식의 과장
+- "Kafka outbox가 완전히 닫혔다"는 식의 단정
+- "actuator health가 공개 probe endpoint다"라는 오독
+- baseline과 같은 문제를 푼 이유를 단순 반복처럼 축소하는 설명
 
-## 핵심 개념
+## 톤 체크
 
-- 대표 결과물의 깊이는 같은 문제를 더 엄격한 규칙으로 다시 푸는 데서 나온다.
-- Redis와 Kafka는 실제 검증과 연결될 때만 설득력이 생긴다.
+- README 확대판이 아니라, 실제로 다시 실행하면서 확인한 chronology가 살아 있어야 한다.
+- 이미 답을 다 알고 쓴 홍보문보다, 무엇이 좋아졌고 무엇이 아직 삐걱대는지 함께 읽히는 탐색형 톤을 유지한다.

@@ -1,27 +1,20 @@
-# 03 Mini LSM Store — Structure Outline
+# Structure Outline
 
-최종 시리즈는 chronology를 매끈하게 재배열하지 않고, 범위 파악 -> 핵심 invariant -> 재검증과 경계의 순서를 유지한다.
+## Chosen arc
 
-## Planned Files
+1. memtable과 SSTable을 다시 묶는 orchestration 단계라는 범위를 먼저 잡는다.
+2. demo와 추가 재실행으로 cross-level lookup 결과를 먼저 보여 준다.
+3. immutable swap, newest-first ordering, tombstone precedence, reopen sequence 복원을 invariant로 정리한다.
+4. 마지막에 durability와 compaction이 아직 빠져 있다는 점을 따로 못 박는다.
 
-- `00-series-map.md`: 프로젝트 질문, 읽는 순서, source-of-truth 파일, 재검증 명령을 잡는 지도
-- `10-chronology-scope-and-surface.md`: 파일 구조와 테스트 이름을 근거로 처음 가설이 바뀌는 구간
-- `20-chronology-core-invariants.md`: `Put`와 `Get`가 실제로 invariant를 고정하는 구간
-- `30-chronology-verification-and-boundaries.md`: `go test`/`pytest`와 demo 출력으로 경계를 확정하는 구간
+## Why this structure
 
-## Article Goals
+- 이 랩은 앞선 두 프로젝트를 묶는 연결점이라, 개별 자료구조보다 lifecycle 설명이 우선이다.
+- demo 출력만으로도 tombstone과 overwrite precedence를 보여 줄 수 있어 초반 evidence로 적합하다.
+- flush failure rollback 부재는 테스트에 안 나오지만 source-only risk라서 invariant 장에 포함했다.
 
-1. `10-chronology-scope-and-surface.md`
-   범위를 `tests/`와 README에서 어떻게 다시 좁혔는지 보여 준다.
-   코드 앵커: `TestPutAndGet`, `Put`
-   CLI: `find internal tests cmd -type f | sort`, `rg -n "^func Test" tests`
+## Rejected alternatives
 
-2. `20-chronology-core-invariants.md`
-   핵심 invariant가 `Put`와 `Get` 사이에서 어떻게 고정되는지 보여 준다.
-   코드 앵커: `Put`, `Get`
-   CLI: `rg -n "^(type|func) " internal cmd`, `rg -n "Put|Get" internal cmd`
-
-3. `30-chronology-verification-and-boundaries.md`
-   테스트와 demo를 모두 남겨, pass 신호와 공개 표면을 구분해 설명한다.
-   코드 앵커: `TestPersistenceAfterReopen`, `main.go`
-   CLI: GOWORK=off go test ./...; GOWORK=off go run ./cmd/mini-lsm-store
+- LSM 일반론 위주 설명은 버렸다.
+- MemTable과 SSTable 구현 세부를 다시 길게 반복하는 구조도 버렸다.
+- production durability를 암시하는 서사는 source-first 원칙에 맞지 않아 제외했다.

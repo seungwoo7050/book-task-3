@@ -1,112 +1,65 @@
-# 20 02 Leader-Follower Replication에서 진짜 중요한 상태 전이만 붙잡기
+# Core Invariants
 
-이 시리즈의 가운데 글이다. 이제부터는 README 요약보다 코드가 더 많은 말을 한다. 핵심 함수 두 곳을 골라 상태 전이가 어떻게 고정되는지 확인한다.
+## 1. offset는 log identity이자 replay 경계다
 
-## Phase 2 — 핵심 상태 전이를 붙잡는 구간
+[`ReplicationLog.append()`](/Users/woopinbell/work/book-task-3/database-systems/python/ddia-distributed-systems/projects/02-leader-follower-replication/src/leader_follower/core.py)는 새 offset을 `len(self.entries)`로 정한다. 별도 sequence generator나 wall clock이 없다. 그래서 이 랩의 ordering은 "리스트에 append된 순서" 자체다.
 
-이번 글에서는 핵심 함수 두 곳을 따라가며 같은 invariant가 어디서 고정되고, 다른 각도에서 어떻게 반복되는지 본다.
+테스트 [`test_replication_log_assigns_sequential_offsets()`](/Users/woopinbell/work/book-task-3/database-systems/python/ddia-distributed-systems/projects/02-leader-follower-replication/tests/test_replication.py)는 `0`, `1`이 순서대로 붙는지만 확인한다. 겉보기엔 작은 assert지만, follower가 offset을 replay 경계로 사용하기 때문에 이 순차성은 나중에 idempotency의 바닥이 된다.
 
-### Session 1 — replicate_once에서 invariant가 잠기는 지점 보기
+## 2. follower watermark는 "어디까지 적용했는가"만 기억한다
 
-여기서 가장 먼저 확인한 것은 `replicate_once`가 어떤 입력을 받아 어떤 상태를 고정하는지 분해한다. 처음에는 `replicate_once` 하나를 이해하면 나머지 흐름도 거의 자동으로 따라올 거라고 생각했다.
-
-하지만 실제로는 `rg -n "replicate_once|Follower" src`로 핵심 함수 위치를 다시 잡고, `replicate_once`가 문제 정의의 첫 번째 bullet과 정확히 맞물리는지 확인했다. 결정적으로 방향을 잡아 준 신호는 `replicate_once` 안에서 상태가 한 번에 굳는지, 아니면 보조 구조로 넘겨지는지가 프로젝트의 설명 밀도를 갈랐다.
-
-변경 단위:
-- `database-systems/python/ddia-distributed-systems/projects/02-leader-follower-replication/src/leader_follower/core.py`의 `replicate_once`
-
-CLI:
-
-```bash
-$ rg -n "replicate_once|Follower" src
-src/leader_follower/core.py:53:class Follower:
-src/leader_follower/core.py:78:def replicate_once(leader: Leader, follower: Follower) -> int:
-src/leader_follower/core.py:85:    follower = Follower()
-src/leader_follower/core.py:87:    applied = replicate_once(leader, follower)
-src/leader_follower/__init__.py:1:from .core import Follower, Leader, ReplicationLog, replicate_once
-src/leader_follower/__init__.py:3:__all__ = ["Follower", "Leader", "ReplicationLog", "replicate_once"]
-```
-
-검증 신호:
-- `replicate_once` 안에서 상태가 한 번에 굳는지, 아니면 보조 구조로 넘겨지는지가 프로젝트의 설명 밀도를 갈랐다.
-- `leader가 local state와 append-only log를 어떻게 함께 유지하는지 익힙니다.`
-
-핵심 코드:
+Follower는 전체 log를 저장하지 않는다. 대신 `last_applied_offset` 하나만 들고 있다.
 
 ```python
-def replicate_once(leader: Leader, follower: Follower) -> int:
-    entries = leader.log_from(follower.watermark() + 1)
-    return follower.apply(entries)
-
-
-def demo() -> None:
-    leader = Leader()
-    follower = Follower()
-    leader.put("alpha", "1")
-    applied = replicate_once(leader, follower)
-    print({"applied": applied, "value": follower.get("alpha")[0]})
+def watermark(self) -> int:
+    return self.last_applied_offset
 ```
 
-왜 여기서 판단이 바뀌었는가:
-
-`replicate_once`는 이 프로젝트에서 규칙이 가장 먼저 굳는 지점을 보여 준다. 테스트가 요구한 첫 번째 조건이 실제 코드 규칙으로 바뀌는 순간을 여기서 확인할 수 있었다.
-
-이번 구간에서 새로 이해한 것:
-- `Log Shipping`에서 정리한 요점처럼, leader-follower 복제의 핵심은 "store state 자체"보다 "state를 만든 ordered mutation stream"을 보내는 것이다. follower는 leader의 현재 key-value map을 통째로 받지 않고, 자신이 마지막으로 적용한 offset 이후의 entry만 가져온다.
-
-다음으로 넘긴 질문:
-- `Follower`까지 읽어야 비로소 이 프로젝트가 '쓰는 방법'만이 아니라 '읽고 복원하는 방법'까지 같이 고정하는지 판단할 수 있다.
-
-### Session 2 — Follower로 같은 규칙 다시 확인하기
-
-이번 세션의 목표는 `Follower`가 `replicate_once`와 어떤 짝을 이루는지 확인하는 것이었다. 초기 가설은 `Follower`는 단순 보조 함수일 거라고 생각했다.
-
-막상 다시 펼쳐 보니 두 번째 앵커를 읽고 나니, 실제로는 `replicate_once`가 만든 상태를 외부에서 관찰 가능하게 만드는 규칙이 여기 있었다. 특히 `Follower`는 테스트의 뒤쪽 시나리오를 설명하는 열쇠였다.
-
-변경 단위:
-- `database-systems/python/ddia-distributed-systems/projects/02-leader-follower-replication/src/leader_follower/core.py`의 `Follower`
-
-CLI:
-
-```bash
-$ rg -n "^(class|def) " src
-src/leader_follower/core.py:7:class LogEntry:
-src/leader_follower/core.py:14:class ReplicationLog:
-src/leader_follower/core.py:30:class Leader:
-src/leader_follower/core.py:53:class Follower:
-src/leader_follower/core.py:78:def replicate_once(leader: Leader, follower: Follower) -> int:
-src/leader_follower/core.py:83:def demo() -> None:
-```
-
-검증 신호:
-- `Follower`는 테스트의 뒤쪽 시나리오를 설명하는 열쇠였다.
-- 특히 `test_replicate_once_incremental_and_deletes` 같은 이름이 왜 필요한지, 이 함수에서야 연결이 됐다.
-
-핵심 코드:
+이 값은 `replicate_once()`에서 다음 fetch 시작점을 정할 때 사용된다.
 
 ```python
-class Follower:
-    def __init__(self) -> None:
-        self.store: dict[str, str] = {}
-        self.last_applied_offset = -1
-
-    def apply(self, entries: list[LogEntry]) -> int:
-        applied = 0
-        for entry in entries:
-            if entry.offset <= self.last_applied_offset:
-                continue
-            if entry.operation == "put" and entry.value is not None:
-                self.store[entry.key] = entry.value
-            if entry.operation == "delete":
-                self.store.pop(entry.key, None)
+entries = leader.log_from(follower.watermark() + 1)
 ```
 
-왜 여기서 판단이 바뀌었는가:
+즉, follower의 state machine은 "leader log의 전체 복사본"이 아니라 "현재 key-value state + 마지막으로 본 offset"으로 요약된다. 이게 이 랩이 설명하려는 watermark 기반 incremental sync의 핵심이다.
 
-`Follower`가 없으면 `replicate_once`의 의미도 끝까지 설명되지 않는다. 이 코드를 보고 나서야, 이 프로젝트가 단일 API 구현이 아니라 ordering / visibility / recovery 규칙을 통째로 묶는 이유를 납득할 수 있었다.
+## 3. idempotent apply는 중복 batch를 skip하는 것으로 만든다
 
-이번 구간에서 새로 이해한 것:
-- `Log Shipping`에서 정리한 요점처럼, leader-follower 복제의 핵심은 "store state 자체"보다 "state를 만든 ordered mutation stream"을 보내는 것이다. follower는 leader의 현재 key-value map을 통째로 받지 않고, 자신이 마지막으로 적용한 offset 이후의 entry만 가져온다.
+`Follower.apply()`의 가장 중요한 줄은 아래 조건이다.
 
-다음으로 넘긴 질문:
-- 실제 재검증 명령을 다시 돌려, 지금까지 읽은 invariant가 테스트와 demo 출력에서 같은 모양으로 보이는지 확인한다.
+```python
+if entry.offset <= self.last_applied_offset:
+    continue
+```
+
+이 조건 때문에 follower는 이미 본 offset 이하의 entry를 다시 받더라도 건너뛴다. 2026-03-14에 추가로 아래 snippet을 실행했다.
+
+```python
+initial_apply 2 1 {'a': '1', 'b': '2'}
+duplicate_apply 0 1 {'a': '1', 'b': '2'}
+incremental_apply 2 3 {'b': '3'}
+replay_batch 0 3 {'b': '3'}
+```
+
+여기서 중요한 건 `duplicate_apply`와 `replay_batch`가 둘 다 `0`을 돌려준다는 점이다. follower는 같은 entry를 다시 해석해 state를 덮어쓰지 않는다. 이미 watermark가 앞서 있으면 배치 전체가 무효화된다. docs의 [`idempotent-follower.md`](/Users/woopinbell/work/book-task-3/database-systems/python/ddia-distributed-systems/projects/02-leader-follower-replication/docs/concepts/idempotent-follower.md)가 말하는 "same batch replay is safe"가 바로 이 분기로 구현된다.
+
+## 4. delete도 특별 취급하지 않고 같은 stream에 태운다
+
+`delete`는 별도 tombstone log 타입이 아니라 `operation="delete", value=None`인 일반 entry다. follower는 아래 한 줄로 이를 처리한다.
+
+```python
+if entry.operation == "delete":
+    self.store.pop(entry.key, None)
+```
+
+즉, 이 랩에서 복제는 "state snapshot 복사"가 아니라 "ordered mutation replay"라는 사실이 delete에서 더 분명해진다. leader가 `a`를 지운 뒤 follower가 그 mutation을 같은 offset stream에서 받아서 적용하면 된다.
+
+## 5. 소스만 읽으면 보이는 추가 경계
+
+테스트가 직접 잡지 않지만 소스상 분명한 사실도 있다.
+
+- `Follower.apply()`는 unknown `operation`을 만나도 예외를 던지지 않고 offset만 전진시킬 수 있다.
+- `Leader.delete()`는 key가 없어도 `pop(..., None)` 뒤 delete entry를 남긴다.
+- `ReplicationLog.from_offset()`는 음수 offset이 오면 `max(offset, 0)`으로 보정한다.
+
+이 셋은 production-safe validation이라기보다, 이번 랩이 "ordered log와 incremental replay" 설명에 필요한 최소 semantics만 남겨 둔 결과다.

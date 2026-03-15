@@ -1,12 +1,10 @@
 # 첫 QA evaluation loop
 
-이 글은 `02-chat-qa-ops` 시리즈의 출발점이다. 여기서 따라갈 질문은 명확하다. 상담 품질 평가는 어떻게 "그럴듯한 판단"이 아니라, 다시 실행해도 같은 흐름을 따라갈 수 있는 파이프라인이 되었을까?
+이 프로젝트의 첫 강점은 "채점이 된다"가 아니다. 실패를 언제 자르고, 어떤 근거를 남기고, 어떤 lineage를 저장하는지가 파이프라인 안에 분명하게 들어 있다는 점이다. `pipeline.py`를 다시 읽으면 이 프로젝트가 처음부터 마지막 점수보다 trace를 더 중요하게 다뤘다는 사실이 보인다.
 
-앞선 `00-series-map.md`가 전체 경로를 보여 줬다면, 이 글은 `v0 -> v1` 구간에 집중한다. 즉 rule, evidence, judge, scoring이 어떤 순서로 묶였는지, 그리고 왜 그 순서가 운영 관점에서도 중요했는지를 본다.
+## 평가 파이프라인의 첫 기준은 critical failure를 일찍 분기하는 것이었다
 
-가장 먼저 봐야 할 파일은 `python/backend/src/evaluator/pipeline.py`다. 이 프로젝트의 핵심은 모델을 한 번 부르는 것이 아니라, 실패를 얼마나 일찍 구분하고 어떤 trace를 남기며 점수로 합치는가에 있다.
-
-아래 코드가 중요한 이유는, 이 프로젝트가 처음부터 "마지막 점수"보다 "판단이 어떻게 흘렀는가"를 남기는 구조를 택했다는 점을 보여 주기 때문이다.
+`EvaluationPipeline.evaluate_turn()`은 rule evaluation을 먼저 돌리고, critical rule이 있으면 evidence/judge 단계를 아예 short-circuit한다.
 
 ```python
 rule_results = evaluate_rules(...)
@@ -20,32 +18,54 @@ else:
     llm_judgment, judge_attempts = judge_response_with_trace(...)
 ```
 
-이 순서가 중요한 이유는 `docs/demo/demo-runbook.md`의 Q&A에도 드러난다. 왜 Rule -> Evidence -> Judge 순서냐는 질문에 대한 답이 바로 비용 절감과 failure 명확성이다. critical rule을 먼저 자르면 뒤 단계의 비용을 아낄 수 있고, operator는 "무엇 때문에 탈락했는가"를 더 빨리 읽을 수 있다.
+이 순서가 중요한 이유는 두 가지다.
 
-같은 판단은 CLI surface에도 이어진다. `python/backend/src/cli/main.py`의 `evaluate`, `report`, `compare` 명령은 모두 이 파이프라인이 만든 evaluation row를 다시 읽어, 사람이 바로 확인할 수 있는 표와 숫자로 바꾼다. 중요한 이유는 여기서 첫 운영 경험이 웹 대시보드보다 CLI에서 먼저 굳어졌기 때문이다.
+1. 비용: critical rule을 먼저 자르면 뒤 단계 LLM/evidence 비용을 줄일 수 있다.
+2. 설명 가능성: operator가 "왜 탈락했는가"를 더 빨리 읽을 수 있다.
 
-실제 integrity gate를 다시 돌려 보면 이 구조가 얼마나 넓게 테스트되는지도 바로 보인다.
+`demo-runbook.md`가 Q&A에서 "왜 Rule -> Evidence -> Judge 순서인가?"를 따로 다루는 것도 같은 이유다. 이 프로젝트는 좋은 답변을 만들어 내는 시스템이 아니라, failure reasoning을 운영자에게 설명하는 시스템에 더 가깝다.
+
+## trace는 부가 로그가 아니라 evaluation row의 일부다
+
+파이프라인은 최종 `Evaluation` row에 다음을 모두 저장한다.
+
+- `rule_results`
+- `evidence_results`
+- `llm_judgment`
+- `lineage_json`
+- `provider_trace`
+- `retrieval_trace`
+- `claim_trace`
+- `judge_trace`
+
+즉 이 프로젝트에서 evaluation row는 "score row"가 아니라 audit row다. 나중에 dashboard나 session review가 같은 저장 구조를 다시 읽을 수 있는 이유도 여기 있다.
+
+또 `create_trace_envelope()`와 `LineageRecord`로 `run_label`, `dataset`, `evaluator_version`, `prompt_version`, `kb_version`, `retrieval_version`을 함께 남긴다는 점도 중요하다. 처음부터 regression compare를 위한 lineage 슬롯이 준비돼 있었다는 뜻이다.
+
+## CLI가 먼저 중요한 운영 출구가 된 이유
+
+`cli.main`은 `evaluate`, `report`, `compare`, `preflight`, `demo-proof`를 제공한다. 특히 `evaluate --golden-set`은 golden rows를 실제 conversation/turn/evaluation으로 만들어 assertion까지 붙인다. 따라서 CLI는 단순 디버그 유틸이 아니라 batch evaluation runner이자 proof generator다.
+
+실제 2026-03-14 재실행에서도 `gate-all`은 이 파이프라인을 넓게 검사했다.
 
 ```bash
-UV_PYTHON=python3.12 make gate-all
+cd /Users/woopinbell/work/book-task-3/infobank/projects/02-chat-qa-ops/capstone/v2-submission-polish/python
+PATH="$HOME/.local/bin:$PATH" UV_PYTHON=python3.12 make gate-all
 ```
 
-```text
-Lint: passed
-Mypy: no issues found in 42 source files
-MP1: 3 passed
-MP2: 5 passed
-MP3: 15 passed
-MP4: 5 passed
-MP5: 16 passed
-Frontend: 5 passed
-Integrity gate passed for target=all
-```
+결과:
 
-이 출력이 증명하는 것은 테스트가 많이 돈다는 사실만이 아니다. `MP1~MP5`처럼 학습 단위를 integrity gate에 그대로 남겨 두었기 때문에, 이후의 regression compare를 설명할 때도 "어디가 좋아졌는가"를 단계별 언어로 다시 짚을 수 있다.
+- lint 통과
+- mypy: `Success: no issues found in 42 source files`
+- MP1 `3 passed`
+- MP2 `5 passed`
+- MP3 `15 passed`
+- MP4 `5 passed`
+- MP5 `16 passed`
+- frontend `5 passed`
 
-또 하나 좋은 점은 dashboard가 CLI의 경쟁자가 아니라는 점이다. `python/backend/src/api/routes/dashboard.py`는 evaluation row를 평균 점수, critical count, failure top, version compare 결과로 다시 조립한다. 즉 CLI와 dashboard는 서로 다른 진실을 말하는 것이 아니라, 같은 저장 구조를 다른 형태로 보여 주는 두 개의 출구다.
+즉 evaluation loop는 단일 Python 테스트가 아니라, MP1~MP5와 frontend review surface까지 걸친 integrity gate로 이미 묶여 있다.
 
-첫 evaluation loop를 이 프로젝트의 출발점으로 보는 이유도 여기 있다. 좋은 챗봇 답변을 만드는 것만으로는 QA Ops가 되지 않는다. rule, evidence, judge, lineage, assertion이 한 번의 실행 안에서 함께 남아야, 그다음 단계인 golden regression과 운영 review가 가능해진다.
+## 이 단계의 결론
 
-다음 글에서는 바로 그 regression proof 단계로 넘어간다. baseline과 candidate의 차이를 어떻게 `84.06 -> 87.76`, `critical 2 -> 0` 같은 수치로 고정했는지 본다.
+`Chat QA Ops`의 첫 전환점은 더 좋은 judge model이 아니었다. rule, evidence, judge, lineage, assertion을 한 evaluation row에 같이 남기는 파이프라인을 먼저 세운 것이었다. 그 기반이 있었기 때문에 다음 단계에서 compare proof와 review console이 같은 언어를 쓸 수 있게 됐다.

@@ -1,40 +1,30 @@
-# A-auth-lab Evidence Ledger
+# A-auth-lab evidence ledger
 
 ## 독립 프로젝트 판정
+
 - 판정: 처리 대상
-- 이유: 프로젝트 README가 문제 범위를 단독으로 설명하고, `fastapi/Makefile`, `compose.yaml`, `tests/integration/test_local_auth.py`가 검증 진입점을 스스로 가진다.
-- 프로젝트 질문: 회원가입과 로그인만 만드는 대신, 세션 회전과 계정 회복까지 한 묶음으로 어디까지 설명할 것인가.
-- 주의: finer-grained 구현 순서는 commit granularity가 거칠어서 README, docs, code surface, tests 의존 순서를 바탕으로 복원했다. 실제 날짜가 확인되는 부분은 git log와 검증 보고서에만 한정했다.
+- 이유: [`README.md`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/A-auth-lab/README.md) 가 문제 범위를 독립적으로 설명하고, [`fastapi/Makefile`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/A-auth-lab/fastapi/Makefile) 와 통합 테스트가 재검증 진입점을 따로 가진다.
+- 프로젝트 질문: 로컬 계정 인증을 어디까지 "기본 인증 흐름"으로 볼 것인가. 로그인까지만인가, 아니면 이메일 검증, 회복, refresh rotation, CSRF까지인가.
+- 복원 방식: 기존 `blog/` 본문은 근거에서 제외하고, `problem/README`, source code, tests, 실제 재실행 CLI만 사용했다.
 
-## 소스 인벤토리
-- `labs/A-auth-lab/README.md`
-- `labs/A-auth-lab/problem/README.md`
-- `labs/A-auth-lab/docs/README.md`
-- `labs/A-auth-lab/fastapi/README.md`
-- `labs/A-auth-lab/fastapi/Makefile`
-- `labs/A-auth-lab/fastapi/compose.yaml`
-- `backend-fastapi/.github/workflows/labs-fastapi.yml`
-- `backend-fastapi/docs/verification-report.md`
-- `backend-fastapi/labs/A-auth-lab/fastapi/app/api/v1/routes/auth.py`
-- `backend-fastapi/labs/A-auth-lab/fastapi/tests/integration/test_local_auth.py`
-- `git log -- backend-fastapi/labs/A-auth-lab`
+## 근거 인벤토리
 
-## 프로젝트 표면 요약
-- 문제 요약: 사용자는 회원가입하고, 이메일을 검증하고, 로그인하고, 필요하면 비밀번호를 재설정할 수 있어야 합니다. 인증이 끝난 뒤에도 세션 유지와 상태 변경 요청 보호를 함께 설명할 수 있어야 합니다. 상세 성공 기준과 제외 범위는 problem/README.md에 둡니다.
-- 성공 기준: 회원가입과 로그인 흐름이 분리되어 설명 가능해야 합니다. 이메일 검증과 비밀번호 재설정 토큰 발급/소비가 동작해야 합니다. refresh token rotation이 왜 필요한지 코드와 문서로 설명할 수 있어야 합니다. cookie 인증 요청에 CSRF 방어가 함께 붙어야 합니다.
-- 설계 질문: access token과 refresh token을 왜 분리하는가 이메일 검증과 비밀번호 재설정을 같은 토큰 계열 문제로 어디까지 묶을 수 있는가 cookie 인증에서 CSRF를 어디에서 차단해야 하는가
-- 실제 검증 surface: cd fastapi make lint make test make smoke docker compose up --build 실행과 환경 설명은 fastapi/README.md에서 다룹니다. 마지막 기록된 실제 검증 결과는 ../../docs/verification-report.md에 있습니다.
+- [`problem/README.md`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/A-auth-lab/problem/README.md)
+- [`docs/README.md`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/A-auth-lab/docs/README.md)
+- [`fastapi/README.md`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/A-auth-lab/fastapi/README.md)
+- [`app/api/v1/routes/auth.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/A-auth-lab/fastapi/app/api/v1/routes/auth.py)
+- [`app/api/deps.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/A-auth-lab/fastapi/app/api/deps.py)
+- [`app/core/security.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/A-auth-lab/fastapi/app/core/security.py)
+- [`app/domain/services/auth.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/A-auth-lab/fastapi/app/domain/services/auth.py)
+- [`app/db/models/auth.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/A-auth-lab/fastapi/app/db/models/auth.py)
+- [`tests/integration/test_local_auth.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/A-auth-lab/fastapi/tests/integration/test_local_auth.py)
+- [`tests/smoke.py`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/A-auth-lab/fastapi/tests/smoke.py)
 
-## 시간 표지
-- 2026-03-11 bbb6673 Track 1에 대한 전반적인 개선 완료
-- 2026-03-10 a3edce2 docs: enhance backend-fastapi
-- 2026-03-09 7813150 docs(notion): front-react, backend-fastapi
-- 2026-03-09 73372bd Add project: backend-fastapi, backend-spring, cpp-server
+## Chronology ledger
 
-## Chronology Ledger
-| 순서 | 시간 표지 | 당시 목표 | 변경 단위 | 처음 가설 | 실제 조치 | CLI | 검증 신호 | 핵심 코드 앵커 | 새로 배운 것 | 다음 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Phase 1, 2026-03-09 add project commit 73372bd를 기준으로 복원 | 로컬 계정 인증에서 어떤 상태 전이를 한 프로젝트 안에 둘지 정리 | README.md, problem/README.md, app/api/v1/routes/auth.py | 회원가입과 로그인만 구현해도 인증 랩으로 충분할 것 | verify_email, password_reset, refresh_token, logout route를 한 surface로 묶음 | README 기준 `make run`, `docker compose up --build` | auth route에 register/login/me 뿐 아니라 회복·회전 endpoint가 함께 존재 | app/api/v1/routes/auth.py::refresh_token | 인증 랩의 중심은 가입보다 세션의 장기 수명과 회복 경계에 가깝다 | cookie 기반 요청 보호를 어디에 둘지 정리 |
-| 2 | Phase 2, 초기 구현 순서를 파일 의존성으로 복원 | refresh token reuse와 CSRF를 코드에서 분리해 설명 | app/core/security.py, app/domain/services/auth.py, app/repositories/auth_repository.py | refresh 재발급만 있으면 세션 갱신 설명이 끝날 것 | token family 회전, reuse 탐지, CSRF header 검증을 서비스/보안 계층에 배치 | `make test` | 401 `REFRESH_TOKEN_REUSED`, 403 `CSRF_VALIDATION_FAILED`를 테스트가 기대 | tests/integration/test_local_auth.py::test_local_login_refresh_rotation_and_logout | rotation은 UX 기능이 아니라 탈취 감지 장치다 | 비밀번호 재설정과 메일 검증 토큰을 회복 흐름으로 묶기 |
-| 3 | Phase 3, 2026-03-10 docs/verification 정리와 함께 재구성 | 로컬 메일함과 공격자 클라이언트를 포함한 검증 흐름 고정 | tests/integration/test_local_auth.py, fastapi/README.md | 정상 플로우 테스트만 있으면 인증 설명에 충분할 것 | attacker TestClient, mailbox token helper, password reset 재로그인 검증 추가 | README의 `make test`, `make smoke` | 회전 재사용, 비밀번호 변경 후 옛 비밀번호 로그인 실패가 모두 명시됨 | tests/integration/test_local_auth.py::_latest_mail_token | 회복 흐름은 happy path보다 공격 경로를 같이 보여줄 때 더 설명력이 생긴다 | 실제 재실행 기록과 연결 |
-| 4 | 2026-03-09 재검증 + 2026-03-11 track polish | 문서에 적힌 명령이 실제로 다시 실행됐음을 닫기 | docs/verification-report.md, .github/workflows/labs-fastapi.yml, tools/compose_probe.sh | README 명령만 있으면 충분히 검증되었다고 읽힐 것 | compile, lint, test, smoke, compose live/ready probe까지 실제 결과를 보고서에 남김 | `python3 -m compileall app tests`, `make lint`, `make test`, `make smoke`, `./tools/compose_probe.sh labs/A-auth-lab/fastapi 8000` | 2026-03-09 기준 compile/lint/test/smoke/Compose probe 통과 | docs/verification-report.md A-auth-lab 항목 | 인증 랩도 마지막엔 HTTP surface가 살아 있는지 별도 probe가 필요하다 | 외부 로그인과 2FA를 붙이는 다음 랩으로 이동 |
+| 순서 | 당시 목표 | 변경 단위 | 실제로 확인한 것 | CLI | 검증 신호 | 다음으로 넘어간 이유 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | auth surface가 로그인만으로 끝나는지 먼저 판정한다 | `problem/README.md`, `README.md`, `auth.py` | route 목록에 `verify-email`, `password-reset`, `token/refresh`, `logout`까지 모두 있어 범위가 이미 넓다 | `rg -n '"/register"|"verify-email"|password-reset|"/token/refresh"|"/logout"' backend-fastapi/labs/A-auth-lab/fastapi/app/api/v1/routes/auth.py` | 공개 표면만 봐도 이 랩의 중심이 "계정 생애주기" 쪽으로 이동해 있다 | 공개 API만으로는 왜 rotation이 필요한지 설명이 부족해서 서비스 계층으로 내려간다 |
+| 2 | refresh rotation이 정말 핵심 경계인지 확인한다 | `auth.py`, `auth.py` service, `models/auth.py` | `family_id`, `parent_token_id`, `reuse_detected_at`와 family revoke 로직이 따로 존재한다 | `rg -n 'family_id|parent_token_id|reuse_detected_at|REFRESH_TOKEN_REUSED|auth.refresh.reuse_detected' backend-fastapi/labs/A-auth-lab/fastapi/app/domain/services/auth.py backend-fastapi/labs/A-auth-lab/fastapi/app/db/models/auth.py backend-fastapi/labs/A-auth-lab/fastapi/tests/integration/test_local_auth.py` | refresh는 재발급 기능이 아니라 탈취 감지 규칙으로 읽혀야 한다 | token family만으로는 cookie 기반 요청 보호가 설명되지 않아 CSRF 실패면을 본다 |
+| 3 | cookie 인증에서 CSRF를 어디서 자르는지 확인한다 | `api/deps.py`, `core/security.py`, 통합 테스트 | `require_csrf`와 `validate_csrf`가 refresh/logout에 직접 붙고, 테스트가 403 `CSRF_VALIDATION_FAILED`를 고정한다 | `rg -n 'require_csrf|validate_csrf|CSRF_VALIDATION_FAILED|csrf_token' backend-fastapi/labs/A-auth-lab/fastapi/app/api/deps.py backend-fastapi/labs/A-auth-lab/fastapi/app/core/security.py backend-fastapi/labs/A-auth-lab/fastapi/tests/integration/test_local_auth.py` | 회전 규칙과 CSRF 규칙이 같은 실패 코드로 섞이지 않고 분리된다 | 마지막으로 문서에 적힌 검증 명령이 지금 셸에서 실제로 재현되는지 확인한다 |
+| 4 | 현재 재검증 상태를 최신 값으로 닫는다 | `Makefile`, `tests/smoke.py`, 현재 셸 환경 | 공식 `make` 진입점과 보조 `PYTHONPATH` 재실행 모두 즉시 통과하지는 않는다 | `make lint`<br>`make test`<br>`make smoke`<br>`PYTHONPATH=. pytest`<br>`PYTHONPATH=. python -m tests.smoke` | `make lint`는 `health.py` E501, `make test`는 `No module named 'app'`, `make smoke`는 `No module named 'fastapi'`, 보조 재실행은 `No module named 'argon2'` | 구현 설명은 가능하지만 재현 환경은 흔들린다는 사실까지 문서에 남겨야 현재 품질이 맞는다 |

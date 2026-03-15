@@ -2,31 +2,50 @@
 
 ## 글 목표
 
-- JPA를 CRUD 성공담이 아니라 schema와 충돌 제어의 연결로 설명한다.
-- macOS + VSCode 통합 터미널 기준의 검증 흐름을 유지한다.
+- 이 lab을 JPA CRUD 자랑이 아니라 persistence contract 해설로 다시 쓴다.
+- `@Version`의 존재와 실제 API 경험 사이의 차이를 중심에 둔다.
+- Querydsl-ready, validation, paging error를 모두 "현재 구현됨"과 "자리만 있음"으로 분리해 적는다.
 
 ## 글 순서
 
-1. CRUD와 version conflict를 함께 고정한 단계
-2. Flyway, entity, service guard를 묶은 단계
-3. Querydsl과 확장 범위를 뒤로 미룬 이유를 닫는 단계
+1. controller/test가 product CRUD보다 stale-version conflict를 먼저 보여 준다는 점을 확정한다.
+2. migration, entity, service를 이어 읽으면서 version check가 수동인지 자동인지 설명한다.
+3. validation 공백과 update response version 노출 문제를 manual HTTP 결과와 연결한다.
+4. Querydsl dependency와 실제 source 부재를 짚고 현재 lab의 범위를 닫는다.
 
 ## 반드시 넣을 코드 앵커
 
-- `DataApiTest.productCrudAndConflictCheckWork()`
-- `V2__lab_products.sql`
+- `DataApiController.update()`
+- `DataApiService.list()`
 - `DataApiService.updatePrice()`
+- `ProductEntity.version`
+- `V2__lab_products.sql`
+- `DataApiTest.productCrudAndConflictCheckWork()`
 
-## 반드시 넣을 CLI
+## 반드시 넣을 검증 신호
 
 ```bash
-cd spring
-make test
-make smoke
-docker compose up --build
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/D-data-jpa-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew spotlessCheck checkstyleMain checkstyleTest'
+
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/D-data-jpa-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew test'
+
+docker run --rm -u $(id -u):$(id -g) -p 18083:8080 \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/D-data-jpa-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew bootRun'
 ```
 
-## 핵심 개념
+## 반드시 남길 한계
 
-- JPA에서는 migration과 entity를 같이 봐야 의미가 생긴다.
-- optimistic locking은 쓰기 충돌을 어디서 감지할지 정하는 규칙이다.
+- invalid create가 `200`으로 저장되는 상태
+- update response version과 persisted version이 즉시 일치하지 않는 상태
+- Querydsl이 build dependency 수준에 머무는 상태

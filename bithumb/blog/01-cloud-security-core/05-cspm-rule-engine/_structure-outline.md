@@ -1,36 +1,33 @@
-# 05 CSPM Rule Engine 구조 메모
+# 05 CSPM Rule Engine structure outline
 
-이 문서는 최종 글을 쓰기 전에 서사 배치를 점검하는 메모다. 독자에게 무엇을 먼저 설명하고 어디서 코드와 CLI를 꺼내 올지 한눈에 보이도록 정리한다.
+## 중심 질문
 
-## 이번 문서가 맡는 일
-- Terraform plan과 운영 snapshot에서 triage 가능한 misconfiguration을 뽑는 규칙 엔진으로 프로젝트를 읽는다.
-- 서사는 `plan 규칙 -> snapshot 확장 -> secure fixture 0건` 순서를 유지해 범위 확장과 품질 상한선을 함께 보이게 한다.
+- 이 engine이 왜 plan scanner를 넘어서 multi-source triage engine으로 읽혀야 하는지
+- secure plan 0건과 combined CLI output이 왜 다른 층위의 진술인지
 
-## 먼저 붙들 소스 묶음
-- [`../../../01-cloud-security-core/05-cspm-rule-engine/README.md`](../../../01-cloud-security-core/05-cspm-rule-engine/README.md)
-- [`../../../01-cloud-security-core/05-cspm-rule-engine/problem/README.md`](../../../01-cloud-security-core/05-cspm-rule-engine/problem/README.md)
-- [`../../../01-cloud-security-core/05-cspm-rule-engine/docs/concepts/rule-design.md`](../../../01-cloud-security-core/05-cspm-rule-engine/docs/concepts/rule-design.md)
-- [`../../../01-cloud-security-core/05-cspm-rule-engine/python/README.md`](../../../01-cloud-security-core/05-cspm-rule-engine/python/README.md)
-- [`../../../01-cloud-security-core/05-cspm-rule-engine/python/src/cspm_rule_engine/scanner.py`](../../../01-cloud-security-core/05-cspm-rule-engine/python/src/cspm_rule_engine/scanner.py)
-- [`../../../01-cloud-security-core/05-cspm-rule-engine/python/src/cspm_rule_engine/cli.py`](../../../01-cloud-security-core/05-cspm-rule-engine/python/src/cspm_rule_engine/cli.py)
-- [`../../../01-cloud-security-core/05-cspm-rule-engine/python/tests/test_scanner.py`](../../../01-cloud-security-core/05-cspm-rule-engine/python/tests/test_scanner.py)
+## 글 흐름
 
-## 본문을 배치하는 순서
+1. root module resource dispatch로 시작한다.
+2. access key snapshot을 같은 finding shape로 합치는 장면을 두 번째 축으로 둔다.
+3. secure plan 0건과 combined CLI 차이를 세 번째 축으로 둔다.
+4. root module 한정 등 현재 입력 범위의 좁음을 마지막에 남긴다.
 
-- `00-series-map.md`
-  - plan JSON과 snapshot 두 입력이 왜 같은 프로젝트에 묶이는지, 어떤 verify로 읽을지 먼저 고정한다.
-- `10-development-timeline.md`
-  - 도입: CSPM을 단순 policy lint가 아니라 triage engine으로 보는 시점을 잡는다.
-  - Phase 1. Terraform plan 규칙부터 세웠다.
-  - Phase 2. access key snapshot으로 입력 범위를 넓혔다.
-  - Phase 3. secure fixture 0건을 품질 기준으로 삼았다.
-  - 마무리: 다음 remediation runner가 왜 finding control ID를 입력 계약으로 쓰게 되는지 넘긴다.
+## 반드시 남길 증거
 
-## 강조할 코드와 CLI
-- 코드 앵커: resource dispatch, `CSPM-001`/`002`/`003`/`010` rule blocks, CLI output schema, secure fixture assertions
-- CLI 앵커: `python -m cspm_rule_engine.cli ...`, `pytest 01-cloud-security-core/05-cspm-rule-engine/python/tests`
-- 개념 훅: good CSPM rule은 많이 잡는 규칙이 아니라 triage 가능한 finding을 내는 규칙이라는 점
+- `_resources()`, `scan_plan()`, `scan_access_keys()`
+- insecure CLI의 `CSPM-001` ~ `CSPM-004`
+- pytest `3 passed in 0.01s`
+- secure plan 0건은 `scan_plan()` 기준이라는 점
+- root module만 읽는 현재 구조
 
-## 리라이트 기준
-- chronology는 실제 commit timestamp보다 source, test, CLI가 묶이는 순서를 기준으로 읽는다.
-- 이 문서는 메타 기록보다 서사 배치와 강조점에 집중한다.
+## 반드시 피할 서술
+
+- secure fixture 0건을 combined CLI 전체 0건으로 오해하게 만드는 문장
+- nested module까지 이미 다룬다고 보이게 하는 표현
+- snapshot rule을 부가 기능처럼 축소해 쓰는 설명
+- `CSPM-004`를 secure plan의 false positive처럼 묘사하는 오독
+
+## 톤 체크
+
+- chronology는 `plan rules -> snapshot rule -> secure 기준선 -> 현재 범위` 순서로 살아 있어야 한다.
+- 홍보문보다 "같은 finding 언어로 묶인 입력들"과 "무엇이 아직 제외됐는가"가 함께 읽히는 탐색형 톤을 유지한다.

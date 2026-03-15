@@ -1,20 +1,10 @@
 # Semantic Shell Before State
 
-이 프로젝트를 다시 읽다 보면 가장 먼저 드는 생각이 있다. 아직 데이터도 없고, 저장도 없고, 라우팅도 없는데 왜 이렇게 구조 이야기를 오래 하는가. 그런데 코드를 따라가 보면 바로 이유가 나온다. 이 화면의 출발점은 "무엇을 저장할 것인가"가 아니라 "사용자가 이 화면을 어떤 순서로 읽고 통과할 것인가"였기 때문이다.
+이 프로젝트를 다시 읽으면서 가장 먼저 고쳐 잡은 해석은 "접근성 좋은 폼 예제"라는 축소였다. 실제로는 폼보다 먼저 semantic shell을 고정하는 연습에 더 가깝다. `workspaceName` 검증이나 email 정규식은 그다음 문제이고, 진짜 출발점은 skip link와 landmark, 그리고 읽기 순서가 코드 첫 화면에서 이미 드러나느냐였다.
 
-설정형 UI는 대개 상태와 폼 검증 이야기로 바로 들어가기 쉽다. 하지만 여기서는 순서를 거꾸로 잡았다. 먼저 `header`, `main`, skip link, form grouping, status message가 놓일 자리를 고정하고, 그 다음에야 validation을 붙였다. 그 덕분에 뒤에 나오는 로직은 DOM을 다시 설계하는 대신 이미 정해 둔 구조를 채우는 쪽으로 흘렀다.
+## 구조를 먼저 고정하니 나중 로직이 DOM을 흔들지 않았다
 
-브라우저가 기본으로 주는 semantic surface를 충분히 믿어 보면, 접근성은 마지막 polish가 아니라 처음부터 선택해야 하는 아키텍처라는 사실이 선명해진다. 이 글은 바로 그 첫 선택이 어떻게 다음 단계의 복잡도를 줄였는지 복원하는 기록이다.
-
-## 구현 순서를 먼저 짚으면
-
-- semantic shell과 landmark를 먼저 만들어 "읽히는 순서"를 고정했다.
-- validation은 `SettingsValues -> SettingsErrors`라는 순수 함수로 닫고, DOM 레이어는 그 결과를 투영하는 역할만 맡겼다.
-- 마지막에는 `npm run verify`로 keyboard-only 흐름과 landmark 탐색이 실제 브라우저에서도 유지되는지 확인했다.
-
-## 화면을 꾸미기 전에 먼저 읽히는 구조를 못 박았다
-
-이 프로젝트의 첫 전환점은 화려한 위젯이 아니라 skip link였다. `getAppMarkup()`를 보면 제일 앞에 `Skip to main content`가 나오고, 그 뒤로 topbar와 settings form이 landmark 안에 배치된다. 이 짧은 마크업 조각이 이후 모든 판단의 기준점이 됐다.
+핵심 구현은 [`vanilla/src/app.ts`](/Users/woopinbell/work/book-task-3/front-react/study/frontend-foundations/01-semantic-layouts-and-a11y/vanilla/src/app.ts)의 `getAppMarkup()`에서 시작한다. 여기서 첫 줄이 skip link라는 점이 중요했다.
 
 ```ts
 export function getAppMarkup(): string {
@@ -22,77 +12,112 @@ export function getAppMarkup(): string {
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <div class="shell">
       <header class="topbar">
-        <div>
-          <p class="eyebrow">Foundations 01</p>
-          <h1 class="title">Accessible workspace settings shell</h1>
+      ...
+      <div class="workspace-grid" data-testid="workspace-grid">
+        <nav class="nav-card" aria-label="Settings sections">
+        ...
+        <main id="main-content" tabindex="-1">
+        ...
+        <aside class="panel review-panel" id="review" aria-labelledby="review-heading">
 ```
 
-중요한 건 이 코드가 예뻐서가 아니다. landmark와 reading order를 먼저 못 박아 두니, 뒤에서 validation message를 넣거나 focus를 이동시킬 때 "어디에 붙여야 하는가"를 다시 고민할 필요가 없었다. 구조가 먼저 서 있으니 로직은 그 구조에 맞게만 흘렀다.
+이 마크업만 봐도 이 화면의 탐색 경로가 거의 정해진다.
 
-이 판단은 docs에서도 그대로 드러난다. `docs/concepts/semantic-layout-decisions.md`는 responsive 기준조차 "컬럼 수"가 아니라 "reading order 보존"으로 잡았다고 설명한다. 즉 이 프로젝트는 처음부터 레이아웃을 상태의 배경이 아니라 품질 기준 자체로 다룬 셈이다.
+- banner
+- navigation
+- main
+- complementary aside
+- skip link로 `#main-content` 점프
 
-## validation을 DOM 바깥으로 밀어내자 흐름이 단순해졌다
+React도 없고 state store도 없지만, 화면을 "어떤 순서로 통과하게 만들 것인가"는 이미 여기서 끝난다. 이 순서가 먼저 고정돼 있기 때문에 뒤에서 validation 메시지와 focus 이동을 붙여도 구조를 다시 설계할 필요가 없다.
 
-두 번째 전환점은 검증 규칙을 `validation.ts`의 순수 함수로 밀어낸 것이다. `validateSettings()`는 trim과 email 정규식만 책임지고, `app.ts`는 그 결과를 받아 `aria-invalid`, inline error, status live region, focus 이동으로 바꾼다.
+## validation은 규칙보다 projection이 더 중요했다
+
+검증 규칙 자체는 단순하다. [`vanilla/src/validation.ts`](/Users/woopinbell/work/book-task-3/front-react/study/frontend-foundations/01-semantic-layouts-and-a11y/vanilla/src/validation.ts)는 trim과 email pattern만 다룬다.
 
 ```ts
-export function validateSettings(values: SettingsValues): SettingsErrors {
-  const errors: SettingsErrors = {};
-  const name = values.workspaceName.trim();
-  const email = values.supportEmail.trim();
+if (name.length < 3) {
+  errors.workspaceName =
+    "Workspace name must be at least 3 characters long.";
+}
 
-  if (name.length < 3) {
-    errors.workspaceName = "Workspace name must be at least 3 characters long.";
-  }
-  if (!EMAIL_PATTERN.test(email)) {
-    errors.supportEmail = "Enter a valid support email address.";
-  }
-  return errors;
+if (!EMAIL_PATTERN.test(email)) {
+  errors.supportEmail = "Enter a valid support email address.";
 }
 ```
 
-이 분리가 좋았던 이유는 blur 검증과 submit 검증이 같은 규칙을 그대로 재사용할 수 있기 때문이다. 실제 `runValidation()`은 field-level 검증과 full-form 검증을 같은 함수로 처리하고, submit 시에는 첫 번째 invalid field로 focus를 되돌린다.
+하지만 이 프로젝트가 괜찮은 이유는 규칙보다 projection이 명확하기 때문이다. `app.ts`는 같은 오류 결과를 세 군데에 동시에 투영한다.
+
+- `aria-invalid`
+- inline error text
+- status live region
+
+그리고 submit이 실패하면 첫 invalid field로 focus를 되돌린다.
 
 ```ts
-const runValidation = (targetField?: typeof FIELD_IDS[number]) => {
-  const errors = validateSettings(extractValues(form));
-  if (targetField) {
-    updateErrorState(form, { [targetField]: errors[targetField] });
-    return errors;
-  }
-  updateErrorState(form, errors);
-  return errors;
-};
+if (hasValidationErrors(errors)) {
+  const count = Object.values(errors).filter(Boolean).length;
+  status.textContent = `Fix ${count} field${count > 1 ? "s" : ""} before saving.`;
+  focusFirstInvalidField(form, errors);
+  return;
+}
 ```
 
-여기서 배운 건 validation의 핵심이 정규식이 아니라 projection이라는 점이었다. 같은 오류 결과가 live region에도, inline text에도, focus 이동에도 동시에 반영되어야만 keyboard 사용자와 시각적 사용자가 같은 상태를 공유할 수 있다.
-
-## 마지막에는 브라우저에서 keyboard path를 다시 확인했다
-
-이 프로젝트는 코드만 보면 소박하지만, 검증은 소박하지 않다. 단위 테스트로 검증 규칙과 shell 구조를 먼저 고정하고, 그다음 Playwright로 landmark 탐색과 keyboard-only submit을 끝까지 재생한다.
-
-```bash
-cd study
-npm run verify --workspace @front-react/semantic-layouts-a11y
-```
-
-2026-03-13 replay 기준으로 `vitest`는 5개 테스트가, `playwright`는 2개 시나리오가 모두 통과했다. 특히 브라우저 시나리오는 landmark 노출과 keyboard-only submission을 함께 다룬다. 이게 중요했던 이유는 접근성 품질이 함수 단위 검증만으로는 완성되지 않기 때문이다. 실제 focus 이동과 읽기 순서는 결국 브라우저에서 확인해야 한다.
-
-blur 시점 검증을 붙인 부분도 같은 맥락에서 읽힌다. 저장 버튼을 누를 때만 갑자기 빨간 메시지를 쏟아내는 대신, 사용자가 필드를 빠져나가는 순간 현재 위치의 문제를 알려 주도록 한 것이다.
+blur 시점 검증도 같은 규칙 위에서만 동작한다.
 
 ```ts
 FIELD_IDS.forEach((field) => {
   const input = getFieldInput(form, field);
+
   input?.addEventListener("blur", () => {
     runValidation(field);
   });
 });
 ```
 
-이 조각은 작지만, 이 프로젝트가 접근성을 "나중에 붙이는 경고 문구"가 아니라 사용자가 화면을 통과하는 흐름 전체로 다뤘다는 사실을 잘 보여 준다.
+즉 이 화면의 포인트는 "validation 함수를 만들었다"가 아니라, semantic shell 위에 오류 상태를 일관되게 입혔다는 데 있다. 그래서 keyboard 사용자와 시각적 사용자가 같은 위치에서 같은 피드백을 받게 된다.
 
-## 무엇이 아직 남았는가
+## responsive도 시각 효과보다 reading order 유지가 우선이었다
 
-이 화면은 여전히 작다. persistence도 없고, 실제 라우팅도 없고, 네트워크 상태도 없다. 하지만 바로 그 제한 덕분에 하나는 분명하게 남았다. 상태 로직이 복잡해지기 전에 semantic shell을 먼저 고정하면, 나중에 붙는 기능이 구조를 흔드는 일이 훨씬 줄어든다.
+[`vanilla/src/styles.css`](/Users/woopinbell/work/book-task-3/front-react/study/frontend-foundations/01-semantic-layouts-and-a11y/vanilla/src/styles.css)를 보면 레이아웃도 꽤 의도적으로 잡혀 있다.
 
-다음 질문은 자연스럽다. 구조가 고정된 뒤에는 상태를 어디에 둘 것인가. `02-dom-state-and-events`는 바로 그 문제, 즉 URL state와 local UI state를 어떤 경계로 나눌지를 본격적으로 다룬다.
+- 기본: 3-column grid
+- `max-width: 1100px`: review panel이 아래로 내려감
+- `max-width: 820px`: `grid-template-columns: 1fr`
+
+특히 820px 이하에서 `nav-card`, `review-panel`, `main`의 order를 다시 주는 부분이 중요하다. 반응형의 목표가 단순히 "좁아지면 한 줄"이 아니라, mobile에서도 main content가 먼저 오도록 읽기 순서를 보존하는 데 있기 때문이다.
+
+이 판단은 Playwright가 grid column 수를 직접 확인하는 이유와도 연결된다. 테스트는 추상적인 "모바일 친화적" 표현 대신, 실제 `gridTemplateColumns`가 데스크톱에서는 여러 칼럼이고 모바일에서는 한 칼럼인지 본다.
+
+## 마지막 검증은 keyboard-only 흐름을 브라우저에서 끝까지 재생한다
+
+이번 Todo에서 다시 돌린 검증은 아래 셋이다.
+
+```bash
+npm run build --workspace @front-react/semantic-layouts-a11y
+npm run test --workspace @front-react/semantic-layouts-a11y
+npm run e2e --workspace @front-react/semantic-layouts-a11y
+```
+
+결과는 다음과 같았다.
+
+- `vite build` 통과
+- `vitest`: `validation.test.ts` 2개, `shell.test.ts` 3개 통과
+- `playwright`: 2개 시나리오 통과
+
+특히 e2e는 그냥 렌더만 보는 테스트가 아니다. 실제로
+
+1. `Tab`으로 skip link에 도달하고
+2. form 필드까지 keyboard로 이동한 뒤
+3. 잘못된 값을 넣어 submit 실패를 만들고
+4. `"Fix 2 fields before saving."`를 확인하고
+5. 첫 invalid field에 focus가 돌아오는지 확인한 다음
+6. 값을 고쳐 `"Settings saved for Ops Seoul (Asia/Seoul)."`까지 확인한다
+
+여기까지 통과한다. 이 흐름이 중요한 이유는, semantic shell이 정말로 상태 없는 정적 골격이 아니라 keyboard interaction을 버틸 수 있는 기반인지 브라우저에서 확인해 준다는 점이다.
+
+## 그래서 이 프로젝트의 진짜 성과는 작지만 선명하다
+
+여기에는 persistence도 없고 routing도 없고 fetch도 없다. 하지만 바로 그 제한 덕분에 한 가지가 또렷해진다. 상태를 붙이기 전에 semantic shell을 먼저 고정하면, 이후 로직은 화면 구조를 흔드는 대신 이미 읽히는 골격 위에 얹히게 된다.
+
+다음 단계인 `02-dom-state-and-events`는 그 위에서야 비로소 묻게 된다. 구조가 고정된 뒤, URL state와 local state를 어디서 나눌 것인가. 이 프로젝트는 그 질문보다 앞선, 더 기초적이고 더 자주 흔들리는 부분을 먼저 고쳐 놓는 역할을 한다.

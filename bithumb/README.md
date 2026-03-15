@@ -19,6 +19,13 @@
 | 09 | [Exception and Evidence Manager](01-cloud-security-core/09-exception-and-evidence-manager/README.md)<br>[문제](01-cloud-security-core/09-exception-and-evidence-manager/problem/README.md) | finding, exception, evidence, audit를 어떻게 연결할 것인가 | 승인, 만료, 증적 연결, append-only audit 흐름을 갖는 작은 거버넌스 모델 구현 | `pytest 01-cloud-security-core/09-exception-and-evidence-manager/python/tests` | `verified` |
 | 10 | [Cloud Security Control Plane](02-capstone/10-cloud-security-control-plane/README.md)<br>[문제](02-capstone/10-cloud-security-control-plane/problem/README.md) | 앞선 판단 로직을 하나의 운영 흐름으로 통합하기 | API, worker, DB, report, exception 흐름을 묶은 local control plane 구현 | `make test-capstone`, `make demo-capstone` | `verified` / `demo` |
 
+## 서버 문제지 빠른 진입
+
+- [problem-subject-essential/README.md](problem-subject-essential/README.md): 서버 공통 필수 기준으로 다시 고른 문제지
+- [problem-subject-elective/README.md](problem-subject-elective/README.md): essential에 포함되지 않은 나머지 문제지
+- [problem-subject-capstone/README.md](problem-subject-capstone/README.md): control plane 종합 과제를 따로 모은 문제지
+- 이 트랙은 AWS provider-specific 문맥이 강하므로, 서버 공통 essential은 비워 두고 capstone도 별도 카테고리에서 보는 편이 자연스럽다.
+
 ## 트랙 인덱스
 
 - [00 AWS Security Foundations](00-aws-security-foundations/README.md): 가장 작은 판단 규칙과 입력 구조를 익히는 기초 트랙

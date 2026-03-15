@@ -22,6 +22,6 @@ def build_source_brief() -> SourceBrief:
     return SourceBrief(
         topic="챗봇 상담 품질 관리",
         capstone_goal="QA Ops 플랫폼 데모 완성",
-        baseline_version="capstone/v0-initial-demo",
+        baseline_version="08/v0-initial-demo",
         primary_stack=("Python 3.12", "FastAPI", "Pydantic", "SQLAlchemy", "React", "PostgreSQL", "Langfuse"),
     )

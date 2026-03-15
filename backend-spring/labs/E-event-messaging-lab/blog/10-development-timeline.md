@@ -1,39 +1,46 @@
-# E-event-messaging-lab: 이벤트를 broker 연결이 아니라 outbox 경계로 먼저 설명한 과정
+# E-event-messaging-lab: 이벤트 브로커보다 outbox row lifecycle을 먼저 보여 주는 메시징 scaffold
 
-`E-event-messaging-lab`의 핵심은 "Kafka를 붙였다"가 아니다. 이 랩이 먼저 보여 주는 건, request-response 밖으로 나가는 사실을 왜 outbox boundary로 잘라서 설명해야 하는가다.
+`E-event-messaging-lab`은 이름만 보면 Kafka나 Redpanda까지 포함한 메시징 랩처럼 들리지만, 실제 코드는 더 작고 더 선명한 목표를 가진다. 이 lab이 실제로 보여 주는 건 "주문 변경 사실을 DB에 outbox row로 남기고, 나중에 publish-ready 상태로 바꾼다"는 사고방식이다. 반대로 실제 broker publish, consumer contract, retry metadata, worker scheduling은 아직 없다.
 
-구현 순서는 분명하다. `problem/README.md`에서 이벤트 문제를 outbox 사고방식으로 좁히고, `EventMessagingApiTest`로 order event 생성과 publish lifecycle을 먼저 테스트로 묶었다. 그다음 `V2__outbox_events.sql`, `OutboxEventEntity`, `EventMessagingService`를 연결해 `PENDING -> PUBLISHED` 전이를 구현하고, 마지막에 docs와 검증 기록으로 worker와 runtime guarantee를 다음 단계로 남겼다.
+2026-03-14에는 기존 blog를 입력 근거에서 제외하고, `EventMessagingController`, `EventMessagingService`, `OutboxEventEntity`, Flyway migration, `EventMessagingApiTest`, build config, 컨테이너 검증과 수동 HTTP 호출만으로 문서를 다시 썼다. 다시 읽어 보니 이 lab의 핵심 질문은 "메시지를 어디로 보냈는가"보다 "메시지를 보내야 하는 사실을 어디에, 어떤 상태로 남겼는가"였다.
 
-## Phase 1. broker 연동보다 outbox lifecycle 테스트가 먼저였다
+## Phase 1. 이 lab의 public API는 broker 연동이 아니라 outbox 상태 전이를 직접 노출한다
 
-이벤트라는 말이 나오면 topic과 consumer부터 떠올리기 쉽다. 하지만 [`EventMessagingApiTest`](../spring/src/test/java/com/webpong/study2/app/EventMessagingApiTest.java)는 더 작은 사실부터 고정한다. order event를 만들면 일단 `PENDING`으로 남고, publish를 호출하면 `PUBLISHED`가 되며, 마지막에 outbox 목록에서 그 흔적을 다시 볼 수 있어야 한다는 점이다.
+[`EventMessagingController`](../spring/src/main/java/com/webpong/study2/app/events/api/EventMessagingController.java)를 보면 API shape가 곧 의도를 말해 준다. `POST /orders/{orderId}/events`는 이벤트를 emit하고, `POST /outbox-events/publish`는 pending 이벤트들을 publish한다고 주장하며, `GET /outbox-events`는 전체 outbox row를 나열한다.
 
 ```java
-mockMvc.perform(post("/api/v1/orders/{orderId}/events", "ORDER-1"))
+@PostMapping("/orders/{orderId}/events")
+public EventMessagingService.EventResponse emit(@PathVariable @NotBlank String orderId) {
+  return service.emitOrderPlaced(orderId);
+}
+
+@PostMapping("/outbox-events/publish")
+public List<EventMessagingService.EventResponse> publish() {
+  return service.publishPending();
+}
+```
+
+중요한 건 controller가 외부 broker client를 전혀 다루지 않는다는 점이다. publish endpoint도 topic, partition, delivery result, retry count를 받거나 돌려주지 않는다. 즉 이 lab의 public contract는 "메시지를 Kafka에 보냈다"가 아니라 "pending outbox row를 published 상태로 전이했다"에 가깝다.
+
+테스트 [`EventMessagingApiTest`](../spring/src/test/java/com/webpong/study2/app/EventMessagingApiTest.java)도 같은 우선순위를 갖는다. order event를 만들면 `PENDING`, publish를 한 번 치면 `PUBLISHED`, list에서 `ORDER_PLACED`가 보이면 성공이다.
+
+```java
+mockMvc
+    .perform(post("/api/v1/orders/{orderId}/events", "ORDER-1"))
     .andExpect(status().isOk())
     .andExpect(jsonPath("$.status").value("PENDING"));
 
-mockMvc.perform(post("/api/v1/outbox-events/publish"))
+mockMvc
+    .perform(post("/api/v1/outbox-events/publish"))
     .andExpect(status().isOk())
     .andExpect(jsonPath("$[0].status").value("PUBLISHED"));
 ```
 
-왜 이 코드가 중요했는가. 이벤트 랩의 초점이 broker client보다 "도메인 변경 사실을 어떤 중간 상태로 남길 것인가"에 있다는 점을 이 테스트가 먼저 보여 주기 때문이다.
+이 테스트는 메시징 lab의 최소 단위를 꽤 정확히 보여 준다. 브로커와 네트워크가 아니라 outbox row lifecycle이 먼저다.
 
-CLI도 그래서 단순하다.
+## Phase 2. schema와 서비스를 따라가면 publish는 실제 전송이 아니라 상태 문자열 변경이다
 
-```bash
-cd spring
-make test
-```
-
-`2026-03-13` 테스트 XML 기준으로 `EventMessagingApiTest` 1개 테스트와 `HealthApiTest` 2개 테스트가 모두 통과했다. outbox lifecycle과 app health가 함께 baseline에 들어왔다는 신호다.
-
-여기서 새로 보인 개념은 메시징의 최소 단위였다. "보냈다"보다 "아직 보내지 않았지만 보내야 하는 사실을 남겼다"가 먼저였다.
-
-## Phase 2. schema와 서비스 코드에서 `PENDING -> PUBLISHED`를 분리했다
-
-outbox lifecycle이 의미를 가지려면 DB schema와 서비스 코드가 같은 방향을 봐야 한다. [`V2__outbox_events.sql`](../spring/src/main/resources/db/migration/V2__outbox_events.sql)은 outbox row에 필요한 필드를 만들고, [`EventMessagingService`](../spring/src/main/java/com/webpong/study2/app/events/application/EventMessagingService.java)는 생성과 publish를 서로 다른 함수로 분리한다.
+Flyway migration [`V2__outbox_events.sql`](../spring/src/main/resources/db/migration/V2__outbox_events.sql)은 `outbox_events` 테이블을 만들고, row에는 `aggregate_type`, `aggregate_id`, `event_type`, `payload`, `status`만 둔다. created_at, published_at, failure_reason, retry_count, topic 같은 운영 필드는 없다.
 
 ```sql
 create table if not exists outbox_events (
@@ -46,52 +53,82 @@ create table if not exists outbox_events (
 );
 ```
 
+service [`EventMessagingService`](../spring/src/main/java/com/webpong/study2/app/events/application/EventMessagingService.java)는 이 최소 schema 그대로 동작한다. `emitOrderPlaced()`는 `payload`를 문자열로 조립해 `"PENDING"` 상태 row를 저장하고, `publishPending()`은 repository에서 `"PENDING"` row를 찾아 `markPublished()`를 호출한다.
+
 ```java
-@Transactional
-public EventResponse emitOrderPlaced(String orderId) {
-  OutboxEventEntity entity =
-      outboxEventRepository.save(
-          new OutboxEventEntity("ORDER", orderId, "ORDER_PLACED", "{\"orderId\":\"" + orderId + "\"}", "PENDING"));
-  return EventResponse.from(entity);
-}
-
-@Transactional
-public List<EventResponse> publishPending() {
-  List<OutboxEventEntity> pending = outboxEventRepository.findByStatus("PENDING");
-  pending.forEach(OutboxEventEntity::markPublished);
-  return pending.stream().map(EventResponse::from).toList();
-}
+new OutboxEventEntity(
+    "ORDER", orderId, "ORDER_PLACED", "{\"orderId\":\"" + orderId + "\"}", "PENDING")
 ```
 
-왜 이 코드가 중요했는가. 이벤트 생성과 publish를 분리하는 순간, broker가 잠시 멈춰도 DB 안에 아직 처리해야 할 사실이 남는다는 설명이 가능해진다. outbox는 메시징 기술보다 먼저 잡아야 하는 설계 경계라는 뜻이다.
+```java
+List<OutboxEventEntity> pending = outboxEventRepository.findByStatus("PENDING");
+pending.forEach(OutboxEventEntity::markPublished);
+return pending.stream().map(EventResponse::from).toList();
+```
 
-이 단계의 CLI는 smoke와 Compose까지 이어진다.
+즉 여기서 publish는 실제 broker handoff가 아니다. `OutboxEventEntity.markPublished()`는 단지 `this.status = "PUBLISHED"`를 수행한다. Kafka template, producer client, transaction synchronization, delivery callback은 없다. 문서에서 이 차이를 숨기면 "publish endpoint가 있으니 브로커 연동도 어느 정도 됐겠지"라는 오해가 생긴다.
+
+## Phase 3. 수동 재검증으로 확인한 건 "Kafka 없이도 모두 동작한다"는 사실이었다
+
+이번 lab에서 가장 중요한 재검증 결과는 broker가 없어도 애플리케이션이 완전히 정상 동작한다는 점이었다. `application.yml`에는 `spring.kafka.bootstrap-servers`가 있지만, 실제 runtime path에서 Kafka를 참조하는 코드는 없기 때문이다. 2026-03-14에 `bootRun`을 컨테이너로 띄울 때 Kafka나 Redpanda는 전혀 켜지지 않았는데도 앱은 곧바로 올라왔다.
+
+수동 호출 결과는 아래와 같았다.
 
 ```bash
-cd spring
-make smoke
-docker compose up --build
+curl -sS http://127.0.0.1:18084/api/v1/outbox-events
+curl -sS -X POST http://127.0.0.1:18084/api/v1/orders/ORDER-1/events
+curl -sS -X POST http://127.0.0.1:18084/api/v1/orders/ORDER-2/events
+curl -sS -X POST http://127.0.0.1:18084/api/v1/outbox-events/publish
+curl -sS -X POST http://127.0.0.1:18084/api/v1/outbox-events/publish
 ```
 
-`docs/verification-report.md`는 `2026-03-09`에 lint, test, smoke, Compose health 확인이 모두 통과했다고 적고 있다. `LabInfoApiSmokeTest` XML도 1개 테스트가 실패 없이 끝났다.
+관찰 결과는 더 분명했다.
 
-여기서 배운 건 outbox handoff의 감각이었다. 핵심은 메시지를 보내는 순간보다, 언제 외부 세계로 넘길 준비가 된 사실로 볼 것인가에 있었다.
+- 처음 `GET /outbox-events`는 `[]`
+- 첫 번째, 두 번째 emit은 각각 `PENDING`
+- 첫 번째 publish는 두 row를 모두 `PUBLISHED`로 바꾼 배열 반환
+- 두 번째 publish는 `[]`
+- 최종 list는 두 row 모두 `PUBLISHED`
 
-## Phase 3. worker와 runtime guarantee를 뒤로 미뤄서 오히려 핵심이 선명해졌다
+즉 publish endpoint는 "현재 PENDING rows를 한 번에 긁어 상태를 바꾼다"는 동작까지는 보여 준다. 하지만 broker publish acknowledgement, partial failure, redelivery, one-by-one checkpointing은 어디에도 없다.
 
-메시징 글은 금세 인프라 과시로 흐르기 쉽다. 이 랩은 그 유혹을 피했다. [`docs/README.md`](../docs/README.md)는 long-running publisher worker, real consumer contract, DLQ/retry 심화를 아직 다음 단계로 남긴다고 분명히 적는다.
+## Phase 4. 이 lab의 응답 표면만 봐도 의도적으로 비워 둔 영역이 드러난다
+
+`EventResponse`는 `id`, `aggregateType`, `aggregateId`, `eventType`, `status`만 노출한다.
+
+```java
+public record EventResponse(
+    Long id, String aggregateType, String aggregateId, String eventType, String status) {}
+```
+
+이 응답에는 payload도 없고, published timestamp도 없고, delivery target도 없다. outbox 디버깅이나 운영 판단에 필요한 필드가 거의 없다. 이건 실수라기보다 현재 lab의 범위를 보여 주는 신호에 가깝다. 실제로 docs도 long-running publisher worker, real Kafka publish/consume 검증, failure metadata와 replay 판단을 다음 단계로 남겼다.
+
+build만 보면 `spring-kafka`, testcontainers kafka, querydsl까지 다 들어 있으니 더 큰 시스템처럼 보일 수 있다. 하지만 runtime path를 따라가 보면 아직 그 무게를 전혀 쓰지 않는다. 그래서 이 lab은 "Kafka-oriented message flow"라는 소개보다 "outbox 사고방식을 JPA row 상태 전이로 먼저 설명하는 scaffold"라고 쓰는 편이 더 정확하다.
+
+## Phase 5. 이번 Todo는 lint/test/smoke 통과와 실제 공백을 같이 남겼다
+
+이번 검증은 모두 2026-03-14에 다시 실행했다. 로컬 JRE가 없어서 host `make` 대신 `eclipse-temurin:21-jdk` 컨테이너를 사용했다.
 
 ```bash
-cd spring
-make lint
-make test
-make smoke
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/E-event-messaging-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew spotlessCheck checkstyleMain checkstyleTest'
+
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/E-event-messaging-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew test'
+
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/E-event-messaging-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew test --tests "*SmokeTest"'
 ```
 
-검증 신호는 아래처럼 읽힌다.
+세 명령 모두 `BUILD SUCCESSFUL`이었다. 이후 `bootRun`을 18084 포트로 띄워 health, emit, list, first publish, second publish를 직접 확인했다. 여기서 핵심은 "테스트가 통과했다"보다 "브로커 없이도 모든 시나리오가 똑같이 통과했다"는 사실이다. 이건 곧 현재 publish가 broker integration이 아니라 local persistence transition임을 보여 준다.
 
-- `2026-03-13` 기준 테스트 XML 4개 suite, 총 5개 테스트, 실패 0
-- `2026-03-09` 검증 보고서 기준 lint, test, smoke, Compose health 확인 통과
-- docs에 worker, real consumer contract, DLQ/retry가 다음 단계로 명시돼 있음
-
-이 랩이 남긴 핵심은 outbox 경계였다. runtime guarantee를 아직 다 하지 않았기 때문에 오히려 DB와 메시지 브로커 사이의 handoff가 더 분명해졌다. 다음 단계에서는 cache, idempotency, inventory concurrency처럼 실제 서비스에서 겹쳐 오는 문제를 같이 봐야 하고, 그 역할을 `F-cache-concurrency-lab`이 맡는다.
+그래서 지금의 `E-event-messaging-lab`을 가장 정확하게 요약하면 이렇다. 주문 변경 사실을 outbox row로 남기고, publish-ready 상태 전이를 설명하는 데는 성공했다. 하지만 실제 event messaging system이라고 부르기엔 아직 비어 있는 것이 많다. Kafka publish 없음, worker 없음, retry/DLQ 없음, payload inspection endpoint 없음, metadata 없음. 이 경계를 분명히 적어 두는 편이 다음 단계에서 cache, concurrency, idempotency 같은 더 복합적인 문제로 넘어갈 때 훨씬 도움이 된다.

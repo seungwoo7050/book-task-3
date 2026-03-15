@@ -1,59 +1,64 @@
 # 06 Remediation Pack Runner 근거 정리
 
-finding을 곧바로 실행하는 대신, 사람이 검토할 수 있는 dry-run 조치안으로 바꾸는 단계다. 이 문서는 그 흐름을 글로 풀기 전에, 실제 근거를 phase 단위로 다시 세워 둔 정리 노트다.
+이 문서는 "무엇을 만들었다"보다 "어떤 근거 때문에 그렇게 읽어야 하는가"를 고정하는 메모다. 특히 이 lab은 코드가 아주 작아서 README만 읽으면 다 된 것처럼 보이는데, 실제로는 테스트가 덮는 branch와 source만으로 확인되는 branch를 구분해서 보는 게 중요했다.
 
-한 phase를 읽을 때는 `당시 목표 -> 실제 조치 -> CLI -> 검증 신호` 순서로 보면 무엇이 먼저 굳어졌는지 빠르게 따라갈 수 있다.
+## Phase 1. `RemediationPlan`이 이 lab의 실제 계약이다
 
-## Phase 1. remediation 출력 shape부터 고정했다
-
-이 구간에서는 `remediation 출력 shape부터 고정했다`를 먼저 단단히 묶어 두면서, 다음 phase가 기대는 기준을 만들었다.
-
-- 시간 표지: Phase 1
-- 당시 목표: finding을 받아 사람이 검토할 plan 문서로 바꾸는 최소 구조를 세운다.
-- 변경 단위: `python/src/remediation_pack_runner/runner.py`의 `RemediationPlan`, `build_dry_run`
-- 처음 가설: 실행을 미뤄도 괜찮으려면 summary, commands_or_patch, status 같은 필드가 먼저 있어야 한다.
-- 실제 조치: `RemediationPlan` dataclass를 만들고, control_id에 따라 `mode`, `summary`, `commands_or_patch`를 채우는 함수를 작성했다. 이때 출력은 실제 적용 결과가 아니라 검토 자료라는 점을 명확히 하기 위해 status를 `pending_approval`로 시작했다.
-- CLI:
-  - `PYTHONPATH=01-cloud-security-core/06-remediation-pack-runner/python/src .venv/bin/python -m remediation_pack_runner.cli 01-cloud-security-core/06-remediation-pack-runner/problem/data/sample_finding.json`
+- 당시 목표: finding을 실행하지 않고도 다음 단계가 재사용할 수 있는 plan 데이터로 바꾼다.
+- 핵심 근거:
+  - `runner.py`의 `RemediationPlan` dataclass는 `finding_id`, `mode`, `summary`, `commands_or_patch`, `status` 다섯 필드를 고정한다.
+  - `sample_finding.json`은 `control_id=CSPM-001`, `resource_id=study2-public-logs`를 가진 최소 입력이다.
+  - CLI는 `build_dry_run()` 결과를 `as_dict()`로 JSON 직렬화해 그대로 출력한다.
+- 재실행:
+  - `PYTHONPATH=/Users/woopinbell/work/book-task-3/bithumb/01-cloud-security-core/06-remediation-pack-runner/python/src /Users/woopinbell/work/book-task-3/bithumb/.venv/bin/python -m remediation_pack_runner.cli /Users/woopinbell/work/book-task-3/bithumb/01-cloud-security-core/06-remediation-pack-runner/problem/data/sample_finding.json`
 - 검증 신호:
-  - CLI 출력이 `mode: auto_patch_available`, `status: pending_approval`를 함께 보여 줬다.
-  - `commands_or_patch`에는 실제 Terraform patch 초안 줄이 들어갔다.
-- 핵심 코드 앵커: `01-cloud-security-core/06-remediation-pack-runner/python/src/remediation_pack_runner/runner.py:16-54`
-- 새로 배운 것: dry-run remediation의 핵심은 실행을 미루는 데 있지 않고, 검토를 가능한 형태로 만드는 데 있다.
-- 다음: 이제 같은 finding이라도 자동 패치 후보와 수동 승인 대상을 명확히 나눠야 했다.
+  - 출력 JSON의 `finding_id`는 `study2-public-logs`
+  - `mode`는 `auto_patch_available`
+  - `status`는 `pending_approval`
+  - `commands_or_patch`에는 S3 public access block 리소스 초안 6줄이 들어간다
+- 해석:
+  - 이 lab의 1차 목표는 remediation 실행기가 아니라, 사람이 읽고 승인할 수 있는 조치안 포맷터를 만드는 것이다.
 
-## Phase 2. remediation mode를 control별로 갈랐다
+## Phase 2. control별 remediation mode 분기가 핵심 로직이다
 
-이 구간에서는 `remediation mode를 control별로 갈랐다`를 먼저 단단히 묶어 두면서, 다음 phase가 기대는 기준을 만들었다.
-
-- 시간 표지: Phase 2
-- 당시 목표: 위험 종류에 따라 조치 전략이 달라진다는 점을 코드로 드러낸다.
-- 변경 단위: `python/src/remediation_pack_runner/runner.py`의 `CSPM-001`, `CSPM-002`, fallback 분기
-- 처음 가설: S3 public access block 같은 건 auto patch 후보가 될 수 있지만, public ingress는 승인과 rollback이 필수다.
-- 실제 조치: `CSPM-001`은 `auto_patch_available`, `CSPM-002`는 `manual_approval_required`, 나머지는 `manual_review`로 분리했다. 이 분기 덕분에 remediation runner가 단순 메시지 출력기가 아니라 운영 모드 분류기 역할도 맡게 됐다.
-- CLI:
-  - `PYTHONPATH=01-cloud-security-core/06-remediation-pack-runner/python/src .venv/bin/python -m remediation_pack_runner.cli 01-cloud-security-core/06-remediation-pack-runner/problem/data/sample_finding.json`
+- 당시 목표: finding 종류에 따라 운영 모드를 다르게 태운다.
+- 핵심 근거:
+  - `CSPM-001`은 `auto_patch_available`
+  - `CSPM-002`는 `manual_approval_required`
+  - 나머지는 `manual_review`
+  - `CSPM-002` 분기에는 trusted CIDR 교체 문구와 `aws ec2 revoke-security-group-ingress` 명령이 같이 들어 있다
+- 추가 재실행:
+  - `PYTHONPATH=/Users/woopinbell/work/book-task-3/bithumb/01-cloud-security-core/06-remediation-pack-runner/python/src /Users/woopinbell/work/book-task-3/bithumb/.venv/bin/python - <<'PY'`
+  - `from remediation_pack_runner.runner import build_dry_run, as_dict`
+  - `print(as_dict(build_dry_run({'control_id':'CSPM-002','resource_id':'sg-123456','title':'Public SSH','severity':'HIGH','resource_type':'aws_security_group','evidence_ref':'sg_public_ssh'})))`
+  - `print(as_dict(build_dry_run({'control_id':'IAM-003','resource_id':'role-admin','title':'Escalation risk','severity':'HIGH','resource_type':'aws_iam_role','evidence_ref':'role_admin'})))`
+  - `PY`
 - 검증 신호:
-  - sample finding이 `study2-public-logs`일 때 patch 초안이 곧바로 출력됐다.
-  - README가 manual approval / manual review를 별도 운영 모드로 설명하고 있다.
-- 핵심 코드 앵커: `01-cloud-security-core/06-remediation-pack-runner/python/src/remediation_pack_runner/runner.py:19-45`
-- 새로 배운 것: 보안 조치 자동화는 이분법이 아니다. auto patch, manual approval, manual review를 분리해야 운영 리스크를 설명할 수 있다.
-- 다음: 마지막으로 승인 전후 상태 전이를 별도 함수로 떼어 worker가 재사용할 수 있게 해야 했다.
+  - `sg-123456`은 `manual_approval_required`, `pending_approval`
+  - `role-admin`은 `manual_review`, `pending_approval`
+- 해석:
+  - 이 runner는 patch generator라기보다 "어떤 조치 강도로 다뤄야 하는가"를 정규화하는 classifier에 가깝다.
+- 주의:
+  - 테스트는 현재 `sample_finding.json`과 approval flow만 다룬다.
+  - `CSPM-002`와 fallback `manual_review`는 이번 재실행으로는 확인했지만, 정식 pytest coverage에는 아직 없다.
 
-## Phase 3. approval 상태 전이를 별도 함수로 분리했다
+## Phase 3. approval은 상태 표지이지, 실행 orchestration은 아니다
 
-이 구간에서는 `approval 상태 전이를 별도 함수로 분리했다`를 먼저 단단히 묶어 두면서, 다음 phase가 기대는 기준을 만들었다.
-
-- 시간 표지: Phase 3
-- 당시 목표: plan 생성과 승인 처리를 분리해 추후 orchestration에 연결하기 쉽게 만든다.
-- 변경 단위: `python/src/remediation_pack_runner/runner.py`의 `approve`, `python/tests/test_runner.py`
-- 처음 가설: 조치안 생성과 승인 완료는 같은 시점이 아니다. 상태 전이를 분리해야 이후 worker가 끼어들 수 있다.
-- 실제 조치: `approve`는 summary에 approver를 남기고 status를 `approved`로 바꾸는 작은 함수로 분리됐다. 테스트는 patch가 포함된 plan 생성과 approval 반영 둘 다 따로 확인했다.
-- CLI:
-  - `PYTHONPATH=01-cloud-security-core/06-remediation-pack-runner/python/src .venv/bin/python -m pytest 01-cloud-security-core/06-remediation-pack-runner/python/tests`
+- 당시 목표: plan 생성과 승인 상태 전이를 분리한다.
+- 핵심 근거:
+  - `approve(plan, approved_by)`는 기존 plan을 복사하면서 summary 뒤에 `Approved by <name>.`를 붙이고 `status='approved'`만 설정한다.
+  - `commands_or_patch`와 `mode`는 그대로 유지된다.
+  - `test_approve_marks_plan_approved()`도 approver 이름과 상태만 검증한다.
+- 재실행:
+  - `PYTHONPATH=/Users/woopinbell/work/book-task-3/bithumb/01-cloud-security-core/06-remediation-pack-runner/python/src /Users/woopinbell/work/book-task-3/bithumb/.venv/bin/python -m pytest /Users/woopinbell/work/book-task-3/bithumb/01-cloud-security-core/06-remediation-pack-runner/python/tests`
 - 검증 신호:
-  - pytest가 `2 passed in 0.01s`로 통과했다.
-  - `test_approve_marks_plan_approved`가 summary 안의 approver와 상태 변화를 동시에 요구했다.
-- 핵심 코드 앵커: `01-cloud-security-core/06-remediation-pack-runner/python/src/remediation_pack_runner/runner.py:57-64`
-- 새로 배운 것: 보안 조치 흐름에서 중요한 것은 patch 내용만이 아니라 승인 이전과 이후를 분리해 추적하는 일이다.
-- 다음: 다음 프로젝트에서는 로그 적재와 탐지를 한 번에 묶어 local security lake 감각을 만든다.
+  - `2 passed in 0.01s`
+  - 보조 재실행에서 `approve(build_dry_run(...), 'security.lead')`는 `status='approved'`와 summary suffix만 바뀐다
+- 해석:
+  - 이 lab은 approval ledger의 첫 걸음까지만 만든다. 실제 apply, rollback, ticket, 외부 승인 시스템은 아직 연결되지 않았다.
+
+## 이번 Todo에서 남긴 한계
+
+- README 서술만 보면 `dry-run` 서브커맨드가 있는 것처럼 읽히지만, 실제 CLI는 단일 커맨드형이라 `python -m remediation_pack_runner.cli <finding_path>`로만 동작한다.
+- pytest는 `CSPM-001`과 approval happy path만 고정한다.
+- remediation plan은 plain string list라서 patch schema, rollback metadata, approver identity model은 아직 구조화되지 않았다.

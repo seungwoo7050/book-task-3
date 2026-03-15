@@ -1,39 +1,42 @@
-# D-data-api-lab Structure Plan
+# D-data-api-lab structure plan
 
 ## 한 줄 약속
-- CRUD를 만들되, 목록 조건과 충돌 제어를 먼저 드러내기
+
+- 데이터 API를 엔터티 개수보다 목록 semantics와 version conflict가 먼저 보이는 계약으로 읽게 만든다.
 
 ## 독자 질문
-- 프로젝트, 태스크, 댓글 API를 만들 때 단순 생성/조회보다 어떤 데이터 일관성 surface를 먼저 드러낼 것인가.
-- 엔터티 관계를 어디까지 API에 그대로 드러낼 것인가 소프트 삭제는 목록 조회에서 어떤 의미를 가지는가 optimistic locking은 어떤 충돌을 막아 주는가
 
-## 서술 원칙
-- 기존 `blog/` 초안은 입력 근거로 사용하지 않는다.
-- 사실로 확인되는 날짜와 명령은 `git log`와 `docs/verification-report.md`에서만 가져온다.
-- finer-grained chronology는 코드/테스트 의존 순서를 바탕으로 복원했다고 명시한다.
+- 왜 이 랩은 세 엔터티 CRUD보다 `page`, `sort`, `include_deleted`, `version`을 먼저 보여 주는가
+- 프로젝트 lifecycle과 task/comment child resource 사이의 비대칭성은 무엇을 말해 주는가
+- soft delete와 optimistic locking은 왜 같은 문서 안에서 같이 설명되어야 하는가
+- 앱 시작 시 스키마 초기화와 테스트용 SQLite override는 이 랩의 학습 루프를 어떻게 바꾸는가
+- 현재 문서에 적힌 검증 명령은 지금 셸에서 그대로 재현되는가
+
+## 이번 Todo의 작성 원칙
+
+- 다른 lab 문장이나 구조를 가져오지 않는다.
+- 기존 `blog/` 본문은 사실 근거로 사용하지 않는다.
+- `problem/README`, source code, tests, 실제 재실행 CLI만으로 서사를 복원한다.
+- 상위 README의 넓은 설명과 실제 구현의 좁은 route surface 차이도 숨기지 않는다.
 
 ## 글 흐름
-1. 데이터 API를 단순 CRUD보다 넓은 문제로 잡기
-2. 목록 조건과 버전 필드를 route surface에 올리기
-3. 충돌과 소프트 삭제를 테스트로 굳히기
-4. 2026-03-09 재검증으로 Compose surface까지 닫기
-5. 남은 범위와 다음 비교 대상 정리
 
-## Evidence Anchor
-- 주 코드 앵커: `labs/D-data-api-lab/fastapi/app/api/v1/routes/data_api.py::update_project` — 버전 필드를 통해 optimistic locking이 API surface로 드러나는 지점이다.
-- 보조 앵커: `labs/D-data-api-lab/fastapi/tests/integration/test_data_api.py::test_optimistic_locking_and_task_comment_creation` — 버전 충돌과 하위 task/comment 생성이 같은 흐름 안에서 만난다.
-- 문서 앵커: `labs/D-data-api-lab/problem/README.md`, `labs/D-data-api-lab/docs/README.md`
-- CLI 앵커:
-- `python3 -m compileall app tests`
-- `make lint`
-- `make test`
-- `make smoke`
-- `./tools/compose_probe.sh <workspace> <host-port>`
+1. 문제 정의가 CRUD보다 데이터 계약을 먼저 묻는다는 점부터 고정한다.
+2. 프로젝트 route contract에서 filter/sort/page/version을 읽는다.
+3. service/repository에서 soft delete와 conflict detection을 규칙으로 연결한다.
+4. task/comment가 child create 위주로 남아 있는 현재 구현 범위를 테스트와 함께 설명한다.
+5. schema auto-init, SQLite test harness, 오늘 다시 돌린 CLI 결과로 현재 재현 가능 상태를 닫는다.
 
-## 글에서 강조할 개념
-- service boundary와 repository 역할 page-based pagination의 한계와 장점 충돌 감지와 버전 필드의 의미
-- 프로젝트, 태스크, 댓글 API 설계 서비스 계층과 ORM 경계 정리 필터링, 정렬, 페이지 기반 페이지네이션 인증/인가를 붙이지 않고 데이터 경계에 집중합니다. 페이지네이션은 cursor 대신 page-based 모델로 유지합니다.
+## Evidence anchor
 
-## 끝맺음
-- 제외 범위: 인증과 인가 전문 검색이나 대규모 인덱싱 복잡한 이벤트 소싱이나 CQRS
-- 검증 문장: 2026-03-09에 compile, lint, test, smoke, Compose live/ready probe가 통과했고, 로컬 학습 실행을 위해 앱 시작 시 스키마 자동 초기화를 두었다.
+- 주 코드 앵커: [DataApiService](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/D-data-api-lab/fastapi/app/domain/services/data_api.py)
+- 보조 코드 앵커: [data_api.py route](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/D-data-api-lab/fastapi/app/api/v1/routes/data_api.py), [data_repository.py](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/D-data-api-lab/fastapi/app/repositories/data_repository.py)
+- 실행 루프 앵커: [bootstrap.py](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/D-data-api-lab/fastapi/app/bootstrap.py), [conftest.py](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/D-data-api-lab/fastapi/tests/conftest.py), [smoke.py](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/D-data-api-lab/fastapi/tests/smoke.py)
+- 테스트 앵커: [test_data_api.py](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/D-data-api-lab/fastapi/tests/integration/test_data_api.py)
+- CLI 앵커: `make lint`, `make test`, `make smoke`, `PYTHONPATH=. pytest`, `PYTHONPATH=. python -m tests.smoke`
+
+## 끝에서 남겨야 할 문장
+
+- 이 랩의 강점은 프로젝트 목록 semantics, soft delete, version conflict를 클라이언트가 알아야 하는 데이터 계약으로 선명하게 드러낸다는 점이다.
+- 이 랩의 현재 한계는 상위 문서가 암시하는 세 엔터티 full CRUD보다 실제 구현 표면이 더 좁고, 공식 `make` 진입점은 2026-03-14 셸에서 그대로 닫히지 않는다는 점이다.
+- 다음 랩인 `E-async-jobs-lab`은 이 데이터 계약 위에서 요청-응답 밖으로 작업을 밀어내는 비교 대상으로 연결한다.

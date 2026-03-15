@@ -1,153 +1,70 @@
-# 10 03 Mini LSM Store를 읽기 전에 범위를 다시 좁히기
+# Scope, Flush Surface, And First Reads
 
-이 시리즈의 첫 글이다. 여기서는 구현 세부사항을 서둘러 설명하지 않고, 무엇을 먼저 고정해야 하는지 범위부터 다시 좁힌다.
+## 1. 문제는 LSM의 모든 기능이 아니라 최소 orchestration이다
 
-## Phase 1 — 범위를 다시 세우는 구간
+[`problem/README.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/03-mini-lsm-store/problem/README.md)는 active memtable threshold, immutable swap 후 flush, newest-first read path, tombstone across levels, close/reopen persistence를 요구한다. 반대로 background compaction, concurrent flush, range query, compression은 빼 둔다.
 
-이번 글에서는 먼저 테스트와 파일 구조로 문제의 테두리를 다시 잡고, 이어서 중심 타입이 어떤 책임을 끌어안는지 확인한다.
+즉 이 프로젝트는 LSM tree 완성본이 아니라, "memtable과 SSTable을 어떤 순서로 엮어야 올바른 lookup semantics가 나오는가"를 검증하는 단계다.
 
-### Session 1 — 테스트와 파일 구조로 범위를 다시 좁히기
+## 2. 코드 표면은 놀랄 만큼 단순하다
 
-이번 세션의 목표는 `03 Mini LSM Store`가 어떤 invariant를 먼저 고정하는 슬롯인지 파악하는 것이었다. 초기 가설은 README의 한 줄 설명만으로는 실제 핵심 invariant가 무엇인지 아직 흐릿했다.
+핵심 구현은 [`store.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/03-mini-lsm-store/internal/lsmstore/store.go) 한 파일에 모여 있다.
 
-막상 다시 펼쳐 보니 `find internal tests cmd -type f | sort`로 구조를 펼친 뒤 `rg -n "^func Test" tests`로 테스트 이름을 나열했다. 특히 `TestPersistenceAfterReopen`까지 테스트 이름을 훑고 나니, 이 프로젝트의 중심이 단순 기능 추가가 아니라 `Put` 주변의 invariant를 고정하는 일이라는 게 보였다. 여기서 해석을 바꾼 단서는 `TestPutAndGet`는 가장 기본 표면을 보여 줬고, `TestPersistenceAfterReopen`는 이 프로젝트가 이미 경계 조건까지 포함한다는 신호였다.
+- `Open()`
+- `Put()` / `Delete()`
+- `Get()`
+- `ForceFlush()`
+- `Close()`
 
-변경 단위:
-- `database-systems/go/database-internals/projects/03-mini-lsm-store/README.md`, `database-systems/go/database-internals/projects/03-mini-lsm-store/tests/lsm_store_test.go`
+구조체 필드도 설계 의도를 그대로 드러낸다.
 
-CLI:
+- `Memtable`
+- `ImmutableMemtable`
+- `SSTables []*sstable.SSTable`
+- `nextSequence`
 
-```bash
-$ find internal tests cmd -type f | sort
-cmd/mini-lsm-store/main.go
-internal/lsmstore/store.go
-internal/skiplist/skiplist.go
-internal/sstable/sstable.go
-tests/lsm_store_test.go
-```
+이 네 필드만으로도 현재 LSM lifecycle이 읽힌다. write는 active memtable로 들어가고, flush 중에는 immutable snapshot이 따로 잡히며, 디스크에 내려간 table은 newest-first slice에 등록되고, reopen 뒤 sequence는 파일 이름 기준으로 재계산된다.
 
-```bash
-$ rg -n "^func Test" tests
-tests/lsm_store_test.go:9:func TestPutAndGet(t *testing.T) {
-tests/lsm_store_test.go:24:func TestMissingKey(t *testing.T) {
-tests/lsm_store_test.go:35:func TestUpdate(t *testing.T) {
-tests/lsm_store_test.go:52:func TestDelete(t *testing.T) {
-tests/lsm_store_test.go:69:func TestFlushCreatesSSTable(t *testing.T) {
-tests/lsm_store_test.go:81:func TestReadAfterForceFlush(t *testing.T) {
-tests/lsm_store_test.go:101:func TestMemtableWinsOverSSTable(t *testing.T) {
-tests/lsm_store_test.go:122:func TestTombstoneAcrossLevels(t *testing.T) {
-tests/lsm_store_test.go:143:func TestPersistenceAfterReopen(t *testing.T) {
-```
+## 3. demo는 cross-level 상태를 아주 짧게 보여 준다
 
-검증 신호:
-- `TestPutAndGet`는 가장 기본 표면을 보여 줬고, `TestPersistenceAfterReopen`는 이 프로젝트가 이미 경계 조건까지 포함한다는 신호였다.
-- 테스트 이름만으로도 문제의 중심이 `Put` 주변의 ordering / visibility 규칙이라는 점이 드러났다.
-
-핵심 코드:
-
-```go
-func TestPersistenceAfterReopen(t *testing.T) {
-	tempDir := t.TempDir()
-	store := lsmstore.New(tempDir, 1024)
-	if err := store.Open(); err != nil {
-		t.Fatal(err)
-	}
-	if err := store.Put("persist", "me"); err != nil {
-		t.Fatal(err)
-	}
-	if err := store.Close(); err != nil {
-		t.Fatal(err)
-	}
-```
-
-왜 여기서 판단이 바뀌었는가:
-
-`TestPersistenceAfterReopen`는 README의 추상 설명보다 더 직접적으로, 어떤 실패를 막아야 하는지 보여 준다. 나는 여기서 구현 순서를 거꾸로 세우기보다 테스트가 요구하는 경계를 먼저 고정해야 한다고 판단했다.
-
-이번 구간에서 새로 이해한 것:
-- `Flush Lifecycle`에서 정리한 요점처럼, active MemTable은 write를 받는 유일한 구조다.
-
-다음으로 넘긴 질문:
-- `Put`와 `Get`를 코드에서 직접 확인해, 테스트 이름이 가리키는 invariant가 실제로 어디에 박혀 있는지 본다.
-
-### Session 2 — 중심 타입에서 책임이 모이는 지점 보기
-
-이 구간에서 먼저 붙잡으려 한 것은 소스 파일의 중심 타입/클래스가 어떤 책임을 한곳에 묶고 있는지 확인하는 것이었다. 처음 읽을 때는 구현이 작으면 책임도 단순하게 한 줄로 설명될 거라고 생각했다.
-
-그런데 가장 큰 구현 파일인 `database-systems/go/database-internals/projects/03-mini-lsm-store/internal/sstable/sstable.go`를 먼저 읽고, 테스트가 요구한 상태 전이가 정말 이 파일 안에서 닫히는지 확인했다. 특히 `Put` 같은 이름이 초기에 바로 보이면 write path의 중심이 선명해진다.
-
-변경 단위:
-- `database-systems/go/database-internals/projects/03-mini-lsm-store/internal/sstable/sstable.go`
-
-CLI:
+2026-03-14에 아래 명령을 다시 실행했다.
 
 ```bash
-$ rg -n "^(type|func) " internal cmd
-cmd/mini-lsm-store/main.go:10:func main() {
-cmd/mini-lsm-store/main.go:33:func printLookup(store *lsmstore.LSMStore, key string) {
-cmd/mini-lsm-store/main.go:48:func must(err error) {
-internal/skiplist/skiplist.go:11:type ValueState int
-internal/skiplist/skiplist.go:19:type Entry struct {
-internal/skiplist/skiplist.go:24:type node struct {
-internal/skiplist/skiplist.go:30:type SkipList struct {
-internal/skiplist/skiplist.go:38:func New() *SkipList {
-internal/skiplist/skiplist.go:45:func newNode(key string, value *string, level int) *node {
-internal/skiplist/skiplist.go:53:func (list *SkipList) Put(key, value string) {
-internal/skiplist/skiplist.go:58:func (list *SkipList) Delete(key string) {
-internal/skiplist/skiplist.go:62:func (list *SkipList) put(key string, value *string) {
-internal/skiplist/skiplist.go:98:func (list *SkipList) Get(key string) (*string, ValueState) {
-internal/skiplist/skiplist.go:116:func (list *SkipList) Entries() []Entry {
-internal/skiplist/skiplist.go:126:func (list *SkipList) Size() int {
-internal/skiplist/skiplist.go:130:func (list *SkipList) ByteSize() int {
-internal/skiplist/skiplist.go:134:func (list *SkipList) Clear() {
-internal/skiplist/skiplist.go:141:func (list *SkipList) randomLevel() int {
-internal/skiplist/skiplist.go:149:func valueLen(value *string) int {
-internal/sstable/sstable.go:14:type IndexEntry struct {
-internal/sstable/sstable.go:19:type SSTable struct {
-internal/sstable/sstable.go:24:func New(filePath string) *SSTable {
-internal/sstable/sstable.go:28:func (table *SSTable) Write(records []serializer.Record) error {
-internal/sstable/sstable.go:81:func (table *SSTable) LoadIndex() error {
-internal/sstable/sstable.go:126:func (table *SSTable) Lookup(key string) (*string, bool, error) {
-internal/sstable/sstable.go:159:func (table *SSTable) ReadAll() ([]serializer.Record, error) {
-internal/sstable/sstable.go:186:func FileName(dataDir string, sequence int) string {
-internal/sstable/sstable.go:190:func (table *SSTable) binarySearch(key string) int {
-internal/lsmstore/store.go:16:type LSMStore struct {
-internal/lsmstore/store.go:25:func New(dataDir string, memtableSizeThreshold int) *LSMStore {
-internal/lsmstore/store.go:37:func (store *LSMStore) Open() error {
-internal/lsmstore/store.go:66:func (store *LSMStore) Put(key, value string) error {
-internal/lsmstore/store.go:71:func (store *LSMStore) Delete(key string) error {
-internal/lsmstore/store.go:76:func (store *LSMStore) Get(key string) (*string, bool, error) {
-internal/lsmstore/store.go:100:func (store *LSMStore) ForceFlush() error {
-internal/lsmstore/store.go:107:func (store *LSMStore) Close() error {
-internal/lsmstore/store.go:111:func (store *LSMStore) maybeFlush() error {
-internal/lsmstore/store.go:118:func (store *LSMStore) flush() error {
-internal/lsmstore/store.go:139:func reverseTables(tables []*sstable.SSTable) {
+cd /Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/03-mini-lsm-store
+GOWORK=off go run ./cmd/mini-lsm-store
 ```
 
-검증 신호:
-- `Put` 같은 이름이 초기에 바로 보이면 write path의 중심이 선명해진다.
-- 반대로 `Get`가 함께 보이면 read path나 visibility 규칙을 따로 떼어 설명할 수 없다는 뜻이다.
+출력은 아래와 같았다.
 
-핵심 코드:
-
-```go
-func (store *LSMStore) Put(key, value string) error {
-	store.Memtable.Put(key, value)
-	return store.maybeFlush()
-}
-
-func (store *LSMStore) Delete(key string) error {
-	store.Memtable.Delete(key)
-	return store.maybeFlush()
-}
+```text
+apple => <tombstone>
+banana => ripe
+missing => <missing>
 ```
 
-왜 여기서 판단이 바뀌었는가:
+demo 흐름은 의외로 밀도가 높다.
 
-`Put`는 이 프로젝트가 가장 먼저 고정해야 하는 상태 전이를 보여 준다. 이 조각을 보고 나서야 테스트 이름과 구현 책임이 같은 문제를 가리키고 있다는 확신이 생겼다.
+1. `apple=green`, `banana=yellow`를 active memtable에 넣는다.
+2. `ForceFlush()`로 이를 SSTable로 내린다.
+3. `banana=ripe`를 새 active memtable에 다시 쓴다.
+4. `apple`은 active memtable에서 tombstone으로 지운다.
 
-이번 구간에서 새로 이해한 것:
-- `Read Path`에서 정리한 요점처럼, 먼저 active MemTable을 본다.
+그래서 lookup 결과는 곧바로 현재 우선순위를 보여 준다. `banana`는 디스크의 old value가 아니라 active memtable의 new value를 읽고, `apple`은 SSTable의 old value가 남아 있어도 active tombstone이 먼저 이긴다.
 
-다음으로 넘긴 질문:
-- 같은 상태를 반대 방향에서 고정하는 `Get`를 읽어, write/read 혹은 append/replay가 서로 어떻게 잠기는지 확인한다.
+## 4. 추가 재실행으로 flush와 reopen 관찰값을 고정했다
+
+이번에 프로젝트 루트 내부 임시 Go 파일로 짧은 검증을 더 돌렸다. 결과는 아래였다.
+
+```text
+sstables_after_flush 2 000002.sst
+beta_active_wins 3
+alpha_tombstone true
+reopened_sstables 2 000002.sst
+reopened_beta 3
+reopened_alpha_tombstone true
+```
+
+여기서 보이는 핵심은 두 가지다.
+
+- flush 이후 새 table은 slice 앞쪽, 즉 newest 위치에 `000002.sst`로 들어온다.
+- reopen 뒤에도 SSTable 등록 순서는 newest-first로 복원되고, latest value와 tombstone semantics가 그대로 유지된다.

@@ -1,153 +1,47 @@
-# 10 08 Failure-Injected Log Replication를 읽기 전에 범위를 다시 좁히기
+# 10 범위를 다시 좁히기: failure 종류보다 복제 경로를 먼저 보기
 
-이 시리즈의 첫 글이다. 설명문을 믿고 곧장 구현으로 들어가기보다, 테스트와 파일 구조를 다시 읽으면서 어디서부터 이야기를 시작해야 하는지 정리한다.
+이 project를 다시 읽을 때 이름만 보면 네트워크 장애 시뮬레이터처럼 느껴질 수 있다. 하지만 문제 문서와 구현을 함께 보면 실제 중심은 failure catalog가 아니라 매우 작은 log replication path다. failure injection은 그 path를 흔들어 보는 도구일 뿐이다.
 
-## Phase 1 — 범위를 다시 세우는 구간
+## Session 1 — problem 문서가 고정하는 핵심
 
-이번 글에서는 먼저 테스트와 파일 구조로 문제의 테두리를 다시 잡고, 이어서 중심 타입이 어떤 책임을 끌어안는지 확인한다.
+[`problem/README.md`](/Users/woopinbell/work/book-task-3/database-systems/go/ddia-distributed-systems/projects/08-failure-injected-log-replication/problem/README.md)는 질문을 딱 다섯 개로 압축한다.
 
-### Session 1 — 테스트와 파일 구조로 범위를 다시 좁히기
+- single leader가 append-only log를 가진다.
+- follower에게 `append`와 `ack`를 주고받는다.
+- harness가 `drop`, `duplicate`, `pause`를 주입한다.
+- lagging follower는 retry로 따라온다.
+- commit index는 quorum ack 기준으로만 오른다.
 
-여기서 가장 먼저 확인한 것은 `08 Failure-Injected Log Replication`가 어떤 invariant를 먼저 고정하는 슬롯인지 파악한다. 처음에는 구현이 너무 작아서 단순 API 연습에 가까울 거라고 봤다.
+그리고 범위 밖도 분명하다.
 
-하지만 실제로는 `find internal tests cmd -type f | sort`로 구조를 펼친 뒤 `rg -n "^func Test" tests`로 테스트 이름을 나열했다. `TestPausedFollowerLagsButRecoversAfterResume`까지 테스트 이름을 훑고 나니, 이 프로젝트의 중심이 단순 기능 추가가 아니라 `AppendPut` 주변의 invariant를 고정하는 일이라는 게 보였다. 결정적으로 방향을 잡아 준 신호는 `TestDroppedAppendRetriesUntilFollowerConverges`는 가장 기본 표면을 보여 줬고, `TestPausedFollowerLagsButRecoversAfterResume`는 이 프로젝트가 이미 경계 조건까지 포함한다는 신호였다.
+- full Raft term/vote
+- dynamic membership
+- snapshotting
+- disk persistence
+- cross-shard routing
 
-변경 단위:
-- `database-systems/go/ddia-distributed-systems/projects/08-failure-injected-log-replication/README.md`, `database-systems/go/ddia-distributed-systems/projects/08-failure-injected-log-replication/tests/replication_test.go`
+즉 이 lab은 consensus가 아니라 "leader가 이미 있다고 할 때 replication path가 실패를 어떻게 견디는가"를 보는 단계다.
 
-CLI:
+## Session 2 — 구현의 중심은 `Leader`, `Follower`, `NetworkHarness`
 
-```bash
-$ find internal tests cmd -type f | sort
-cmd/failure-replication/main.go
-internal/replication/replication.go
-tests/replication_test.go
+핵심 구현 [`internal/replication/replication.go`](/Users/woopinbell/work/book-task-3/database-systems/go/ddia-distributed-systems/projects/08-failure-injected-log-replication/internal/replication/replication.go)는 세 덩어리로 나뉜다.
+
+- `Leader`: log, local store, `nextIndex`, `matchIndex`, `commitIndex`
+- `Follower`: log, local store, `appliedCount`
+- `NetworkHarness`: pause, drop, duplicate rule
+
+이 구조를 보면 failure injection이 replication logic 밖에 따로 붙어 있다는 점이 중요하다. 네트워크 하네스는 메시지를 흔들 뿐이고, state machine consistency는 leader/follower 코드가 책임진다. 그래서 문서도 failure 종류를 먼저 나열하기보다, append/ack 경로가 어떤 상태를 잡고 있는지 먼저 설명하는 편이 맞다.
+
+## Session 3 — demo는 commit과 convergence를 서로 다른 장면으로 보여 준다
+
+demo output은 짧지만 정보량이 높다.
+
+```text
+drop tick commit=0 node-2=-1 node-3=0
+retry tick commit=0 node-2=0 node-3=0
+duplicate tick commit=1 node-3-log=2 node-3-applied=2
+pause tick commit=2 node-2=1 node-3=2
+recover tick commit=2 node-2=2 node-3=2
 ```
 
-```bash
-$ rg -n "^func Test" tests
-tests/replication_test.go:9:func TestDroppedAppendRetriesUntilFollowerConverges(t *testing.T) {
-tests/replication_test.go:34:func TestDuplicateAppendIsIdempotent(t *testing.T) {
-tests/replication_test.go:50:func TestPausedFollowerLagsButRecoversAfterResume(t *testing.T) {
-```
-
-검증 신호:
-- `TestDroppedAppendRetriesUntilFollowerConverges`는 가장 기본 표면을 보여 줬고, `TestPausedFollowerLagsButRecoversAfterResume`는 이 프로젝트가 이미 경계 조건까지 포함한다는 신호였다.
-- 테스트 이름만으로도 문제의 중심이 `AppendPut` 주변의 ordering / visibility 규칙이라는 점이 드러났다.
-
-핵심 코드:
-
-```go
-func TestPausedFollowerLagsButRecoversAfterResume(t *testing.T) {
-	cluster := replication.NewCluster("leader-1", []string{"node-2", "node-3"})
-	cluster.PauseNode("node-2")
-
-	cluster.Put("alpha", "1")
-	cluster.Tick()
-	cluster.Put("beta", "2")
-	cluster.Tick()
-
-	node2 := follower(t, cluster, "node-2")
-	if cluster.Leader.CommitIndex() != 1 {
-		t.Fatalf("expected quorum commit to advance to 1, got %d", cluster.Leader.CommitIndex())
-	}
-	if node2.Watermark() != -1 {
-```
-
-왜 여기서 판단이 바뀌었는가:
-
-`TestPausedFollowerLagsButRecoversAfterResume`는 README의 추상 설명보다 더 직접적으로, 어떤 실패를 막아야 하는지 보여 준다. 나는 여기서 구현 순서를 거꾸로 세우기보다 테스트가 요구하는 경계를 먼저 고정해야 한다고 판단했다.
-
-이번 구간에서 새로 이해한 것:
-- `Failure Injection Harness`에서 정리한 요점처럼, 이 프로젝트의 하네스는 실제 네트워크를 흉내 내는 게 아니라, replication 코드가 어떤 실패에 반응해야 하는지 관찰 가능한 장면으로 압축하는 장치입니다.
-
-다음으로 넘긴 질문:
-- `AppendPut`와 `Follower`를 코드에서 직접 확인해, 테스트 이름이 가리키는 invariant가 실제로 어디에 박혀 있는지 본다.
-
-### Session 2 — 중심 타입에서 책임이 모이는 지점 보기
-
-이번 세션의 목표는 소스 파일의 중심 타입/클래스가 어떤 책임을 한곳에 묶고 있는지 확인하는 것이었다. 초기 가설은 구현이 작으면 책임도 단순하게 한 줄로 설명될 거라고 생각했다.
-
-막상 다시 펼쳐 보니 가장 큰 구현 파일인 `database-systems/go/ddia-distributed-systems/projects/08-failure-injected-log-replication/internal/replication/replication.go`를 먼저 읽고, 테스트가 요구한 상태 전이가 정말 이 파일 안에서 닫히는지 확인했다. 특히 `AppendPut` 같은 이름이 초기에 바로 보이면 write path의 중심이 선명해진다.
-
-변경 단위:
-- `database-systems/go/ddia-distributed-systems/projects/08-failure-injected-log-replication/internal/replication/replication.go`
-
-CLI:
-
-```bash
-$ rg -n "^(type|func) " internal cmd
-cmd/failure-replication/main.go:9:func main() {
-cmd/failure-replication/main.go:37:func mustFollower(cluster *replication.Cluster, id string) *replication.Follower {
-internal/replication/replication.go:10:type LogEntry struct {
-internal/replication/replication.go:17:type Message struct {
-internal/replication/replication.go:25:type Leader struct {
-internal/replication/replication.go:34:func NewLeader(id string, followerIDs []string) *Leader {
-internal/replication/replication.go:49:func (leader *Leader) AppendPut(key string, value string) LogEntry {
-internal/replication/replication.go:61:func (leader *Leader) CommitIndex() int {
-internal/replication/replication.go:65:func (leader *Leader) Read(key string) (string, bool) {
-internal/replication/replication.go:70:func (leader *Leader) LogLength() int {
-internal/replication/replication.go:74:func (leader *Leader) outgoingAppends() []Message {
-internal/replication/replication.go:93:func (leader *Leader) handleAck(followerID string, index int) {
-internal/replication/replication.go:101:func (leader *Leader) advanceCommit() {
-internal/replication/replication.go:116:type Follower struct {
-internal/replication/replication.go:123:func NewFollower(id string) *Follower {
-internal/replication/replication.go:130:func (follower *Follower) HandleAppend(entry LogEntry) int {
-internal/replication/replication.go:148:func (follower *Follower) Watermark() int {
-internal/replication/replication.go:152:func (follower *Follower) Read(key string) (string, bool) {
-internal/replication/replication.go:157:func (follower *Follower) LogLength() int {
-internal/replication/replication.go:161:func (follower *Follower) AppliedCount() int {
-internal/replication/replication.go:165:func (follower *Follower) apply(entry LogEntry) {
-internal/replication/replication.go:175:func (follower *Follower) rebuildStore() {
-internal/replication/replication.go:183:type NetworkHarness struct {
-internal/replication/replication.go:189:func NewNetworkHarness() *NetworkHarness {
-internal/replication/replication.go:197:func (network *NetworkHarness) PauseNode(id string) {
-internal/replication/replication.go:201:func (network *NetworkHarness) ResumeNode(id string) {
-internal/replication/replication.go:205:func (network *NetworkHarness) DropNext(kind string, to string, index int, count int) {
-internal/replication/replication.go:209:func (network *NetworkHarness) DuplicateNext(kind string, to string, index int, count int) {
-internal/replication/replication.go:213:func (network *NetworkHarness) Route(messages []Message, handler func(Message) []Message) {
-internal/replication/replication.go:240:type Cluster struct {
-internal/replication/replication.go:247:func NewCluster(leaderID string, followerIDs []string) *Cluster {
-internal/replication/replication.go:260:func (cluster *Cluster) Put(key string, value string) LogEntry {
-internal/replication/replication.go:264:func (cluster *Cluster) Tick() {
-internal/replication/replication.go:268:func (cluster *Cluster) Follower(id string) (*Follower, error) {
-internal/replication/replication.go:276:func (cluster *Cluster) PauseNode(id string) {
-internal/replication/replication.go:280:func (cluster *Cluster) ResumeNode(id string) {
-internal/replication/replication.go:284:func (cluster *Cluster) DropNext(kind string, to string, index int, count int) {
-internal/replication/replication.go:288:func (cluster *Cluster) DuplicateNext(kind string, to string, index int, count int) {
-internal/replication/replication.go:292:func (cluster *Cluster) handleMessage(message Message) []Message {
-internal/replication/replication.go:313:func majority(size int) int {
-internal/replication/replication.go:317:func ruleKey(kind string, to string, index int) string {
-internal/replication/replication.go:321:func equalEntry(left LogEntry, right LogEntry) bool {
-internal/replication/replication.go:335:func stringPtr(value string) *string {
-```
-
-검증 신호:
-- `AppendPut` 같은 이름이 초기에 바로 보이면 write path의 중심이 선명해진다.
-- 반대로 `Follower`가 함께 보이면 read path나 visibility 규칙을 따로 떼어 설명할 수 없다는 뜻이다.
-
-핵심 코드:
-
-```go
-func (leader *Leader) AppendPut(key string, value string) LogEntry {
-	entry := LogEntry{
-		Index:     len(leader.log),
-		Operation: "put",
-		Key:       key,
-		Value:     stringPtr(value),
-	}
-	leader.log = append(leader.log, entry)
-	leader.store[key] = value
-	return entry
-}
-```
-
-왜 여기서 판단이 바뀌었는가:
-
-`AppendPut`는 이 프로젝트가 가장 먼저 고정해야 하는 상태 전이를 보여 준다. 이 조각을 보고 나서야 테스트 이름과 구현 책임이 같은 문제를 가리키고 있다는 확신이 생겼다.
-
-이번 구간에서 새로 이해한 것:
-- `Quorum Commit and Retry`에서 정리한 요점처럼, leader는 모든 follower가 다 따라올 때까지 기다리지 않고, quorum ack가 모이면 commit index를 올립니다. 하지만 뒤처진 follower는 retry를 통해 결국 따라잡아야 합니다.
-
-다음으로 넘긴 질문:
-- 같은 상태를 반대 방향에서 고정하는 `Follower`를 읽어, write/read 혹은 append/replay가 서로 어떻게 잠기는지 확인한다.
+첫 두 줄만 봐도 중요한 사실이 나온다. 첫 tick에서 `node-2`는 아직 못 받았지만 `commit=0`이다. 즉 quorum commit은 follower 전체 convergence와 같은 뜻이 아니다. 다음 글에서는 이 분리를 만드는 코드 경로를 직접 따라간다.

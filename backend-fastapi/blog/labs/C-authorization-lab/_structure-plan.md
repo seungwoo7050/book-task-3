@@ -1,39 +1,42 @@
-# C-authorization-lab Structure Plan
+# C-authorization-lab structure plan
 
 ## 한 줄 약속
-- 로그인에서 한 걸음 물러서서, 누가 무엇을 할 수 있는지만 고립시키기
+
+- 인증을 거의 비워 둔 상태에서도 invite, membership, role threshold만으로 인가 규칙이 얼마나 선명해질 수 있는지 보여 준다.
 
 ## 독자 질문
-- 워크스페이스 초대, 역할 변경, 문서 접근 제어를 인증 메커니즘과 분리해도 설명 가능한가.
-- 역할과 소유권은 무엇이 다른가 초대 흐름에서 누가 상태를 바꿀 수 있는가 인가 규칙을 테스트하기 좋은 경계는 어디인가
 
-## 서술 원칙
-- 기존 `blog/` 초안은 입력 근거로 사용하지 않는다.
-- 사실로 확인되는 날짜와 명령은 `git log`와 `docs/verification-report.md`에서만 가져온다.
-- finer-grained chronology는 코드/테스트 의존 순서를 바탕으로 복원했다고 명시한다.
+- 왜 이 랩은 로그인 방식 대신 `X-User-Id` actor 모델을 먼저 고정하는가
+- invitation lifecycle은 단순 CRUD가 아니라 어떤 authorization 상태 전이인가
+- `viewer`, `member`, `owner` 차이는 어느 요청에서 403과 200으로 갈리는가
+- owner-only role change는 일반 RBAC과 무엇이 다른가
+- 현재 문서에 적힌 검증 명령은 지금 셸에서 그대로 재현되는가
+
+## 이번 Todo의 작성 원칙
+
+- 다른 lab 문장이나 구조를 가져오지 않는다.
+- 기존 `blog/` 본문은 사실 근거로 사용하지 않는다.
+- `problem/README`, source code, tests, 실제 재실행 CLI만으로 서사를 복원한다.
+- role 규칙의 선명함과 현재 import/dependency drift를 둘 다 숨기지 않는다.
 
 ## 글 흐름
-1. 로그인 대신 actor와 역할표부터 세우기
-2. 초대 lifecycle을 인가 규칙의 중심으로 잡기
-3. 권한 상승과 접근 거부를 테스트로 고정하기
-4. 2026-03-09 재검증으로 규칙 surface를 다시 확인하기
-5. 남은 범위와 다음 비교 대상 정리
 
-## Evidence Anchor
-- 주 코드 앵커: `labs/C-authorization-lab/fastapi/app/api/v1/routes/authorization.py::create_invite` — 인가 규칙이 user actor, workspace, role payload를 한 번에 받는 중심 surface다.
-- 보조 앵커: `labs/C-authorization-lab/fastapi/tests/integration/test_authorization_flows.py::test_invite_accept_promote_and_document_permissions` — viewer가 문서를 못 만들다가 promote 뒤에 만들 수 있게 되는 핵심 전환을 담는다.
-- 문서 앵커: `labs/C-authorization-lab/problem/README.md`, `labs/C-authorization-lab/docs/README.md`
-- CLI 앵커:
-- `python3 -m compileall app tests`
-- `make lint`
-- `make test`
-- `make smoke`
-- `./tools/compose_probe.sh <workspace> <host-port>`
+1. `X-User-Id` actor 모델부터 열어 인증이 왜 의도적으로 축소됐는지 고정한다.
+2. invitation 생성, 수락, 거절을 authorization surface의 중심 상태 전이로 읽는다.
+3. `ROLE_ORDER`와 owner-only role change를 따라가며 권한 임계값을 서비스 계층에서 설명한다.
+4. 통합 테스트로 viewer의 403, promote 이후 200, outsider의 403 경계를 회귀선처럼 고정한다.
+5. 오늘 다시 돌린 CLI 결과로 현재 재현 가능 상태를 닫는다.
 
-## 글에서 강조할 개념
-- 워크스페이스 역할 표 invitation lifecycle 리소스 접근 제어를 서비스 계층에서 다루는 이유
-- workspace membership 모델 invitation 생성, 수락, 거절 흐름 RBAC 역할 경계 인증은 별도 헤더 기반 actor 모델로 단순화합니다. 핵심은 "누가 할 수 있나"이지 "어떻게 로그인했나"가 아닙니다.
+## Evidence anchor
 
-## 끝맺음
-- 제외 범위: 실제 로그인 시스템과 세션 관리 정책 엔진 같은 고급 외부 권한 시스템 조직 간 멀티테넌시 전체 설계
-- 검증 문장: 2026-03-09에 compile, lint, test, smoke, Compose live/ready probe가 통과했고, 로컬 학습 실행을 위해 앱 시작 시 스키마 자동 초기화를 두었다.
+- 주 코드 앵커: [AuthorizationService](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/C-authorization-lab/fastapi/app/domain/services/authorization.py)
+- 보조 코드 앵커: [authorization.py route](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/C-authorization-lab/fastapi/app/api/v1/routes/authorization.py), [authorization_repository.py](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/C-authorization-lab/fastapi/app/repositories/authorization_repository.py)
+- 입력 경계 앵커: [deps.py](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/C-authorization-lab/fastapi/app/api/deps.py), [authorization.py schema](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/C-authorization-lab/fastapi/app/schemas/authorization.py)
+- 테스트 앵커: [test_authorization_flows.py](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/C-authorization-lab/fastapi/tests/integration/test_authorization_flows.py)
+- CLI 앵커: `make lint`, `make test`, `make smoke`, `PYTHONPATH=. pytest`, `PYTHONPATH=. python -m tests.smoke`
+
+## 끝에서 남겨야 할 문장
+
+- 이 랩의 강점은 인증 복잡도를 걷어낸 뒤에도 invite, membership, role threshold, owner 권한이 하나의 authorization surface로 또렷하게 읽힌다는 점이다.
+- 이 랩의 현재 약점은 공식 검증 진입점이 2026-03-14 셸에서는 `app` path, `fastapi`, `email-validator` 문제로 바로 닫히지 않는다는 점이다.
+- 다음 랩인 `D-data-api-lab`은 권한 규칙을 이미 분리해 둔 상태에서 데이터 API 일관성과 저장 흐름으로 초점을 옮기는 비교 대상으로 연결한다.

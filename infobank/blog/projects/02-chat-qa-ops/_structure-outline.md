@@ -1,22 +1,26 @@
 # 02 챗봇 상담 품질 관리 Structure Outline
 
-이 outline은 이 시리즈를 왜 지금의 네 문서 구조로 나눴는지 설명한다. 목표는 기능 목록을 나열하는 것이 아니라, 독자가 "상담 품질 평가가 어떻게 운영 가능한 형태로 자랐는가"를 자연스러운 순서로 따라가게 만드는 것이다.
+이 outline의 목적은 독자가 이 프로젝트를 "챗봇 앱"이 아니라 "quality operations system"으로 읽게 만드는 것이다. 그래서 문서 구조를 `평가 파이프라인 -> 증빙 -> 운영 표면` 순서로 고정했다.
 
 ## 문서 구성 의도
 
-- `00-series-map.md`  
-  이 프로젝트를 어떤 질문으로 읽어야 하는지 먼저 정리한다. 독립 프로젝트로 본 이유, 사용한 근거, 전체 챕터 구성을 여기서 잡는다.
-- `10-first-qa-evaluation-loop.md`  
-  rule, evidence, judge, scoring이 왜 이 순서로 묶였는지 보여 준다. CLI가 왜 먼저 중요한 운영 출구가 되었는지도 여기서 설명한다.
-- `20-regression-hardening-and-proof.md`  
-  golden-set compare, dashboard version compare, smoke-postgres, proof artifact가 어떻게 같은 증빙 흐름을 이루는지 보여 준다.
-- `30-self-hosted-review-ops.md`  
-  이미 만든 proof surface가 `v3`에서 login, dataset import, async job, selected-job review UI를 가진 운영 흐름으로 어떻게 확장되는지 설명한다.
+- `00-series-map.md`
+  - 프로젝트를 어떤 질문으로 읽을지, 그리고 historical proof와 current rerun을 왜 분리해야 하는지 먼저 잡는다.
+- `10-first-qa-evaluation-loop.md`
+  - Rule -> Evidence -> Judge 순서와 trace 저장 구조를 설명한다.
+- `20-regression-hardening-and-proof.md`
+  - compare/dashboard/proof artifact가 improvement story를 어떻게 만들고, current snapshot 재실행과는 어디서 갈라지는지 설명한다.
+- `30-self-hosted-review-ops.md`
+  - 같은 평가 grammar가 auth, dataset, KB bundle, async job, selected review UI를 가진 운영 surface로 이동하는 과정을 설명한다.
 
 ## 문체 기준
 
-- `10`은 "품질 평가를 어떻게 설명 가능한 파이프라인으로 만들었는가"에 답한다.
-- `20`은 "개선 수치를 어떻게 proof로 닫았는가"에 답한다.
-- `30`은 "같은 평가 체계를 어떻게 self-hosted 운영 흐름으로 옮겼는가"에 답한다.
+- `10`은 "왜 이 순서의 파이프라인이 필요한가"에 답해야 한다.
+- `20`은 "proof artifact가 무엇을 증명하고, 현재 재실행은 무엇을 보여 주는가"를 분리해서 다뤄야 한다.
+- `30`은 "새 evaluator가 아니라 운영 단위가 어떻게 추가됐는가"를 보여 줘야 한다.
 
-좋은 점은 세 문서가 서로 다른 기능을 따로 소개하는 글이 아니라, 하나의 품질 관리 시스템이 더 넓은 책임을 차례대로 떠안는 과정을 보여 준다는 데 있다.
+## 이번 재작성에서 특히 지킨 점
+
+- `make compare`와 CLI 시그니처 불일치를 현재 seam으로 남긴다.
+- docs/demo improvement artifact를 그대로 현재 재현 결과처럼 포장하지 않는다.
+- `v3` 테스트 통과와 비차단 경고를 함께 남겨, 운영 snapshot의 현재 상태를 과장하지 않는다.

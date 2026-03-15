@@ -1,28 +1,25 @@
-# RDT Protocol series map
+# RDT Protocol 시리즈 맵
 
-이 프로젝트를 읽을 때 붙들 질문은 하나다. rdt3.0과 Go-Back-N의 핵심 차이를 같은 채널 모델 위에서 어떻게 드러냈는가?
+이 lab의 중심 질문은 "손실과 손상이 있는 같은 채널을 놓고, stop-and-wait와 Go-Back-N이 retransmission 단위를 어떻게 다르게 택하는가"다. 현재 저장소는 `rdt3.py`와 `gbn.py`를 나란히 두어 이 차이를 숨기지 않는다. `rdt3.py`는 한 번에 하나의 packet만 outstanding으로 두고 timeout 때 그 packet만 다시 보낸다. `gbn.py`는 `base`와 `next_seq`로 window를 운영하고, timeout이 나면 `base..next_seq-1` 범위를 통째로 다시 보낸다.
 
-## 무엇을 근거로 복원했는가
+## 이 lab를 읽는 질문
 
-- 프로젝트 README: `study/02-Reliable-Transport/rdt-protocol/README.md`
-- 문제 문서와 실행 표면: `study/02-Reliable-Transport/rdt-protocol/problem/README.md`, `study/02-Reliable-Transport/rdt-protocol/problem/Makefile`
-- 핵심 구현과 테스트: `study/02-Reliable-Transport/rdt-protocol/python/src/gbn.py`, `study/02-Reliable-Transport/rdt-protocol/python/tests/test_rdt.py`
-- 정식 검증 출력: `make -C study/02-Reliable-Transport/rdt-protocol/problem test`
+- 단일 timer 하나만으로도 왜 stop-and-wait는 충분한가
+- GBN에서 ACK가 개별 확인이 아니라 cumulative이라는 말이 코드에서는 어디에 나타나는가
+- receiver가 buffer를 두지 않으면 sender 쪽 재전송 양상은 어떻게 달라지는가
 
-## 어떤 순서로 읽으면 되는가
+## 이번에 사용한 근거
 
-1. `problem/README.md`로 문제 조건과 성공 기준을 확인한다.
-2. 이 문서에서 어떤 입력을 근거로 썼는지 먼저 본다.
-3. `01-evidence-ledger.md`로 세 단계 흐름을 짧게 파악한다.
-4. `10-development-timeline.md`에서 코드나 trace, CLI를 따라간다.
+- `problem/README.md`
+- `python/src/rdt3.py`
+- `python/src/gbn.py`
+- `python/tests/test_rdt.py`
+- `problem/script/test_rdt.sh`
+- 2026-03-14 재실행 로그
 
-## 이번 리라이트에서 의도적으로 제외한 입력
+## 이번 재실행에서 고정한 사실
 
-- 현재 `study/blog/**`의 이전 본문
-- `notion/`, `notion-archive/` 아래의 서술형 메모
-
-## 짧은 판정 메모
-
-- 독립 프로젝트로 본 이유: `RDT Protocol`는 자기 README와 정식 검증 명령으로 범위를 독립적으로 설명할 수 있다.
-- 보관본 위치: `study/blog/_legacy`
-- 이번 글의 중심 답: rdt3.0`과 `Go-Back-N`을 같은 채널 모델 위에서 비교하는 신뢰 전송 과제입니다.
+- `rdt3.py`는 `send_seq`를 `0/1`로 번갈아 쓰며 ACK 일치 여부를 `is_ack(ack_pkt, send_seq)`로 확인한다.
+- `gbn.py`는 packet을 미리 전부 만들고 `base`, `next_seq`, `window_size`로 송신 window를 관리한다.
+- GBN receiver는 기대한 `seq`만 전달하고, 나머지는 마지막 정상 ACK를 재전송한다.
+- 손실 채널 재실행에서 `rdt3.py`는 `Timeout! Retransmitting seq=1`처럼 단일 재전송이 반복됐고, `gbn.py`는 `Retransmitting packets 2 to 5`처럼 범위 재전송이 나타났다.

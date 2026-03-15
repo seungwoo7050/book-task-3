@@ -1,0 +1,25 @@
+# CS-Core 서버 개발 비필수 문제지
+
+`cs-core`에서 `problem-subject-essential`에 포함되지 않은 나머지 과제 문제지를 모아 둡니다.
+여기서 `비필수`는 서버 개발자에게 불필요하다는 뜻이 아니라, 공통 필수보다 우선순위가 뒤라는 뜻입니다.
+
+## Foundations-CSAPP
+
+| lab | 한 줄 문제 요약 | 검증 시작점 |
+| --- | --- | --- |
+| [archlab](archlab.md) | 시작 위치의 구현을 완성해 공식 self-study handout 복원 경로가 필요한 학습자, y86/ hand-in 산출물과 복원 toolchain의 관계를 알고 싶은 사람, 공개 가능한 파일과 로컬 전용 자산을 구분하고 싶은 사람을 한 흐름으로 설명하고 검증한다. | `make -C /Users/woopinbell/work/book-task-3/cs-core/study/Foundations-CSAPP/archlab/c test` |
+| [attacklab](attacklab.md) | 시작 위치의 구현을 완성해 공개 self-study target을 로컬에 복원해 보고 싶은 학습자, 문제 계약과 companion verifier의 경계를 나눠 보고 싶은 사람, 보안 과제 공개 범위를 안전하게 관리하고 싶은 사람을 한 흐름으로 설명하고 검증한다. | `make -C /Users/woopinbell/work/book-task-3/cs-core/study/Foundations-CSAPP/attacklab/c test` |
+| [bomblab](bomblab.md) | 시작 위치의 구현을 완성해 공식 self-study bomb를 로컬에서 복원해 보고 싶은 학습자, 어떤 파일은 공개하고 어떤 자산은 제외해야 하는지 알고 싶은 사람, companion 구현과 공식 문제 경계를 분리해서 관리하고 싶은 사람을 한 흐름으로 설명하고 검증한다. | `make -C /Users/woopinbell/work/book-task-3/cs-core/study/Foundations-CSAPP/bomblab/c test` |
+| [bytecode-ir](bytecode-ir.md) | 시작 위치의 구현을 완성해 parser-interpreter, static-type-checking와 같은 문법을 다시 파싱해야 합니다, AST를 stack-based bytecode로 낮추고, VM이 그 bytecode를 실행해야 합니다, nested function은 explicit capture slot을 가진 closure object로 만들어야 합니다를 한 흐름으로 설명하고 검증한다. | `cd cs-core/study/Programming-Languages-Foundations/bytecode-ir && python3 -m pytest && PYTHONPATH=src python3 -m bytecode_ir --demo all --emit run && PYTHONPATH=src python3 -m bytecode_ir --demo disasm-sample --emit disasm` |
+| [datalab](datalab.md) | 시작 위치의 구현을 완성해 정수 퍼즐은 int만 사용하고, 문제별 허용 연산자만 사용할 수 있습니다, 상수는 0x00부터 0xFF까지만 사용할 수 있습니다, 정수 퍼즐에서는 if, while, for, switch, ?:, &&, ||를 사용할 수 없습니다를 한 흐름으로 설명하고 검증한다. | `cd /Users/woopinbell/work/book-task-3/cs-core/study/Foundations-CSAPP/datalab/c/tests && ./test_bits` |
+| [filesystem-mini-lab](filesystem-mini-lab.md) | 시작 위치의 구현을 완성해 create/write/read/delete가 JSON image 위에서 일관되게 동작한다, reopen 후 상태가 유지된다, committed journal replay와 incomplete journal discard가 tests로 재현된다를 한 흐름으로 설명하고 검증한다. | `make test && make run-demo` |
+| [malloclab](malloclab.md) | 시작 위치의 구현을 완성해 allocator API 계약을 먼저 확인하고 싶은 학습자, trace 형식과 driver 역할을 이해하고 싶은 사람, 구현 디렉터리와 문제 경계를 분리하고 싶은 사람을 한 흐름으로 설명하고 검증한다. | `make -C /Users/woopinbell/work/book-task-3/cs-core/study/Systems-Programming/malloclab/c test` |
+| [parser-interpreter](parser-interpreter.md) | 시작 위치의 구현을 완성해 정수/불리언 literal, identifier, let, if, fun, call을 포함한 expression-oriented 언어를 파싱해야 합니다, unary -, not, binary arithmetic/comparison/logical operator의 precedence와 associativity를 안정적으로 처리해야 합니다, lexical closure와 eager evaluation을 지원하는 tree-walk interpreter가 필요합니다를 한 흐름으로 설명하고 검증한다. | `cd cs-core/study/Programming-Languages-Foundations/parser-interpreter && python3 -m pytest && PYTHONPATH=src python3 -m parser_interpreter --demo all` |
+| [perflab](perflab.md) | 시작 위치의 구현을 완성해 구현 전에 문제 계약과 제공 파일을 먼저 보고 싶은 학습자, 공식 자산 없이도 공개 가능한 starter boundary를 만들고 싶은 사람, sample trace와 driver의 역할을 알고 싶은 사람을 한 흐름으로 설명하고 검증한다. | `make -C /Users/woopinbell/work/book-task-3/cs-core/study/Foundations-CSAPP/perflab/c test` |
+| [scheduling-simulator](scheduling-simulator.md) | 시작 위치의 구현을 완성해 fixture가 policy별 deterministic timeline을 만든다, FCFS/SJF/RR/MLFQ 결과가 tests의 golden expectation과 일치한다, run-demo가 policy별 replay와 metrics table을 같은 shape로 출력한다를 한 흐름으로 설명하고 검증한다. | `make test && make run-demo` |
+| [static-type-checking](static-type-checking.md) | 시작 위치의 구현을 완성해 parser-interpreter와 같은 문법을 다시 파싱해야 합니다, arithmetic/comparison/logical operator의 operand type을 실행 전에 확인해야 합니다, if condition, then/else branch, function call, function return을 static rule로 검증해야 합니다를 한 흐름으로 설명하고 검증한다. | `cd cs-core/study/Programming-Languages-Foundations/static-type-checking && python3 -m pytest && PYTHONPATH=src python3 -m static_type_checking --demo all` |
+| [synchronization-contention-lab](synchronization-contention-lab.md) | 시작 위치의 구현을 완성해 counter final count가 expected count와 일치한다, semaphore gate의 max concurrency가 permit limit를 넘지 않는다, bounded buffer에서 underflow/overflow 없이 생산량과 소비량이 일치한다를 한 흐름으로 설명하고 검증한다. | `make test && make run-demo` |
+
+## 스포일러 경계
+
+각 lab의 정답 코드, 공식 구현 진입점, 해설은 같은 이름의 sibling `_answer.md` 문서에서 확인한다.

@@ -1,62 +1,112 @@
 # G-ops-observability-lab evidence ledger
 
-- 복원 방식: 세부 commit 로그 대신 `Phase 1 -> Phase 3`으로 다시 정리했다.
-- 근거: `README.md`, `problem/README.md`, `docs/README.md`, `spring/Makefile`, `OpsController.java`, `TraceIdFilter.java`, `application.yml`, `logback-spring.xml`, `compose.yaml`, `prometheus.yml`, `OpsApiTest.java`, `HealthApiTest.java`, `spring/build/test-results/test/*.xml`, `../../docs/verification-report.md`
-- 작업 환경 전제: macOS + VSCode 통합 터미널 기준.
+- 작성 기준일: 2026-03-14
+- 복원 원칙: 기존 blog 본문은 입력 근거로 쓰지 않고, source, config, tests, 재실행 결과만 사용했다.
+- 핵심 근거: `problem/README.md`, `docs/README.md`, `spring/Makefile`, `OpsController.java`, `HealthController.java`, `TraceIdFilter.java`, `application.yml`, `logback-spring.xml`, `prometheus.yml`, `compose.yaml`, `OpsApiTest.java`, `HealthApiTest.java`, `LabInfoApiSmokeTest.java`
 
-## Phase 1
+## Phase 1. 운영 표면과 테스트 기준 확인
 
-- 당시 목표: 운영 랩의 baseline을 health와 summary surface로 먼저 고정한다.
-- 변경 단위: `README.md`, `problem/README.md`, `OpsApiTest.java`, `HealthApiTest.java`
-- 처음 가설: 운영성은 capstone 부록으로만 정리해도 충분할 것 같았다.
-- 실제 조치: `/api/v1/ops/summary`, `/api/v1/health/live`, `/api/v1/health/ready`를 별도 테스트로 고정했다.
-- CLI:
+- 목표: 이 lab이 실제로 어떤 운영 표면을 노출하는지 먼저 확인한다.
+- 확인 파일:
+  - `spring/src/main/java/com/webpong/study2/app/ops/api/OpsController.java`
+  - `spring/src/main/java/com/webpong/study2/app/global/api/HealthController.java`
+  - `spring/src/test/java/com/webpong/study2/app/OpsApiTest.java`
+  - `spring/src/test/java/com/webpong/study2/app/HealthApiTest.java`
+- 확인 결과:
+  - `/api/v1/ops/summary`는 static link map에 가깝다.
+  - custom `/api/v1/health/live|ready`는 dependency probe 없이 항상 `UP`을 반환한다.
+  - 테스트는 링크 문자열과 `UP` 상태만 확인한다.
+  - `X-Trace-Id`, JSON logging, actuator health divergence는 여기서 직접 matcher로 잠그지 않는다.
+
+## Phase 2. logging/metrics/runtime signal 확인
+
+- 목표: observability 요소 중 실제 runtime signal이 무엇인지 확인한다.
+- 확인 파일:
+  - `spring/src/main/java/com/webpong/study2/app/global/logging/TraceIdFilter.java`
+  - `spring/src/main/resources/logback-spring.xml`
+  - `spring/src/main/resources/application.yml`
+  - `spring/prometheus.yml`
+- 확인 결과:
+  - `X-Trace-Id` response header가 실제로 붙는다.
+  - bootRun 로그가 JSON 형태로 출력된다.
+  - `/actuator/prometheus`는 실제 metric payload를 반환한다.
+  - 위 세 항목은 현재 source와 manual bootRun 재실행이 더 직접적인 근거이고, MockMvc test가 같은 수준으로 잠그는 것은 아니다.
+
+## Phase 3. compose/CI 근거 차이 확인
+
+- 목표: 문서가 말하는 운영 기본기 중 무엇이 파일로 존재하고 무엇이 아직 문서 주장인지 분리한다.
+- 확인 파일:
+  - `spring/compose.yaml`
+  - `spring/prometheus.yml`
+- 확인 결과:
+  - compose와 Prometheus scrape 파일은 실제로 있다.
+  - `app`이 `prometheus`에 `depends_on`을 거는 등 wiring이 아직 투박하다.
+  - `POSTGRES_DB:-a_auth_lab` 기본값은 이 lab 맥락과 맞지 않는 복사 흔적이다.
+  - `backend-spring` 아래 `.github/workflows` 검색 결과는 `0`개였다.
+
+## Phase 4. 2026-03-14 재실행 검증
+
+- lint:
 
 ```bash
-cd spring
-make test
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/G-ops-observability-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew spotlessCheck checkstyleMain checkstyleTest'
 ```
 
-- 검증 신호: `OpsApiTest` 1개 테스트 통과, `HealthApiTest` 2개 테스트 통과
-- 핵심 코드 앵커: `OpsApiTest.summaryExposesOperationalLinks()`, `HealthApiTest.liveEndpointResponds()`
-- 새로 배운 것: 운영성의 첫걸음은 대시보드가 아니라 앱이 관찰 surface를 스스로 드러내는 일이다.
-- 다음: trace id, JSON logging, metrics 노출을 설정과 코드에 묶는다.
+- 결과: `BUILD SUCCESSFUL in 1m 39s`
 
-## Phase 2
-
-- 당시 목표: health 외의 운영 기본기를 런타임 설정으로 연결한다.
-- 변경 단위: `TraceIdFilter.java`, `logback-spring.xml`, `application.yml`, `compose.yaml`, `prometheus.yml`
-- 처음 가설: 문서에 Prometheus 사용만 적어도 충분할 수 있다고 봤다.
-- 실제 조치: `X-Trace-Id`, JSON logging, `/actuator/prometheus` 노출, Prometheus scrape 설정을 실제 파일에 넣었다.
-- CLI:
+- test:
 
 ```bash
-cd spring
-make smoke
-docker compose up --build
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/G-ops-observability-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew test'
 ```
 
-- 검증 신호: `LabInfoApiSmokeTest` 1개 테스트 통과, `2026-03-09` 검증 보고서 기준 lint/test/smoke/Compose health 통과
-- 핵심 코드 앵커: `TraceIdFilter.doFilterInternal()`, `logback-spring.xml`, `prometheus.yml`
-- 새로 배운 것: observability는 도구 목록이 아니라 config, log format, endpoint exposure가 함께 맞물리는 계약이다.
-- 다음: alert와 live infra를 아직 하지 않았다는 점을 문서에 닫는다.
+- 결과: `BUILD SUCCESSFUL in 1m 24s`
 
-## Phase 3
-
-- 당시 목표: 운영 완성본이 아니라 baseline이라는 점을 분명히 남긴다.
-- 변경 단위: `docs/README.md`, `spring/README.md`, `TEST-com.webpong.study2.app.OpsApiTest.xml`
-- 처음 가설: health와 metrics path만 있으면 운영성 설명이 충분할 줄 알았다.
-- 실제 조치: alert rule, dashboard, 외부 log platform, live AWS가 아직 없다는 점을 docs에 남겼다.
-- CLI:
+- smoke:
 
 ```bash
-cd spring
-make lint
-make test
-make smoke
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/G-ops-observability-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew test --tests "*SmokeTest"'
 ```
 
-- 검증 신호: `2026-03-13` 기준 4개 suite, 총 5개 테스트, 실패 0
-- 핵심 코드 앵커: `docs/README.md`의 의도적 단순화, `verification-report.md`
-- 새로 배운 것: 운영 글은 지금 관찰 가능한 것과 아직 비어 있는 것을 같이 써야 믿을 만해진다.
-- 다음: 이 운영 baseline을 `commerce-backend`에 붙여 본다.
+- 결과: `BUILD SUCCESSFUL in 1m 19s`
+
+- manual boot run:
+
+```bash
+docker run --rm -u $(id -u):$(id -g) -p 18086:8080 \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/labs/G-ops-observability-lab/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew bootRun'
+```
+
+- manual HTTP checks:
+  - `GET /api/v1/health/live` -> `200`, `X-Trace-Id` 포함
+  - `GET /api/v1/health/ready` -> `200`, custom `UP`
+  - `GET /api/v1/ops/summary` -> `profile`, `metrics`, `docs`, `health` 링크 반환
+  - `GET /actuator/prometheus` -> `200`, metrics payload 반환
+  - `GET /actuator/health/readiness` -> `200 {"status":"UP"}`
+  - `GET /actuator/health/liveness` -> `200 {"status":"UP"}`
+  - `GET /actuator/health` -> `503 {"status":"DOWN","groups":["liveness","readiness"]}`
+  - bootRun log -> `Mail health check failed`, `Redis health check failed`, both `Connection refused` on localhost defaults
+
+## 이번 Todo의 결론
+
+- 이 lab은 observability surface를 모아 두는 데는 성공했지만, 모든 surface가 같은 깊이의 운영 의미를 갖는 건 아니다.
+- 문서에 반드시 남겨야 할 현재 한계:
+  - custom ready와 actuator health 사이의 의미 차이
+  - automated test coverage는 custom health/ops summary 쪽에 더 가깝고, trace/logging/actuator 차이는 source/manual 관찰에 더 의존한다는 점
+  - compose wiring의 미세한 어색함
+  - workspace-local CI workflow 파일 부재

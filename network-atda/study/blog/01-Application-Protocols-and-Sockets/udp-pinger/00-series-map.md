@@ -1,28 +1,17 @@
-# UDP Pinger series map
+# UDP Pinger 시리즈 맵
 
-이 프로젝트를 읽을 때 붙들 질문은 하나다. 연결 없는 UDP에서 손실과 timeout을 클라이언트 쪽 코드로 어떻게 드러냈는가?
+이 lab의 중심은 UDP가 얼마나 단순한가가 아니라, 그 단순함이 클라이언트 코드에 어떤 책임을 남기는가다. 현재 구현은 재전송이나 연결 상태를 제공하지 않는 대신, 1초 timeout, RTT 측정, loss percentage 계산을 애플리케이션 레벨에서 직접 처리한다.
 
-## 무엇을 근거로 복원했는가
+## 이 lab를 읽는 질문
 
-- 프로젝트 README: `study/01-Application-Protocols-and-Sockets/udp-pinger/README.md`
-- 문제 문서와 실행 표면: `study/01-Application-Protocols-and-Sockets/udp-pinger/problem/README.md`, `study/01-Application-Protocols-and-Sockets/udp-pinger/problem/Makefile`
-- 핵심 구현과 테스트: `study/01-Application-Protocols-and-Sockets/udp-pinger/python/src/udp_pinger_client.py`, `study/01-Application-Protocols-and-Sockets/udp-pinger/python/tests/test_udp_pinger.py`
-- 정식 검증 출력: `make -C study/01-Application-Protocols-and-Sockets/udp-pinger/problem test`
+- 왜 UDP ping에서는 timeout이 곧 손실 판정인가
+- RTT 통계는 어떤 최소 구조만으로도 유의미해질 수 있는가
+- connectionless socket이라서 테스트와 출력이 어떻게 달라지는가
 
-## 어떤 순서로 읽으면 되는가
+## 이번에 고정한 사실
 
-1. `problem/README.md`로 문제 조건과 성공 기준을 확인한다.
-2. 이 문서에서 어떤 입력을 근거로 썼는지 먼저 본다.
-3. `01-evidence-ledger.md`로 세 단계 흐름을 짧게 파악한다.
-4. `10-development-timeline.md`에서 코드나 trace, CLI를 따라간다.
-
-## 이번 리라이트에서 의도적으로 제외한 입력
-
-- 현재 `study/blog/**`의 이전 본문
-- `notion/`, `notion-archive/` 아래의 서술형 메모
-
-## 짧은 판정 메모
-
-- 독립 프로젝트로 본 이유: `UDP Pinger`는 자기 README와 정식 검증 명령으로 범위를 독립적으로 설명할 수 있다.
-- 보관본 위치: `study/blog/_legacy`
-- 이번 글의 중심 답: UDP의 비연결성과 timeout 기반 손실 처리를 RTT 측정 과제로 묶은 구현입니다.
+- ping은 총 10번 전송한다.
+- 각 ping은 `Ping <seq> <timestamp>` 형식이다.
+- 응답이 오면 RTT를 ms 단위로 기록한다.
+- timeout이면 즉시 `Request timed out`로 출력한다.
+- 마지막에 sent/received/loss/min/avg/max를 정리한다.

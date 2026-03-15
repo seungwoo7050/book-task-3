@@ -1,27 +1,20 @@
-# 08 Failure-Injected Log Replication — Structure Outline
+# Structure Outline
 
-최종 시리즈는 chronology를 매끈하게 재배열하지 않고, 범위 파악 -> 핵심 invariant -> 재검증과 경계의 순서를 유지한다.
+## Core thesis
 
-## Planned Files
+이 project의 핵심은 failure 종류 자체보다, quorum commit과 follower convergence가 분리되고 leader local visibility가 commit보다 앞선다는 점을 작은 replication harness에서 드러내는 데 있다.
 
-- `00-series-map.md`: 프로젝트 질문, 읽는 순서, source-of-truth 파일, 재검증 명령을 잡는 지도
-- `10-chronology-scope-and-surface.md`: 파일 구조와 테스트 이름을 근거로 처음 가설이 바뀌는 구간
-- `20-chronology-core-invariants.md`: `AppendPut`와 `Follower`가 실제로 invariant를 고정하는 구간
-- `30-chronology-verification-and-boundaries.md`: `go test`/`pytest`와 demo 출력으로 경계를 확정하는 구간
+## Writing plan
 
-## Article Goals
+1. problem 문서로 leader-known replication 범위를 먼저 고정한다.
+2. `Leader`, `Follower`, `NetworkHarness` 세 덩어리로 구현 지도를 잡는다.
+3. `AppendPut`과 `advanceCommit`으로 eager leader apply와 quorum commit을 설명한다.
+4. `HandleAppend`로 duplicate/retry idempotency를 설명한다.
+5. test/demo/임시 visibility check로 검증과 한계를 마무리한다.
 
-1. `10-chronology-scope-and-surface.md`
-   범위를 `tests/`와 README에서 어떻게 다시 좁혔는지 보여 준다.
-   코드 앵커: `TestDroppedAppendRetriesUntilFollowerConverges`, `AppendPut`
-   CLI: `find internal tests cmd -type f | sort`, `rg -n "^func Test" tests`
+## Must-keep evidence
 
-2. `20-chronology-core-invariants.md`
-   핵심 invariant가 `AppendPut`와 `Follower` 사이에서 어떻게 고정되는지 보여 준다.
-   코드 앵커: `AppendPut`, `Follower`
-   CLI: `rg -n "^(type|func) " internal cmd`, `rg -n "AppendPut|Follower" internal cmd`
-
-3. `30-chronology-verification-and-boundaries.md`
-   테스트와 demo를 모두 남겨, pass 신호와 공개 표면을 구분해 설명한다.
-   코드 앵커: `TestPausedFollowerLagsButRecoversAfterResume`, `main.go`
-   CLI: GOWORK=off go test ./...; GOWORK=off go run ./cmd/failure-replication
+- `drop tick commit=0 node-2=-1 node-3=0`
+- `recover tick commit=2 node-2=2 node-3=2`
+- `duplicate tick commit=1 node-3-log=2 node-3-applied=2`
+- `commit=-1 leader_read=true:1`

@@ -1,26 +1,23 @@
-# Web Server blog
+# Web Server Blog
 
-`Web Server` 문서 묶음은 TCP 연결 하나를 받아 HTTP 요청, 파일 조회, 404 응답까지 어디서 나눠 구현했는가?라는 질문에 답하기 위해 준비한 읽기 경로다. 결과만 요약하지 않고, 어디서부터 구현이나 분석이 무거워졌는지 따라갈 수 있게 구성했다.
+이 문서 묶음은 `web-server`를 "정적 파일 서버"보다 "TCP accept loop에서 HTTP 응답 한 건을 끝까지 책임지는 가장 작은 서버"로 다시 읽는다. 현재 구현은 요청 라인 파싱, 파일 열기, `Content-Type` 추정, `200/404` 응답 생성, 연결 종료까지 서버 생애주기를 가장 짧은 경로로 보여 준다.
 
-이 프로젝트의 본문은 `TCP 소켓과 `HTTP/1.1` 응답 조합으로 정적 파일 서버를 구현하는 파일럿 과제입니다.`라는 한 줄 설명을 실제 파일, CLI, 테스트 신호로 다시 풀어 쓰는 데 초점을 둔다.
+이번 재작성은 `problem/README.md`, `python/README.md`, `python/src/web_server.py`, `python/tests/test_web_server.py`, 그리고 2026-03-14 재실행한 `make -C .../problem test`만 사용했다.
 
-## 이 폴더에서 기대할 수 있는 것
+## 읽는 순서
 
-- 문제 경계와 읽는 순서: [00-series-map.md](00-series-map.md)
-- 단계별 근거 압축본: [01-evidence-ledger.md](01-evidence-ledger.md)
-- 글의 편집 개요: [02-structure.md](02-structure.md)
-- 실제 서사형 기록: [10-development-timeline.md](10-development-timeline.md)
+1. [`00-series-map.md`](./00-series-map.md)
+2. [`10-development-timeline.md`](./10-development-timeline.md)
+3. [`01-evidence-ledger.md`](./01-evidence-ledger.md)
+4. [`02-structure.md`](./02-structure.md)
 
-## 근거로 사용한 source set
+## 이번에 다시 확인한 검증 상태
 
-- 프로젝트 루트: `study/01-Application-Protocols-and-Sockets/web-server`
-- 정식 검증 명령: `make -C study/01-Application-Protocols-and-Sockets/web-server/problem test`
-- 구현 파일: `study/01-Application-Protocols-and-Sockets/web-server/python/src`
-- 테스트 파일: `study/01-Application-Protocols-and-Sockets/web-server/python/tests`
-- 제외한 입력: 기존 `study/blog/**`, `notion/**`, `notion-archive/**`
+- 정식 검증: `make -C network-atda/study/01-Application-Protocols-and-Sockets/web-server/problem test`
+- 결과: `GET /hello.html 200`, `GET /nonexistent 404`, body HTML 확인, 총 `3 passed`
 
-## 먼저 읽을 순서
+## 지금 남기는 한계
 
-1. `00-series-map.md`에서 질문과 근거를 먼저 잡는다.
-2. `01-evidence-ledger.md`에서 세 단계 흐름을 짧게 본다.
-3. `10-development-timeline.md`에서 코드/trace와 CLI를 따라 내려간다.
+- path traversal 방어 없음
+- thread pool 없음
+- GET 외 메서드 미지원

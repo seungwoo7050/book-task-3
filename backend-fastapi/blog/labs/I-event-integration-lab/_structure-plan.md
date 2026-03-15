@@ -1,38 +1,47 @@
-# I-event-integration-lab Structure Plan
+# I-event-integration-lab 구조 계획
 
-## 한 줄 약속
-- 동기 API 뒤에 outbox와 idempotent consumer를 붙여 eventual consistency를 드러내기
+## 문서 목표
 
-## 독자 질문
-- 댓글 저장과 알림 생성을 같은 순간에 끝내지 않아도 된다고 말하려면, 어떤 전달 경로와 중복 흡수 장치를 보여줘야 하는가.
-- outbox가 왜 여전히 필요한가 stream payload에는 무엇을 넣고 무엇을 넣지 않는가 idempotent consumer는 어떤 실패를 흡수하는가 relay와 consumer를 같은 서비스에 두지 않는 이유는 무엇인가
+이 랩을 "eventual consistency와 idempotent consumer를 처음 손에 잡히게 만드는 단계"로 읽게 만든다. comment 저장부터 notification 저장까지를 하나의 마법 같은 성공으로 포장하지 않고, outbox, relay, consume을 나눠 설명한다.
 
-## 서술 원칙
-- 기존 `blog/` 초안은 입력 근거로 사용하지 않는다.
-- 사실로 확인되는 날짜와 명령은 `git log`와 `docs/verification-report.md`에서만 가져온다.
-- finer-grained chronology는 코드/테스트 의존 순서를 바탕으로 복원했다고 명시한다.
+## 중심 논지
 
-## 글 흐름
-1. 서비스 통합을 동기 API 대신 이벤트 전달 문제로 보기
-2. compose runtime을 workspace + notification + redis로 좁히기
-3. system test로 relay와 dedupe를 고정하기
-4. 2026-03-10 재검증으로 eventual consistency surface를 닫기
-5. 남은 범위와 다음 비교 대상 정리
+현재 검증된 핵심은 세 줄이다.
 
-## Evidence Anchor
-- 주 코드 앵커: `labs/I-event-integration-lab/fastapi/compose.yaml::__compose__` — runtime이 workspace-service, notification-service, redis 셋으로 닫혀 있음을 보여 준다.
-- 보조 앵커: `labs/I-event-integration-lab/fastapi/tests/test_system.py::test_outbox_and_idempotent_consumer_flow` — comment 저장, relay, 두 번 consume, notification dedupe를 한 흐름으로 고정한다.
-- 문서 앵커: `labs/I-event-integration-lab/problem/README.md`, `labs/I-event-integration-lab/docs/README.md`
-- CLI 앵커:
-- `make lint`
-- `make test`
-- `make smoke`
-- `docker compose up --build`
+- comment와 outbox는 `workspace-service` 내부 트랜잭션으로 묶인다.
+- Redis Stream은 서비스 간 handoff 경계다.
+- 중복 읽기 방지는 broker offset이 아니라 `ConsumerReceipt(event_id)`가 맡는다.
 
-## 글에서 강조할 개념
-- `comment.created.v1` 계약 relay와 consume의 책임 차이 eventual consistency가 허용하는 지연 중복 읽기가 있어도 결과를 한 번만 남기는 구조
-- outbox handoff를 서비스 경계로 옮기는 방법 Redis Streams 기반 이벤트 전달 idempotent consumer와 중복 흡수 consumer group 대신 단순 consumer 흐름으로 제한합니다. dead-letter queue와 재처리 UI는 범위 밖입니다.
+## 본문 순서
 
-## 끝맺음
-- 제외 범위: consumer group dead-letter queue replay UI
-- 검증 문장: 2026-03-10에 lint, service unit test, system test, smoke가 통과했다.
+1. 문제 정의에서 요구한 성공 기준을 먼저 고정한다.
+2. compose 런타임이 `workspace-service + notification-service + redis`라는 점을 보여 준다.
+3. comment 저장과 outbox 적재를 같은 트랜잭션으로 읽는다.
+4. relay가 무엇을 보장하고 무엇을 보장하지 않는지 구분한다.
+5. consumer가 `xread("0-0")`와 receipt dedupe로 중복을 흡수한다는 점을 설명한다.
+6. system test가 auth를 생략하고 event flow만 검증하는 이유를 연결한다.
+7. 실제 재실행 결과를 성공/실패로 나눠 기록한다.
+
+## 반드시 포함할 근거
+
+- `compose.yaml`의 세 서비스 구성
+- `create_comment()`의 outbox 적재
+- `relay_outbox()`의 Redis `xadd()`와 `relayed` 상태 전이
+- `NotificationService.consume()`의 `xread("0-0")` + `has_receipt()` 흐름
+- `ConsumerReceipt.event_id` unique 제약
+- `tests/test_system.py`의 double consume 검증
+- `make lint`, `make test`, `make smoke`, `python3 -m pytest tests/test_system.py -q` 재실행 결과
+
+## 반드시 피할 서술
+
+- notification 저장까지 하나의 원자적 트랜잭션처럼 묘사하지 않는다.
+- consumer group이나 offset checkpoint가 이미 구현된 것처럼 쓰지 않는다.
+- 인증 흐름이 여전히 이 랩의 주인공인 것처럼 설명하지 않는다.
+- 단순히 "Redis를 붙였다" 수준의 얕은 요약으로 끝내지 않는다.
+
+## 품질 체크
+
+- chronology가 살아 있는가
+- handoff 경계가 실제 코드 단위로 설명되는가
+- dedupe가 어디서 일어나는지 독자가 바로 이해할 수 있는가
+- 현재 한계와 제외 범위를 숨기지 않았는가

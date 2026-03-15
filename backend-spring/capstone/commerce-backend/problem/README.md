@@ -8,6 +8,10 @@
 - 랩 학습을 통합했을 때 어떤 경계가 남는지 설명할 수 있다.
 - 이후 `commerce-backend-v2`가 왜 필요한지 비교 기준이 된다.
 
+## canonical verification 시작 위치
+
+- 실행과 검증 진입점은 [../spring/README.md](../spring/README.md)다.
+
 ## 이번 단계에서 다루지 않는 것
 
 - persisted auth의 깊이

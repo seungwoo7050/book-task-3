@@ -1,101 +1,53 @@
 # Proving The Console Under Failure
 
-좋은 internal tool을 설명할 때 가장 설득력이 떨어지는 장면은 모든 것이 순조롭게만 흘러가는 데모다. 실제 운영자는 저장 실패도 겪고, 느린 응답도 겪고, 마우스 없이도 화면을 통과해야 한다. 그래서 Ops Triage Console의 마지막 증명은 happy path가 아니라 failure surface를 보여 주는 쪽으로 향했다.
+이번 Todo에서 가장 중요했던 건 문장보다 검증 결과였다. 내부도구형 UI는 보기 좋아도 실패 순간 무너지면 신뢰를 잃는다. 그래서 이 콘솔은 typecheck, unit, integration, E2E를 모두 통과하는지와, 특히 rollback/retry/keyboard path가 실제로 이어지는지를 다시 확인하는 게 중요했다.
 
-이 글에서 중요한 건 코드를 더 많이 붙였다는 사실이 아니다. 이미 만든 surface와 reversible mutation이 실제 실패와 재시도와 keyboard path 앞에서 무너지지 않는다는 것을 어떻게 검증했는가가 핵심이다.
-
-## 구현 순서를 먼저 짚으면
-
-- failure simulation을 별도 helper로 떼어, 안정 모드와 chaos-like 모드를 명시적으로 다뤘다.
-- Playwright에서 undo, bulk update, retry, keyboard-only path를 실제 사용 흐름으로 재생했다.
-- 마지막 verify는 typecheck, unit/integration, e2e를 한 번에 묶어 포트폴리오 품질 신호로 만들었다.
-
-## 실패는 숨기지 않고 코드로 드러냈다
-
-`simulate.ts`를 보면 이 프로젝트가 failure를 우연한 외부 변수로 두지 않았다는 사실이 드러난다. "이번 요청만 실패"와 "일정 비율로 실패"를 runtime config로 직접 제어한다.
-
-```ts
-export function shouldSimulateFailure(
-  config: DemoRuntimeConfig,
-  randomValue = Math.random(),
-): boolean {
-  if (config.failNextRequest) {
-    return true;
-  }
-  if (config.mode === "stable") {
-    return false;
-  }
-  return randomValue < config.failureRate;
-}
-```
-
-실패도 그냥 generic error가 아니다. retryable error를 명시적으로 만들고, UI는 그 성격을 surface로 끌어올린다.
-
-```ts
-export function createRetryableError(): DemoServiceError {
-  const error = new Error("Transient failure. Retry the request.") as DemoServiceError;
-  error.code = "DEMO_TRANSIENT_FAILURE";
-  error.retryable = true;
-  return error;
-}
-```
-
-이 덕분에 retry는 데모용 버튼이 아니라 설계된 동작이 된다. 사용자는 "실패했다"는 문장 대신 "지금 이 실패는 다시 시도할 수 있는 종류다"라는 힌트를 받는다.
-
-## 마지막에는 브라우저 시나리오로 operator의 움직임을 그대로 재생했다
-
-Playwright 시나리오를 보면 이 프로젝트가 무엇을 품질 기준으로 삼는지 아주 선명하다. undo, bulk update, retry, keyboard-only triage가 각각 독립된 테스트 이름으로 남아 있다.
-
-```ts
-test("surfaces a simulated write error and retries successfully", async ({ page }) => {
-  await page.evaluate(() => {
-    window.localStorage.setItem(
-      "ops-triage-console:runtime",
-      JSON.stringify({
-        latencyMs: 220,
-        failureRate: 0,
-        failNextRequest: true,
-        mode: "stable",
-      }),
-    );
-  });
-  ...
-  await expect(page.getByText("Update failed")).toBeVisible();
-  await page.getByRole("button", { name: "Retry" }).click();
-  await expect(page.getByText("Issue updated")).toBeVisible();
-});
-```
-
-이건 테스트 이름만 멋있게 붙인 것이 아니다. operator가 실제로 겪는 실패와 회복 경로를 그대로 surface에 옮긴 것이다. keyboard-only path도 마찬가지다. 검색 input에 탭으로 도달하고, 행을 열고, note를 입력하고, triage를 적용하는 흐름이 별도 시나리오로 남아 있다.
-
-```ts
-test("supports a keyboard-only triage path", async ({ page }) => {
-  const searchInput = page.getByTestId("issue-search");
-  await tabTo(page, searchInput);
-  await page.keyboard.type("search results disappear");
-  ...
-  await page.keyboard.press("Enter");
-  await expect(page.getByText("Issue updated")).toBeVisible();
-});
-```
-
-즉 이 프로젝트의 e2e는 화면이 예쁘게 뜨는지 보는 스모크 테스트가 아니다. internal tool이 실제 운영 환경의 불편한 순간들을 견딜 수 있는지 확인하는 증명에 가깝다.
-
-## verify가 포트폴리오 신호가 되는 이유
-
-이 앱은 verify를 꽤 무겁게 가져간다.
+## 재실행 결과
 
 ```bash
-cd study
-npm run verify --workspace @front-react/ops-triage-console
+$ npm run verify --workspace @front-react/ops-triage-console
 ```
 
-2026-03-13 replay 기준으로 typecheck가 통과했고, `vitest` 16개와 Playwright 4개 시나리오가 모두 통과했다. 숫자 자체보다 중요한 건 범위다. 타입 안정성, optimistic/cache consistency, failure simulation, operator e2e path가 한 묶음으로 돌아간다.
+2026-03-14 재실행 기준 결과는 다음과 같았다.
 
-그래서 이 프로젝트는 "내부도구를 만들 수 있다"보다 한 단계 더 나아간다. 내부도구를 어떤 실패 조건 아래서도 설명 가능한 결과물로 남길 수 있다는 사실을 보여 준다.
+- `typecheck` 통과
+- `vitest` 16개 테스트 통과
+- `playwright` 4개 시나리오 통과
 
-## 무엇이 아직 남았는가
+E2E 시나리오는 특히 좋았다.
 
-여전히 이 앱은 mock API와 local persistence를 기반으로 한 데모다. 실제 인증, 실제 DB, 멀티유저 협업은 범위 밖에 있다. 하지만 internal tool로서 가장 중요한 신뢰의 핵심은 이미 드러났다. 빠르게 바뀌는 화면이어도, 실패했을 때 rollback과 retry가 보이고, keyboard path도 살아 있어야 한다는 사실이다.
+1. detail에서 issue를 업데이트하고 undo로 되돌린다
+2. saved view에서 bulk update를 적용하고 현재 `Untriaged` 필터 결과가 비는지 본다
+3. simulated failure 뒤 retry가 성공하는지 본다
+4. keyboard-only triage path가 끝까지 통과하는지 본다
 
-다음 프로젝트는 같은 포트폴리오 트랙 안에서도 시선이 달라진다. `Client Onboarding Portal`은 operator가 아니라 고객이 통과해야 하는 flow를 다루기 때문에, 밀도보다 연속성과 복원성이 더 중요한 문제로 올라온다.
+즉 이 콘솔은 happy path만 검증하지 않는다. 실패와 회복을 제품 surface 자체의 일부로 취급한다. 다만 두 번째 시나리오는 전체 issue store가 빈다는 뜻이 아니라, 현재 saved-view filter 아래에서 더 이상 matching row가 없다는 의미다.
+
+## integration 테스트가 list/detail/summary를 함께 묶어 준다
+
+[`next/tests/integration/ops-triage-console.test.tsx`](/Users/woopinbell/work/book-task-3/front-react/study/frontend-portfolio/01-ops-triage-console/next/tests/integration/ops-triage-console.test.tsx)는 특히 중요했다. 여기서는 단일 mutation이
+
+- visible row set
+- detail query
+- summary counters
+
+를 동시에 바꾸는지 확인한다. 이건 내부도구에서 흔히 깨지는 부분이다. list는 바뀌었는데 detail은 옛 상태거나, summary 카운터는 늦게 따라오면 운영자는 도구를 불신하게 된다.
+
+여기서는 failed mutation도 일부러 재현한다. `failNextRequest`를 켠 뒤 update를 보내면, toast가 `Update failed`가 되고 detail/status map이 원래 값으로 rollback되는지 본다. 그 다음 `Retry`를 눌러 실제로 성공까지 가는 경로도 고정해 둔다.
+
+이 failure injection도 브라우저에서 `localStorage` runtime key를 바꾸는 방식이라, 테스트가 증명하는 것은 "현재 탭의 제품 surface가 rollback/retry를 버틴다"에 가깝다. 실제 backend queue, cross-session race, multi-operator overwrite는 범위 밖이다.
+
+## 그래서 이 프로젝트의 품질 신호는 결과물보다 회복력에 가깝다
+
+이 콘솔이 portfolio로 의미 있는 이유는 단순히 Next.js와 Tailwind를 썼기 때문이 아니다. dense data surface, optimistic update, rollback, retry, keyboard path, 발표 자료까지 하나의 제품 이야기로 묶였기 때문이다.
+
+물론 경계도 분명하다.
+
+- 실제 인증 없음
+- 실제 DB 없음
+- multi-user 협업 없음
+- mock service와 local persistence 기반 데모
+
+keyboard path 역시 같은 의미에서 읽는 편이 맞다. Playwright는 한 browser context의 한 page에서 `tabTo()` helper로 주요 포커스 흐름을 재생한다. 즉 "키보드 사용성이 있다"는 보장은 분명하지만, 여러 assistive tech 조합이나 다중 창 시나리오까지 증명한 것은 아니다.
+
+하지만 바로 그 제한 속에서도, 내부도구가 실패와 복구를 어떻게 다뤄야 하는지는 충분히 보여 준다. 그래서 이 프로젝트는 "멋진 관리자 대시보드"보다는 "실패해도 다시 써 볼 만한 내부도구"라는 쪽으로 읽는 편이 더 정확하다.

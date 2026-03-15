@@ -1,38 +1,75 @@
-# I-event-integration-lab Evidence Ledger
+# I-event-integration-lab 근거 정리
 
-## 독립 프로젝트 판정
-- 판정: 처리 대상
-- 이유: README와 docs가 outbox, Redis Streams relay, dedupe를 핵심으로 설명하고, `compose.yaml`과 `tests/test_system.py`가 workspace-service와 notification-service의 실제 경계와 중복 consume 흡수를 재현한다.
-- 프로젝트 질문: 댓글 저장과 알림 생성을 같은 순간에 끝내지 않아도 된다고 말하려면, 어떤 전달 경로와 중복 흡수 장치를 보여줘야 하는가.
-- 주의: finer-grained 구현 순서는 commit granularity가 거칠어서 README, docs, code surface, tests 의존 순서를 바탕으로 복원했다. 실제 날짜가 확인되는 부분은 git log와 검증 보고서에만 한정했다.
+## 1. 문제 정의와 범위
 
-## 소스 인벤토리
-- `labs/I-event-integration-lab/README.md`
-- `labs/I-event-integration-lab/problem/README.md`
-- `labs/I-event-integration-lab/docs/README.md`
-- `labs/I-event-integration-lab/fastapi/README.md`
-- `labs/I-event-integration-lab/fastapi/Makefile`
-- `labs/I-event-integration-lab/fastapi/compose.yaml`
-- `backend-fastapi/.github/workflows/labs-fastapi.yml`
-- `backend-fastapi/docs/verification-report.md`
-- `backend-fastapi/labs/I-event-integration-lab/fastapi/compose.yaml`
-- `backend-fastapi/labs/I-event-integration-lab/fastapi/tests/test_system.py`
-- `git log -- backend-fastapi/labs/I-event-integration-lab`
+- `problem/README.md`
+  - 목표를 outbox 기록, relay 뒤 consumer consume, 중복 consume 방지로 한정한다.
+  - 제외 범위를 consumer group, dead-letter queue, replay UI로 명시한다.
+- `README.md`
+  - 이 랩을 `workspace-service` outbox와 `notification-service` idempotent consumer를 붙이는 단계로 소개한다.
 
-## 프로젝트 표면 요약
-- 문제 요약: 동기 API와 비동기 알림 전달을 서비스 간 통합으로 확장한다. 댓글 저장과 알림 생성이 같은 시점에 끝나지 않아도 되는 구조를 설명하는 것이 목표다. 댓글 생성이 outbox에 기록된다. relay 후 `notification-service`가 stream을 consume한다. 상세 성공 기준과 제외 범위는 problem/README.md에 둡니다.
-- 성공 기준: 댓글 생성이 outbox에 기록된다. relay 후 `notification-service`가 stream을 consume한다. 같은 consume를 두 번 실행해도 알림이 중복 저장되지 않는다.
-- 설계 질문: outbox가 왜 여전히 필요한가 stream payload에는 무엇을 넣고 무엇을 넣지 않는가 idempotent consumer는 어떤 실패를 흡수하는가 relay와 consumer를 같은 서비스에 두지 않는 이유는 무엇인가
-- 실제 검증 surface: make lint make test make smoke docker compose up --build 실행과 환경 설명은 fastapi/README.md에서 다룹니다. 마지막 기록된 실제 검증 결과는 ../../docs/verification-report.md에 있습니다.
+## 2. 실제 compose 런타임
 
-## 시간 표지
-- 2026-03-11 bbb6673 Track 1에 대한 전반적인 개선 완료
-- 2026-03-11 89dc218 feat: add new project in fastapi (MSA)
+- `fastapi/compose.yaml`
+  - `workspace-service`, `notification-service`, `redis` 세 컨테이너를 정의한다.
+  - `workspace-service`는 `8012`, `notification-service`는 `8112`, `redis`는 `6392`를 사용한다.
+  - 이 랩의 compose에는 `identity-service`가 없다.
+- `fastapi/README.md`
+  - 실행 진입점을 `docker compose up --build`로 고정한다.
 
-## Chronology Ledger
-| 순서 | 시간 표지 | 당시 목표 | 변경 단위 | 처음 가설 | 실제 조치 | CLI | 검증 신호 | 핵심 코드 앵커 | 새로 배운 것 | 다음 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Phase 1, 2026-03-11 add project commit 89dc218을 기준으로 복원 | 댓글 저장과 알림 생성을 같은 트랜잭션으로 묶지 않는 구조 정리 | README.md, problem/README.md, docs/README.md | notification-service만 추가하면 서비스 통합 설명이 될 것 | outbox 적재, relay, consume, dedupe를 핵심 성공 기준으로 설정 | README의 `docker compose up --build` | 문제 정의가 outbox 기록, relay, idempotent consume를 직접 요구 | problem/README.md 성공 기준 | 서비스 통합의 핵심은 호출 수가 아니라 데이터가 어느 시점에 확정되는지다 | runtime scope를 event path 중심으로 고정 |
-| 2 | Phase 2, compose/runtime scope를 중심으로 복원 | workspace와 notification을 Redis Streams로만 연결되는 구조 만들기 | fastapi/compose.yaml, fastapi/README.md | identity나 gateway도 함께 있어야 이벤트 통합을 설명할 수 있을 것 | compose에는 workspace-service, notification-service, redis만 올리고 relay/consumer path에 집중 | `docker compose up --build` | compose.yaml이 workspace-service, notification-service, redis만 정의 | fastapi/compose.yaml | 이벤트 통합은 전체 MSA가 아니라 producer와 consumer만 있어도 충분히 설명할 수 있다 | relay와 dedupe를 system test로 고정 |
-| 3 | Phase 3, system test가 eventual consistency를 증명 | comment 생성 뒤 outbox pending, relay, 두 번 consume, notification 1건 저장을 검증 | tests/test_system.py | producer와 consumer 각각의 unit test면 충분할 것 | comment 작성 뒤 pending outbox 1건 확인, relay 후 첫 consume=1, 두 번째 consume=0, collaborator notification 1건 저장 확인 | `make test` | 두 번 consume해도 두 번째 processed 값이 0 | tests/test_system.py::test_outbox_and_idempotent_consumer_flow | eventual consistency를 설명할 때 가장 중요한 숫자는 지연 시간이 아니라 중복 소비 후 남는 결과 수다 | 실제 재검증 결과 연결 |
-| 4 | 2026-03-10 재검증 + 2026-03-11 track polish | 새 이벤트 통합 랩이 실제로 다시 실행됐다는 사실 확인 | docs/verification-report.md, fastapi/README.md | 이벤트 계약 설명만 있으면 충분할 것 | `make lint`, `make test`, `make smoke` 재실행 결과를 남김 | `make lint`, `make test`, `make smoke` | 2026-03-10 기준 lint, service unit test, system test, smoke 통과 | docs/verification-report.md I-event-integration-lab 항목 | eventual consistency도 마지막엔 단순 CLI로 재현 가능한 시나리오로 닫혀야 한다 | edge gateway 도입으로 public API shape 유지 |
+## 3. workspace-service가 만드는 outbox
+
+- `fastapi/services/workspace-service/app/domain/services/platform.py`
+  - `create_comment()`는 comment 저장 후 멤버별 `OutboxEvent(event_name="comment.created.v1", status="queued")`를 적재한다.
+  - payload에는 `message`, `recipient_user_id`, `workspace_id`, `task_id`가 들어간다.
+  - `relay_outbox()`는 pending outbox를 Redis Stream에 `xadd()`하고 status를 `relayed`로 바꾼다.
+- `fastapi/services/workspace-service/app/api/v1/routes/platform.py`
+  - `/internal/tasks/{task_id}/comments`, `/internal/events/relay`, `/internal/debug/outbox/pending` 경로를 제공한다.
+- `fastapi/services/workspace-service/app/api/deps.py`
+  - auth 서비스 호출 없이 Bearer 토큰을 직접 decode한다.
+
+## 4. notification-service가 하는 dedupe
+
+- `fastapi/services/notification-service/app/domain/services/notifications.py`
+  - `xread({stream_name: "0-0"}, count=100)`으로 stream을 읽는다.
+  - 매 메시지마다 `event_id` 기준으로 `has_receipt()`를 먼저 확인한다.
+  - receipt가 없을 때만 notification row와 `ConsumerReceipt`를 함께 저장한다.
+  - 저장 후 pub/sub 채널로 메시지를 publish한다.
+- `fastapi/services/notification-service/app/repositories/notifications_repository.py`
+  - `ConsumerReceipt.event_id` 존재 여부를 기준으로 dedupe를 판단한다.
+- `fastapi/services/notification-service/app/db/models/notifications.py`
+  - `ConsumerReceipt.event_id`가 unique로 고정돼 있다.
+- `fastapi/services/notification-service/app/api/v1/routes/notifications.py`
+  - `/internal/notifications/consume`, `/internal/notifications/users/{user_id}` 경로를 제공한다.
+
+## 5. 계약과 테스트가 보여 주는 의도
+
+- `fastapi/contracts/README.md`
+  - `comment.created.v1` source/sink를 `workspace-service -> notification-service`, transport를 Redis Streams로 명시한다.
+- `fastapi/tests/test_system.py`
+  - JWT를 테스트 안에서 직접 서명한다.
+  - 관심사를 auth가 아니라 event handoff와 dedupe에 고정한다.
+  - 첫 consume는 `processed == 1`, 두 번째 consume는 `processed == 0`, 저장 알림은 1건이라는 성공 기준을 직접 검증한다.
+- `fastapi/tests/smoke.py`
+  - compose stack을 띄우고 health가 열릴 때까지만 기다린다.
+- `fastapi/services/workspace-service/tests/integration/test_workspace_service.py`
+  - comment 생성 뒤 pending outbox가 1건인지 확인한다.
+
+## 6. 이번 턴에서 다시 실행한 명령과 결과
+
+- `cd fastapi && make lint`
+  - 통과.
+- `cd fastapi && make test`
+  - `services/workspace-service` 테스트 collection 단계에서 `ModuleNotFoundError: No module named 'argon2'`로 실패.
+- `cd fastapi && make smoke`
+  - 통과.
+- `cd fastapi && python3 -m pytest tests/test_system.py -q`
+  - 통과.
+
+## 7. 문서에 반영한 핵심 판단
+
+- 이 랩의 핵심은 auth 재검증이 아니라 event handoff와 idempotent consumer다.
+- `xread("0-0")` 때문에 같은 stream 엔트리를 다시 읽을 수 있다는 점을 숨기면 안 된다.
+- 다만 현재 `count=100` 단일 batch 구현과 system test는 backlog 전체 drain이 아니라 1건 dedupe 흐름까지만 직접 잠근다.
+- 대신 중복 흡수는 `ConsumerReceipt(event_id)`가 맡는다는 사실을 중심에 둬야 한다.
+- `relayed`는 notification 저장 완료가 아니라 workspace-service 입장에서 stream handoff 완료에 더 가깝다.

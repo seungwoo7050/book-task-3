@@ -1,37 +1,41 @@
 # 07 Security Lake Mini 구조 메모
 
-이 문서는 최종 글을 쓰기 전에 서사 배치를 점검하는 메모다. 독자에게 무엇을 먼저 설명하고 어디서 코드와 CLI를 꺼내 올지 한눈에 보이도록 정리한다.
+## 이번 문서의 중심
+- 이 lab을 "로컬 저장소 만들기"가 아니라 "반복 가능한 detection lake 만들기"로 설명한다.
+- 서사는 `정규화/적재 -> SQL taxonomy -> CLI와 테스트 재현성` 순서로 고정한다.
+- 이전 lab의 append 성격과 달리, 이번 lab은 resettable lake라는 점을 분명히 드러낸다.
 
-## 이번 문서가 맡는 일
-- foundation의 log normalization을 local lake 적재와 preset detection query로 확장하는 흐름을 보여 준다.
-- 글은 `lake 적재 -> SQL alert taxonomy -> CLI/test 재현성` 순서로 배치한다.
+## 먼저 붙들 소스
+- `../../../01-cloud-security-core/07-security-lake-mini/README.md`
+- `../../../01-cloud-security-core/07-security-lake-mini/problem/README.md`
+- `../../../01-cloud-security-core/07-security-lake-mini/python/README.md`
+- `../../../01-cloud-security-core/07-security-lake-mini/docs/concepts/lake-thinking.md`
+- `../../../01-cloud-security-core/07-security-lake-mini/problem/data/cloudtrail_suspicious.json`
+- `../../../01-cloud-security-core/07-security-lake-mini/python/src/security_lake_mini/lake.py`
+- `../../../01-cloud-security-core/07-security-lake-mini/python/src/security_lake_mini/cli.py`
+- `../../../01-cloud-security-core/07-security-lake-mini/python/tests/test_lake.py`
+- `../../../01-cloud-security-core/07-security-lake-mini/python/tests/test_cli.py`
 
-## 먼저 붙들 소스 묶음
-- [`../../../01-cloud-security-core/07-security-lake-mini/README.md`](../../../01-cloud-security-core/07-security-lake-mini/README.md)
-- [`../../../01-cloud-security-core/07-security-lake-mini/problem/README.md`](../../../01-cloud-security-core/07-security-lake-mini/problem/README.md)
-- [`../../../01-cloud-security-core/07-security-lake-mini/docs/concepts/lake-thinking.md`](../../../01-cloud-security-core/07-security-lake-mini/docs/concepts/lake-thinking.md)
-- [`../../../01-cloud-security-core/07-security-lake-mini/python/README.md`](../../../01-cloud-security-core/07-security-lake-mini/python/README.md)
-- [`../../../01-cloud-security-core/07-security-lake-mini/python/src/security_lake_mini/lake.py`](../../../01-cloud-security-core/07-security-lake-mini/python/src/security_lake_mini/lake.py)
-- [`../../../01-cloud-security-core/07-security-lake-mini/python/src/security_lake_mini/cli.py`](../../../01-cloud-security-core/07-security-lake-mini/python/src/security_lake_mini/cli.py)
-- [`../../../01-cloud-security-core/07-security-lake-mini/python/tests/test_lake.py`](../../../01-cloud-security-core/07-security-lake-mini/python/tests/test_lake.py)
-- [`../../../01-cloud-security-core/07-security-lake-mini/python/tests/test_cli.py`](../../../01-cloud-security-core/07-security-lake-mini/python/tests/test_cli.py)
+## 본문 배치
+- 도입
+  - lake의 핵심을 저장이 아니라 반복 실행 가능한 detection으로 잡는다.
+- Phase 1
+  - `_normalize`, `ingest_cloudtrail`, `DELETE FROM lake_events`를 중심으로 resettable 적재를 설명한다.
+- Phase 2
+  - SQL `CASE`가 taxonomy라는 점, `source`는 저장되지만 rule에선 쓰이지 않는 점을 보여 준다.
+  - `INFO` branch가 현재는 사실상 도달 불가라는 source-based inference를 남긴다.
+- Phase 3
+  - CLI와 pytest가 같은 alert 순서를 잠그는 구조를 설명한다.
+- 마무리
+  - correlation, suppression, multi-table join은 아직 없다는 한계를 정리한다.
 
-## 본문을 배치하는 순서
+## 꼭 남길 검증 신호
+- CLI JSON alert 5개 출력
+- DuckDB `lake_events` row count = `5`
+- control 순서 `LAKE-001` -> `LAKE-005`
+- pytest `2 passed in 0.07s`
 
-- `00-series-map.md`
-  - ingestion과 detection query를 같은 프로젝트 안에서 읽는 이유를 먼저 설명한다.
-- `10-development-timeline.md`
-  - 도입: raw log를 적재만 해서는 lake가 아니고, detection query가 반복 실행돼야 한다는 문제의식을 세운다.
-  - Phase 1. CloudTrail fixture를 local lake로 적재했다.
-  - Phase 2. SQL query를 alert taxonomy로 썼다.
-  - Phase 3. CLI와 테스트로 alert 순서를 잠갔다.
-  - 마무리: control plane이 이 lake alert를 어떻게 ingest하는지 질문을 넘긴다.
-
-## 강조할 코드와 CLI
-- 코드 앵커: lake bootstrap, preset SQL registry, `LAKE-*` findings mapping, CLI output order assertions
-- CLI 앵커: `python -m security_lake_mini.cli ingest ...`, `python -m security_lake_mini.cli detect ...`, `pytest 01-cloud-security-core/07-security-lake-mini/python/tests`
-- 개념 훅: lake에서 중요한 것은 저장 위치보다 “같은 SQL을 반복 실행해 같은 alert taxonomy를 얻는 능력”이라는 점
-
-## 리라이트 기준
-- chronology는 실제 commit timestamp보다 source, test, CLI가 묶이는 순서를 기준으로 읽는다.
-- 이 문서는 메타 기록보다 서사 배치와 강조점에 집중한다.
+## 탈락 기준
+- Parquet 생성 사실만 강조하고 detection query 의미를 놓치면 안 된다.
+- SQL taxonomy를 문서 밖의 숨은 규칙처럼 쓰면 안 된다.
+- rerun determinism을 빼먹으면 이전 append형 lab과 차이가 흐려진다.

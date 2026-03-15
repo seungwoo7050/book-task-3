@@ -1,27 +1,20 @@
-# 07 Buffer Pool — Structure Outline
+# Structure Outline
 
-최종 시리즈는 chronology를 매끈하게 재배열하지 않고, 범위 파악 -> 핵심 invariant -> 재검증과 경계의 순서를 유지한다.
+## Chosen arc
 
-## Planned Files
+1. cache optimization보다 page lifecycle manager라는 범위를 먼저 잡는다.
+2. demo와 추가 재실행으로 첫 page fetch, dirty flush, pinned eviction failure를 먼저 보여 준다.
+3. page identity, pin count, dirty signaling, pinned eviction policy를 invariant로 정리한다.
+4. 마지막에는 동시성/async IO가 아직 없다는 점을 따로 분리한다.
 
-- `00-series-map.md`: 프로젝트 질문, 읽는 순서, source-of-truth 파일, 재검증 명령을 잡는 지도
-- `10-chronology-scope-and-surface.md`: 파일 구조와 테스트 이름을 근거로 처음 가설이 바뀌는 구간
-- `20-chronology-core-invariants.md`: `FetchPage`와 `UnpinPage`가 실제로 invariant를 고정하는 구간
-- `30-chronology-verification-and-boundaries.md`: `go test`/`pytest`와 demo 출력으로 경계를 확정하는 구간
+## Why this structure
 
-## Article Goals
+- 이 랩은 LRU보다 page metadata가 더 중요해서, replacer 일반론보다 pin/dirty 충돌을 앞세우는 편이 맞다.
+- demo가 너무 짧기 때문에 dirty flush와 pinned eviction failure를 추가 관찰값으로 보강했다.
+- source-only nuance인 "다른 victim을 찾지 않고 바로 실패"를 명확히 적어야 현재 구현 경계가 선명해진다.
 
-1. `10-chronology-scope-and-surface.md`
-   범위를 `tests/`와 README에서 어떻게 다시 좁혔는지 보여 준다.
-   코드 앵커: `TestFetchPageFromDisk`, `FetchPage`
-   CLI: `find internal tests cmd -type f | sort`, `rg -n "^func Test" tests`
+## Rejected alternatives
 
-2. `20-chronology-core-invariants.md`
-   핵심 invariant가 `FetchPage`와 `UnpinPage` 사이에서 어떻게 고정되는지 보여 준다.
-   코드 앵커: `FetchPage`, `UnpinPage`
-   CLI: `rg -n "^(type|func) " internal cmd`, `rg -n "FetchPage|UnpinPage" internal cmd`
-
-3. `30-chronology-verification-and-boundaries.md`
-   테스트와 demo를 모두 남겨, pass 신호와 공개 표면을 구분해 설명한다.
-   코드 앵커: `TestLRUOrderingAndDelete`, `main.go`
-   CLI: GOWORK=off go test ./...; GOWORK=off go run ./cmd/buffer-pool
+- buffer pool 일반론을 길게 푸는 구조는 버렸다.
+- LRU cache 테스트만 중심에 두는 구조도 버렸다.
+- lock manager나 B-tree 연결을 미리 가져오는 서사는 현재 Todo 범위를 벗어나 제외했다.

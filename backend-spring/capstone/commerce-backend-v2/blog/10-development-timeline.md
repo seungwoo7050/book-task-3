@@ -1,130 +1,88 @@
-# commerce-backend-v2: 같은 커머스 도메인을 더 깊게 파서 대표 결과물로 만든 과정
+# commerce-backend-v2: 같은 커머스 도메인을 더 깊게 다시 묶되, 남은 seam도 숨기지 않은 대표 capstone
 
-`commerce-backend-v2`는 이 트랙의 대표 결과물이다. 중요한 건 새 도메인을 들고 온 데 있지 않다. baseline capstone과 같은 커머스 문제를 유지한 채, auth, order, payment, notification, ops를 어디까지 더 엄격하게 구현하고 검증했는지가 이 프로젝트의 핵심이다.
+`commerce-backend-v2`를 읽는 가장 좋은 방법은 "기능이 많다"가 아니라 "baseline에서 얕았던 지점을 어디까지 실제 계약으로 바꿨는가"를 따라가는 것이다. `problem/README.md`와 `docs/architecture-overview.md`는 둘 다 같은 도메인을 유지한 채 modular monolith로 깊이를 올리겠다고 말한다. `2026-03-14`에 소스, 테스트, Compose 런타임을 다시 확인해 보니 그 말은 절반 이상 사실이지만, async handoff와 actuator 표면처럼 README보다 덜 매끈한 부분도 분명히 남아 있었다.
 
-구현 순서는 세 갈래로 읽힌다. 먼저 `AuthApiTest`와 `CommercePortfolioApiTest`로 persisted auth와 end-to-end commerce flow를 고정했다. 다음으로 `OrderService`와 `PaymentService`에서 checkout, inventory reservation, idempotent payment, outbox 생성을 invariant로 묶었다. 마지막으로 `OutboxPublisher`, `CommerceMessagingIntegrationTest`, `RedisCartStoreTest`, `docs/verification.md`를 통해 Redis와 Kafka를 실제 검증 가능한 구현으로 닫았다.
+## Step 1. fake query-param auth를 버리고 persisted auth와 role guard를 올렸다
 
-## Phase 1. 도메인을 바꾸지 않고 auth와 commerce surface를 더 깊게 만들었다
+baseline capstone과 가장 먼저 갈라지는 곳은 auth다. `AuthController`와 `AuthService`는 이제 `users`, `user_roles`, `refresh_tokens`, `oauth_accounts`, `audit_events` 테이블을 실제로 사용하고, `AdminBootstrapInitializer`는 부팅 시 admin 계정을 보장한다. `SecurityConfig`는 `/api/v1/admin/**`를 `hasRole("ADMIN")`으로 묶고, `JwtAuthenticationFilter`는 bearer token을 파싱해 현재 user profile을 다시 조회한다.
 
-대표 결과물을 만들 때 더 큰 도메인이나 더 많은 서비스 분해를 떠올리기 쉽다. 그런데 [`docs/architecture-overview.md`](../docs/architecture-overview.md)는 이 프로젝트가 modular monolith를 유지한다고 분명히 적는다. 중요한 건 크기보다 설명 가능성이라는 뜻이다.
+이 차이는 `2026-03-14` 수동 검증에서 바로 드러났다.
 
-그 선택은 테스트에서도 그대로 보인다. [`AuthApiTest`](../spring/src/test/java/com/webpong/study2/app/AuthApiTest.java)는 register, login, refresh, logout, Google callback linking까지 잡고, [`CommercePortfolioApiTest`](../spring/src/test/java/com/webpong/study2/app/CommercePortfolioApiTest.java)는 admin이 카테고리와 상품을 만들고 customer가 장바구니에 담아 checkout하고 결제한 뒤 주문 상태를 바꾸는 흐름까지 이어 간다.
+- `POST /api/v1/auth/register` -> `201`
+- `POST /api/v1/auth/login` -> `200`, access token + refresh cookie + csrf token 발급
+- `POST /api/v1/auth/refresh` -> `200`
+- `GET /api/v1/me` with bearer -> `200`
+- `POST /api/v1/admin/categories` without auth -> `403`
+- `POST /api/v1/admin/categories` with customer token -> `403`
 
-```java
-mockMvc.perform(
-        post("/api/v1/auth/refresh")
-            .cookie(new Cookie("refresh_token", loginSession.refreshToken()))
-            .header("X-CSRF-TOKEN", "wrong-token"))
-    .andExpect(status().isUnauthorized());
+다만 여기서도 과장하면 안 된다. Google OAuth는 live provider가 아니라 `OAuthStateStore`가 `state`와 `nonce`를 메모리에 저장하고 `google/callback` body를 직접 받는 contract-level mock이다. 또 `JwtService.createAccessToken()`은 `jti` 같은 고유 claim 없이 `sub/email/roles/iat/exp`만 넣기 때문에, 같은 초에 refresh를 호출하면 access token 문자열이 login 때와 동일하게 다시 나올 수 있다. 이 부분은 `JwtService` 소스와 `2026-03-14` 수동 refresh 응답이 같은 토큰 문자열을 반환한 결과를 함께 보고 내린 source-based inference다.
 
-mockMvc.perform(
-        post("/api/v1/payments/mock/confirm")
-            .header("Authorization", "Bearer " + customerAccessToken)
-            .header("Idempotency-Key", "idem-" + orderId)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"orderId\": %d}".formatted(orderId)))
-    .andExpect(status().isOk())
-    .andExpect(jsonPath("$.orderStatus").value("PAID"));
-```
+## Step 2. catalog, cart, checkout, payment를 실제 validation과 상태 전이로 묶었다
 
-왜 이 코드가 중요했는가. 같은 도메인을 유지한 채 baseline보다 더 깊어진 경계가 무엇인지 이 테스트가 바로 보여 주기 때문이다. auth는 cookie + CSRF refresh를 포함하고, commerce는 admin/customer 분리와 payment까지 이어진다.
+두 번째 차이는 "커머스 기능이 있다"가 아니라, invalid input과 역할 경계가 실제 runtime contract로 바뀌었다는 점이다. `AdminCategoryController`, `AdminProductController`, `CartController`, `PaymentController`는 모두 `@Valid`와 constraint annotation을 달고 있고, `GlobalExceptionHandler`는 validation failure를 `problem+json`으로 정리한다.
 
-초기 검증 CLI도 그 방향을 따른다.
+`2026-03-14` 재실행 결과는 baseline과 대비되는 신호를 분명하게 보여 줬다.
 
-```bash
-cd spring
-./gradlew testClasses --no-daemon
-make test
-```
+- admin invalid product create -> `400`
+- 오류 body에 `name`, `description`, `price`, `stock` validation error가 모두 포함
+- valid category create -> `201`
+- valid product create -> `201`
+- `GET /api/v1/products` -> 상품 목록 확인
+- customer cart add -> `200`, `itemCount: 1`, `totalAmount: 199.99`
+- checkout -> `200`, order status `PENDING_PAYMENT`
+- payment confirm -> `200`, order status `PAID`
+- same `Idempotency-Key` replay -> `200`, `replayed: true`
+- checkout 전 stock `3`, 결제 후 stock `2`
 
-`2026-03-13` 테스트 XML 기준으로 `AuthApiTest` 2개 테스트와 `CommercePortfolioApiTest` 1개 테스트가 실패 없이 통과했다. 대표 결과물의 surface가 두 축으로 동시에 고정됐다는 뜻이다.
+여기서 핵심 코드는 `OrderService.checkout()`와 `PaymentService.confirmMockPayment()`다. checkout은 cart state를 읽어 상품 재고를 reserve하고, `order_items`와 `inventory_reservations`를 함께 남긴 뒤 cart를 비운다. payment는 idempotency key로 replay를 먼저 차단하고, 처음 요청일 때만 payment row를 만들고 주문을 `PAID`로 전환한다. baseline에서 비어 있던 "재고 예약", "결제 중복 방지", "주문 상태 전이"가 이제는 실제 서비스 규칙이 됐다는 뜻이다.
 
-여기서 새로 보인 건 포트폴리오의 깊이였다. 더 많은 키워드보다, 같은 도메인 안에서 더 많은 상태 전이를 실제로 설명 가능한가가 더 중요했다.
+## Step 3. Redis와 Kafka는 실제로 붙어 있지만, outbox 완료 표시는 아직 깨져 있다
 
-## Phase 2. checkout과 payment를 invariant와 idempotency로 묶었다
+이 프로젝트를 대표 capstone으로 보게 만드는 마지막 요소는 Redis/Kafka를 README 장식으로만 두지 않았다는 점이다. docker profile이 켜지면 `FeatureProperties`가 `redis-cart-enabled`, `redis-rate-limit-enabled`, `messaging-enabled`를 모두 `true`로 바꾸고, `RedisCartStore`, `RedisAttemptLimiter`, `OutboxPublisher`, `OrderPaidEventConsumer`가 실제 빈으로 올라온다. `CommerceMessagingIntegrationTest`도 PostgreSQL, Redis, Kafka Testcontainers를 함께 띄워 `order-paid` 이후 notification row가 생기는지 확인한다.
 
-surface가 커졌다고 좋은 커머스 백엔드가 되는 건 아니다. 진짜 전환점은 주문과 결제 규칙이 어디에서 강제되는가다. [`OrderService.checkout()`](../spring/src/main/java/com/webpong/study2/app/order/application/OrderService.java)는 cart 상태를 읽어 재고를 reserve하고, `order_items`와 `inventory_reservations`를 함께 남긴다.
-
-```java
-for (Map.Entry<Long, Integer> entry : cartState.getItems().entrySet()) {
-  ProductEntity product = products.get(entry.getKey());
-  product.reserve(entry.getValue());
-  totalAmount =
-      totalAmount.add(product.getPrice().multiply(BigDecimal.valueOf(entry.getValue())));
-}
-productRepository.flush();
-```
-
-결제 쪽에서는 [`PaymentService.confirmMockPayment()`](../spring/src/main/java/com/webpong/study2/app/payment/application/PaymentService.java)가 idempotency key를 먼저 확인하고, 중복 요청이면 replay 응답을 돌려준다. 새 결제라면 order를 `PAID`로 바꾸고 reservation을 confirm하고 outbox row를 만든다.
-
-```java
-PaymentEntity existingPayment =
-    paymentRepository.findByIdempotencyKey(idempotencyKey).orElse(null);
-if (existingPayment != null) {
-  OrderEntity existingOrder = orderService.requireOrder(existingPayment.getOrderId());
-  return PaymentResponse.replayed(existingPayment, existingOrder.getStatus());
-}
-```
-
-왜 이 코드가 중요했는가. 여기서 이 프로젝트는 "결제 API가 있다" 수준을 넘어서, 재고 예약, 상태 전이, 중복 결제 방지, 비동기 handoff까지 하나의 규칙 묶음으로 설명할 수 있게 된다. baseline capstone과 가장 크게 갈리는 지점도 바로 여기다.
-
-이 단계의 CLI는 smoke와 Compose로 이어진다.
+자동 검증은 `2026-03-14`에 다시 돌렸다.
 
 ```bash
-cd spring
-make smoke
-docker compose up --build
+docker run --rm \
+  -v "$PWD:/workspace" \
+  -w /workspace \
+  eclipse-temurin:21-jdk \
+  bash -lc './gradlew spotlessCheck checkstyleMain checkstyleTest'
+
+docker run --rm \
+  -e TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal \
+  -v "$PWD:/workspace" \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -w /workspace \
+  eclipse-temurin:21-jdk \
+  bash -lc './gradlew test'
+
+docker run --rm \
+  -e TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal \
+  -v "$PWD:/workspace" \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -w /workspace \
+  eclipse-temurin:21-jdk \
+  bash -lc './gradlew test --tests "*SmokeTest"'
 ```
 
-`docs/verification.md`는 `2026-03-09`에 lint, test, smoke, Compose health 확인이 통과했다고 남긴다. 이 프로젝트가 기능 수만 많은 게 아니라, 다시 띄워 확인할 수 있는 결과물이라는 뜻이다.
+세 명령은 모두 통과했다. 다만 중요한 환경 메모가 하나 있다. 처음 `./gradlew test`를 같은 컨테이너 방식으로 실행했을 때 `CommerceMessagingIntegrationTest`가 `Could not connect to Ryuk at 172.17.0.1:54155`로 실패했고, `TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal`를 넣은 뒤에야 통과했다. 즉 코드 자체는 녹색이지만, 이 워크스페이스의 container-in-container 검증은 host override까지 포함해 재현해야 한다.
 
-여기서 배운 건 invariant의 밀도였다. 좋은 커머스 백엔드는 endpoint 개수보다 언제 reserve하고 언제 replay해야 하는지를 얼마나 분명하게 말하는지로 갈린다.
+그리고 `2026-03-14` Compose 런타임에서 더 중요한 실제 결함 하나가 드러났다. 결제 후 notification row는 생성됐지만, 같은 order id에 대한 `outbox_events.published_at`는 여전히 `NULL`이었다.
 
-## Phase 3. Redis와 Kafka를 buzzword가 아니라 검증 가능한 구현으로 닫았다
+- notifications query -> `order-paid:1|ORDER_PAID`
+- outbox query -> `commerce.order-paid|pending`
 
-이 프로젝트를 대표 결과물로 만드는 마지막 요소는 Redis와 Kafka를 어디에만 쓰는지, 그리고 그게 실제 테스트로 증명되는지다. [`OutboxPublisher`](../spring/src/main/java/com/webpong/study2/app/notification/infrastructure/OutboxPublisher.java)는 아직 publish되지 않은 outbox event를 읽어 Kafka로 보낸다.
+이 신호는 `OutboxPublisher.publishPending()`가 `event.markPublished()`만 호출하고 별도의 `save()`나 `@Transactional` 경계를 두지 않는 현재 소스와 맞물린다. 따라서 "메시지는 발행되고 consumer는 동작했지만 published marker는 DB에 남지 않는다"는 해석이 가장 설득력 있다. 이 문장은 소스와 DB 상태를 함께 본 source-based inference다.
 
-```java
-@Scheduled(fixedDelayString = "${app.messaging.publish-delay-ms}")
-public void publishPending() {
-  List<OutboxEventEntity> events =
-      outboxEventRepository.findTop20ByPublishedAtIsNullOrderByIdAsc();
-  for (OutboxEventEntity event : events) {
-    kafkaTemplate
-        .send(event.getEventType(), event.getAggregateId(), event.getPayload())
-        .get(5, TimeUnit.SECONDS);
-    event.markPublished();
-  }
-}
-```
+여기서 특히 구분해야 할 점이 하나 더 있다. `CommerceMessagingIntegrationTest`가 자동으로 보장하는 것은 `notificationRepository.findByDedupKey("order-paid:" + orderId)`가 eventually 채워진다는 사실까지다. 즉 canonical suite는 "consumer가 order-paid를 받아 notification row를 만든다"는 경계는 잠그지만, `outbox_events.published_at` persistence까지 assert하지는 않는다. 그래서 지금 남아 있는 seam은 green test를 부정하는 반례가 아니라, green test가 아직 닫지 않는 bookkeeping 층이라고 읽는 편이 정확하다.
 
-그리고 [`CommerceMessagingIntegrationTest`](../spring/src/test/java/com/webpong/study2/app/CommerceMessagingIntegrationTest.java)는 PostgreSQL, Redis, Kafka Testcontainers를 띄워 `order-paid` 이벤트가 실제 notification row로 이어지는지 확인한다. Redis cart는 [`RedisCartStoreTest`](../spring/src/test/java/com/webpong/study2/app/RedisCartStoreTest.java)에서 직렬화/역직렬화를 따로 고정한다.
+## Step 4. ops surface는 두 겹으로 나뉜다
 
-```java
-while (Instant.now().isBefore(deadline)
-    && notificationRepository.findByDedupKey("order-paid:" + orderId).isEmpty()) {
-  Thread.sleep(200L);
-}
+마지막으로 ops 표면도 README만 보면 매끈해 보이지만 실제로는 두 층으로 나뉜다. `HealthController`가 제공하는 `/api/v1/health/live`, `/api/v1/health/ready`는 public이고 `2026-03-14` 재실행에서도 둘 다 `200 UP`이었다. `LabInfoController`도 `200`으로 서비스 이름, summary, track을 돌려준다.
 
-assertThat(notificationRepository.findByDedupKey("order-paid:" + orderId)).isPresent();
-```
+그런데 `/actuator/health`는 같은 Compose 런타임에서 `403`이었다. 이유는 `SecurityConfig`가 `/actuator/**`를 permit하지 않기 때문이다. 다시 말해 이 프로젝트의 public probe surface는 actuator가 아니라 custom `/api/v1/health/*` 쪽이다. health/readiness가 "있다"는 README 문장은 맞지만, 그 접근 경로를 막연히 actuator로 상상하면 runtime과 어긋난다.
 
-왜 이 코드가 중요했는가. Redis와 Kafka가 README 장식이 아니라 cart state 저장과 order-paid handoff라는 구체적 경계에만 쓰이고, 그 경계가 실제 테스트로 검증되기 때문이다.
+## 정리
 
-마지막 CLI는 이 결과물을 닫는 확인 절차다.
-
-```bash
-cd spring
-make lint
-make test
-make smoke
-```
-
-검증 신호는 특히 강하다.
-
-- `2026-03-13` 기준 테스트 XML 9개 suite, 총 11개 테스트, 실패 0
-- `CommerceMessagingIntegrationTest`: 1개 테스트, 실패 0, 실행 시간 `100.873`초
-- `RedisCartStoreTest`: 1개 테스트, 실패 0
-- `docs/verification.md` 기준 lint, test, smoke, Compose health 확인 통과
-
-이 버전이 대표 결과물인 이유는 결국 여기 있다. 같은 커머스 도메인을 유지하면서도 auth, order, payment, notification, ops를 더 엄격한 invariant와 검증으로 묶었다. 그렇다고 live Google OAuth, real payment provider, live AWS provisioning을 끝냈다고 과장하지도 않는다. 경계가 분명하기 때문에 인터뷰에서도 설명 가능한 결과물이 된다.
+`commerce-backend-v2`는 확실히 baseline보다 깊다. persisted auth, admin guard, validation, checkout/payment state machine, Redis cart, Kafka consumer, Compose-backed runtime까지 실제로 확인된다. 하지만 이 프로젝트를 좋은 capstone으로 만드는 이유는 완벽해서가 아니라, mock Google, mock payment, modular monolith 유지, 그리고 아직 pending에 남는 outbox bookkeeping 같은 현재 한계까지 같이 설명할 수 있기 때문이다. 이 정도면 "portfolio-grade learning artifact"라는 말은 지킬 수 있지만, 아직 "production commerce platform"이라고 단정할 단계는 아니다.

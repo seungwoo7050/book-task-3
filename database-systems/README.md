@@ -12,6 +12,8 @@
 
 - [Python Track](python/README.md): 프로젝트 수를 줄인 입문 경로입니다. 저장 엔진과 분산 시스템의 큰 흐름을 먼저 잡고 싶을 때 시작합니다.
 - [Go Track](go/README.md): 더 잘게 나눈 정본 경로입니다. 자료구조, 포맷, recovery, compaction, consensus-lite를 더 세밀하게 추적하고 싶을 때 시작합니다.
+- [서버 개발 필수 문제지](problem-subject-essential/README.md): 시간이 부족할 때 최소 필수 프로젝트만 먼저 고르는 압축 경로입니다.
+- [서버 개발 비필수 문제지](problem-subject-elective/README.md): essential에 포함되지 않은 나머지 프로젝트를 주제 단위로 다시 모은 문제지 인덱스입니다.
 - [전체 카탈로그](docs/catalog/project-catalog.md): 언어, 트랙, 문제, 내 해법, 검증 명령을 한 번에 보는 단일 인덱스입니다.
 - [문서 인덱스](docs/README.md): 커리큘럼 설계 근거, 언어 대응표, 문서 정책을 확인하는 위치입니다.
 - [Blog Index](blog/README.md): `src/`, `tests`, `README`, 실제 재검증 CLI만으로 다시 읽은 source-first blog 시리즈입니다.

@@ -1,24 +1,13 @@
-# Traceroute structure guide
+# Traceroute 구조 메모
 
-## 이 글의 중심 질문
+## 문서 구성 의도
 
-- UDP probe와 ICMP 응답을 엮어 hop 단위 경로를 어떻게 복원했는가?
-- 한 줄 답: TTL 증가와 `ICMP Time Exceeded`를 이용해 hop-by-hop 경로를 드러내는 bridge 프로젝트입니다.
+- `00-series-map.md`: probe/reply correlation rule을 먼저 고정한다.
+- `10-development-timeline.md`: TTL ladder, port mapping, ICMP parse, termination rule 순으로 구현 축을 정리한다.
+- `01-evidence-ledger.md`: source, unit tests, live timeout caveat를 짧게 묶는다.
 
-## 권장 흐름
+## 이번 재작성에서 강조한 점
 
-1. 실행 표면과 entrypoint를 먼저 고정하기
-2. probe port 계산, ICMP 파싱, hop formatting을 한 경로로 묶기
-3. 테스트와 남은 범위를 정리하기
-
-## 꼭 살릴 근거
-
-- `problem/Makefile`의 공개 target과 `make -C study/04-Network-Diagnostics-and-Routing/traceroute/problem test`
-- `study/04-Network-Diagnostics-and-Routing/traceroute/python/src/traceroute.py`의 `def trace_route`
-- `study/04-Network-Diagnostics-and-Routing/traceroute/python/tests/test_traceroute.py`의 `def test_trace_route_returns_hops_until_destination`
-
-## 리라이트 주의점
-
-- `Traceroute`를 개념 강의처럼 풀지 말고, 실제 파일과 CLI 순서로 보여 준다.
-- 전체 로그를 덤프하지 말고 판단을 바꾼 줄만 남긴다.
-- 마지막에는 IPv6 traceroute는 지원하지 않습니다. 같은 남은 경계를 사람 말로 다시 정리한다.
+- traceroute를 출력 유틸리티가 아니라 correlation algorithm으로 설명한다.
+- embedded UDP port parse를 중심에 둔다.
+- live rerun 미완료를 환경 경계로 분명히 남긴다.

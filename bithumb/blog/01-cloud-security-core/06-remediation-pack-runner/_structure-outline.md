@@ -1,36 +1,40 @@
 # 06 Remediation Pack Runner 구조 메모
 
-이 문서는 최종 글을 쓰기 전에 서사 배치를 점검하는 메모다. 독자에게 무엇을 먼저 설명하고 어디서 코드와 CLI를 꺼내 올지 한눈에 보이도록 정리한다.
+## 이번 문서의 중심
+- remediation을 "실행기"로 과장하지 않는다.
+- 서사는 `plan 계약 -> control별 조치 강도 분류 -> approval 상태 전이` 순서로 고정한다.
+- README 설명보다 실제 코드 인터페이스가 더 중요하다는 점을 한 번 짚는다.
 
-## 이번 문서가 맡는 일
-- finding을 즉시 실행하는 자동화가 아니라, 사람이 검토 가능한 remediation plan으로 바꾸는 프로젝트로 서사를 잡는다.
-- 본문은 `출력 shape -> control별 mode 분기 -> approval 상태 전이` 순서로 배치해 안전장치를 먼저 보이게 한다.
+## 먼저 붙들 소스
+- `../../../01-cloud-security-core/06-remediation-pack-runner/README.md`
+- `../../../01-cloud-security-core/06-remediation-pack-runner/problem/README.md`
+- `../../../01-cloud-security-core/06-remediation-pack-runner/python/README.md`
+- `../../../01-cloud-security-core/06-remediation-pack-runner/docs/concepts/dry-run-remediation.md`
+- `../../../01-cloud-security-core/06-remediation-pack-runner/problem/data/sample_finding.json`
+- `../../../01-cloud-security-core/06-remediation-pack-runner/python/src/remediation_pack_runner/runner.py`
+- `../../../01-cloud-security-core/06-remediation-pack-runner/python/src/remediation_pack_runner/cli.py`
+- `../../../01-cloud-security-core/06-remediation-pack-runner/python/tests/test_runner.py`
 
-## 먼저 붙들 소스 묶음
-- [`../../../01-cloud-security-core/06-remediation-pack-runner/README.md`](../../../01-cloud-security-core/06-remediation-pack-runner/README.md)
-- [`../../../01-cloud-security-core/06-remediation-pack-runner/problem/README.md`](../../../01-cloud-security-core/06-remediation-pack-runner/problem/README.md)
-- [`../../../01-cloud-security-core/06-remediation-pack-runner/docs/concepts/dry-run-remediation.md`](../../../01-cloud-security-core/06-remediation-pack-runner/docs/concepts/dry-run-remediation.md)
-- [`../../../01-cloud-security-core/06-remediation-pack-runner/python/README.md`](../../../01-cloud-security-core/06-remediation-pack-runner/python/README.md)
-- [`../../../01-cloud-security-core/06-remediation-pack-runner/python/src/remediation_pack_runner/runner.py`](../../../01-cloud-security-core/06-remediation-pack-runner/python/src/remediation_pack_runner/runner.py)
-- [`../../../01-cloud-security-core/06-remediation-pack-runner/python/src/remediation_pack_runner/cli.py`](../../../01-cloud-security-core/06-remediation-pack-runner/python/src/remediation_pack_runner/cli.py)
-- [`../../../01-cloud-security-core/06-remediation-pack-runner/python/tests/test_runner.py`](../../../01-cloud-security-core/06-remediation-pack-runner/python/tests/test_runner.py)
+## 본문 배치
+- 도입
+  - finding을 바로 apply하지 않고 plan으로 멈춰 세우는 이유를 먼저 둔다.
+- Phase 1
+  - `RemediationPlan`과 sample fixture로 입력/출력 계약을 고정한다.
+- Phase 2
+  - `CSPM-001`, `CSPM-002`, fallback을 서로 다른 운영 모드로 나누는 장면을 중심에 둔다.
+  - pytest가 덮지 않는 branch는 보조 재실행으로 확인했다는 점을 같이 적는다.
+- Phase 3
+  - `approve()`가 실제 실행이 아니라 승인 표지만 바꾼다는 점을 보여 준다.
+- 마무리
+  - apply/rollback/approval system이 아직 바깥 책임이라는 한계를 분명히 남긴다.
 
-## 본문을 배치하는 순서
+## 꼭 남길 검증 신호
+- CLI 단일 입력 실행 결과에서 `auto_patch_available`, `pending_approval`, patch snippet 확인
+- 보조 Python 재실행에서 `manual_approval_required`, `manual_review` 확인
+- pytest `2 passed in 0.01s`
+- README 예시와 달리 실제 CLI는 서브커맨드 없이 호출된다는 점
 
-- `00-series-map.md`
-  - finding control ID와 remediation plan 사이의 계약을 먼저 설명한다.
-- `10-development-timeline.md`
-  - 도입: 보안 자동화에서 왜 즉시 적용보다 dry-run plan이 먼저여야 하는지 시작점으로 둔다.
-  - Phase 1. remediation 출력 shape부터 고정했다.
-  - Phase 2. remediation mode를 control별로 갈랐다.
-  - Phase 3. approval 상태 전이를 별도 함수로 분리했다.
-  - 마무리: capstone worker가 이 status transition을 어떻게 재사용하는지 넘긴다.
-
-## 강조할 코드와 CLI
-- 코드 앵커: `RemediationPlan`, control-to-mode mapping, approval helper, CLI render path
-- CLI 앵커: `python -m remediation_pack_runner.cli ...`, `pytest 01-cloud-security-core/06-remediation-pack-runner/python/tests`
-- 개념 훅: remediation 시스템의 핵심은 실행 자체보다 실행 전후 상태를 추적 가능한 데이터로 두는 데 있다는 점
-
-## 리라이트 기준
-- chronology는 실제 commit timestamp보다 source, test, CLI가 묶이는 순서를 기준으로 읽는다.
-- 이 문서는 메타 기록보다 서사 배치와 강조점에 집중한다.
+## 탈락 기준
+- README를 풀어쓴 수준으로 끝나면 안 된다.
+- approval을 완전한 워크플로처럼 과장하면 안 된다.
+- 테스트가 덮지 않는 분기를 마치 자동으로 보장된 것처럼 쓰면 안 된다.

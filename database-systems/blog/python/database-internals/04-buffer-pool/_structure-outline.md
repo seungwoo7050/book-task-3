@@ -1,27 +1,31 @@
 # 04 Buffer Pool — Structure Outline
 
-최종 시리즈는 chronology를 매끈하게 재배열하지 않고, 범위 파악 -> 핵심 invariant -> 재검증과 경계의 순서를 유지한다.
+## 이번 문서의 중심
+
+- 이 슬롯을 LRU 구현 설명이 아니라 page lifecycle 관리로 설명한다.
+- 서사는 `범위 재설정 -> LRU/pin/dirty invariant -> 검증과 seam` 순서로 둔다.
+- pinned eviction failure가 완전 rollback이 아니라는 현재 runtime 확인도 함께 남긴다.
 
 ## Planned Files
 
-- `00-series-map.md`: 프로젝트 질문, 읽는 순서, source-of-truth 파일, 재검증 명령을 잡는 지도
-- `10-chronology-scope-and-surface.md`: 파일 구조와 테스트 이름을 근거로 처음 가설이 바뀌는 구간
-- `20-chronology-core-invariants.md`: `Page`와 `Entry`가 실제로 invariant를 고정하는 구간
-- `30-chronology-verification-and-boundaries.md`: `go test`/`pytest`와 demo 출력으로 경계를 확정하는 구간
+- `00-series-map.md`
+  - 질문, 읽는 순서, source-of-truth 파일, 재검증 명령
+- `10-chronology-scope-and-surface.md`
+  - 테스트와 문제 정의로 page lifecycle 중심 범위를 다시 잡는 글
+- `20-chronology-core-invariants.md`
+  - `LRUCache`, `fetch_page`, `unpin_page`, `flush_page`를 중심으로 읽는 글
+- `30-chronology-verification-and-boundaries.md`
+  - pytest, demo, 보조 재실행으로 current seam까지 정리하는 글
 
-## Article Goals
+## 꼭 남길 검증 신호
 
-1. `10-chronology-scope-and-surface.md`
-   범위를 `tests/`와 README에서 어떻게 다시 좁혔는지 보여 준다.
-   코드 앵커: `test_lru_basic_operations`, `Page`
-   CLI: `find src tests -type f | sort`, `rg -n "^def test_" tests`
+- `PYTHONPATH=src python3 -m pytest` -> `7 passed`
+- `PYTHONPATH=src python3 -m buffer_pool` -> `pin_count: 1`, `prefix: page-0`
+- 보조 재실행 -> pinned eviction 시 `RuntimeError`
+- error 뒤 cache keys가 `['...:0', '...:2']`로 남는 현재 seam
 
-2. `20-chronology-core-invariants.md`
-   핵심 invariant가 `Page`와 `Entry` 사이에서 어떻게 고정되는지 보여 준다.
-   코드 앵커: `Page`, `Entry`
-   CLI: `rg -n "^(class|def) " src`, `rg -n "Page|Entry" src`
+## 탈락 기준
 
-3. `30-chronology-verification-and-boundaries.md`
-   테스트와 demo를 모두 남겨, pass 신호와 공개 표면을 구분해 설명한다.
-   코드 앵커: `test_lru_ordering_and_delete`, `__main__.py`
-   CLI: PYTHONPATH=src .venv/bin/python -m pytest; PYTHONPATH=src .venv/bin/python -m buffer_pool
+- buffer pool을 단순 cache로 축소하면 안 된다.
+- pin/dirty semantics를 빼면 안 된다.
+- failed eviction rollback 문제를 빼면 문서가 지나치게 깨끗해진다.

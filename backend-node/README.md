@@ -22,6 +22,12 @@
 | [09-platform-capstone](study/Node-Backend-Architecture/applied/09-platform-capstone/README.md) | 03~08을 하나의 서비스로 통합해 규약 일관성 검증 | NestJS capstone | `pnpm run build && pnpm run test && pnpm run test:e2e` |
 | [10-shippable-backend-service](study/Node-Backend-Architecture/applied/10-shippable-backend-service/README.md) | 학습용 capstone을 채용 제출용 서비스 표면으로 재패키징 | Postgres + Redis + Compose 기반 NestJS 서비스 | `pnpm run build && pnpm run test && pnpm run test:e2e` |
 
+## 서버 문제지 빠른 진입
+
+- [problem-subject-essential/README.md](problem-subject-essential/README.md): 서버 공통 필수 기준으로 다시 고른 문제지
+- [problem-subject-elective/README.md](problem-subject-elective/README.md): essential에 포함되지 않은 나머지 문제지
+- [problem-subject-capstone/README.md](problem-subject-capstone/README.md): 트랙 종합 과제만 따로 모은 문제지
+
 ## 전체 트랙 카탈로그
 
 | 그룹 | 프로젝트 | 한 줄 문제 | 답 형태 | 상태 |

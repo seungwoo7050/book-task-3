@@ -1,39 +1,41 @@
 # 05 MVCC 시리즈 맵
 
-`05 MVCC`은 Database Internals 트랙에서 5번째로 만나는 프로젝트다. snapshot isolation을 위한 version chain과 transaction manager를 구현합니다. 여기서는 완성된 해설보다, 테스트와 코드가 어디서 같은 문제를 가리키는지 차례대로 따라간다.
+이 프로젝트는 Python `database-internals` 트랙의 마지막 저장 엔진 슬롯으로, 이제 write/read 비용이 아니라 visibility 규칙 자체를 다룬다. 읽을 때도 "트랜잭션 기능 추가"로 보기보다 `snapshot watermark`, `read-your-own-write`, `first-committer-wins`, `cleanup/gc`가 어떻게 맞물리는지 먼저 붙드는 편이 맞다.
 
 ## 먼저 보고 갈 질문
 
-- snapshot isolation 하에서 읽기 스냅샷과 write-write conflict를 관리해야 합니다.
-- read-your-own-write를 보장해야 합니다.
+- transaction이 시작할 때 어떤 committed watermark를 snapshot으로 잡는가?
+- 왜 자기 자신의 uncommitted write만 예외적으로 snapshot 규칙을 건너뛰어 읽게 되는가?
+- write-write conflict와 aborted cleanup은 version chain을 어떻게 바꾸는가?
 
 ## 읽는 순서
 
-1. [10-chronology-scope-and-surface.md](10-chronology-scope-and-surface.md) — 테스트 이름과 파일 배치부터 훑으면서 문제의 테두리를 다시 좁히는 글
-2. [20-chronology-core-invariants.md](20-chronology-core-invariants.md) — 핵심 함수와 상태 전이에서 invariant가 실제로 어디서 잠기는지 따라가는 글
-3. [30-chronology-verification-and-boundaries.md](30-chronology-verification-and-boundaries.md) — 테스트와 demo를 다시 돌려 약속 범위와 남는 한계를 정리하는 글
+1. [10-chronology-scope-and-surface.md](10-chronology-scope-and-surface.md)
+   테스트와 문제 정의를 다시 보며 이 슬롯의 중심이 SQL 기능이 아니라 version visibility 규칙이라는 점을 먼저 잡는다.
+2. [20-chronology-core-invariants.md](20-chronology-core-invariants.md)
+   `VersionStore`, `TransactionManager.begin/read/commit/abort/gc()`가 실제로 어떤 상태 전이를 고정하는지 본다.
+3. [30-chronology-verification-and-boundaries.md](30-chronology-verification-and-boundaries.md)
+   pytest, demo, 보조 재실행으로 snapshot read, conflict cleanup, GC가 실제로 어떤 chain 모양을 남기는지 정리한다.
 
 ## 재검증 명령
 
 ```bash
-PYTHONPATH=src .venv/bin/python -m pytest
-PYTHONPATH=src .venv/bin/python -m mvcc_lab
+cd /Users/woopinbell/work/book-task-3/database-systems/python/database-internals/projects/05-mvcc
+PYTHONPATH=src python3 -m pytest
+PYTHONPATH=src python3 -m mvcc_lab
 ```
 
-## 이번 시리즈가 근거로 삼은 파일
+## 이번 시리즈의 근거
 
-- `database-systems/python/database-internals/projects/05-mvcc/src/mvcc_lab/core.py`
-- `database-systems/python/database-internals/projects/05-mvcc/tests/test_mvcc.py`
 - `database-systems/python/database-internals/projects/05-mvcc/README.md`
 - `database-systems/python/database-internals/projects/05-mvcc/problem/README.md`
 - `database-systems/python/database-internals/projects/05-mvcc/docs/README.md`
+- `database-systems/python/database-internals/projects/05-mvcc/docs/concepts/snapshot-visibility.md`
+- `database-systems/python/database-internals/projects/05-mvcc/docs/concepts/write-conflict.md`
+- `database-systems/python/database-internals/projects/05-mvcc/src/mvcc_lab/core.py`
 - `database-systems/python/database-internals/projects/05-mvcc/src/mvcc_lab/__main__.py`
+- `database-systems/python/database-internals/projects/05-mvcc/tests/test_mvcc.py`
 
 ## 보조 메모
 
-작업 메모가 꼭 필요할 때만 [_evidence-ledger.md](_evidence-ledger.md)와 [_structure-outline.md](_structure-outline.md)를 보면 된다. 공개 시리즈는 `00 -> 10 -> 20 -> 30`만 따라가면 충분하다.
-
-## Git Anchor
-
-- `2026-03-13 abeead6 docs: TRACK 1 에대한 blog/ 작업 1차 완료`
-- `2026-03-11 bbb6673 Track 1에 대한 전반적인 개선 완료`
+작업 메모는 [_evidence-ledger.md](_evidence-ledger.md)와 [_structure-outline.md](_structure-outline.md)에 남긴다. 공개 시리즈는 `00 -> 10 -> 20 -> 30`만 읽어도 충분하다.

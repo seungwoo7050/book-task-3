@@ -1,23 +1,10 @@
 # regression hardening과 proof
 
-앞 글에서 평가 파이프라인이 어떻게 세워졌는지 봤다면, 이번에는 그 파이프라인이 어떻게 "증빙"이 되었는지 본다. 여기서 따라갈 질문은 하나다. 상담 품질이 좋아졌다는 말을, 감이 아니라 같은 golden set 위의 숫자로 어떻게 고정했을까?
+이 프로젝트의 `v2`를 읽을 때 가장 조심해야 할 부분은 "proof artifact가 말하는 역사"와 "현재 snapshot에서 지금 다시 돌린 결과"를 같은 것으로 취급하지 않는 것이다. 둘 다 중요하지만, 뜻이 다르다. historical artifact는 실제 개선 스토리를 보여 주고, current rerun은 지금 남아 있는 재현 가능성과 seam을 보여 준다.
 
-`v2-submission-polish`의 중심은 retrieval을 조금 더 똑똑하게 만든 것만이 아니다. baseline과 candidate의 차이를 같은 데이터셋 위에서 비교하고, 그 결과를 dashboard와 runbook, proof artifact까지 연결했다는 점이 핵심이다.
+## dashboard와 CLI는 같은 evaluation row를 다시 읽어 compare를 만든다
 
-이 구간의 요점을 가장 짧게 보여 주는 자료가 `docs/demo/proof-artifacts/improvement-report.json`이다.
-
-```json
-{
-  "baseline": { "run_label": "v1.0", "avg_score": 84.06, "critical_count": 2, "pass_count": 16, "fail_count": 14 },
-  "candidate": { "run_label": "v1.1", "avg_score": 87.76, "critical_count": 0, "pass_count": 19, "fail_count": 11 }
-}
-```
-
-이 숫자가 중요한 이유는 단순히 점수가 올랐기 때문이 아니다. 같은 `run_label`, 같은 `dataset`, 같은 assertion 구조를 유지한 채 비교했기 때문에, 이 변화가 실제 회귀 개선으로 읽힌다.
-
-그 비교를 코드에서 받아 주는 곳이 `python/backend/src/api/routes/dashboard.py`의 version compare 경로다.
-
-아래 블록은 compare가 별도 계산기를 쓰는 것이 아니라, 이미 쌓인 evaluation row를 다시 읽어 proof를 만드는 구조라는 점을 보여 준다.
+`dashboard.py`의 `/dashboard/version-compare`는 stored evaluation rows를 `run_label`과 `dataset`으로 다시 모아 baseline/candidate를 비교한다.
 
 ```python
 result = VersionCompareResult(
@@ -31,29 +18,69 @@ result = VersionCompareResult(
 )
 ```
 
-좋은 점은 dashboard가 화면용 숫자를 따로 들고 있지 않다는 것이다. `run_label`, `dataset`, `assertion_result`, `failure_types`가 이미 evaluation row에 남아 있으니, compare는 그 저장 구조를 다시 읽으면 된다. 그래서 `docs/demo/phase1-vs-phase2-diff-matrix.md`가 말하는 "UI 차이가 작아도 내부 지표 차이로 Phase2를 증명한다"는 원칙이 실제 코드에서도 그대로 유지된다.
+이 구조가 중요한 이유는 compare가 별도 모델이 아니라는 점이다. 이미 evaluation pipeline이 저장한 `run_label`, `assertion_result`, `failure_types`, `total_score`를 다시 읽어 proof를 만든다. CLI의 `compare`도 같은 테이블을 출력할 뿐이다.
 
-CLI 증거도 남아 있다. proof artifact로 저장된 `cli-compare.txt`는 바로 이렇게 요약한다.
+즉 regression proof는 새로운 계산기보다 lineage discipline의 산물이다.
 
-```text
-avg_score: 84.06 -> 87.76 (delta 3.7)
-critical_count: 2 -> 0 (delta -2)
-pass_count: 16 -> 19 (delta 3)
-fail_count: 14 -> 11 (delta -3)
+## historical proof artifact는 실제 improvement story를 보존한다
+
+`docs/demo/proof-artifacts/improvement-report.json`과 `cli-compare.txt`는 이렇게 말한다.
+
+- `avg_score 84.06 -> 87.76`
+- `critical_count 2 -> 0`
+- `pass_count 16 -> 19`
+- `fail_count 14 -> 11`
+
+이 수치가 중요한 이유는 `v2`가 무엇을 개선했다고 주장하는지 가장 짧게 보여 주기 때문이다. README도 이를 `retrieval-v2 alias/category/risk rerank + retrieval-conditioned answer composer`의 결과로 설명한다. 즉 historical proof는 "baseline v1 code + retrieval-v1"과 "candidate v2 code + retrieval-v2"를 비교한 기록이다.
+
+## 하지만 현재 snapshot 로컬 재실행은 같은 uplift를 다시 만들지 못한다
+
+2026-03-14에 현재 snapshot에서 직접 다시 한 일은 다음과 같았다.
+
+```bash
+PATH="$HOME/.local/bin:$PATH" UV_PYTHON=python3.12 make init-db
+PATH="$HOME/.local/bin:$PATH" UV_PYTHON=python3.12 make seed-demo
+PATH="$HOME/.local/bin:$PATH" QUALBOT_EVAL_MODE=heuristic QUALBOT_RETRIEVAL_BACKEND=keyword \
+  UV_PYTHON=python3.12 PYTHONPATH=backend/src uv run python -m cli.main evaluate --golden-set --run-label v1.0 --retrieval-version retrieval-v1
+PATH="$HOME/.local/bin:$PATH" QUALBOT_EVAL_MODE=heuristic QUALBOT_RETRIEVAL_BACKEND=keyword \
+  UV_PYTHON=python3.12 PYTHONPATH=backend/src uv run python -m cli.main evaluate --golden-set --run-label v1.1 --retrieval-version retrieval-v2
+PATH="$HOME/.local/bin:$PATH" QUALBOT_EVAL_MODE=heuristic QUALBOT_RETRIEVAL_BACKEND=keyword \
+  UV_PYTHON=python3.12 PYTHONPATH=backend/src uv run python -m cli.main compare v1.0 v1.1
 ```
 
-이 출력이 증명하는 것은 세 가지다. 평균 점수가 올랐고, critical 수가 줄었고, assertion pass가 늘었다. 즉 "좋아졌다"는 말이 하나의 감상이 아니라 여러 관점의 숫자로 고정된다.
+현재 결과는 이렇게 나왔다.
 
-`cli-report.txt`는 더 세밀한 최신 evaluation row를 보여 주고, runbook은 이 compare 수치를 실제 발표 흐름 안에 배치한다. 다시 말해 이 프로젝트의 proof는 JSON 한 장으로 끝나지 않는다. CLI, API, 대시보드, 발표 문서가 같은 개선 수치를 반복해서 가리킨다.
+- baseline: `87.76`, critical `0`, pass `19`, fail `11`
+- candidate: `87.76`, critical `0`, pass `19`, fail `11`
+- delta: `0.0`
 
-운영성 근거도 여기에 붙는다. `UV_PYTHON=python3.12 make smoke-postgres`를 실제로 돌리면 아래처럼 데이터베이스 경로가 살아 있음을 다시 확인할 수 있다.
+이건 문서에서 숨길 게 아니라, 오히려 현재 snapshot의 진실이다. 이유도 추론 가능하다. 지금 남아 있는 `v2-submission-polish` 하나만으로는 historical baseline `v1` 코드 경로를 다시 실행하는 게 아니라, 같은 snapshot에 run label만 다르게 붙여 evaluation row를 만드는 셈이기 때문이다. 즉 improvement artifact는 archived proof이고, 현재 로컬 compare는 same-snapshot rerun이다.
 
-```text
-PostgreSQL smoke verification passed
+그래서 현재 rerun의 의미를 과장하면 안 된다. 이 rerun은 "예전 개선 폭을 그대로 다시 만들었다"는 증거가 아니라, dashboard/CLI가 기대는 stored-row lineage와 compare surface가 지금도 깨지지 않았다는 non-regression evidence다. 이 구분이 있어야 historical proof와 current reproducibility를 같은 문장으로 섞지 않게 된다.
+
+## 현재 proof surface에서 드러난 작은 seam도 남긴다
+
+`Makefile`의 `compare` 타깃은 현재 CLI 시그니처와 맞지 않는다.
+
+```make
+compare:
+	$(UV_RUN) python -m cli.main compare --baseline v1.0 --candidate v1.1
 ```
 
-이 메시지가 중요한 이유는 regression proof가 메모리 안에서만 도는 데모가 아니라, 실제 persistence와 함께 재현 가능한 흐름이라는 사실을 보여 주기 때문이다. `docs/verification-matrix.md`가 `gate-all`과 별도로 `smoke-postgres`를 적어 둔 이유도 여기 있다.
+하지만 실제 CLI는 positional args를 받는다.
 
-결국 `v2`에서 완성된 것은 retrieval 개선 하나가 아니다. 더 중요한 건 operator가 "candidate가 좋아졌는가"를 감으로 말하지 않아도 되는 proof chain이다. run label, dataset, assertion, failure taxonomy, dashboard compare, smoke path가 같은 구조 안에 붙으면서 이 트랙은 진짜 QA Ops처럼 읽히기 시작한다.
+```python
+@app.command("compare")
+def compare(baseline: str, candidate: str, dataset: str = typer.Option("golden-set", "--dataset")) -> None:
+```
 
-다음 글에서는 이 proof chain을 그대로 들고 가서 self-hosted OSS surface로 옮긴 `v3`를 본다. baseline과 candidate compare가 이번에는 dataset upload, KB bundle, evaluation job, selected-job review UI 안으로 들어간다.
+그래서 `make compare`는 현재 `No such option: --baseline`으로 실패하고, 직접 `python -m cli.main compare v1.0 v1.1`로 호출해야 했다. 이런 종류의 seam은 문서에서 지우는 대신 현재 상태로 남겨 두는 편이 훨씬 낫다.
+
+## 이번 단계의 추가 검증 신호
+
+- `make smoke-postgres`: `PostgreSQL smoke verification passed`
+- `report --format table`: 현재 top rows가 비어 있고 `Golden assertion mismatches: none`
+
+즉 persistence path는 살아 있지만, historical improvement numbers 자체는 docs/proof-artifacts에 의존하고, current snapshot rerun은 별도 의미를 가진다.
+
+이 단계의 결론은 단순하다. `Chat QA Ops`의 proof는 강하지만, 그 proof를 읽을 때는 historical artifact와 current rerun을 구분해야 한다. 이 구분이 있어야 다음 단계 `v3` self-hosted review ops도 과장 없이 읽을 수 있다.

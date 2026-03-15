@@ -24,6 +24,12 @@
 | [17 Game Store Capstone](study/04-capstone/17-game-store-capstone/README.md) | 잔액 차감, 인벤토리 반영, 구매 기록 저장, outbox 기록을 하나의 흐름으로 묶어야 한다. | [`solution/README.md`](study/04-capstone/17-game-store-capstone/solution/README.md) | `cd solution/go && mkdir -p ./bin && go build -o ./bin/api ./cmd/api`, `cd solution/go && go test ./...` |
 | [18 Workspace SaaS API](study/05-portfolio-projects/18-workspace-saas-api/README.md) | 채용 제출용 B2B SaaS API를 로컬에서 완결형으로 재현할 수 있어야 한다. | [`solution/README.md`](study/05-portfolio-projects/18-workspace-saas-api/solution/README.md) | `cd solution/go && go test ./...`, `cd solution/go && make e2e` |
 
+## 서버 문제지 빠른 진입
+
+- [problem-subject-essential/README.md](problem-subject-essential/README.md): 서버 공통 필수 기준으로 다시 고른 문제지
+- [problem-subject-elective/README.md](problem-subject-elective/README.md): essential에 포함되지 않은 나머지 문제지
+- [problem-subject-capstone/README.md](problem-subject-capstone/README.md): 통합 대표 과제만 따로 모은 문제지
+
 ## 전체 커리큘럼
 
 | 번호 | 프로젝트 | 트랙 | 한 줄 설명 | 상태 |

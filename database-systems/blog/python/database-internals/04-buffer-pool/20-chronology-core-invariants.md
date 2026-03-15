@@ -1,116 +1,46 @@
-# 20 04 Buffer Pool에서 진짜 중요한 상태 전이만 붙잡기
+# 20 핵심 invariant 붙잡기: LRU order, pin count, dirty write-back
 
-이 시리즈의 가운데 글이다. 기능 목록을 다시 적기보다, 규칙이 실제 코드에서 언제 강제되는지 보여 주는 데 초점을 둔다.
+이 슬롯의 구현은 크게 두 층으로 나뉜다. `LRUCache`는 순수한 replacement policy를 담당하고, `BufferPool`은 그 위에 page metadata인 `pin_count`와 `dirty`를 얹는다. 실제로 중요한 건 cache가 아니라, 이 두 층이 맞물릴 때 어떤 규칙이 생기는가다.
 
-## Phase 2 — 핵심 상태 전이를 붙잡는 구간
+## Phase 2-1. `LRUCache`는 MRU-first ordering을 고정한다
 
-이번 글에서는 핵심 함수 두 곳을 따라가며 같은 invariant가 어디서 고정되고, 다른 각도에서 어떻게 반복되는지 본다.
+`LRUCache`는 `OrderedDict`를 사용하고, hit나 insert 때마다 key를 `last=False`로 앞으로 옮긴다. 그래서 `keys()`를 보면 항상 앞쪽이 MRU, 뒤쪽이 LRU다. 테스트 `test_lru_ordering_and_delete`가 바로 이 ordering contract를 잠근다.
 
-### Session 1 — Page에서 invariant가 잠기는 지점 보기
+이 구조 자체는 익숙하지만, buffer pool 쪽에서 중요해지는 건 이 순서가 eviction candidate를 고르는 출발점이라는 점이다. page metadata는 나중에 붙는다.
 
-이번 세션의 목표는 `Page`가 어떤 입력을 받아 어떤 상태를 고정하는지 분해하는 것이었다. 초기 가설은 `Page` 하나를 이해하면 나머지 흐름도 거의 자동으로 따라올 거라고 생각했다.
+## Phase 2-2. `fetch_page()`는 cache hit를 pin 증가와 묶는다
 
-막상 다시 펼쳐 보니 `rg -n "Page|Entry" src`로 핵심 함수 위치를 다시 잡고, `Page`가 문제 정의의 첫 번째 bullet과 정확히 맞물리는지 확인했다. 특히 `Page` 안에서 상태가 한 번에 굳는지, 아니면 보조 구조로 넘겨지는지가 프로젝트의 설명 밀도를 갈랐다.
+`BufferPool.fetch_page()`를 다시 보면 cache hit는 단순 `return cached`가 아니다. cached page가 있으면 `page.pin_count += 1`을 먼저 하고 돌려준다. 즉 residency는 "캐시에 있느냐"보다 "누가 지금 사용 중이냐"까지 함께 추적된다.
 
-변경 단위:
-- `database-systems/python/database-internals/projects/04-buffer-pool/src/buffer_pool/core.py`의 `Page`
+miss일 때도 흐름은 명확하다.
 
-CLI:
+1. `parse_page_id()`로 file path와 page number를 나눈다
+2. disk에서 `page_size`만큼 읽어 `Page`를 만든다
+3. `pin_count=1`로 cache에 넣는다
+4. evicted page가 있으면 pin/dirty 조건을 확인한다
 
-```bash
-$ rg -n "Page|Entry" src
-src/buffer_pool/core.py:10:class Entry:
-src/buffer_pool/core.py:26:    def put(self, key: str, value: object) -> Entry | None:
-src/buffer_pool/core.py:34:            evicted = Entry(old_key, old_value)
-src/buffer_pool/core.py:53:class Page:
-src/buffer_pool/core.py:67:    def fetch_page(self, page_id: str) -> Page:
-src/buffer_pool/core.py:71:            assert isinstance(page, Page)
-src/buffer_pool/core.py:79:        page = Page(page_id, data, pin_count=1)
-src/buffer_pool/core.py:84:            assert isinstance(evicted_page, Page)
-src/buffer_pool/core.py:97:        assert isinstance(page, Page)
-src/buffer_pool/core.py:108:        assert isinstance(page, Page)
-src/buffer_pool/core.py:131:    def _write_page(self, page: Page) -> None:
-src/buffer_pool/__init__.py:1:from .core import BufferPool, LRUCache, Page
-src/buffer_pool/__init__.py:3:__all__ = ["BufferPool", "LRUCache", "Page"]
+즉 fetch는 lookup과 동시에 pin acquisition이기도 하다.
+
+## Phase 2-3. `unpin_page()`와 `flush_page()`가 dirty write-back 책임을 나눈다
+
+`unpin_page(page_id, is_dirty)`는 이름 그대로 caller가 page 사용을 끝냈다는 신호다. pin_count를 하나 줄이고, `is_dirty=True`면 page를 dirty로 표시한다. 실제 disk write는 여기서 하지 않는다.
+
+write-back은 `flush_page()`와 `flush_all()`이 맡는다. `flush_page()`는 dirty가 아닌 page는 건드리지 않고, dirty page만 `_write_page()`를 거쳐 disk에 쓴 뒤 dirty flag를 내린다. 즉 caller의 수정 사실과 disk 반영 시점이 분리돼 있다.
+
+이 구조는 교육용으로 꽤 좋다. dirty tracking과 write-back policy를 분리해서 보여 주기 때문이다.
+
+## Phase 2-4. source-based seam: pinned eviction 실패는 cache state를 완전히 롤백하지 못한다
+
+이번 Todo에서 가장 중요한 추가 확인은 여기였다. `fetch_page()`는 miss page를 먼저 cache에 `put()`하고, 그 과정에서 evicted page가 나오면 나중에 pin/dirty를 검사한다. 문제는 evicted page가 pinned일 때다. 코드는 evicted page를 다시 `put()`하고 `RuntimeError("bufferpool: cannot evict pinned page")`를 던진다.
+
+보조 재실행을 해 보니 이 경로는 완전한 rollback이 아니었다.
+
+```text
+keys_before ['...:1', '...:0'] pin0 1 pin1 0
+error RuntimeError bufferpool: cannot evict pinned page
+cache_keys_after_error ['...:0', '...:2']
 ```
 
-검증 신호:
-- `Page` 안에서 상태가 한 번에 굳는지, 아니면 보조 구조로 넘겨지는지가 프로젝트의 설명 밀도를 갈랐다.
-- `고정 크기 page를 메모리에 캐시하는 기본 구조를 익힙니다.`
+즉 pinned page `:0`은 돌아왔지만, 기존 unpinned page `:1`은 사라지고 새 page `:2`가 cache에 남았다. 실패했는데도 cache state가 부분적으로 바뀐 셈이다. 테스트는 현재 이 경로를 직접 다루지 않아서, 문서에는 source+runtime 확인으로 남겨 둘 가치가 있다.
 
-핵심 코드:
-
-```python
-class Page:
-    page_id: str
-    data: bytearray
-    dirty: bool = False
-    pin_count: int = 0
-
-
-class BufferPool:
-    def __init__(self, max_pages: int, page_size: int = 4096) -> None:
-        self.max_pages = max_pages
-        self.page_size = page_size or 4096
-        self.cache = LRUCache(max_pages)
-        self.file_handles: dict[str, object] = {}
-```
-
-왜 여기서 판단이 바뀌었는가:
-
-`Page`는 이 프로젝트에서 규칙이 가장 먼저 굳는 지점을 보여 준다. 테스트가 요구한 첫 번째 조건이 실제 코드 규칙으로 바뀌는 순간을 여기서 확인할 수 있었다.
-
-이번 구간에서 새로 이해한 것:
-- `Pin And Dirty`에서 정리한 요점처럼, pin count가 0보다 큰 page는 eviction 대상이 될 수 없다.
-
-다음으로 넘긴 질문:
-- `Entry`까지 읽어야 비로소 이 프로젝트가 '쓰는 방법'만이 아니라 '읽고 복원하는 방법'까지 같이 고정하는지 판단할 수 있다.
-
-### Session 2 — Entry로 같은 규칙 다시 확인하기
-
-이 구간에서 먼저 붙잡으려 한 것은 `Entry`가 `Page`와 어떤 짝을 이루는지 확인하는 것이었다. 처음 읽을 때는 `Entry`는 단순 보조 함수일 거라고 생각했다.
-
-그런데 두 번째 앵커를 읽고 나니, 실제로는 `Page`가 만든 상태를 외부에서 관찰 가능하게 만드는 규칙이 여기 있었다. 특히 `Entry`는 테스트의 뒤쪽 시나리오를 설명하는 열쇠였다.
-
-변경 단위:
-- `database-systems/python/database-internals/projects/04-buffer-pool/src/buffer_pool/core.py`의 `Entry`
-
-CLI:
-
-```bash
-$ rg -n "^(class|def) " src
-src/buffer_pool/core.py:10:class Entry:
-src/buffer_pool/core.py:15:class LRUCache:
-src/buffer_pool/core.py:53:class Page:
-src/buffer_pool/core.py:60:class BufferPool:
-src/buffer_pool/core.py:139:def parse_page_id(page_id: str) -> tuple[str, int]:
-src/buffer_pool/core.py:146:def demo() -> None:
-```
-
-검증 신호:
-- `Entry`는 테스트의 뒤쪽 시나리오를 설명하는 열쇠였다.
-- 특히 `test_lru_ordering_and_delete` 같은 이름이 왜 필요한지, 이 함수에서야 연결이 됐다.
-
-핵심 코드:
-
-```python
-class Entry:
-    key: str
-    value: object
-
-
-class LRUCache:
-    def __init__(self, capacity: int) -> None:
-        self.capacity = capacity
-        self._items: OrderedDict[str, object] = OrderedDict()
-```
-
-왜 여기서 판단이 바뀌었는가:
-
-`Entry`가 없으면 `Page`의 의미도 끝까지 설명되지 않는다. 이 코드를 보고 나서야, 이 프로젝트가 단일 API 구현이 아니라 ordering / visibility / recovery 규칙을 통째로 묶는 이유를 납득할 수 있었다.
-
-이번 구간에서 새로 이해한 것:
-- `Pin And Dirty`에서 정리한 요점처럼, pin count가 0보다 큰 page는 eviction 대상이 될 수 없다.
-
-다음으로 넘긴 질문:
-- 실제 재검증 명령을 다시 돌려, 지금까지 읽은 invariant가 테스트와 demo 출력에서 같은 모양으로 보이는지 확인한다.
+이 seam을 빼고 읽으면 buffer pool이 pin 규칙을 완전히 안전하게 지킨다고 과장하게 된다.

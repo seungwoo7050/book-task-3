@@ -1,9 +1,55 @@
-# 04 Raft Lite — Evidence Ledger
+# Evidence Ledger
 
-기존 `blog/` 초안은 입력에서 제외하고, `README`, `problem/`, `docs/`, 실제 구현 파일, 테스트, 재검증 CLI만으로 chronology를 다시 세웠다.
+## Primary sources
 
-| 순서 | 시간 표지 | 당시 목표 | 변경 단위 | 처음 가설 | 실제 조치 | CLI | 검증 신호 | 핵심 코드 앵커 | 새로 배운 것 | 다음 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Phase 1 | 프로젝트 범위를 tests와 README로 다시 좁힌다 | `database-systems/go/ddia-distributed-systems/projects/04-raft-lite/README.md`, `database-systems/go/ddia-distributed-systems/projects/04-raft-lite/tests/raft_test.go` | 구현이 너무 작아서 단순 API 연습에 가까울 거라고 봤다. | 파일 목록과 테스트 이름을 먼저 훑어 문제의 중심을 다시 잡았다. | `find internal tests cmd -type f | sort`<br>`rg -n "^func Test" tests` | `TestLogReplicationAndCommit`까지 테스트 이름을 훑고 나니, 이 프로젝트의 중심이 단순 기능 추가가 아니라 `Tick` 주변의 invariant를 고정하는 일이라는 게 보였다. | `TestLeaderElection` | `Commit Rule`에서 정리한 요점처럼, leader는 단순히 local append 했다고 commit하지 않는다. 현재 term의 entry가 과반수 노드에 replicate 되었을 때만 `commitIndex`를 올린다. | `Tick`와 `startElection`가 실제로 어떤 순서 제약을 만드는지 다시 본다. |
-| 2 | Phase 2 | 핵심 상태 전이와 invariant를 코드에서 확인한다 | `database-systems/go/ddia-distributed-systems/projects/04-raft-lite/internal/raft/raft.go`의 `Tick` | `Tick`만 보면 충분할 거라고 생각했다. | `Tick`와 `startElection`를 함께 읽어 write/read ordering을 맞췄다. | `rg -n "^(type|func) " internal cmd`<br>`rg -n "Tick|startElection" internal cmd` | `Tick`와 `startElection`가 같은 상태를 다른 방향에서 고정한다는 점이 드러났다. | `Tick` | `Election Cycle`에서 정리한 요점처럼, follower는 heartbeat를 받지 못하면 candidate가 되고 term을 올린 뒤 RequestVote를 보낸다. 과반을 얻으면 leader가 되고, 그렇지 못하면 다시 follower/candidate 사이를 오간다. | 테스트와 demo를 다시 실행해 이 invariant가 실제 검증 신호와 맞물리는지 확인한다. |
-| 3 | Phase 3 | 실제 검증 명령으로 pass 신호를 다시 본다 | `database-systems/go/ddia-distributed-systems/projects/04-raft-lite/tests/raft_test.go`와 `database-systems/go/ddia-distributed-systems/projects/04-raft-lite/cmd/raft-lite/main.go` | 테스트만 통과하면 경계까지 충분히 설명할 수 있을 거라고 봤다. | pytest/go test와 demo를 모두 다시 돌려, 테스트가 잡는 범위와 demo가 보여주는 표면을 분리했다. | `GOWORK=off go test ./...`<br>`GOWORK=off go run ./cmd/raft-lite` | go test ok, 4 tests; demo 핵심 줄은 `leader=n1 commit=0 log_len=1`였다. | `TestLogReplicationAndCommit` | `Election Cycle`에서 정리한 요점처럼, follower는 heartbeat를 받지 못하면 candidate가 되고 term을 올린 뒤 RequestVote를 보낸다. 과반을 얻으면 leader가 되고, 그렇지 못하면 다시 follower/candidate 사이를 오간다. | 현재 범위 밖: production-grade persistence, membership change, snapshotting은 포함하지 않습니다. |
+- [`problem/README.md`](/Users/woopinbell/work/book-task-3/database-systems/go/ddia-distributed-systems/projects/04-raft-lite/problem/README.md)
+- [`README.md`](/Users/woopinbell/work/book-task-3/database-systems/go/ddia-distributed-systems/projects/04-raft-lite/README.md)
+- [`docs/README.md`](/Users/woopinbell/work/book-task-3/database-systems/go/ddia-distributed-systems/projects/04-raft-lite/docs/README.md)
+- [`docs/concepts/election-cycle.md`](/Users/woopinbell/work/book-task-3/database-systems/go/ddia-distributed-systems/projects/04-raft-lite/docs/concepts/election-cycle.md)
+- [`docs/concepts/commit-rule.md`](/Users/woopinbell/work/book-task-3/database-systems/go/ddia-distributed-systems/projects/04-raft-lite/docs/concepts/commit-rule.md)
+- [`internal/raft/raft.go`](/Users/woopinbell/work/book-task-3/database-systems/go/ddia-distributed-systems/projects/04-raft-lite/internal/raft/raft.go)
+- [`tests/raft_test.go`](/Users/woopinbell/work/book-task-3/database-systems/go/ddia-distributed-systems/projects/04-raft-lite/tests/raft_test.go)
+- [`cmd/raft-lite/main.go`](/Users/woopinbell/work/book-task-3/database-systems/go/ddia-distributed-systems/projects/04-raft-lite/cmd/raft-lite/main.go)
+
+## Re-run commands
+
+```bash
+cd /Users/woopinbell/work/book-task-3/database-systems/go/ddia-distributed-systems/projects/04-raft-lite
+GOWORK=off go test ./...
+GOWORK=off go run ./cmd/raft-lite
+```
+
+추가 재실행:
+
+```bash
+tmpfile=$(mktemp ./tmpcheck-XXXX.go)
+# project root 안에 임시 Go 파일을 만들어 first leader, multi-entry commit, failover leader term을 직접 확인
+GOWORK=off go run "$tmpfile"
+rm -f "$tmpfile"
+```
+
+## Observed outputs
+
+- `go test`: `ok   study.local/go/ddia-distributed-systems/projects/04-raft-lite/tests (cached)`
+- demo:
+  - `leader=n1 commit=0 log_len=1`
+- extra snippet:
+  - `first_leader n1 1`
+  - `commit_after_repl 1 2`
+  - `failover_leader n2 2`
+
+## Source-grounded claims
+
+- election timeout is deterministic per node, not randomized.
+- vote granting checks up-to-date log term/index.
+- append mismatch truncates follower suffix.
+- commit advancement only considers current-term entries.
+- higher term responses force step-down.
+
+## Explicit boundaries
+
+- No persistence
+- No restart recovery
+- No membership change
+- No snapshotting
+- No real network transport

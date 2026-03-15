@@ -1,111 +1,69 @@
-# 30 07 Buffer Pool를 다시 돌려 보며 검증 신호와 경계를 정리하기
+# Verification And Boundaries
 
-이 시리즈의 마지막 글이다. 테스트와 demo를 다시 돌려, 앞에서 읽은 규칙이 실제 통과 신호와 어디에서 만나는지 확인한다.
+## 1. 자동 검증은 fetch, cache reuse, dirty, eviction을 넓게 덮는다
 
-## Phase 3 — 검증 신호와 한계를 확인하는 구간
-
-이번 글에서는 먼저 테스트가 남긴 회귀 신호를 다시 읽고, 이어서 demo가 공개하는 표면과 README가 남겨 둔 한계를 함께 정리한다.
-
-### Session 1 — 테스트가 남긴 회귀 신호 다시 보기
-
-이 구간에서 먼저 붙잡으려 한 것은 테스트 명령을 다시 돌려 핵심 invariant가 실제 회귀 신호로 남아 있는지 확인하는 것이었다. 처음 읽을 때는 pass 수치만 확인하면 충분할 거라고 생각했다.
-
-그런데 `GOWORK=off go test ./...`를 다시 실행하고, 어떤 테스트가 있는지 이미 알고 있는 상태에서 pass 신호를 다시 읽었다. 특히 `go test ok, 7 tests`가 이번 판단을 굳혀 줬다.
-
-변경 단위:
-- `database-systems/go/database-internals/projects/07-buffer-pool/tests/buffer_pool_test.go`
-
-CLI:
+2026-03-14 기준 재실행 명령은 아래와 같다.
 
 ```bash
-$ GOWORK=off go test ./...
-?   	study.local/go/database-internals/projects/07-buffer-pool/cmd/buffer-pool	[no test files]
-?   	study.local/go/database-internals/projects/07-buffer-pool/internal/bufferpool	[no test files]
-?   	study.local/go/database-internals/projects/07-buffer-pool/internal/lrucache	[no test files]
+cd /Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/07-buffer-pool
+GOWORK=off go test ./...
+```
+
+결과는 아래처럼 통과했다.
+
+```text
 ok  	study.local/go/database-internals/projects/07-buffer-pool/tests	(cached)
 ```
 
-검증 신호:
-- `go test ok, 7 tests`
-- `TestLRUOrderingAndDelete`가 실제로 회귀 테스트 묶음 안에 남아 있다는 점이 중요했다.
+테스트가 잡는 항목은 다음과 같다.
 
-핵심 코드:
+- disk fetch
+- cached page instance reuse
+- dirty flag tracking
+- unpinned page eviction
+- LRU cache 기본 동작
 
-```go
-func TestLRUOrderingAndDelete(t *testing.T) {
-	cache := lrucache.New(3)
-	cache.Put("a", 1)
-	cache.Put("b", 2)
-	cache.Put("c", 3)
+즉 buffer pool 자체와 replacer 기본 동작을 함께 확인한다.
 
-	if !reflect.DeepEqual(cache.Keys(), []string{"c", "b", "a"}) {
-		t.Fatalf("unexpected order: %+v", cache.Keys())
-	}
-	cache.Get("a")
-	if !reflect.DeepEqual(cache.Keys(), []string{"a", "c", "b"}) {
-		t.Fatalf("unexpected order after promotion: %+v", cache.Keys())
-	}
-	if !cache.Delete("a") {
-```
+## 2. demo와 추가 재실행 관찰값
 
-왜 여기서 판단이 바뀌었는가:
+demo 출력:
 
-`TestLRUOrderingAndDelete`는 구현의 뒷부분에서 생길 수 있는 붕괴 지점을 문장보다 정확하게 고정한다. pass 숫자보다 더 중요했던 건, 어떤 경계가 계속 회귀 테스트로 남아 있느냐였다.
-
-이번 구간에서 새로 이해한 것:
-- 테스트는 단순 성공 여부보다, 어떤 invariant를 공개적으로 약속하는지 보여 주는 문서에 가깝다.
-
-다음으로 넘긴 질문:
-- demo entry point를 다시 실행해 테스트보다 얇은 표면에서 무엇을 보여 주는지 확인한다.
-
-### Session 2 — demo가 공개하는 표면과 한계 정리하기
-
-여기서 가장 먼저 확인한 것은 demo 출력과 README의 한계를 함께 읽어, 공개 표면과 내부 경계를 분리한다. 처음에는 demo는 테스트의 축약판일 뿐이라고 생각했다.
-
-하지만 실제로는 `GOWORK=off go run ./cmd/buffer-pool`를 다시 실행해 마지막 한 줄을 확인하고, README의 `한계와 확장` bullet과 나란히 읽었다. 결정적으로 방향을 잡아 준 신호는 demo 핵심 줄: `page-1`.
-
-변경 단위:
-- `database-systems/go/database-internals/projects/07-buffer-pool/cmd/buffer-pool/main.go`
-
-CLI:
-
-```bash
-$ GOWORK=off go run ./cmd/buffer-pool
+```text
 page-1
 ```
 
-검증 신호:
-- demo 핵심 줄: `page-1`
-- 경계 메모: 현재 범위 밖: concurrent latch, lock manager, asynchronous IO는 포함하지 않습니다.
-- 경계 메모: 현재 범위 밖: buffer pool을 B-tree나 query executor와 연결하는 단계는 후속 범위로 남깁니다.
+추가 재실행 출력:
 
-핵심 코드:
-
-```go
-package main
-
-import (
-	"fmt"
-	"os"
-	"path/filepath"
-
-	"study.local/go/database-internals/projects/07-buffer-pool/internal/bufferpool"
-)
-
-func main() {
-	tempDir, err := os.MkdirTemp("", "buffer-pool-demo-")
-	if err != nil {
-		panic(err)
-	}
-	defer os.RemoveAll(tempDir)
+```text
+disk_after_flush modified
+pinned_evict_error true
 ```
 
-왜 여기서 판단이 바뀌었는가:
+이 결과를 합치면 현재 구현은 아래 사실을 만족한다.
 
-demo entry point는 내부 구현을 전부 보여 주지는 않지만, 독자가 처음 마주치는 공개 표면을 결정한다. 테스트가 invariant를 지키는 장치라면, demo는 그중 무엇을 밖으로 보여 줄지 고르는 자리였다.
+- page id parsing으로 정확한 disk page를 읽는다
+- dirty page는 flush 뒤 실제 file bytes를 바꾼다
+- pinned page는 eviction 대상이 되지 못하고 현재 구현은 에러를 반환한다
 
-이번 구간에서 새로 이해한 것:
-- `LRU Eviction`에서 정리한 요점처럼, doubly-linked list와 hash map을 조합하면 O(1) get/put/evict가 가능하다.
+## 3. 현재 구현이 일부러 다루지 않는 것
 
-다음으로 넘긴 질문:
-- 이 프로젝트 이후에는 다음 트랙/다음 슬롯으로 넘어가더라도, 지금 고정한 invariant를 더 큰 저장 엔진이나 분산 경로 안에서 다시 만날 수 있다.
+이 랩을 full DB buffer manager로 읽으면 안 된다.
+
+- concurrent latch가 없다
+- lock manager와 transaction coordination이 없다
+- async prefetch/flush가 없다
+- free frame search를 반복하는 smarter replacer가 없다
+- page allocation이나 file growth management가 없다
+
+즉 현재 focus는 single-process page lifecycle semantics를 고정하는 데 있다.
+
+## 4. 이 문서에서 피한 과장
+
+이번 재작성에서는 아래 같은 표현을 쓰지 않았다.
+
+- "실전 DBMS buffer pool을 완성했다"
+- "eviction 전략을 충분히 최적화했다"
+- "concurrent workload도 안전하게 처리한다"
+
+현재 소스와 테스트가 실제로 보여 주는 것은 pin count, dirty flush, LRU-based candidate selection, pinned eviction error까지다. 그보다 큰 시스템 claim은 근거가 없다.

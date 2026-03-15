@@ -1,24 +1,13 @@
-# Tactical Arena Server structure guide
+# Tactical Arena Server 구조 메모
 
-## 이 글의 중심 질문
+## 문서 구성 의도
 
-- 제어 채널, authoritative simulation, persistence, 검증 하네스를 한 서버 안에서 어떻게 맞물리게 했는가?
-- 한 줄 답: C++20 + Boost.Asio + SQLite + CMake/CTest` 기반으로 구현한 `2~4인 authoritative tactical arena server`입니다.
+- `00-series-map.md`: control plane, realtime plane, simulation, persistence, verification을 어떤 질문으로 묶을지 먼저 고정한다.
+- `10-development-timeline.md`: protocol layer에서 room-authoritative simulation과 verification harness까지 확장되는 흐름을 chronology로 정리한다.
+- `01-evidence-ledger.md`: source, unit tests, integration/load/demo evidence를 짧게 묶는다.
 
-## 권장 흐름
+## 이번 재작성에서 강조한 점
 
-1. 서버 표면과 실행 경로를 먼저 고정하기
-2. control protocol, match step, persistence를 같은 서버 흐름으로 묶기
-3. 통합 검증과 남은 범위를 정리하기
-
-## 꼭 살릴 근거
-
-- `problem/Makefile`의 공개 target과 `make -C study/05-Game-Server-Capstone/tactical-arena-server/problem test`
-- `study/05-Game-Server-Capstone/tactical-arena-server/cpp/src/state.cpp`의 `MatchState::step`
-- `study/05-Game-Server-Capstone/tactical-arena-server/problem/script/integration_test.py`의 `def scenario_full_match`
-
-## 리라이트 주의점
-
-- `Tactical Arena Server`를 개념 강의처럼 풀지 말고, 실제 파일과 CLI 순서로 보여 준다.
-- 전체 로그를 덤프하지 말고 판단을 바꾼 줄만 남긴다.
-- 마지막에는 production auth, TLS, anti-cheat, spectator, sharding, NAT traversal은 범위 밖입니다. 같은 남은 경계를 사람 말로 다시 정리한다.
+- capstone을 "모든 걸 했다"가 아니라 "경계를 설명 가능한 상태로 묶었다"로 읽는다.
+- protocol codec, `MatchState`, repository transaction, scenario harness를 각각 별도 축으로 설명한다.
+- production non-goals를 끝까지 숨기지 않는다.

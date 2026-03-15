@@ -1,27 +1,20 @@
-# 02 Leader-Follower Replication — Structure Outline
+# Structure Outline
 
-최종 시리즈는 chronology를 매끈하게 재배열하지 않고, 범위 파악 -> 핵심 invariant -> 재검증과 경계의 순서를 유지한다.
+## Chosen arc
 
-## Planned Files
+1. 문제 범위를 먼저 좁혀 reader가 election/consensus를 기대하지 않게 만든다.
+2. leader, log, follower 세 surface를 보여 준 뒤 첫 sync demo를 붙인다.
+3. 그다음 sequential offset, watermark, idempotent apply를 invariant 중심으로 해부한다.
+4. 마지막에 pytest와 수동 replay 결과를 묶어 "지금 검증된 것"과 "아직 비어 있는 것"을 분리한다.
 
-- `00-series-map.md`: 프로젝트 질문, 읽는 순서, source-of-truth 파일, 재검증 명령을 잡는 지도
-- `10-chronology-scope-and-surface.md`: 파일 구조와 테스트 이름을 근거로 처음 가설이 바뀌는 구간
-- `20-chronology-core-invariants.md`: `replicate_once`와 `Follower`가 실제로 invariant를 고정하는 구간
-- `30-chronology-verification-and-boundaries.md`: `go test`/`pytest`와 demo 출력으로 경계를 확정하는 구간
+## Why this structure
 
-## Article Goals
+- 이 랩은 구현량이 작아서 파일별 설명보다 invariant별 설명이 더 읽기 좋다.
+- 복제 랩에서 가장 흔한 오해는 "distributed system 전체를 풀었다"는 식의 과장이라서, boundary를 마지막 장에서 다시 한 번 못 박아야 한다.
+- demo 출력이 매우 짧기 때문에, 추가 replay snippet을 별도로 포함해 idempotency를 눈에 보이게 만들었다.
 
-1. `10-chronology-scope-and-surface.md`
-   범위를 `tests/`와 README에서 어떻게 다시 좁혔는지 보여 준다.
-   코드 앵커: `test_replication_log_assigns_sequential_offsets`, `replicate_once`
-   CLI: `find src tests -type f | sort`, `rg -n "^def test_" tests`
+## Rejected alternatives
 
-2. `20-chronology-core-invariants.md`
-   핵심 invariant가 `replicate_once`와 `Follower` 사이에서 어떻게 고정되는지 보여 준다.
-   코드 앵커: `replicate_once`, `Follower`
-   CLI: `rg -n "^(class|def) " src`, `rg -n "replicate_once|Follower" src`
-
-3. `30-chronology-verification-and-boundaries.md`
-   테스트와 demo를 모두 남겨, pass 신호와 공개 표면을 구분해 설명한다.
-   코드 앵커: `test_replicate_once_incremental_and_deletes`, `__main__.py`
-   CLI: PYTHONPATH=src .venv/bin/python -m pytest; PYTHONPATH=src .venv/bin/python -m leader_follower
+- README 확장판처럼 디렉터리 안내만 반복하는 구조는 버렸다.
+- DDIA replication 일반론을 길게 설명하는 구조는 버렸다.
+- leader/follower를 각각 독립 섹션으로 나누는 구조도 버렸다. 이 랩의 핵심은 둘의 상호작용이기 때문이다.

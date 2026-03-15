@@ -1,9 +1,59 @@
-# 03 Mini LSM Store — Evidence Ledger
+# Evidence Ledger
 
-기존 `blog/` 초안은 입력에서 제외하고, `README`, `problem/`, `docs/`, 실제 구현 파일, 테스트, 재검증 CLI만으로 chronology를 다시 세웠다.
+## Primary sources
 
-| 순서 | 시간 표지 | 당시 목표 | 변경 단위 | 처음 가설 | 실제 조치 | CLI | 검증 신호 | 핵심 코드 앵커 | 새로 배운 것 | 다음 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Phase 1 | 프로젝트 범위를 tests와 README로 다시 좁힌다 | `database-systems/go/database-internals/projects/03-mini-lsm-store/README.md`, `database-systems/go/database-internals/projects/03-mini-lsm-store/tests/lsm_store_test.go` | README의 한 줄 설명만으로는 실제 핵심 invariant가 무엇인지 아직 흐릿했다. | 파일 목록과 테스트 이름을 먼저 훑어 문제의 중심을 다시 잡았다. | `find internal tests cmd -type f | sort`<br>`rg -n "^func Test" tests` | `TestPersistenceAfterReopen`까지 테스트 이름을 훑고 나니, 이 프로젝트의 중심이 단순 기능 추가가 아니라 `Put` 주변의 invariant를 고정하는 일이라는 게 보였다. | `TestPutAndGet` | `Flush Lifecycle`에서 정리한 요점처럼, active MemTable은 write를 받는 유일한 구조다. | `Put`와 `Get`가 실제로 어떤 순서 제약을 만드는지 다시 본다. |
-| 2 | Phase 2 | 핵심 상태 전이와 invariant를 코드에서 확인한다 | `database-systems/go/database-internals/projects/03-mini-lsm-store/internal/lsmstore/store.go`의 `Put` | `Put`만 보면 충분할 거라고 생각했다. | `Put`와 `Get`를 함께 읽어 write/read ordering을 맞췄다. | `rg -n "^(type|func) " internal cmd`<br>`rg -n "Put|Get" internal cmd` | `Put`와 `Get`가 같은 상태를 다른 방향에서 고정한다는 점이 드러났다. | `Put` | `Read Path`에서 정리한 요점처럼, 먼저 active MemTable을 본다. | 테스트와 demo를 다시 실행해 이 invariant가 실제 검증 신호와 맞물리는지 확인한다. |
-| 3 | Phase 3 | 실제 검증 명령으로 pass 신호를 다시 본다 | `database-systems/go/database-internals/projects/03-mini-lsm-store/tests/lsm_store_test.go`와 `database-systems/go/database-internals/projects/03-mini-lsm-store/cmd/mini-lsm-store/main.go` | 테스트만 통과하면 경계까지 충분히 설명할 수 있을 거라고 봤다. | pytest/go test와 demo를 모두 다시 돌려, 테스트가 잡는 범위와 demo가 보여주는 표면을 분리했다. | `GOWORK=off go test ./...`<br>`GOWORK=off go run ./cmd/mini-lsm-store` | go test ok, 9 tests; demo 핵심 줄은 `missing => <missing>`였다. | `TestPersistenceAfterReopen` | `Read Path`에서 정리한 요점처럼, 먼저 active MemTable을 본다. | 현재 범위 밖: background compaction과 concurrent flush는 다루지 않습니다. |
+- [`problem/README.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/03-mini-lsm-store/problem/README.md)
+- [`README.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/03-mini-lsm-store/README.md)
+- [`docs/README.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/03-mini-lsm-store/docs/README.md)
+- [`docs/concepts/flush-lifecycle.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/03-mini-lsm-store/docs/concepts/flush-lifecycle.md)
+- [`docs/concepts/read-path.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/03-mini-lsm-store/docs/concepts/read-path.md)
+- [`internal/lsmstore/store.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/03-mini-lsm-store/internal/lsmstore/store.go)
+- [`tests/lsm_store_test.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/03-mini-lsm-store/tests/lsm_store_test.go)
+- [`cmd/mini-lsm-store/main.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/03-mini-lsm-store/cmd/mini-lsm-store/main.go)
+
+## Re-run commands
+
+```bash
+cd /Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/03-mini-lsm-store
+GOWORK=off go test ./...
+GOWORK=off go run ./cmd/mini-lsm-store
+```
+
+추가 재실행:
+
+```bash
+tmpfile=$(mktemp ./tmpcheck-XXXX.go)
+# project root 안에 임시 Go 파일을 만들어 internal/lsmstore를 직접 호출
+GOWORK=off go run "$tmpfile"
+rm -f "$tmpfile"
+```
+
+## Observed outputs
+
+- `go test`: `ok   study.local/go/database-internals/projects/03-mini-lsm-store/tests (cached)`
+- demo:
+  - `apple => <tombstone>`
+  - `banana => ripe`
+  - `missing => <missing>`
+- extra snippet:
+  - `sstables_after_flush 2 000002.sst`
+  - `beta_active_wins 3`
+  - `alpha_tombstone true`
+  - `reopened_sstables 2 000002.sst`
+  - `reopened_beta 3`
+  - `reopened_alpha_tombstone true`
+
+## Source-grounded claims
+
+- flush swaps `Memtable` into `ImmutableMemtable` before writing SSTable.
+- `SSTables` is maintained newest-first both on flush and on reopen.
+- lookup returns tombstone as `found=true, value=nil`, not as missing.
+- reopen derives `nextSequence` from `.sst` filenames.
+
+## Explicit boundaries
+
+- No WAL
+- No background compaction
+- No concurrent flush
+- No flush failure rollback
+- No range scan or compression

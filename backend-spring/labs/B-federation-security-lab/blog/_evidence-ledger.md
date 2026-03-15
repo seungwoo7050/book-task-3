@@ -1,62 +1,28 @@
 # B-federation-security-lab evidence ledger
 
-- 복원 방식: 세밀한 세션 기록이 없어 `Phase 1 -> Phase 3` 순서로 복원했다.
-- 근거: `README.md`, `problem/README.md`, `docs/README.md`, `spring/Makefile`, `FederationSecurityDemoService.java`, `FederationSecurityApiTest.java`, `spring/build/test-results/test/*.xml`, `../../docs/verification-report.md`
-- 작업 환경 전제: macOS + VSCode 통합 터미널 기준.
+이 랩도 세밀한 작업 로그 대신 실제 소스, 테스트, 컨테이너 기반 Gradle 검증, 수동 `bootRun` 결과를 기준으로 chronology를 다시 세웠다.
 
-## Phase 1
+| 순서 | 시간 표지 | 당시 목표 | 변경 단위 | 처음 가설 | 실제 조치 | CLI | 검증 신호 | 핵심 코드 앵커 | 새로 배운 것 | 다음 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | Phase 1 | federation 경계를 provider 연동 전 단계에서 자른다 | `README.md`, `problem/README.md`, `FederationSecurityController.java`, `FederationSecurityApiTest.java` | live Google provider가 있어야 이 랩이 성립할 것 같았다 | authorize URL과 callback body를 먼저 API contract로 고정하고, 테스트도 URL 문자열과 `provider=google` 반환만 검증하는 수준으로 확인했다 | `docker run ... eclipse-temurin:21-jdk bash -lc './gradlew test'` | `BUILD SUCCESSFUL`, `FederationSecurityApiTest` 통과 | `GET /api/v1/auth/google/authorize`, `POST /api/v1/auth/google/callback` | federation의 첫 증명 대상은 provider SDK가 아니라 callback contract다 | second factor와 audit가 같은 흐름인지 봐야 한다 |
+| 2 | Phase 2 | 2FA와 audit를 같은 상태 변화로 묶는다 | `FederationSecurityDemoService.java` | TOTP는 federation과 분리된 별도 기능처럼 보였다 | authorize/callback/setupTotp/verifyTotp를 한 서비스에 두고 각 단계마다 audit event를 남기는 구조를 확인했다 | `docker run ... bash -lc './gradlew test --tests "*SmokeTest"'`; `docker run ... bash -lc './gradlew bootRun'`; `curl /api/v1/auth/2fa/setup`; `curl /api/v1/audit-events` | smoke 통과, setup 응답에 recovery codes 존재, audit-events에서 각 단계 흔적 조회 가능 | `auditEvents.add(new AuditEvent(...))`, `return new TotpSetup(secret, List.of(...), expectedCode)` | 이 랩의 audit는 보호된 로그보다 상태 변화 설명용 surface에 가깝다 | 보안 강도가 실제로 어느 정도인지 수동 응답으로 확인해야 한다 |
+| 3 | Phase 3 | validation과 보호 경계의 실제 상태를 본다 | `SecurityConfig.java`, `FederationSecurityController.java`, `GlobalExceptionHandler.java` | record field annotation이 있으니 invalid payload는 대체로 막힐 것 같았다 | CSRF disabled + `/api/v1/** permitAll`, controller body에 `@Valid` 부재, invalid callback body가 `200`으로 통과하는 점을 수동 재실행으로 확인했다 | `curl -X POST /api/v1/auth/google/callback -d '{\"email\":\"not-an-email\",\"subject\":\"\"}'` | invalid callback도 `200 {"email":"not-an-email","provider":"google","subject":""}` | `http.csrf(csrf -> csrf.disable())`, `auth.requestMatchers("/api/v1/**"...).permitAll()`, `public record CallbackRequest(@Email String email, @NotBlank String subject)` | annotation이 있어도 controller에 `@Valid`가 없으면 hardening은 생기지 않는다 | TOTP와 audit 응답이 어떤 정보를 노출하는지 기록해야 한다 |
+| 4 | Phase 4 | 현재 surface가 노출하는 민감 정보와 한계를 문서에 남긴다 | `FederationSecurityDemoService.java`, `TraceIdFilter.java`, `build.gradle.kts` | 2FA와 audit가 있으니 이전 랩보다 훨씬 안전할 것 같았다 | setup이 `expectedCode`를 노출하고, `verify(false)`도 `200`, audit-events도 공개, 로컬 `make`는 JRE 부재로 막혀 컨테이너 기반 lint/test/smoke로 대체한 사실을 기록했다 | `docker run ... bash -lc './gradlew spotlessCheck checkstyleMain checkstyleTest'`; `curl /api/v1/auth/2fa/setup`; `curl /api/v1/auth/2fa/verify`; `curl /api/v1/health/live` | lint/test/smoke 모두 컨테이너에서 `BUILD SUCCESSFUL`, health 응답에 `X-Trace-Id`, `setup`에 `expectedCode` 포함 | `public record TotpSetup(String secret, List<String> recoveryCodes, String expectedCode)` | 이 랩은 보안 기능을 완성한 게 아니라 다음 랩들에 앞서 인증 강화 surface를 설명 가능하게 만든 단계다 | authorization은 별도 문제로 분리해야 한다 |
 
-- 당시 목표: federation, 2FA, audit를 하나의 인증 강화 랩으로 자른다.
-- 변경 단위: `README.md`, `problem/README.md`, `FederationSecurityApiTest.java`
-- 처음 가설: live Google provider가 있어야 federation 랩이 성립할 것 같았다.
-- 실제 조치: `authorize`, `callback`, audit 조회를 먼저 테스트로 고정했다.
-- CLI:
+## 근거 파일
 
-```bash
-cd spring
-make test
-```
-
-- 검증 신호: `FederationSecurityApiTest` 2개 테스트 통과, `HealthApiTest` 2개 테스트 통과
-- 핵심 코드 앵커: `FederationSecurityApiTest.googleCallbackAndAuditFlowWork()`
-- 새로 배운 것: federation의 첫 증명 대상은 live provider가 아니라 callback contract다.
-- 다음: TOTP와 audit를 같은 상태 변화로 묶는다.
-
-## Phase 2
-
-- 당시 목표: OAuth callback, TOTP, recovery code, audit를 같은 흐름으로 읽히게 만든다.
-- 변경 단위: `FederationSecurityDemoService.java`
-- 처음 가설: 2FA는 federation과 따로 떼는 편이 자연스러워 보였다.
-- 실제 조치: `authorize()`, `callback()`, `setupTotp()`, `verifyTotp()`를 한 서비스에 두고 audit event를 매 단계에 남겼다.
-- CLI:
-
-```bash
-cd spring
-make smoke
-docker compose up --build
-```
-
-- 검증 신호: `LabInfoApiSmokeTest` 1개 테스트 통과, `2026-03-09` 검증 보고서 기준 lint/test/smoke/Compose health 통과
-- 핵심 코드 앵커: `FederationSecurityDemoService.authorize()`, `setupTotp()`, `verifyTotp()`
-- 새로 배운 것: 인증 강화는 기능 목록이 아니라 state와 흔적을 함께 남기는 흐름이다.
-- 다음: 실제 provider 미연동과 rate limiting 미구현을 docs에 명시한다.
-
-## Phase 3
-
-- 당시 목표: 지금 구현한 security hardening과 다음 단계 범위를 분리해 닫는다.
-- 변경 단위: `docs/README.md`, `spring/README.md`, `TEST-com.webpong.study2.app.FederationSecurityApiTest.xml`
-- 처음 가설: 기능이 보이면 한계는 자연스럽게 읽힐 줄 알았다.
-- 실제 조치: contract-level Google 연동, 단순화된 TOTP, 미구현 rate limiting을 문서에 명시했다.
-- CLI:
-
-```bash
-cd spring
-make lint
-make test
-make smoke
-```
-
-- 검증 신호: `2026-03-13` 기준 4개 suite, 총 6개 테스트, 실패 0
-- 핵심 코드 앵커: `docs/README.md`의 의도적 단순화, `verification-report.md`
-- 새로 배운 것: security 랩은 구현한 기능만큼 남겨 둔 한계를 같이 적어야 과장되지 않는다.
-- 다음: authorization은 `C-authorization-lab`에서 별도 문제로 분리한다.
+- `labs/B-federation-security-lab/README.md`
+- `labs/B-federation-security-lab/problem/README.md`
+- `labs/B-federation-security-lab/spring/README.md`
+- `labs/B-federation-security-lab/spring/build.gradle.kts`
+- `labs/B-federation-security-lab/spring/Makefile`
+- `labs/B-federation-security-lab/spring/src/main/java/com/webpong/study2/app/federation/api/FederationSecurityController.java`
+- `labs/B-federation-security-lab/spring/src/main/java/com/webpong/study2/app/federation/application/FederationSecurityDemoService.java`
+- `labs/B-federation-security-lab/spring/src/main/java/com/webpong/study2/app/global/security/SecurityConfig.java`
+- `labs/B-federation-security-lab/spring/src/main/java/com/webpong/study2/app/global/error/GlobalExceptionHandler.java`
+- `labs/B-federation-security-lab/spring/src/main/java/com/webpong/study2/app/global/logging/TraceIdFilter.java`
+- `labs/B-federation-security-lab/spring/src/main/resources/application.yml`
+- `labs/B-federation-security-lab/spring/src/main/resources/db/migration/V1__init.sql`
+- `labs/B-federation-security-lab/spring/src/test/java/com/webpong/study2/app/FederationSecurityApiTest.java`
+- `labs/B-federation-security-lab/spring/src/test/java/com/webpong/study2/app/HealthApiTest.java`
+- `labs/B-federation-security-lab/spring/src/test/java/com/webpong/study2/app/LabInfoApiSmokeTest.java`

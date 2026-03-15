@@ -1,21 +1,8 @@
-# 30 07 Heartbeat and Leader Election를 다시 돌려 보며 검증 신호와 경계를 정리하기
+# 30 검증과 경계: full consensus가 아닌 결정적 failover 시뮬레이션
 
-이 시리즈의 마지막 글이다. 테스트와 demo를 다시 돌려, 앞에서 읽은 규칙이 실제 통과 신호와 어디에서 만나는지 확인한다.
+이번 Todo에서는 "leader election이 된다"는 말 대신, 어떤 tick에 무슨 상태가 보이는지를 다시 확인했다. 이 project의 장점은 실패와 authority 교체가 지나치게 현실적이지 않기 때문에 오히려 흐름이 또렷하게 드러난다는 점이다.
 
-## Phase 3 — 검증 신호와 한계를 확인하는 구간
-
-이번 글에서는 먼저 테스트가 남긴 회귀 신호를 다시 읽고, 이어서 demo가 공개하는 표면과 README가 남겨 둔 한계를 함께 정리한다.
-
-### Session 1 — 테스트가 남긴 회귀 신호 다시 보기
-
-이 구간에서 먼저 붙잡으려 한 것은 테스트 명령을 다시 돌려 핵심 invariant가 실제 회귀 신호로 남아 있는지 확인하는 것이었다. 처음 읽을 때는 pass 수치만 확인하면 충분할 거라고 생각했다.
-
-그런데 `GOWORK=off go test ./...`를 다시 실행하고, 어떤 테스트가 있는지 이미 알고 있는 상태에서 pass 신호를 다시 읽었다. 특히 `go test ok, 4 tests`가 이번 판단을 굳혀 줬다.
-
-변경 단위:
-- `database-systems/go/ddia-distributed-systems/projects/07-heartbeat-and-leader-election/tests/election_test.go`
-
-CLI:
+## Session 1 — 재실행 결과
 
 ```bash
 $ GOWORK=off go test ./...
@@ -23,49 +10,6 @@ $ GOWORK=off go test ./...
 ?   	study.local/go/ddia-distributed-systems/projects/07-heartbeat-and-leader-election/internal/election	[no test files]
 ok  	study.local/go/ddia-distributed-systems/projects/07-heartbeat-and-leader-election/tests	(cached)
 ```
-
-검증 신호:
-- `go test ok, 4 tests`
-- `TestLeaderFailureTriggersSingleReelection`가 실제로 회귀 테스트 묶음 안에 남아 있다는 점이 중요했다.
-
-핵심 코드:
-
-```go
-func TestLeaderFailureTriggersSingleReelection(t *testing.T) {
-	cluster := election.NewCluster([]string{"node-1", "node-2", "node-3"})
-	leader := tickUntilLeader(t, cluster, 12)
-	cluster.DownNode(leader.ID)
-
-	next := tickUntilLeader(t, cluster, 12)
-	if next.ID == leader.ID {
-		t.Fatalf("expected a new leader after failover")
-	}
-	if next.Term <= leader.Term {
-		t.Fatalf("expected term to increase after failover, old=%d new=%d", leader.Term, next.Term)
-	}
-}
-```
-
-왜 여기서 판단이 바뀌었는가:
-
-`TestLeaderFailureTriggersSingleReelection`는 구현의 뒷부분에서 생길 수 있는 붕괴 지점을 문장보다 정확하게 고정한다. pass 숫자보다 더 중요했던 건, 어떤 경계가 계속 회귀 테스트로 남아 있느냐였다.
-
-이번 구간에서 새로 이해한 것:
-- 테스트는 단순 성공 여부보다, 어떤 invariant를 공개적으로 약속하는지 보여 주는 문서에 가깝다.
-
-다음으로 넘긴 질문:
-- demo entry point를 다시 실행해 테스트보다 얇은 표면에서 무엇을 보여 주는지 확인한다.
-
-### Session 2 — demo가 공개하는 표면과 한계 정리하기
-
-여기서 가장 먼저 확인한 것은 demo 출력과 README의 한계를 함께 읽어, 공개 표면과 내부 경계를 분리한다. 처음에는 demo는 테스트의 축약판일 뿐이라고 생각했다.
-
-하지만 실제로는 `GOWORK=off go run ./cmd/leader-election`를 다시 실행해 마지막 한 줄을 확인하고, README의 `한계와 확장` bullet과 나란히 읽었다. 결정적으로 방향을 잡아 준 신호는 demo 핵심 줄: `recovered=node-1 state=follower term=2`.
-
-변경 단위:
-- `database-systems/go/ddia-distributed-systems/projects/07-heartbeat-and-leader-election/cmd/leader-election/main.go`
-
-CLI:
 
 ```bash
 $ GOWORK=off go run ./cmd/leader-election
@@ -76,33 +20,33 @@ tick=9 reelected=node-2 term=2
 recovered=node-1 state=follower term=2
 ```
 
-검증 신호:
-- demo 핵심 줄: `recovered=node-1 state=follower term=2`
-- 경계 메모: 현재 범위 밖: log replication과 commit rule은 포함하지 않습니다.
-- 경계 메모: 현재 범위 밖: randomized timeout, network partition, pre-vote도 포함하지 않습니다.
+이 출력이 보여 주는 사실은 다음과 같다.
 
-핵심 코드:
+- 초기 leader는 deterministic timeout 덕분에 `node-1`이다.
+- suspicion은 reelection보다 먼저 관찰된다.
+- failover 뒤 term은 증가한다.
+- 복구된 old leader는 새 authority를 받아들이고 follower가 된다.
 
-```go
-package main
+마지막 문장은 조금 더 정확히 적을 필요가 있다. 이 구현에서 recovered old leader가 물러나는 직접 이유는 heartbeat payload 안의 `LeaderID`를 해석해서가 아니다. `HandleHeartbeat`는 `req.Term > node.Term || node.State != Follower`일 때 `stepDown()`을 호출하고, 그 다음 `silenceAge`와 `Suspected`를 리셋한다. 즉 authority 교체의 핵심은 "누가 leader냐"라는 이름표보다 "더 높은 term heartbeat를 받았거나, follower가 아닌 상태로 heartbeat를 받았느냐"에 가깝다.
 
-import (
-	"fmt"
+## Session 2 — 테스트가 고정하는 회귀 신호
 
-	"study.local/go/ddia-distributed-systems/projects/07-heartbeat-and-leader-election/internal/election"
-)
+테스트 묶음은 네 개다.
 
-func main() {
-	cluster := election.NewCluster([]string{"node-1", "node-2", "node-3"})
-	tick := 0
-```
+- `TestHealthyLeaderKeepsSendingHeartbeats`
+- `TestLeaderFailureTriggersSingleReelection`
+- `TestIsolatedNodeCannotPromoteItself`
+- `TestHigherTermHeartbeatForcesOldLeaderToStepDown`
 
-왜 여기서 판단이 바뀌었는가:
+이 네 테스트는 각각 health, failover, isolation safety, recovery step-down을 담당한다. 특히 `HealthyLeaderKeepsSendingHeartbeats`가 follower suspicion을 꺼 주는 조건까지 같이 검증한다는 점이 중요하다. 이 덕분에 heartbeat는 단순 background noise가 아니라 authority 유지 신호로 읽힌다.
 
-demo entry point는 내부 구현을 전부 보여 주지는 않지만, 독자가 처음 마주치는 공개 표면을 결정한다. 테스트가 invariant를 지키는 장치라면, demo는 그중 무엇을 밖으로 보여 줄지 고르는 자리였다.
+## Session 3 — 현재 한계
 
-이번 구간에서 새로 이해한 것:
-- `Heartbeat Failure Detector`에서 정리한 요점처럼, 이 프로젝트의 failure detector는 아주 단순합니다. leader heartbeat를 일정 tick 동안 못 보면 follower가 “leader가 죽었을 수 있다”고 suspect합니다.
+- timeout이 random이 아니므로 collision avoidance나 split vote 학습에는 맞지 않는다.
+- transport는 in-process RPC call이어서 packet loss, delay, asymmetric partition이 없다.
+- vote rule은 log freshness를 보지 않는다.
+- heartbeat payload의 `LeaderID`는 demo 출력용 맥락에는 남지만, 현재 step-down 판단 자체에는 쓰이지 않는다.
+- commit rule, log replication, AppendEntries consistency가 없다.
+- node recovery도 durable storage replay가 아니라 메모리 상태 재참여 정도만 표현한다.
 
-다음으로 넘긴 질문:
-- 이 프로젝트 이후에는 다음 트랙/다음 슬롯으로 넘어가더라도, 지금 고정한 invariant를 더 큰 저장 엔진이나 분산 경로 안에서 다시 만날 수 있다.
+그래서 이 project는 Raft 대체 구현이 아니라, "failure detector와 majority authority 교체를 눈으로 확인하는 결정적 시뮬레이터"로 읽는 편이 정확하다.

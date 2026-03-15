@@ -1,122 +1,46 @@
-# 10 05 MVCC를 읽기 전에 범위를 다시 좁히기
+# 10 범위를 다시 좁히기: 이 슬롯의 중심은 저장이 아니라 가시성 규칙이다
 
-이 시리즈의 첫 글이다. 여기서는 구현 세부사항을 서둘러 설명하지 않고, 무엇을 먼저 고정해야 하는지 범위부터 다시 좁힌다.
+이전 슬롯들까지는 bytes, pages, eviction, filters처럼 눈에 보이는 비용 문제가 중심이었다. 그런데 `05 MVCC`는 질문 자체가 바뀐다. 여기서 중요한 건 "어디에 저장되는가"가 아니라 "누가 어떤 version을 볼 수 있는가"다.
 
-## Phase 1 — 범위를 다시 세우는 구간
+## Phase 1. 테스트가 이미 네 가지 규칙을 분리해서 잠근다
 
-이번 글에서는 먼저 테스트와 파일 구조로 문제의 테두리를 다시 잡고, 이어서 중심 타입이 어떤 책임을 끌어안는지 확인한다.
+`tests/test_mvcc.py`를 다시 훑어 보면 이 프로젝트의 범위가 꽤 명확하게 나뉜다.
 
-### Session 1 — 테스트와 파일 구조로 범위를 다시 좁히기
+- 기본 read/write와 read-your-own-write
+- snapshot isolation
+- latest committed value
+- write-write conflict
+- abort/delete cleanup
+- GC
 
-이번 세션의 목표는 `05 MVCC`가 어떤 invariant를 먼저 고정하는 슬롯인지 파악하는 것이었다. 초기 가설은 구현이 너무 작아서 단순 API 연습에 가까울 거라고 봤다.
+즉 이 슬롯은 generic transaction manager가 아니다. snapshot isolation에 필요한 최소 규칙 집합을 deliberately small하게 구현한다. predicate locking, phantom, distributed transaction은 일부러 빼고, version chain과 committed watermark만으로 설명 가능한 경계만 남긴다.
 
-막상 다시 펼쳐 보니 `find src tests -type f | sort`로 구조를 펼친 뒤 `rg -n "^def test_" tests`로 테스트 이름을 나열했다. 특히 `test_abort_and_delete`까지 테스트 이름을 훑고 나니, 이 프로젝트의 중심이 단순 기능 추가가 아니라 `Version` 주변의 invariant를 고정하는 일이라는 게 보였다. 여기서 해석을 바꾼 단서는 `test_basic_read_write`는 가장 기본 표면을 보여 줬고, `test_abort_and_delete`는 이 프로젝트가 이미 경계 조건까지 포함한다는 신호였다.
-
-변경 단위:
-- `database-systems/python/database-internals/projects/05-mvcc/README.md`, `database-systems/python/database-internals/projects/05-mvcc/tests/test_mvcc.py`
-
-CLI:
-
-```bash
-$ find src tests -type f | sort
-src/mvcc_lab/__init__.py
-src/mvcc_lab/__main__.py
-src/mvcc_lab/__pycache__/__init__.cpython-312.pyc
-src/mvcc_lab/__pycache__/__init__.cpython-314.pyc
-src/mvcc_lab/__pycache__/__main__.cpython-312.pyc
-src/mvcc_lab/__pycache__/__main__.cpython-314.pyc
-src/mvcc_lab/__pycache__/core.cpython-312.pyc
-src/mvcc_lab/__pycache__/core.cpython-314.pyc
-src/mvcc_lab/core.py
-tests/__pycache__/test_mvcc.cpython-312-pytest-8.3.5.pyc
-tests/__pycache__/test_mvcc.cpython-312-pytest-9.0.2.pyc
-tests/__pycache__/test_mvcc.cpython-314-pytest-9.0.2.pyc
-tests/test_mvcc.py
-```
+이번 재실행:
 
 ```bash
-$ rg -n "^def test_" tests
-tests/test_mvcc.py:4:def test_basic_read_write():
-tests/test_mvcc.py:16:def test_snapshot_isolation():
-tests/test_mvcc.py:30:def test_latest_committed_value():
-tests/test_mvcc.py:45:def test_write_write_conflict():
-tests/test_mvcc.py:60:def test_different_keys_no_conflict():
-tests/test_mvcc.py:70:def test_abort_and_delete():
-tests/test_mvcc.py:93:def test_gc():
+cd /Users/woopinbell/work/book-task-3/database-systems/python/database-internals/projects/05-mvcc
+PYTHONPATH=src python3 -m pytest
 ```
 
-검증 신호:
-- `test_basic_read_write`는 가장 기본 표면을 보여 줬고, `test_abort_and_delete`는 이 프로젝트가 이미 경계 조건까지 포함한다는 신호였다.
-- 테스트 이름만으로도 문제의 중심이 `Version` 주변의 ordering / visibility 규칙이라는 점이 드러났다.
+결과:
 
-핵심 코드:
-
-```python
-def test_abort_and_delete():
-    manager = TransactionManager()
-    t1 = manager.begin()
-    manager.write(t1, "x", "temp")
-    manager.abort(t1)
-
-    t2 = manager.begin()
-    assert manager.read(t2, "x") is None
-    manager.commit(t2)
+```text
+7 passed, 1 warning in 0.02s
 ```
 
-왜 여기서 판단이 바뀌었는가:
+## Phase 2. 문제 정의가 "트랜잭션 전체"가 아니라 snapshot isolation core로 범위를 자른다
 
-`test_abort_and_delete`는 README의 추상 설명보다 더 직접적으로, 어떤 실패를 막아야 하는지 보여 준다. 나는 여기서 구현 순서를 거꾸로 세우기보다 테스트가 요구하는 경계를 먼저 고정해야 한다고 판단했다.
+`problem/README.md`를 다시 보면 이 프로젝트가 일부러 뺀 것도 분명하다.
 
-이번 구간에서 새로 이해한 것:
-- `Snapshot Visibility`에서 정리한 요점처럼, transaction은 시작 시점의 committed watermark를 snapshot으로 잡는다.
+- predicate locking 없음
+- phantom read 제어 없음
+- distributed transaction 없음
+- full SQL lock table 없음
 
-다음으로 넘긴 질문:
-- `Version`와 `VersionStore`를 코드에서 직접 확인해, 테스트 이름이 가리키는 invariant가 실제로 어디에 박혀 있는지 본다.
+이건 오히려 장점이다. 덕분에 지금 이 슬롯의 핵심이 어디인지 흐려지지 않는다. transaction은 결국 세 가지를 잘해야 한다.
 
-### Session 2 — 중심 타입에서 책임이 모이는 지점 보기
+1. 시작 시점의 snapshot을 정한다
+2. 내 write는 내가 바로 본다
+3. 같은 key에 대해 뒤늦은 commit은 막는다
 
-이 구간에서 먼저 붙잡으려 한 것은 소스 파일의 중심 타입/클래스가 어떤 책임을 한곳에 묶고 있는지 확인하는 것이었다. 처음 읽을 때는 구현이 작으면 책임도 단순하게 한 줄로 설명될 거라고 생각했다.
-
-그런데 가장 큰 구현 파일인 `database-systems/python/database-internals/projects/05-mvcc/src/mvcc_lab/core.py`를 먼저 읽고, 테스트가 요구한 상태 전이가 정말 이 파일 안에서 닫히는지 확인했다. 특히 `Version` 같은 이름이 초기에 바로 보이면 write path의 중심이 선명해진다.
-
-변경 단위:
-- `database-systems/python/database-internals/projects/05-mvcc/src/mvcc_lab/core.py`
-
-CLI:
-
-```bash
-$ rg -n "^(class|def) " src
-src/mvcc_lab/core.py:7:class Version:
-src/mvcc_lab/core.py:13:class VersionStore:
-src/mvcc_lab/core.py:50:class Transaction:
-src/mvcc_lab/core.py:56:class TransactionManager:
-src/mvcc_lab/core.py:125:def demo() -> None:
-```
-
-검증 신호:
-- `Version` 같은 이름이 초기에 바로 보이면 write path의 중심이 선명해진다.
-- 반대로 `VersionStore`가 함께 보이면 read path나 visibility 규칙을 따로 떼어 설명할 수 없다는 뜻이다.
-
-핵심 코드:
-
-```python
-class Version:
-    value: object
-    tx_id: int
-    deleted: bool
-
-
-class VersionStore:
-    def __init__(self) -> None:
-        self.store: dict[str, list[Version]] = {}
-```
-
-왜 여기서 판단이 바뀌었는가:
-
-`Version`는 이 프로젝트가 가장 먼저 고정해야 하는 상태 전이를 보여 준다. 이 조각을 보고 나서야 테스트 이름과 구현 책임이 같은 문제를 가리키고 있다는 확신이 생겼다.
-
-이번 구간에서 새로 이해한 것:
-- `Write Conflict`에서 정리한 요점처럼, 이 프로젝트는 first-committer-wins 규칙을 사용한다.
-
-다음으로 넘긴 질문:
-- 같은 상태를 반대 방향에서 고정하는 `VersionStore`를 읽어, write/read 혹은 append/replay가 서로 어떻게 잠기는지 확인한다.
+이 세 가지가 곧 이 프로젝트의 중심이다.

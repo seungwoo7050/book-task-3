@@ -1,16 +1,16 @@
-# 00-language-and-typescript development timeline
+# 00-language-and-typescript 개발 타임라인
 
-이 프로젝트는 TypeScript 문법을 훑는 글처럼 시작하지만, 실제로 따라가 보면 문법보다 먼저 등장하는 건 경계다. 문자열을 어떻게 정리할지, 비동기 실패를 어디에 가둘지, CLI가 어떤 종료 코드를 돌려줄지 같은 결정이 먼저 나오고, 타입은 그 결정을 붙잡아 두는 역할을 한다.
+`00-language-and-typescript`는 TypeScript 키워드를 한 번씩 써 보는 프로젝트가 아니다. 실제로 따라가 보면 가장 먼저 세워지는 건 문법이 아니라 신뢰 경계다. 어떤 입력부터는 그대로 믿지 않고, 어떤 실패는 전체가 아니라 항목별 결과로 되돌리며, CLI는 어떤 메시지와 exit code를 약속할지부터 정한다.
 
-## 흐름 먼저 보기
+## 1. 출발점은 "타입을 배운다"가 아니라 입력을 정리하는 기준을 세우는 일이었다
 
-1. `catalog.ts`에서 정규화된 내부 표현을 먼저 만든다.
-2. 그 위에 inventory 조회를 올리되, 실패를 전체가 아니라 항목별 결과로 바꾼다.
-3. 마지막으로 CLI가 이 결과를 어떻게 보여 줄지, 실패를 어떻게 끝낼지 정한다.
+문제 정의는 도서 메타데이터 CLI를 만들며 타입 모델링과 비동기 흐름을 익히라고 하지만, 코드가 실제로 보여 주는 중심은 더 구체적이다. `BookDraft`는 사용자가 준 외부 입력이고, `NormalizedBook`은 내부에서 믿고 쓸 수 있는 상태다. 이 프로젝트가 bridge인 이유는 바로 여기 있다. 프레임워크가 들어오기 전에, 입력 shape를 언제 정리할지 먼저 합의한다.
 
-## 정규화 경계를 먼저 세운 장면
+`docs/concepts/type-modeling.md`도 같은 말을 한다. 외부 입력과 내부 정규화 상태를 구분하는 습관이 뒤의 DTO, controller/service 경계, repository 반환 타입 설계의 기초가 된다는 것이다.
 
-처음 읽어야 할 곳은 `toNormalizedBook`보다 한 단계 앞에 있는 `normalizeTags`다. 이 프로젝트가 중요해지는 이유가 바로 여기에 있다.
+## 2. `normalizeTags`와 `toNormalizedBook`이 첫 번째 신뢰 경계를 만든다
+
+가장 먼저 읽어야 할 곳은 `catalog.ts`의 정규화 함수들이다.
 
 ```ts
 export function normalizeTags(tags: string[]): string[] {
@@ -18,29 +18,13 @@ export function normalizeTags(tags: string[]): string[] {
 }
 ```
 
-이 한 줄짜리 정리에 가까운 함수가 왜 중요한가 하면, 뒤에서 CLI를 만들든 테스트를 쓰든 더 이상 "사용자가 어떤 공백과 대소문자로 넣었는가"를 신경 쓰지 않아도 되기 때문이다. 입력의 흔들림을 초기에 흡수해 두면, 이후 단계는 정규화된 값만 상대하면 된다.
+여기서는 단순히 문자열을 예쁘게 다듬는 것이 아니라, 이후 단계가 더 이상 공백, 대소문자, 중복 태그를 신경 쓰지 않아도 되게 만든다. `toNormalizedBook()`도 같은 역할을 이어받는다. slug는 `title + publishedYear`로 고정하고, description이 비어 있으면 summary fallback을 만든다.
 
-같은 이유로 `toNormalizedBook`도 프로젝트의 중심축이 된다.
+이 설계 덕분에 내부 코드가 다루는 값은 "사용자가 준 원본"이 아니라 "정규화가 끝난 상태"가 된다. 타입은 그 상태를 문서처럼 붙잡아 두는 역할을 한다.
 
-```ts
-const slug = `${toSlugPart(draft.title)}-${draft.publishedYear}`;
-const summary = description && description.length > 0
-  ? description
-  : `${author} wrote ${title} in ${draft.publishedYear}.`;
-```
+## 3. 비동기 inventory는 앱 기능이 아니라 실패 격리 연습으로 들어온다
 
-여기서 정리되는 건 단순 문자열이 아니다. 이 프로젝트가 어떤 내부 상태를 "완성된 책 카드"로 인정할지에 대한 기준이다. 그래서 타입 모델링이 필드 목록을 예쁘게 적는 일보다, 정규화 이후의 값을 고정하는 일에 더 가깝게 느껴진다.
-
-```bash
-$ COREPACK_ENABLE_AUTO_PIN=0 pnpm run build
-build: ok
-```
-
-`tsc`가 통과했다는 사실 자체보다, 타입 정의와 CLI 진입점이 같은 전제를 공유하기 시작했다는 게 더 중요했다.
-
-## 비동기 실패를 항목별로 묶어 둔 장면
-
-정규화된 책 카드 위에 inventory 조회를 붙이는 순간, 이 프로젝트는 더 흥미로워진다. 여기서 중요한 질문은 "모두 성공하느냐"가 아니라 "실패를 어디에 두느냐"였다.
+이 프로젝트가 작지만 좋은 이유 중 하나는 비동기 흐름을 과장하지 않는다는 점이다. `fetchInventorySnapshot()`는 inventory client를 받아 slug별 재고를 가져오지만, 실패를 `throw`로 전체에 전파하지 않고 항목별 결과로 흡수한다.
 
 ```ts
 return Promise.all(
@@ -59,29 +43,13 @@ return Promise.all(
 );
 ```
 
-`Promise.all`을 쓰고 있다는 사실보다 중요한 건, 각 slug가 자기 실패를 자기 결과 안에만 품고 끝난다는 점이다. 이 결정 덕분에 깨진 항목 하나가 전체 카드 목록을 망치지 않는다.
+여기서 중요한 건 `Promise.all` 자체가 아니라 실패를 어디에 두는지다. 깨진 항목 하나가 전체 목록을 망치지 않도록, 오류를 result shape 안으로 넣는다. 이건 뒤에서 API 응답이나 batch job 결과를 설계할 때 그대로 다시 만나게 되는 감각이다.
 
-테스트도 그 전환점을 정확히 붙잡고 있다.
+다만 현재 범위도 분명하다. 이 async helper는 테스트와 헬퍼 레벨에서만 쓰이고, 실제 CLI는 inventory 조회를 호출하지 않는다. 그래서 CLI 출력의 마지막 줄은 항상 `Inventory: not requested`다. 즉 비동기 설계는 소개됐지만, 아직 end-to-end 사용자 흐름에 연결된 것은 아니다.
 
-```ts
-await expect(fetchInventorySnapshot(["clean-book", "broken-book"], { fetchStock })).resolves.toEqual([
-  { slug: "clean-book", inStock: 10 },
-  { slug: "broken-book", inStock: null, error: "service unavailable" },
-]);
-```
+## 4. CLI는 마지막에 붙는 껍데기가 아니라 런타임 계약이 된다
 
-```bash
-$ COREPACK_ENABLE_AUTO_PIN=0 pnpm run test
-Test Files  1 passed (1)
-Tests       6 passed (6)
-Duration    280ms
-```
-
-여기서 처음 또렷해지는 건, 배치 비동기에서 중요한 건 메커니즘보다 복구 전략이라는 점이다. `Promise.all`은 도구일 뿐이고, 실제 설계는 실패를 어떤 모양으로 되돌려줄지에서 갈린다.
-
-## CLI 계약으로 닫아 둔 장면
-
-마지막 장면은 `runCli`다. 여기서 프로젝트는 라이브러리 같은 코드 덩어리에서, 실제로 사람이 실행하는 작은 도구로 바뀐다.
+`cli.ts`는 이 프로젝트를 "타입 유틸리티 모음"에서 "실행 가능한 도구"로 바꾸는 지점이다. `parseArgs()`는 `--title`, `--author`, `--year`, `--tags`를 필수 플래그로 강제하고, `runCli()`는 stdout/stderr와 exit code를 명시적으로 돌려준다.
 
 ```ts
 export function runCli(args: string[], stdout: WriteTarget, stderr: WriteTarget): number {
@@ -98,26 +66,41 @@ export function runCli(args: string[], stdout: WriteTarget, stderr: WriteTarget)
 }
 ```
 
-이 함수가 중요한 이유는 예외를 없애서가 아니다. 실패를 stack trace가 아니라, 사람이 해석 가능한 stderr 메시지와 exit code로 바꿨기 때문이다. 테스트도 정확히 그 계약을 본다.
+이 함수가 중요한 이유는 예외를 없애서가 아니라, 오류를 사람이 읽을 메시지와 프로세스 종료 코드로 바꿨기 때문이다. 테스트도 정확히 그 점을 본다. 잘못된 입력이면 `stderr.write("Required flags: ...")`와 `exitCode === 1`이 같이 나와야 한다.
 
-```ts
-const exitCode = runCli(["--title", "Only Title"], stdout, stderr);
-expect(exitCode).toBe(1);
-expect(stderr.write).toHaveBeenCalledWith("Required flags: --title --author --year --tags\n");
-```
+여기서 현재 구현의 작은 어긋남도 하나 보인다. `parseArgs()`는 `publishedYear < 0`일 때만 막기 때문에 `0`은 허용하지만, 오류 메시지는 `--year must be a positive integer`라고 적는다. 즉 메시지와 실제 경계가 완전히 일치하지는 않는다. 이런 사소한 어긋남을 빨리 보는 감각도 bridge 프로젝트의 가치다.
 
-실제 출력도 이 계약을 그대로 따른다.
+## 5. 테스트는 문법 지식이 아니라 경계 설계를 고정한다
+
+`ts/tests/catalog.test.ts`는 여섯 개 테스트로 이 프로젝트의 중심을 정확히 묶어 둔다.
+- 태그 정규화와 중복 제거
+- `BookDraft -> NormalizedBook`
+- 배치 inventory 실패 격리
+- human-readable card formatting
+- CLI 성공
+- CLI 실패
+
+즉 테스트가 확인하는 건 TypeScript 문법 자체가 아니라, 어떤 값이 내부에서 신뢰 가능한 상태인지와 실패를 어떤 모양으로 노출할지다.
+
+## 6. 이번 재실행은 워크스페이스는 건강하지만 예제 스크립트 경로 가정이 있음을 보여 줬다
+
+이번 턴에서 실제로 돌린 검증은 아래와 같았다.
 
 ```bash
-$ COREPACK_ENABLE_AUTO_PIN=0 pnpm start -- --title "Node Patterns" --author "Alice" --year 2024 --tags "Node, Architecture"
-Node Patterns (2024)
-Author: Alice
-Slug: node-patterns-2024
-Tags: architecture, node
-Summary: Alice wrote Node Patterns in 2024.
-Inventory: not requested
+pnpm run build
+pnpm run test
+pnpm start -- --title "Node Patterns" --author "Alice" --year 2024 --tags "Node, Architecture"
+bash problem/script/run-example.sh
 ```
 
-이 지점에서야 이 프로젝트가 왜 bridge의 첫 장면인지 선명해진다. 타입과 함수 분해를 배운 것이 아니라, 이후 모든 프로젝트가 반복할 "입력 정리 -> 신뢰 가능한 내부 표현 -> 명시적인 CLI 계약"을 한 번 먼저 겪은 셈이기 때문이다.
+결과는 분명했다.
+- `pnpm run build`: 통과
+- `pnpm run test`: `6` tests passed
+- `pnpm start ...`: 카드 출력 정상
+- `run-example.sh`: 상위 폴더에서 돌리면 `ERR_PNPM_NO_IMPORTER_MANIFEST_FOUND`
 
-다음 프로젝트에서는 이 감각이 메모리 안을 벗어나 디스크와 env, stream이 섞인 실제 Node 런타임으로 옮겨 간다.
+즉 실제 TypeScript 워크스페이스는 닫혀 있지만, 문제 폴더에 있는 실행 스크립트는 현재 작업 디렉터리를 `ts/`로 옮기지 않기 때문에 재현 명령으로는 불완전하다. 문서도 이 차이를 숨기지 않는 편이 맞다.
+
+## 정리
+
+이 프로젝트는 아주 작지만, 이후 백엔드 프로젝트 전체에 계속 남는 세 가지 감각을 먼저 심어 준다. 입력은 바로 믿지 말고 정규화할 것, 비동기 실패는 전체가 아니라 항목별 결과로 가둘 것, CLI든 HTTP든 오류는 사람이 읽는 메시지와 명시적 종료 신호로 닫을 것. 바로 그 점 때문에 이 글은 bridge의 첫 장으로 읽을 가치가 있다.

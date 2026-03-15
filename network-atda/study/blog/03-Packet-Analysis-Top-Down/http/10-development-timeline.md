@@ -1,120 +1,31 @@
-# HTTP Packet Analysis development timeline
+# HTTP Packet Analysis 개발 타임라인
 
-`HTTP Packet Analysis`를 읽을 때 먼저 잡아야 하는 것은 기능 목록이 아니라, 어디서부터 구현이나 분석이 무거워졌는가이다.
+현재 답안을 다시 읽으면 이 lab의 흐름은 HTTP 기능 목록을 한 번에 훑는 방식이 아니다. 네 개의 trace를 순서대로 열면서, "하나의 object 요청"에서 "조건부 재검증", "긴 body transport", "여러 object fetch ordering"으로 관찰 시야를 넓혀 가는 구조다. 전환점은 네 번이다.
 
-그래서 이 문서는 문제 문서, 핵심 파일, 테스트, CLI 출력만 남기고 나머지 군더더기는 걷어 냈다.
+## 1. basic trace에서 HTTP/1.1 request/response의 최소 surface를 먼저 고정한다
 
-## 구현 순서 한눈에 보기
+출발점은 frame `4`의 `GET /kurose_ross_small/HTTP/index.html HTTP/1.1`과 frame `6`의 `HTTP/1.1 200 OK`다. 여기에 `Accept-Language`, `Last-Modified`, `Content-Length: 36`, `Connection: keep-alive`가 붙으면서, 이 lab는 "HTTP는 텍스트 프로토콜" 수준을 넘어 browser와 server가 어떤 metadata를 주고받는지 보여 주기 시작한다.
 
-1. `study/03-Packet-Analysis-Top-Down/http/problem`의 문제 문서와 실행 target으로 출발점을 고정했다.
-2. `study/03-Packet-Analysis-Top-Down/http/analysis/src/http-analysis.md`의 핵심 구간에서 동작 규칙을 설명할 수 있는 최소 앵커를 골랐다.
-3. `make -C study/03-Packet-Analysis-Top-Down/http/problem test`와 테스트/verify 파일을 연결해 통과 신호와 남은 경계를 정리했다.
+즉 첫 단계의 핵심은 request line과 status line만이 아니라, body 길이와 freshness hint가 이미 이 기본 trace에 같이 들어 있다는 점이다.
 
-## 1. 질문과 trace 범위를 먼저 세우기
+## 2. conditional trace에서 같은 resource fetch가 `304`로 가벼워지는 장면을 확인한다
 
-이 단계에서는 구현 세부로 바로 내려가지 않았다. 먼저 어떤 파일이 진입점이고 어떤 명령이 검증 기준인지 고정하는 일이 더 급했다.
+두 번째 전환은 `If-Modified-Since`다. 첫 GET에는 조건 헤더가 없고 `200 OK`와 body가 온다. 이후 두 번째 GET에는 `If-Modified-Since: Mon, 17 Feb 2025 06:59:02 GMT`가 붙고, 응답은 `304 Not Modified`로 짧아진다.
 
-- 당시 목표: `HTTP Packet Analysis`를 읽는 출발점과 성공 기준을 고정한다.
-- 실제 진행: `problem/README.md`와 `problem/Makefile`을 먼저 확인한 뒤, `## Part 1: Basic HTTP GET / Response`가 있는 파일로 내려갔다.
-- 검증 신호: `make help`에 보이는 target만으로도 이 프로젝트가 어떤 명령으로 열리고 닫히는지 설명할 수 있었다.
-- 새로 배운 것: HTTP 상태 코드 해석
+이 차이 때문에 conditional GET은 "헤더 하나 더 붙였다"가 아니라, 같은 리소스 요청이 body 없는 validation round-trip으로 바뀌는 메커니즘으로 읽혀야 한다. 현재 답안도 바로 그 점을 중심에 둔다.
 
-핵심 코드/trace:
+## 3. long document trace는 HTTP object 하나가 transport에서는 여러 segment라는 사실을 드러낸다
 
-```text
-## Part 1: Basic HTTP GET / Response
+세 번째 전환은 object 수와 segment 수를 분리해서 보는 것이다. long document trace는 HTTP GET이 1개뿐이지만 server-to-client data segment는 7개다. `Content-Length`는 9000이고, 실제 전송된 TCP data 총합은 header까지 포함해 9066 bytes가 된다.
 
-**Trace file**: `http-basic.pcapng`
+즉 HTTP level의 "document 하나"와 TCP level의 "segment 여러 개"는 다른 단위라는 사실을 여기서 눈으로 확인하게 된다. 이 장면이 transport analysis lab로 이어지는 연결점이기도 하다.
 
-### Question 1
+## 4. embedded objects trace는 직렬 fetch 판정을 referer와 순서로 닫는다
 
-**Q: Is your browser running HTTP/1.0 or HTTP/1.1? What version of HTTP is the server running?**
-```
+마지막 전환은 여러 object가 있다고 해서 반드시 병렬 fetch인 것은 아니라는 점이다. `filter-embedded` 재실행 결과 요청 순서는 `/index.html -> /img1.png -> /img2.png`였고, 두 image GET 모두 `Referer: /index.html`을 가진다. 더 중요한 건 `/img1.png` 응답 뒤에 `/img2.png` 요청이 나오므로, 현재 trace에서는 직렬 download로 읽는 편이 맞다.
 
-왜 이 코드가 중요했는가:
+결국 이 lab는 HTTP를 "사람이 읽을 수 있는 프로토콜"로 보는 데서 멈추지 않는다. 같은 프로토콜이라도 cache validation, segmentation, object dependency에 따라 trace 읽기 방식이 달라진다는 점을 단계적으로 보여 준다.
 
-문제 사양을 읽은 뒤 바로 이 지점으로 내려오면, 말로 적힌 요구가 실제 파일 구조와 어떻게 만나는지 곧바로 보인다.
+## 지금 남는 한계
 
-CLI:
-
-```bash
-$ make -C study/03-Packet-Analysis-Top-Down/http/problem help
-  open-basic             Open the basic HTTP trace in Wireshark GUI
-  open-conditional       Open the conditional GET trace in Wireshark GUI
-  open-long              Open the long document trace in Wireshark GUI
-  open-embedded          Open the embedded objects trace in Wireshark GUI
-  filter-basic           Display HTTP packets from basic trace via tshark
-  filter-conditional     Display HTTP packets from conditional trace via tshark
-```
-
-## 2. 기본 GET과 conditional GET을 frame 근거로 채우기
-
-중간 단계의 핵심은 '무엇을 만들었나'보다 '어느 줄에서 규칙이 드러나는가'를 잡는 일이었다.
-
-- 당시 목표: `기본 GET, conditional GET, 긴 문서 전송, embedded object 요청을 패킷 수준에서 추적하는 랩입니다.`를 실제 근거에 붙인다.
-- 실제 진행: `## Part 2: Conditional GET` 주변을 중심으로 symbol이나 trace 결과를 다시 좁혀 읽었다.
-- 검증 신호: 짧은 `rg`/filter 출력만으로도 어느 줄이 설명의 중심인지 바로 드러났다.
-- 새로 배운 것: `If-Modified-Since`와 `304 Not Modified`
-
-핵심 코드/trace:
-
-```text
-## Part 2: Conditional GET
-
-**Trace file**: `http-conditional.pcapng`
-
-### Question 8
-
-**Q: Inspect the first HTTP GET request. Is there an If-Modified-Since header? What about If-None-Match?**
-```
-
-왜 이 코드가 중요했는가:
-
-핵심은 함수 이름 자체가 아니라, 이 줄 주변에서 어떤 입력이 어떤 결과로 바뀌는지가 한 번에 드러난다는 점이다.
-
-CLI:
-
-```bash
-$ make -C study/03-Packet-Analysis-Top-Down/http/problem filter-basic
-tshark -r data/http-basic.pcapng -Y "http" -T fields \
-4	192.168.0.2	128.119.245.12	GET	/kurose_ross_small/HTTP/index.html
-6	128.119.245.12	192.168.0.2		/kurose_ross_small/HTTP/index.html	200	36
-```
-
-## 3. verify 스크립트와 한계까지 정리하기
-
-마지막 단계에서는 단순히 테스트가 통과했다는 사실만 적지 않으려고 했다. 어디까지 확인됐고 무엇이 아직 범위 밖인지 같이 남겨야 글이 정직해진다.
-
-- 당시 목표: 검증 결과와 남은 경계를 함께 정리한다.
-- 실제 진행: `make -C study/03-Packet-Analysis-Top-Down/http/problem test`를 다시 실행하고, `## Part 3: Long Documents`가 남아 있는 파일을 본문 마지막 근거로 삼았다.
-- 검증 신호: 현재 공개 답안이 재현된다는 출력과, README limitation이 동시에 확인됐다.
-- 새로 배운 것: 긴 응답이 여러 TCP segment로 나뉘는 모습
-
-핵심 코드/trace:
-
-```text
-## Part 3: Long Documents
-
-**Trace file**: `http-long-document.pcapng`
-
-### Question 12
-
-**Q: How many HTTP GET requests did your browser send? How many TCP segments were needed to carry the single HTTP response?**
-```
-
-왜 이 코드가 중요했는가:
-
-마지막에 이 파일을 남겨 두는 이유는, 이 프로젝트가 실제로 무엇을 통과해야 끝나는지 가장 직접적으로 보여 주기 때문이다.
-
-CLI:
-
-```bash
-$ make -C study/03-Packet-Analysis-Top-Down/http/problem test
-PASS: http answer file passed content verification
-```
-
-## 남은 경계
-
-- `HTTP/2` 이상은 다루지 않습니다.
-- 브라우저별 헤더 차이는 관찰 범위 밖입니다.
-- 실시간 캡처 대신 고정 trace에 기반합니다.
+이 자료는 의도적으로 `HTTP/1.1` 중심이고 short trace 기반이다. 브라우저별 speculative fetch, connection coalescing, `HTTP/2` multiplexing은 현재 증거 범위 밖이다. 그래서 이 문서는 HTTP 전부를 덮는 설명보다, request/response 패턴을 trace별로 읽는 기준선을 세우는 문서로 남기는 편이 정확하다.

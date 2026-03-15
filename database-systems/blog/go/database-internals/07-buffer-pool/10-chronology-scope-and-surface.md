@@ -1,145 +1,58 @@
-# 10 07 Buffer Pool를 읽기 전에 범위를 다시 좁히기
+# Scope, Fetch Surface, And First Page
 
-이 시리즈의 첫 글이다. 설명문을 믿고 곧장 구현으로 들어가기보다, 테스트와 파일 구조를 다시 읽으면서 어디서부터 이야기를 시작해야 하는지 정리한다.
+## 1. 문제는 cache hit ratio보다 page lifecycle을 먼저 고정하는 데 있다
 
-## Phase 1 — 범위를 다시 세우는 구간
+[`problem/README.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/07-buffer-pool/problem/README.md)는 page identity parsing, hit/miss fetch, dirty write-back, pinned page eviction 금지를 요구한다. concurrent latch, lock manager, async IO는 뺀다.
 
-이번 글에서는 먼저 테스트와 파일 구조로 문제의 테두리를 다시 잡고, 이어서 중심 타입이 어떤 책임을 끌어안는지 확인한다.
+즉 이 랩의 목적은 DBMS buffer manager의 최소 lifecycle을 설명하는 것이지, 동시성까지 포함한 완성형 cache subsystem을 만드는 것이 아니다.
 
-### Session 1 — 테스트와 파일 구조로 범위를 다시 좁히기
+## 2. 코드 표면은 생각보다 작다
 
-여기서 가장 먼저 확인한 것은 `07 Buffer Pool`가 어떤 invariant를 먼저 고정하는 슬롯인지 파악한다. 처음에는 구현이 너무 작아서 단순 API 연습에 가까울 거라고 봤다.
+핵심 구현은 [`buffer_pool.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/07-buffer-pool/internal/bufferpool/buffer_pool.go)에 있다.
 
-하지만 실제로는 `find internal tests cmd -type f | sort`로 구조를 펼친 뒤 `rg -n "^func Test" tests`로 테스트 이름을 나열했다. `TestLRUOrderingAndDelete`까지 테스트 이름을 훑고 나니, 이 프로젝트의 중심이 단순 기능 추가가 아니라 `FetchPage` 주변의 invariant를 고정하는 일이라는 게 보였다. 결정적으로 방향을 잡아 준 신호는 `TestFetchPageFromDisk`는 가장 기본 표면을 보여 줬고, `TestLRUOrderingAndDelete`는 이 프로젝트가 이미 경계 조건까지 포함한다는 신호였다.
+- `FetchPage(pageID)`
+- `UnpinPage(pageID, isDirty)`
+- `FlushPage(pageID)`
+- `FlushAll()`
+- `Close()`
 
-변경 단위:
-- `database-systems/go/database-internals/projects/07-buffer-pool/README.md`, `database-systems/go/database-internals/projects/07-buffer-pool/tests/buffer_pool_test.go`
+구조체 필드도 의도를 드러낸다.
 
-CLI:
+- `cache *lrucache.LRUCache`
+- `fileHandles map[string]*fileio.FileHandle`
+- `pageSize`
 
-```bash
-$ find internal tests cmd -type f | sort
-cmd/buffer-pool/main.go
-internal/bufferpool/buffer_pool.go
-internal/lrucache/lru_cache.go
-tests/buffer_pool_test.go
-tests/lru_cache_test.go
-```
+즉 replacement는 LRU cache가 맡고, buffer pool은 page metadata와 disk IO를 책임진다.
 
-```bash
-$ rg -n "^func Test" tests
-tests/lru_cache_test.go:10:func TestLRUBasicOperations(t *testing.T) {
-tests/lru_cache_test.go:29:func TestLRUEvictionAndPromotion(t *testing.T) {
-tests/lru_cache_test.go:47:func TestLRUOrderingAndDelete(t *testing.T) {
-tests/buffer_pool_test.go:11:func TestFetchPageFromDisk(t *testing.T) {
-tests/buffer_pool_test.go:24:func TestReturnCachedPage(t *testing.T) {
-tests/buffer_pool_test.go:42:func TestTrackDirtyPages(t *testing.T) {
-tests/buffer_pool_test.go:57:func TestEvictionAfterUnpin(t *testing.T) {
-```
+## 3. demo는 fetch hit 이전의 가장 기본 관찰을 보여 준다
 
-검증 신호:
-- `TestFetchPageFromDisk`는 가장 기본 표면을 보여 줬고, `TestLRUOrderingAndDelete`는 이 프로젝트가 이미 경계 조건까지 포함한다는 신호였다.
-- 테스트 이름만으로도 문제의 중심이 `FetchPage` 주변의 ordering / visibility 규칙이라는 점이 드러났다.
-
-핵심 코드:
-
-```go
-func TestLRUOrderingAndDelete(t *testing.T) {
-	cache := lrucache.New(3)
-	cache.Put("a", 1)
-	cache.Put("b", 2)
-	cache.Put("c", 3)
-
-	if !reflect.DeepEqual(cache.Keys(), []string{"c", "b", "a"}) {
-		t.Fatalf("unexpected order: %+v", cache.Keys())
-	}
-	cache.Get("a")
-	if !reflect.DeepEqual(cache.Keys(), []string{"a", "c", "b"}) {
-		t.Fatalf("unexpected order after promotion: %+v", cache.Keys())
-	}
-	if !cache.Delete("a") {
-```
-
-왜 여기서 판단이 바뀌었는가:
-
-`TestLRUOrderingAndDelete`는 README의 추상 설명보다 더 직접적으로, 어떤 실패를 막아야 하는지 보여 준다. 나는 여기서 구현 순서를 거꾸로 세우기보다 테스트가 요구하는 경계를 먼저 고정해야 한다고 판단했다.
-
-이번 구간에서 새로 이해한 것:
-- `LRU Eviction`에서 정리한 요점처럼, doubly-linked list와 hash map을 조합하면 O(1) get/put/evict가 가능하다.
-
-다음으로 넘긴 질문:
-- `FetchPage`와 `UnpinPage`를 코드에서 직접 확인해, 테스트 이름이 가리키는 invariant가 실제로 어디에 박혀 있는지 본다.
-
-### Session 2 — 중심 타입에서 책임이 모이는 지점 보기
-
-이번 세션의 목표는 소스 파일의 중심 타입/클래스가 어떤 책임을 한곳에 묶고 있는지 확인하는 것이었다. 초기 가설은 구현이 작으면 책임도 단순하게 한 줄로 설명될 거라고 생각했다.
-
-막상 다시 펼쳐 보니 가장 큰 구현 파일인 `database-systems/go/database-internals/projects/07-buffer-pool/internal/bufferpool/buffer_pool.go`를 먼저 읽고, 테스트가 요구한 상태 전이가 정말 이 파일 안에서 닫히는지 확인했다. 특히 `FetchPage` 같은 이름이 초기에 바로 보이면 write path의 중심이 선명해진다.
-
-변경 단위:
-- `database-systems/go/database-internals/projects/07-buffer-pool/internal/bufferpool/buffer_pool.go`
-
-CLI:
+2026-03-14에 아래 명령을 다시 실행했다.
 
 ```bash
-$ rg -n "^(type|func) " internal cmd
-cmd/buffer-pool/main.go:11:func main() {
-cmd/buffer-pool/main.go:33:func must(err error) {
-internal/lrucache/lru_cache.go:3:type node struct {
-internal/lrucache/lru_cache.go:10:type LRUCache struct {
-internal/lrucache/lru_cache.go:18:func New(capacity int) *LRUCache {
-internal/lrucache/lru_cache.go:31:func (cache *LRUCache) Get(key string) any {
-internal/lrucache/lru_cache.go:40:func (cache *LRUCache) Put(key string, value any) *Entry {
-internal/lrucache/lru_cache.go:65:func (cache *LRUCache) Delete(key string) bool {
-internal/lrucache/lru_cache.go:76:func (cache *LRUCache) Has(key string) bool {
-internal/lrucache/lru_cache.go:81:func (cache *LRUCache) Keys() []string {
-internal/lrucache/lru_cache.go:91:func (cache *LRUCache) Size() int {
-internal/lrucache/lru_cache.go:95:type Entry struct {
-internal/lrucache/lru_cache.go:100:func (cache *LRUCache) remove(item *node) {
-internal/lrucache/lru_cache.go:107:func (cache *LRUCache) addToFront(item *node) {
-internal/lrucache/lru_cache.go:114:func (cache *LRUCache) moveToFront(item *node) {
-internal/bufferpool/buffer_pool.go:15:type Page struct {
-internal/bufferpool/buffer_pool.go:22:type BufferPool struct {
-internal/bufferpool/buffer_pool.go:29:func New(maxPages, pageSize int) *BufferPool {
-internal/bufferpool/buffer_pool.go:41:func (pool *BufferPool) FetchPage(pageID string) (*Page, error) {
-internal/bufferpool/buffer_pool.go:79:func (pool *BufferPool) UnpinPage(pageID string, isDirty bool) {
-internal/bufferpool/buffer_pool.go:93:func (pool *BufferPool) FlushPage(pageID string) error {
-internal/bufferpool/buffer_pool.go:109:func (pool *BufferPool) FlushAll() error {
-internal/bufferpool/buffer_pool.go:118:func (pool *BufferPool) Close() error {
-internal/bufferpool/buffer_pool.go:131:func (pool *BufferPool) getHandle(filePath string) (*fileio.FileHandle, error) {
-internal/bufferpool/buffer_pool.go:144:func (pool *BufferPool) writePage(page *Page) error {
-internal/bufferpool/buffer_pool.go:159:func parsePageID(pageID string) (string, int, error) {
+cd /Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/07-buffer-pool
+GOWORK=off go run ./cmd/buffer-pool
 ```
 
-검증 신호:
-- `FetchPage` 같은 이름이 초기에 바로 보이면 write path의 중심이 선명해진다.
-- 반대로 `UnpinPage`가 함께 보이면 read path나 visibility 규칙을 따로 떼어 설명할 수 없다는 뜻이다.
+출력은 아래였다.
 
-핵심 코드:
-
-```go
-func (pool *BufferPool) FetchPage(pageID string) (*Page, error) {
-	if cached := pool.cache.Get(pageID); cached != nil {
-		page := cached.(*Page)
-		page.PinCount++
-		return page, nil
-	}
-
-	filePath, pageNumber, err := parsePageID(pageID)
-	if err != nil {
-		return nil, err
-	}
-	handle, err := pool.getHandle(filePath)
-	if err != nil {
-		return nil, err
+```text
+page-1
 ```
 
-왜 여기서 판단이 바뀌었는가:
+짧은 출력이지만 의미는 분명하다. page id `data.db:1`이 실제로 파일 path와 page number로 분리돼 해당 offset의 bytes를 읽어 왔다는 뜻이다. buffer pool의 첫 번째 책임은 이 mapping을 안정적으로 수행하는 것이다.
 
-`FetchPage`는 이 프로젝트가 가장 먼저 고정해야 하는 상태 전이를 보여 준다. 이 조각을 보고 나서야 테스트 이름과 구현 책임이 같은 문제를 가리키고 있다는 확신이 생겼다.
+## 4. 추가 재실행으로 dirty flush와 pinned eviction failure를 고정했다
 
-이번 구간에서 새로 이해한 것:
-- `Pin And Dirty`에서 정리한 요점처럼, pin count가 0보다 큰 page는 eviction 대상이 될 수 없다.
+이번에 project root 내부 임시 Go 파일로 아래 결과를 추가로 확인했다.
 
-다음으로 넘긴 질문:
-- 같은 상태를 반대 방향에서 고정하는 `UnpinPage`를 읽어, write/read 혹은 append/replay가 서로 어떻게 잠기는지 확인한다.
+```text
+disk_after_flush modified
+pinned_evict_error true
+```
+
+이 결과는 두 가지를 보여 준다.
+
+- dirty page를 수정한 뒤 `FlushPage()`를 호출하면 실제 disk bytes가 바뀐다
+- capacity보다 많은 page를 fetch하려 할 때, eviction 대상이 pinned면 현재 구현은 에러를 돌려준다
+
+즉 buffer pool은 read cache에 그치지 않고 write-back 경계와 eviction 금지 조건을 함께 가진다.

@@ -1,27 +1,20 @@
-# 06 Index Filter — Structure Outline
+# Structure Outline
 
-최종 시리즈는 chronology를 매끈하게 재배열하지 않고, 범위 파악 -> 핵심 invariant -> 재검증과 경계의 순서를 유지한다.
+## Chosen arc
 
-## Planned Files
+1. 읽기 최적화 일반론이 아니라 miss-fast path와 bounded scan path라는 범위를 먼저 잡는다.
+2. demo와 추가 재실행으로 실제 bytes read와 footer 값을 먼저 보여 준다.
+3. Bloom sizing, sparse block boundary, footer layout, 두 갈래 lookup 경로를 invariant로 정리한다.
+4. 마지막에 learned index나 cache 연동이 아직 없다는 점을 분리한다.
 
-- `00-series-map.md`: 프로젝트 질문, 읽는 순서, source-of-truth 파일, 재검증 명령을 잡는 지도
-- `10-chronology-scope-and-surface.md`: 파일 구조와 테스트 이름을 근거로 처음 가설이 바뀌는 구간
-- `20-chronology-core-invariants.md`: `Filter`와 `Serialize`가 실제로 invariant를 고정하는 구간
-- `30-chronology-verification-and-boundaries.md`: `go test`/`pytest`와 demo 출력으로 경계를 확정하는 구간
+## Why this structure
 
-## Article Goals
+- 이 랩은 관찰 가능한 수치가 중요해서 `bytes_read`와 footer offsets를 초반 evidence로 드는 편이 효과적이다.
+- Bloom과 sparse index가 각자 다른 역할을 하므로 두 경로를 섞지 않고 분리해 설명해야 한다.
+- MurmurHash3 기반 구현은 docs와 함께 source 근거를 짚어 주는 편이 품질이 높다.
 
-1. `10-chronology-scope-and-surface.md`
-   범위를 `tests/`와 README에서 어떻게 다시 좁혔는지 보여 준다.
-   코드 앵커: `TestBloomFilterHasNoFalseNegatives`, `Filter`
-   CLI: `find internal tests cmd -type f | sort`, `rg -n "^func Test" tests`
+## Rejected alternatives
 
-2. `20-chronology-core-invariants.md`
-   핵심 invariant가 `Filter`와 `Serialize` 사이에서 어떻게 고정되는지 보여 준다.
-   코드 앵커: `Filter`, `Serialize`
-   CLI: `rg -n "^(type|func) " internal cmd`, `rg -n "Filter|Serialize" internal cmd`
-
-3. `30-chronology-verification-and-boundaries.md`
-   테스트와 demo를 모두 남겨, pass 신호와 공개 표면을 구분해 설명한다.
-   코드 앵커: `TestSSTableBloomRejectAndBoundedScan`, `main.go`
-   CLI: GOWORK=off go test ./...; GOWORK=off go run ./cmd/index-filter
+- Bloom filter 이론만 길게 푸는 구조는 버렸다.
+- SSTable 전체 설명으로 되돌아가는 구조도 버렸다.
+- range scan이나 cache 얘기를 미리 끌어오는 서사는 현재 범위를 벗어나 제외했다.

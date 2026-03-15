@@ -1,100 +1,61 @@
-# 30 05 MVCC를 다시 돌려 보며 검증 신호와 경계를 정리하기
+# 30 다시 돌려 보기: 현재 MVCC가 실제로 보장하는 것
 
-이 시리즈의 마지막 글이다. pass 숫자만 적는 대신, 어떤 경계가 회귀 테스트로 남아 있는지와 demo가 무엇을 밖으로 드러내는지를 함께 본다.
+마지막으로 확인할 건 chain 모양과 경계다. MVCC는 말로만 설명하면 쉽게 과장된다. 실제로 어떤 version이 남고, 어떤 version이 지워지고, 어떤 read가 어떤 값을 보는지 다시 확인해야 현재 구현의 크기가 보인다.
 
-## Phase 3 — 검증 신호와 한계를 확인하는 구간
+## Phase 3-1. pytest는 핵심 visibility 계약은 꽤 잘 잠근다
 
-이번 글에서는 먼저 테스트가 남긴 회귀 신호를 다시 읽고, 이어서 demo가 공개하는 표면과 README가 남겨 둔 한계를 함께 정리한다.
+이번 재실행에서 pytest는 `7 passed, 1 warning in 0.02s`였다. 경고는 앞과 같은 `pytest_asyncio` deprecation이라 핵심과는 무관했다.
 
-### Session 1 — 테스트가 남긴 회귀 신호 다시 보기
+테스트가 잠그는 건 이렇다.
 
-여기서 가장 먼저 확인한 것은 테스트 명령을 다시 돌려 핵심 invariant가 실제 회귀 신호로 남아 있는지 확인한다. 처음에는 pass 수치만 확인하면 충분할 거라고 생각했다.
+- read-your-own-write
+- snapshot isolation
+- latest committed value
+- first-committer-wins conflict
+- abort cleanup
+- delete tombstone semantics
+- GC 이후 chain 축소
 
-하지만 실제로는 `PYTHONPATH=src .venv/bin/python -m pytest`를 다시 실행하고, 어떤 테스트가 있는지 이미 알고 있는 상태에서 pass 신호를 다시 읽었다. 결정적으로 방향을 잡아 준 신호는 `7 passed`.
+즉 이 프로젝트는 "MVCC toy example"로 끝나지 않고, visibility와 cleanup의 최소 contract는 꽤 분명하게 공개한다.
 
-변경 단위:
-- `database-systems/python/database-internals/projects/05-mvcc/tests/test_mvcc.py`
+## Phase 3-2. demo는 가장 얇은 public surface만 보여 준다
 
-CLI:
-
-```bash
-$ PYTHONPATH=src .venv/bin/python -m pytest
-============================= test session starts ==============================
-platform darwin -- Python 3.12.6, pytest-9.0.2, pluggy-1.6.0
-rootdir: /Users/woopinbell/work/book-task-3/database-systems/python/database-internals/projects/05-mvcc
-configfile: pyproject.toml
-collected 7 items
-
-tests/test_mvcc.py .......                                               [100%]
-
-============================== 7 passed in 0.01s ===============================
-```
-
-검증 신호:
-- `7 passed`
-- `test_abort_and_delete`가 실제로 회귀 테스트 묶음 안에 남아 있다는 점이 중요했다.
-
-핵심 코드:
-
-```python
-def test_abort_and_delete():
-    manager = TransactionManager()
-    t1 = manager.begin()
-    manager.write(t1, "x", "temp")
-    manager.abort(t1)
-
-    t2 = manager.begin()
-    assert manager.read(t2, "x") is None
-    manager.commit(t2)
-```
-
-왜 여기서 판단이 바뀌었는가:
-
-`test_abort_and_delete`는 구현의 뒷부분에서 생길 수 있는 붕괴 지점을 문장보다 정확하게 고정한다. pass 숫자보다 더 중요했던 건, 어떤 경계가 계속 회귀 테스트로 남아 있느냐였다.
-
-이번 구간에서 새로 이해한 것:
-- 테스트는 단순 성공 여부보다, 어떤 invariant를 공개적으로 약속하는지 보여 주는 문서에 가깝다.
-
-다음으로 넘긴 질문:
-- demo entry point를 다시 실행해 테스트보다 얇은 표면에서 무엇을 보여 주는지 확인한다.
-
-### Session 2 — demo가 공개하는 표면과 한계 정리하기
-
-이번 세션의 목표는 demo 출력과 README의 한계를 함께 읽어, 공개 표면과 내부 경계를 분리하는 것이었다. 초기 가설은 demo는 테스트의 축약판일 뿐이라고 생각했다.
-
-막상 다시 펼쳐 보니 `PYTHONPATH=src .venv/bin/python -m mvcc_lab`를 다시 실행해 마지막 한 줄을 확인하고, README의 `한계와 확장` bullet과 나란히 읽었다. 특히 demo 핵심 줄: `{'tx': 1, 'read_your_own_write': 10}`라는 출력이 마지막 확인 지점이 됐다.
-
-변경 단위:
-- `database-systems/python/database-internals/projects/05-mvcc/src/mvcc_lab/__main__.py`
-
-CLI:
+demo entry point를 다시 돌리면 이런 출력이 나온다.
 
 ```bash
-$ PYTHONPATH=src .venv/bin/python -m mvcc_lab
+cd /Users/woopinbell/work/book-task-3/database-systems/python/database-internals/projects/05-mvcc
+PYTHONPATH=src python3 -m mvcc_lab
+```
+
+```text
 {'tx': 1, 'read_your_own_write': 10}
 ```
 
-검증 신호:
-- demo 핵심 줄: `{'tx': 1, 'read_your_own_write': 10}`
-- 경계 메모: 현재 범위 밖: predicate locking, phantom read 제어, distributed transaction은 포함하지 않습니다.
-- 경계 메모: 현재 범위 밖: full SQL transaction manager나 lock table은 후속 확장 범위입니다.
+이 한 줄은 snapshot이나 GC까지는 보여 주지 않지만, 이 슬롯의 가장 중요한 예외 규칙 하나를 분명히 드러낸다. "내가 아직 commit하지 않은 write라도 나는 읽을 수 있어야 한다"는 점이다.
 
-핵심 코드:
+## Phase 3-3. 보조 재실행이 conflict cleanup과 aggressive GC를 더 잘 보여 줬다
 
-```python
-from .core import demo
+이번 Todo에서는 테스트 외에도 version chain 모양을 직접 출력해 봤다.
 
+- snapshot read: `v1`
+- conflict 후 chain: `[(4, 'a', False)]`
+- GC 전 chain: `[(3, 'v3', False), (2, 'v2', False), (1, 'v1', False)]`
+- GC 후 chain: `[(3, 'v3', False)]`
 
-if __name__ == "__main__":
-    demo()
-```
+이 숫자들이 의미하는 건 분명하다.
 
-왜 여기서 판단이 바뀌었는가:
+1. snapshot은 begin 시점에서 고정된다
+2. conflict loser의 version은 abort cleanup으로 사라진다
+3. active snapshot이 없으면 GC는 체인을 최신 version 하나 수준까지 줄일 수 있다
 
-demo entry point는 내부 구현을 전부 보여 주지는 않지만, 독자가 처음 마주치는 공개 표면을 결정한다. 테스트가 invariant를 지키는 장치라면, demo는 그중 무엇을 밖으로 보여 줄지 고르는 자리였다.
+즉 현재 MVCC 구현은 version retention을 매우 보수적으로 하지 않는다. long-running reader가 없으면 old versions를 거의 남기지 않는다.
 
-이번 구간에서 새로 이해한 것:
-- `Snapshot Visibility`에서 정리한 요점처럼, transaction은 시작 시점의 committed watermark를 snapshot으로 잡는다.
+## Phase 3-4. 지금 상태에서 비워 둔 것
 
-다음으로 넘긴 질문:
-- 이 프로젝트 이후에는 다음 트랙/다음 슬롯으로 넘어가더라도, 지금 고정한 invariant를 더 큰 저장 엔진이나 분산 경로 안에서 다시 만날 수 있다.
+- committed set은 bool map일 뿐 commit timestamp separate tracking은 없다
+- lock table이 없다
+- predicate conflict나 phantom protection이 없다
+- distributed tx나 validation phase는 없다
+- GC policy가 아주 단순해서 active reader workload를 세밀하게 모델링하지 않는다
+
+그래도 이 프로젝트가 중요한 이유는 분명하다. 앞선 슬롯들이 storage engine의 물리적 경계를 다뤘다면, 여기선 처음으로 "같은 key의 여러 version 중 누가 무엇을 볼 수 있는가"를 명시적인 코드 규칙으로 다룬다. 이후 분산 트랙으로 넘어갈 때도 결국 이 visibility 감각이 바닥이 된다.

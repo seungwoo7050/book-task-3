@@ -1,28 +1,24 @@
-# IP and ICMP Packet Analysis series map
+# IP and ICMP Packet Analysis 시리즈 맵
 
-이 프로젝트를 읽을 때 붙들 질문은 하나다. IP header, fragmentation, ICMP 메시지를 trace 안에서 어디까지 설명할 수 있는가?
+이 lab의 중심 질문은 "IPv4와 ICMP field가 실제 네트워크 동작을 어떤 서사로 엮어 주는가"다. 현재 답안은 두 trace를 역할별로 나눈다. traceroute trace는 TTL 증가, `Time Exceeded`, `Echo Reply`를 통해 path discovery를 보여 주고, fragmentation trace는 `Identification`, `MF`, `Fragment Offset`, `ip.len` 조합으로 datagram reassembly를 보여 준다.
 
-## 무엇을 근거로 복원했는가
+## 이 lab를 읽는 질문
 
-- 프로젝트 README: `study/03-Packet-Analysis-Top-Down/ip-icmp/README.md`
-- 문제 문서와 실행 표면: `study/03-Packet-Analysis-Top-Down/ip-icmp/problem/README.md`, `study/03-Packet-Analysis-Top-Down/ip-icmp/problem/Makefile`
-- 분석 본문: `study/03-Packet-Analysis-Top-Down/ip-icmp/analysis/src/ip-icmp-analysis.md`
-- 정식 검증 출력: `make -C study/03-Packet-Analysis-Top-Down/ip-icmp/problem test`
+- TTL은 단순 숫자가 아니라 왜 traceroute에서 hop index처럼 읽히는가
+- `Time Exceeded`와 `Echo Reply`는 같은 ICMP라도 어떤 다른 역할을 맡는가
+- fragmentation에서는 어떤 필드가 같아야 같은 원본 datagram으로 묶을 수 있는가
 
-## 어떤 순서로 읽으면 되는가
+## 이번에 사용한 근거
 
-1. `problem/README.md`로 문제 조건과 성공 기준을 확인한다.
-2. 이 문서에서 어떤 입력을 근거로 썼는지 먼저 본다.
-3. `01-evidence-ledger.md`로 세 단계 흐름을 짧게 파악한다.
-4. `10-development-timeline.md`에서 코드나 trace, CLI를 따라간다.
+- `problem/README.md`
+- `analysis/src/ip-icmp-analysis.md`
+- `problem/Makefile`
+- `problem/script/verify_answers.sh`
+- 2026-03-14 재실행한 `filter-icmp`, `filter-fragments`
 
-## 이번 리라이트에서 의도적으로 제외한 입력
+## 이번 재실행에서 고정한 사실
 
-- 현재 `study/blog/**`의 이전 본문
-- `notion/`, `notion-archive/` 아래의 서술형 메모
-
-## 짧은 판정 메모
-
-- 독립 프로젝트로 본 이유: `IP and ICMP Packet Analysis`는 자기 README와 정식 검증 명령으로 범위를 독립적으로 설명할 수 있다.
-- 보관본 위치: `study/blog/_legacy`
-- 이번 글의 중심 답: IPv4 header, fragmentation, TTL, ICMP 메시지를 traceroute/ping 맥락에서 읽는 네트워크 계층 랩입니다.
+- Echo Request frames `#1/#3/#5`의 TTL은 `1/2/3`, `ip.id`는 `0x0fa0/0x0fa1/0x0fa2`다.
+- `Time Exceeded` frames `#2/#4`는 `icmp type/code = 11/0`이다.
+- final destination response frame `#6`은 `Echo Reply 0/0`이다.
+- fragmentation trace는 frame `#1/#2/#3`이 모두 `ip.id=0x3039`를 공유하고 `MF`는 `1/1/0`으로 끝난다.

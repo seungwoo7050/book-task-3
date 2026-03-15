@@ -40,6 +40,9 @@
 
 처음부터 모든 프로젝트를 같은 우선순위로 보지 말고, 아래 `필수 코어`를 먼저 끝낸 뒤 관심 분야에 따라 `심화/선택`으로 갈라지는 편이 읽기 쉽습니다.
 
+서버 개발자 관점에서 1회독 범위를 더 줄이고 싶다면 [`problem-subject-essential/README.md`](problem-subject-essential/README.md)를 먼저 읽는 편이 빠릅니다.
+필수에 포함되지 않은 나머지 문제지는 [`problem-subject-elective/README.md`](problem-subject-elective/README.md)에 따로 모아 두었습니다.
+
 ### 필수 코어
 
 | 순서 | 프로젝트 | 왜 먼저 보는가 |

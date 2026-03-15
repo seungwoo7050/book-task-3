@@ -38,6 +38,12 @@
 | [irc-track](study/irc-track/README.md) | `01-roomlab`, `02-ircserv` | IRC subset 서버를 어떻게 상태 전이와 capstone으로 확장할까 | `02-ircserv` |
 | [game-track](study/game-track/README.md) | `01-ticklab`, `02-rollbacklab`, `03-arenaserv` | authoritative simulation, rollback correction, TCP game server를 어떻게 분리해 검증할까 | `03-arenaserv` |
 
+## 서버 문제지 빠른 진입
+
+- [problem-subject-essential/README.md](problem-subject-essential/README.md): 서버 공통 필수 기준으로 다시 고른 문제지
+- [problem-subject-elective/README.md](problem-subject-elective/README.md): essential에 포함되지 않은 나머지 문제지
+- [problem-subject-capstone/README.md](problem-subject-capstone/README.md): 트랙 종합 과제만 따로 모은 문제지
+
 ## 먼저 읽을 순서
 
 1. [docs/README.md](docs/README.md)

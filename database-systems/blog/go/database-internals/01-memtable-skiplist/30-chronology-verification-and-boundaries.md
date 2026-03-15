@@ -1,76 +1,39 @@
-# 30 01 MemTable SkipList를 다시 돌려 보며 검증 신호와 경계를 정리하기
+# Verification And Boundaries
 
-이 시리즈의 마지막 글이다. pass 숫자만 적는 대신, 어떤 경계가 회귀 테스트로 남아 있는지와 demo가 무엇을 밖으로 드러내는지를 함께 본다.
+## 1. 자동 검증은 MemTable contract를 거의 빠짐없이 잡는다
 
-## Phase 3 — 검증 신호와 한계를 확인하는 구간
-
-이번 글에서는 먼저 테스트가 남긴 회귀 신호를 다시 읽고, 이어서 demo가 공개하는 표면과 README가 남겨 둔 한계를 함께 정리한다.
-
-### Session 1 — 테스트가 남긴 회귀 신호 다시 보기
-
-여기서 가장 먼저 확인한 것은 테스트 명령을 다시 돌려 핵심 invariant가 실제 회귀 신호로 남아 있는지 확인한다. 처음에는 pass 수치만 확인하면 충분할 거라고 생각했다.
-
-하지만 실제로는 `GOWORK=off go test ./...`를 다시 실행하고, 어떤 테스트가 있는지 이미 알고 있는 상태에서 pass 신호를 다시 읽었다. 결정적으로 방향을 잡아 준 신호는 `go test ok, 9 tests`.
-
-변경 단위:
-- `database-systems/go/database-internals/projects/01-memtable-skiplist/tests/skiplist_test.go`
-
-CLI:
+2026-03-14 기준 재실행 명령은 아래와 같다.
 
 ```bash
-$ GOWORK=off go test ./...
-?   	study.local/go/database-internals/projects/01-memtable-skiplist/cmd/skiplist-demo	[no test files]
-?   	study.local/go/database-internals/projects/01-memtable-skiplist/internal/skiplist	[no test files]
-?   	study.local/go/database-internals/projects/01-memtable-skiplist/problem/code	[no test files]
+cd /Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/01-memtable-skiplist
+GOWORK=off go test ./...
+```
+
+결과는 아래처럼 통과했다.
+
+```text
 ok  	study.local/go/database-internals/projects/01-memtable-skiplist/tests	(cached)
 ```
 
-검증 신호:
-- `go test ok, 9 tests`
-- `TestEntriesIncludeTombstones`가 실제로 회귀 테스트 묶음 안에 남아 있다는 점이 중요했다.
+테스트가 잡는 항목은 꽤 넓다.
 
-핵심 코드:
+- put/get 정상 경로
+- missing key 상태
+- update 뒤 logical size 유지
+- 1000개 insert 뒤 lookup
+- tombstone 상태와 tombstone 포함 size
+- ordered entries
+- tombstone이 iteration에서 유지되는지
+- byte size tracking
+- clear 뒤 완전 초기화
 
-```go
-func TestEntriesIncludeTombstones(t *testing.T) {
-	list := skiplist.New()
-	list.Put("x", "1")
-	list.Put("y", "2")
-	list.Delete("x")
+즉 이 랩은 작은 구현이지만 핵심 MemTable contract는 비교적 촘촘하게 검증된다.
 
-	entries := list.Entries()
-	if len(entries) != 2 {
-		t.Fatalf("expected 2 entries, got %d", len(entries))
-	}
-	if entries[0].Value != nil {
-		t.Fatalf("expected first entry to be a tombstone")
-	}
-}
-```
+## 2. demo 재실행이 문서에 준 추가 근거
 
-왜 여기서 판단이 바뀌었는가:
+demo 출력은 아래였다.
 
-`TestEntriesIncludeTombstones`는 구현의 뒷부분에서 생길 수 있는 붕괴 지점을 문장보다 정확하게 고정한다. pass 숫자보다 더 중요했던 건, 어떤 경계가 계속 회귀 테스트로 남아 있느냐였다.
-
-이번 구간에서 새로 이해한 것:
-- 테스트는 단순 성공 여부보다, 어떤 invariant를 공개적으로 약속하는지 보여 주는 문서에 가깝다.
-
-다음으로 넘긴 질문:
-- demo entry point를 다시 실행해 테스트보다 얇은 표면에서 무엇을 보여 주는지 확인한다.
-
-### Session 2 — demo가 공개하는 표면과 한계 정리하기
-
-이번 세션의 목표는 demo 출력과 README의 한계를 함께 읽어, 공개 표면과 내부 경계를 분리하는 것이었다. 초기 가설은 demo는 테스트의 축약판일 뿐이라고 생각했다.
-
-막상 다시 펼쳐 보니 `GOWORK=off go run ./cmd/skiplist-demo`를 다시 실행해 마지막 한 줄을 확인하고, README의 `한계와 확장` bullet과 나란히 읽었다. 특히 demo 핵심 줄: `size=3 byteSize=220`라는 출력이 마지막 확인 지점이 됐다.
-
-변경 단위:
-- `database-systems/go/database-internals/projects/01-memtable-skiplist/cmd/skiplist-demo/main.go`
-
-CLI:
-
-```bash
-$ GOWORK=off go run ./cmd/skiplist-demo
+```text
 ordered entries:
 - apple => green
 - banana => <tombstone>
@@ -78,36 +41,30 @@ ordered entries:
 size=3 byteSize=220
 ```
 
-검증 신호:
-- demo 핵심 줄: `size=3 byteSize=220`
-- 경계 메모: 현재 범위 밖: 동시성 제어와 lock-free 자료구조는 다루지 않습니다.
-- 경계 메모: 현재 범위 밖: 확률적 level tuning과 고급 benchmark는 후속 확장 범위로 남깁니다.
+이 출력 덕분에 문서는 테스트 assert만 나열하지 않고, 삭제가 실제 ordered scan에서 어떻게 보이는지까지 설명할 수 있게 됐다. 특히 tombstone이 스캔 결과에 그대로 남는다는 점이 중요하다. 이후 SSTable flush나 compaction이 delete intent를 공유하려면 바로 이 ordered view가 필요하기 때문이다.
 
-핵심 코드:
+## 3. 현재 구현이 일부러 다루지 않는 것
 
-```go
-package main
+이 랩을 production-grade concurrent skip list로 읽으면 안 된다.
 
-import (
-	"fmt"
+- lock이나 CAS가 없다
+- iterator invalidation과 concurrent mutation safety가 없다
+- benchmark나 level distribution measurement가 없다
+- flush 자체는 구현하지 않는다
+- range tombstone이나 versioned value도 없다
 
-	"study.local/go/database-internals/projects/01-memtable-skiplist/internal/skiplist"
-)
+즉 지금 단계는 ordered MemTable contract를 고정하는 데 집중한다.
 
-func main() {
-	list := skiplist.New()
-	list.Put("banana", "yellow")
-	list.Put("apple", "green")
-	list.Put("carrot", "orange")
-	list.Delete("banana")
-```
+## 4. 보조 확인에서 드러난 환경 경계
 
-왜 여기서 판단이 바뀌었는가:
+이번에 프로젝트 밖 임시 Go 파일로 추가 snippet을 돌리려 했을 때 `internal` 패키지 import 제한 때문에 실행이 막혔다. 이건 구현 결함이 아니라 Go가 `internal/` 패키지 접근을 모듈 경계로 제한하는 규칙 때문이다. 그래서 이번 문서는 소스, 기존 테스트, demo 출력으로 직접 확인된 사실만 근거로 삼았다.
 
-demo entry point는 내부 구현을 전부 보여 주지는 않지만, 독자가 처음 마주치는 공개 표면을 결정한다. 테스트가 invariant를 지키는 장치라면, demo는 그중 무엇을 밖으로 보여 줄지 고르는 자리였다.
+## 5. 이 문서에서 피한 과장
 
-이번 구간에서 새로 이해한 것:
-- `SkipList Invariants`에서 정리한 요점처럼, level 0 연결 리스트는 전체 키 집합을 오름차순으로 포함한다.
+이번 재작성에서는 아래 같은 표현을 피했다.
 
-다음으로 넘긴 질문:
-- 이 프로젝트 이후에는 다음 트랙/다음 슬롯으로 넘어가더라도, 지금 고정한 invariant를 더 큰 저장 엔진이나 분산 경로 안에서 다시 만날 수 있다.
+- "고성능 skip list를 완성했다"
+- "LSM write path 전체를 구현했다"
+- "실전 수준의 메모리 사용량을 계산한다"
+
+현재 소스가 실제로 보여 주는 것은 ordered entries, tombstone semantics, logical size와 byte-size estimate를 갖춘 학습용 MemTable이다. 그 범위를 벗어난 주장은 근거가 없다.

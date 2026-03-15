@@ -1,5 +1,5 @@
 {
-  "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+  "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
   "run_label": "v1.6",
   "dataset": "golden-set",
   "count": 30,
@@ -7,9 +7,9 @@
   "critical_count": 0,
   "items": [
     {
-      "id": "55c5dd1b-bd43-4e79-b03b-4fb3574e8517",
-      "turn_id": "98997397-df37-4292-86c3-d463ac91d9a8",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "cc4fe105-6fb9-462f-b339-db6d6df8607d",
+      "turn_id": "9b7780f3-2e96-44ef-acff-ea994793c4bb",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -114,9 +114,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -203,7 +203,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.302681+00:00",
+      "created_at": "2026-03-14T07:20:26.843712+00:00",
       "assertion": {
         "case_id": "gs-001",
         "passed": false,
@@ -229,9 +229,9 @@
       }
     },
     {
-      "id": "ed74b050-e2ab-464d-812f-a8bcc39855af",
-      "turn_id": "77bb1d50-44d1-498e-88df-6e1803ac2b42",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "e7b5ef6c-d408-4f6f-9fe4-0caf50ec9d6c",
+      "turn_id": "4fd107d5-97cb-4858-b249-5439bbddd2f3",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -303,9 +303,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -360,7 +360,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.308392+00:00",
+      "created_at": "2026-03-14T07:20:26.848594+00:00",
       "assertion": {
         "case_id": "gs-002",
         "passed": true,
@@ -382,9 +382,9 @@
       }
     },
     {
-      "id": "394aa780-b56a-4a87-b8f8-c7dbf994f912",
-      "turn_id": "ff7b674a-bd94-4610-83dc-8094cc420e9d",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "cdc657a0-3b1c-4d63-949f-bcb7275c695b",
+      "turn_id": "cf6eeac8-253e-4fa7-b41e-c57e3d9f97fa",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -555,9 +555,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -708,7 +708,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.313597+00:00",
+      "created_at": "2026-03-14T07:20:26.853464+00:00",
       "assertion": {
         "case_id": "gs-003",
         "passed": true,
@@ -730,9 +730,9 @@
       }
     },
     {
-      "id": "464b157c-2ba9-45fb-8ce3-5977d30d1a13",
-      "turn_id": "7276a72a-c0b1-4221-afdd-0e1d07ae4630",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "00174ad9-dfb4-4031-b66d-b1aef34ff195",
+      "turn_id": "01b89f11-3611-4ccc-8519-5fe62fff4079",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -837,9 +837,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -926,7 +926,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.319178+00:00",
+      "created_at": "2026-03-14T07:20:26.857924+00:00",
       "assertion": {
         "case_id": "gs-004",
         "passed": true,
@@ -949,9 +949,9 @@
       }
     },
     {
-      "id": "03da45eb-5854-4b0f-b7dc-07c1a98bb095",
-      "turn_id": "fb154f6d-9e4c-4bff-8858-9033dae8f70f",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "184926fc-8690-4394-add1-fdc58e5e8af4",
+      "turn_id": "c1597544-1fbf-4258-8825-ffaa96bc4636",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -1056,9 +1056,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -1145,7 +1145,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.323896+00:00",
+      "created_at": "2026-03-14T07:20:26.861897+00:00",
       "assertion": {
         "case_id": "gs-005",
         "passed": false,
@@ -1171,9 +1171,9 @@
       }
     },
     {
-      "id": "6e9b410b-d12a-4760-a247-a1c0dfefc549",
-      "turn_id": "2ce74649-df78-4e7f-9435-3876db3321e0",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "27fc05fe-5fd2-4b7e-a445-d613489a0426",
+      "turn_id": "625a2ac6-caf6-4fd2-ac3b-85fce4a042de",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -1291,9 +1291,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -1382,7 +1382,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.328176+00:00",
+      "created_at": "2026-03-14T07:20:26.865894+00:00",
       "assertion": {
         "case_id": "gs-006",
         "passed": true,
@@ -1406,9 +1406,9 @@
       }
     },
     {
-      "id": "bdc6318a-240d-48e2-9662-baa475e5ae18",
-      "turn_id": "8c53bf9a-7d92-4dfc-8e4b-b6951fa89d1d",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "8b560092-58a5-431c-8e04-9fdff8f5ab0e",
+      "turn_id": "11894297-f0d8-46d7-9eb5-d5222099f4f8",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -1480,9 +1480,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -1537,7 +1537,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.332197+00:00",
+      "created_at": "2026-03-14T07:20:26.869745+00:00",
       "assertion": {
         "case_id": "gs-007",
         "passed": false,
@@ -1563,9 +1563,9 @@
       }
     },
     {
-      "id": "548cc910-90f9-4c29-803d-5317164a8ce4",
-      "turn_id": "d5c4aa5a-921e-47cc-b29f-9ae8896f99fb",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "6af4bc6a-78cb-4d06-af0f-1bf6ee895959",
+      "turn_id": "40c2d4b3-fdc8-4538-bf26-85a04b2b2b86",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -1703,9 +1703,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -1824,7 +1824,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.337789+00:00",
+      "created_at": "2026-03-14T07:20:26.874105+00:00",
       "assertion": {
         "case_id": "gs-008",
         "passed": true,
@@ -1846,9 +1846,9 @@
       }
     },
     {
-      "id": "78e87a6b-5a56-4d72-b5d2-2d05430dee06",
-      "turn_id": "36152f03-2f00-44fe-8be3-cb358622c878",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "8c6cfef3-0387-44c9-b98e-778eb2ead4cb",
+      "turn_id": "de31fa04-0581-43cc-8a60-8acb29766034",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -1966,9 +1966,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -2057,7 +2057,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.342332+00:00",
+      "created_at": "2026-03-14T07:20:26.878052+00:00",
       "assertion": {
         "case_id": "gs-009",
         "passed": true,
@@ -2081,9 +2081,9 @@
       }
     },
     {
-      "id": "41587fdb-fcbd-42b7-9e16-55b585ced0e4",
-      "turn_id": "065e7244-9d33-4e3a-b198-b725788f784f",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "45fdb0c3-0964-49fb-8880-f3a79409d910",
+      "turn_id": "68dca026-ce89-4945-a283-92352bd5f466",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -2201,9 +2201,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -2292,7 +2292,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.346642+00:00",
+      "created_at": "2026-03-14T07:20:26.882115+00:00",
       "assertion": {
         "case_id": "gs-010",
         "passed": true,
@@ -2316,9 +2316,9 @@
       }
     },
     {
-      "id": "160cc83a-88b5-49f0-9cf3-2bf04d210f42",
-      "turn_id": "bbd6aabe-6f67-4b05-8e8b-52e5a9c272b6",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "851ef82f-4df1-4ebd-888c-ac3dec542435",
+      "turn_id": "78c5555c-8dc3-4a46-92fe-7258b6c8aae5",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -2436,9 +2436,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -2527,7 +2527,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.351520+00:00",
+      "created_at": "2026-03-14T07:20:26.886219+00:00",
       "assertion": {
         "case_id": "gs-011",
         "passed": false,
@@ -2556,9 +2556,9 @@
       }
     },
     {
-      "id": "58dddf5e-7395-4f37-b589-a206fe5db7d7",
-      "turn_id": "676674a4-8399-4e9a-8fcf-93b63032de8a",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "b43dc2f8-ffe1-4b5f-80b4-93c13fd8cb15",
+      "turn_id": "c51c57ff-16be-4736-9b1b-9f60545f6daa",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -2643,9 +2643,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -2702,7 +2702,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.356190+00:00",
+      "created_at": "2026-03-14T07:20:26.889783+00:00",
       "assertion": {
         "case_id": "gs-012",
         "passed": true,
@@ -2726,9 +2726,9 @@
       }
     },
     {
-      "id": "f8a34d55-260f-44a7-8cb7-fbed752567c0",
-      "turn_id": "54a74eee-1dac-44f7-a64d-8901f83faaef",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "61ec5a03-0860-4de3-b099-6708cd94dc24",
+      "turn_id": "8c58f150-32fc-4641-a43b-75ec8df73ed3",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -2833,9 +2833,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -2922,7 +2922,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.360502+00:00",
+      "created_at": "2026-03-14T07:20:26.893790+00:00",
       "assertion": {
         "case_id": "gs-013",
         "passed": false,
@@ -2948,9 +2948,9 @@
       }
     },
     {
-      "id": "246554b6-d44a-4b60-a03c-5fafbe4291cc",
-      "turn_id": "96784dd9-bd39-4380-af90-fd90891dad7d",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "9dd1386a-7165-4031-83c5-610bdd40328d",
+      "turn_id": "df8f606a-f767-4f82-af00-2e5be2aee385",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -3035,9 +3035,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -3094,7 +3094,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.364270+00:00",
+      "created_at": "2026-03-14T07:20:26.897345+00:00",
       "assertion": {
         "case_id": "gs-014",
         "passed": true,
@@ -3118,9 +3118,9 @@
       }
     },
     {
-      "id": "644fd49e-16b5-492f-b453-3dc3e66f80c9",
-      "turn_id": "475870af-884a-4955-a078-a735b4926390",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "1d63a95e-1af3-423b-9281-377b1981628b",
+      "turn_id": "1da685ba-15b8-485b-a4b0-a885c281990e",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -3238,9 +3238,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -3329,7 +3329,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.369880+00:00",
+      "created_at": "2026-03-14T07:20:26.901358+00:00",
       "assertion": {
         "case_id": "gs-015",
         "passed": true,
@@ -3353,9 +3353,9 @@
       }
     },
     {
-      "id": "bea6de85-a124-4509-b6b8-8342168d5f1e",
-      "turn_id": "8d5b1060-e86e-464b-89f9-92446179568c",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "0a7ccb35-b4d9-48fb-8810-21fd83ed6100",
+      "turn_id": "e9247e10-960d-45dc-98f0-ecaeacd3b2a3",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -3427,9 +3427,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -3484,7 +3484,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.374045+00:00",
+      "created_at": "2026-03-14T07:20:26.904908+00:00",
       "assertion": {
         "case_id": "gs-016",
         "passed": false,
@@ -3510,9 +3510,9 @@
       }
     },
     {
-      "id": "34e48119-8bde-4f9d-ab67-66cc749fd91d",
-      "turn_id": "3397655e-2c1b-4dc1-80f9-b77d0e92d433",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "709f3d98-3cfd-45e7-bbe8-89c4b070ebee",
+      "turn_id": "8ff7c7c7-9674-484b-a5e2-5a2e54004ca3",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -3630,9 +3630,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -3721,7 +3721,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.378267+00:00",
+      "created_at": "2026-03-14T07:20:26.908882+00:00",
       "assertion": {
         "case_id": "gs-017",
         "passed": false,
@@ -3749,9 +3749,9 @@
       }
     },
     {
-      "id": "ced0cca7-e87b-4ec0-9938-779fbb32b374",
-      "turn_id": "c4acf761-884d-46a3-a81e-811b285a9654",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "428c1764-b5c6-41bb-a4be-7ac2189434a2",
+      "turn_id": "3e635b79-99fa-4853-a3b8-7f49c290961f",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -3823,9 +3823,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -3880,7 +3880,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.381991+00:00",
+      "created_at": "2026-03-14T07:20:26.912437+00:00",
       "assertion": {
         "case_id": "gs-018",
         "passed": false,
@@ -3906,9 +3906,9 @@
       }
     },
     {
-      "id": "662bd48d-40d1-4701-a214-e78b41294b89",
-      "turn_id": "60b1e244-c74e-46eb-ae5a-782286098c58",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "2733a301-3da0-49e5-a5c0-934608946f7c",
+      "turn_id": "33829f22-a733-4c59-999f-852e6027fd1a",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -4013,9 +4013,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -4102,7 +4102,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.387227+00:00",
+      "created_at": "2026-03-14T07:20:26.916401+00:00",
       "assertion": {
         "case_id": "gs-019",
         "passed": false,
@@ -4128,9 +4128,9 @@
       }
     },
     {
-      "id": "a29c93df-104b-40ed-9814-54151a7e006e",
-      "turn_id": "3955b590-22e9-4bd0-bc64-f066843f9e21",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "036a1821-cb9b-48e1-83c5-2c97882fd545",
+      "turn_id": "859753b2-5931-43c1-b46e-693c1ec8c67f",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -4248,9 +4248,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -4339,7 +4339,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.391684+00:00",
+      "created_at": "2026-03-14T07:20:26.920425+00:00",
       "assertion": {
         "case_id": "gs-020",
         "passed": true,
@@ -4363,9 +4363,9 @@
       }
     },
     {
-      "id": "45b74f0e-9a46-4af0-8e24-75c9cd7e5371",
-      "turn_id": "2e1a779b-dfdc-45d8-9c1d-8c68244e59d2",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "43ed64c3-a107-4d22-a4ca-6024a177f584",
+      "turn_id": "6960c327-3c08-4617-9759-c526b775895d",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -4437,9 +4437,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -4494,7 +4494,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.395452+00:00",
+      "created_at": "2026-03-14T07:20:26.924002+00:00",
       "assertion": {
         "case_id": "gs-021",
         "passed": true,
@@ -4516,9 +4516,9 @@
       }
     },
     {
-      "id": "522fae39-00f5-4b82-9151-9d8faa767404",
-      "turn_id": "f64b28f5-04bc-431f-a36c-b827cf1e8f81",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "67266902-23c5-498b-8aa2-26db2eb004ed",
+      "turn_id": "4c0440d9-0ea5-4b32-85dd-d658d1a9affb",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -4590,9 +4590,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -4647,7 +4647,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.399156+00:00",
+      "created_at": "2026-03-14T07:20:26.927462+00:00",
       "assertion": {
         "case_id": "gs-022",
         "passed": true,
@@ -4669,9 +4669,9 @@
       }
     },
     {
-      "id": "43fdde1d-e544-404d-8a08-c75ec10ff296",
-      "turn_id": "c805c7f2-6ff8-4e98-9976-c5931f0f58f3",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "8241712b-9455-4cde-9b19-6cca7186101b",
+      "turn_id": "afa43f0b-9382-41d7-aefc-76c56fec03b9",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -4776,9 +4776,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -4865,7 +4865,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.404513+00:00",
+      "created_at": "2026-03-14T07:20:26.931352+00:00",
       "assertion": {
         "case_id": "gs-023",
         "passed": false,
@@ -4891,9 +4891,9 @@
       }
     },
     {
-      "id": "05b0a6d5-0255-4f34-9352-4ad268f2b3a7",
-      "turn_id": "435a6688-7e9d-4a4d-84d3-c5c77910071a",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "669797da-c0b3-40c9-a88c-ac3059c5d816",
+      "turn_id": "af512fa6-f15b-448f-94db-5d00e8c734cf",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -4998,9 +4998,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -5087,7 +5087,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.408702+00:00",
+      "created_at": "2026-03-14T07:20:26.935230+00:00",
       "assertion": {
         "case_id": "gs-024",
         "passed": true,
@@ -5109,9 +5109,9 @@
       }
     },
     {
-      "id": "cca65dda-a927-4e63-ae87-61158b28a803",
-      "turn_id": "857f03d7-1775-44e2-bc5e-8fd6f6f88502",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "ad14157d-fbda-4a46-9577-47890c321660",
+      "turn_id": "0e263e15-2e41-45b3-a9e1-27ebf4192cb6",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -5229,9 +5229,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -5320,7 +5320,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.412908+00:00",
+      "created_at": "2026-03-14T07:20:26.939122+00:00",
       "assertion": {
         "case_id": "gs-025",
         "passed": true,
@@ -5344,9 +5344,9 @@
       }
     },
     {
-      "id": "29c940e5-302f-436a-b78f-36fa769573b9",
-      "turn_id": "7949eee1-20c9-4fe8-95fb-8cef64479591",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "51fc83f9-057c-4764-8406-fb543ba7b703",
+      "turn_id": "5b0890e6-dbd0-4d4b-9a93-3761fe464b1b",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -5418,9 +5418,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -5475,7 +5475,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.416712+00:00",
+      "created_at": "2026-03-14T07:20:26.942661+00:00",
       "assertion": {
         "case_id": "gs-026",
         "passed": true,
@@ -5497,9 +5497,9 @@
       }
     },
     {
-      "id": "94a45ba7-0bb8-416e-aa6b-f5e6669e49a9",
-      "turn_id": "c9366719-022c-48f6-bb5a-d47798b4d6f0",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "6d3e98d8-172f-4b83-aeaa-ab0faafc7f48",
+      "turn_id": "bc132aa2-c063-45c4-bcf0-77aabfafcf56",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -5637,9 +5637,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -5758,7 +5758,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.422759+00:00",
+      "created_at": "2026-03-14T07:20:26.946993+00:00",
       "assertion": {
         "case_id": "gs-027",
         "passed": true,
@@ -5780,9 +5780,9 @@
       }
     },
     {
-      "id": "edb06260-df1c-456d-af0a-c201aae3b0c1",
-      "turn_id": "0ca5642e-eebd-492d-971b-197d4d6f6337",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "24f56e41-a4c1-4c08-85e5-c0804e6596a9",
+      "turn_id": "95da72d9-8cf9-4a7a-9cdd-b00702590499",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -5920,9 +5920,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -6041,7 +6041,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.427750+00:00",
+      "created_at": "2026-03-14T07:20:26.951447+00:00",
       "assertion": {
         "case_id": "gs-028",
         "passed": true,
@@ -6063,9 +6063,9 @@
       }
     },
     {
-      "id": "be0c734d-28c3-48c9-8ff3-8c2e1852c887",
-      "turn_id": "52e9144f-05a7-4e5f-b8c3-12ea20fd2016",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "26284fb3-63f7-4036-ae6d-81f1ebe7e595",
+      "turn_id": "9967f8df-aa8f-4ed2-8904-9b277fb2cafc",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -6183,9 +6183,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -6274,7 +6274,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.431879+00:00",
+      "created_at": "2026-03-14T07:20:26.955413+00:00",
       "assertion": {
         "case_id": "gs-029",
         "passed": true,
@@ -6299,9 +6299,9 @@
       }
     },
     {
-      "id": "90041d98-8c5f-4bfc-93fc-257a372a1c05",
-      "turn_id": "f368cb83-34e3-4a08-a2df-20085c07704d",
-      "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+      "id": "32f2fbcb-281c-4811-b65c-ccc56edb1482",
+      "turn_id": "0b3a1fd3-5bfa-4129-a396-4ef0d5ac43be",
+      "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
       "evaluator_version": "eval-v1",
       "model_name": "heuristic:heuristic-judge",
       "prompt_version": "v1.6",
@@ -6373,9 +6373,9 @@
         "model": "heuristic-judge"
       },
       "lineage": {
-        "trace_id": "aef51853-a081-4ab3-b350-b53ff2265a8a",
-        "lineage_id": "5b1ccfc8-d3bc-4c39-a8df-502e50529be0",
-        "run_id": "51337f87-9eb2-42df-a4dd-185ca3f12313",
+        "trace_id": "0778274a-f5e4-41b7-b3e0-7ace7fca3bd5",
+        "lineage_id": "88ccb30b-533f-4836-a551-b4ae9f90b59d",
+        "run_id": "84c09142-2051-408e-8f3a-9a1db1530302",
         "run_label": "v1.6",
         "dataset": "golden-set",
         "evaluator_version": "eval-v1",
@@ -6430,7 +6430,7 @@
       },
       "assertion_result": {},
       "explanation": "Rule/Evidence 기반 휴리스틱 판정 결과",
-      "created_at": "2026-03-13T01:55:25.437321+00:00",
+      "created_at": "2026-03-14T07:20:26.958939+00:00",
       "assertion": {
         "case_id": "gs-030",
         "passed": false,

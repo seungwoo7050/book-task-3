@@ -18,6 +18,12 @@
 - 학습 로그
 - SQLite 복구 가이드
 
+## 제외 범위
+
+- Postgres, Redis, Docker Compose를 포함한 제출용 패키징
+- queue/worker 분리와 별도 비동기 프로세스 운영
+- 실제 클라우드 배포와 운영 자동화
+
 ## 이 문제를 푸는 공개 답안
 
 - [NestJS capstone 레인](../nestjs/README.md)

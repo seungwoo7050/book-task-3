@@ -1,28 +1,24 @@
-# 802.11 Wireless Packet Analysis series map
+# 802.11 Wireless Packet Analysis 시리즈 맵
 
-이 프로젝트를 읽을 때 붙들 질문은 하나다. 무선 링크 계층에서는 beacon, probe, association이 어떤 순서로 보이는가?
+이 lab의 중심 질문은 "wireless LAN에서 연결이 실제로 어떤 management 단계들을 거쳐 성립하는가"다. 현재 trace는 `30 Munroe St`와 `linksys12` beacon으로 시작해, station `00:12:f0:1c:3e:82`가 probe, auth, association을 거쳐 data frame을 보내고 AP ACK를 받는 장면까지 압축해서 보여 준다.
 
-## 무엇을 근거로 복원했는가
+## 이 lab를 읽는 질문
 
-- 프로젝트 README: `study/03-Packet-Analysis-Top-Down/wireless-802.11/README.md`
-- 문제 문서와 실행 표면: `study/03-Packet-Analysis-Top-Down/wireless-802.11/problem/README.md`, `study/03-Packet-Analysis-Top-Down/wireless-802.11/problem/Makefile`
-- 분석 본문: `study/03-Packet-Analysis-Top-Down/wireless-802.11/analysis/src/wireless-analysis.md`
-- 정식 검증 출력: `make -C study/03-Packet-Analysis-Top-Down/wireless-802.11/problem test`
+- beacon과 probe는 어떤 차이로 네트워크 discovery를 나누는가
+- authentication과 association은 둘 다 성공 status를 주지만 역할이 왜 다른가
+- `To DS`/`From DS`와 ACK frame을 보면 station-ap data exchange 구조가 어떻게 보이는가
 
-## 어떤 순서로 읽으면 되는가
+## 이번에 사용한 근거
 
-1. `problem/README.md`로 문제 조건과 성공 기준을 확인한다.
-2. 이 문서에서 어떤 입력을 근거로 썼는지 먼저 본다.
-3. `01-evidence-ledger.md`로 세 단계 흐름을 짧게 파악한다.
-4. `10-development-timeline.md`에서 코드나 trace, CLI를 따라간다.
+- `problem/README.md`
+- `analysis/src/wireless-analysis.md`
+- `problem/Makefile`
+- `problem/script/verify_answers.sh`
+- 2026-03-14 재실행한 `beacons`, `probes`, `auth`, `assoc`, `data`, `ack`, `frames-summary`
 
-## 이번 리라이트에서 의도적으로 제외한 입력
+## 이번 재실행에서 고정한 사실
 
-- 현재 `study/blog/**`의 이전 본문
-- `notion/`, `notion-archive/` 아래의 서술형 메모
-
-## 짧은 판정 메모
-
-- 독립 프로젝트로 본 이유: `802.11 Wireless Packet Analysis`는 자기 README와 정식 검증 명령으로 범위를 독립적으로 설명할 수 있다.
-- 보관본 위치: `study/blog/_legacy`
-- 이번 글의 중심 답: 비콘, 프로브, 인증, 연관, 주소 필드를 통해 무선 LAN 연결 과정을 읽는 랩입니다.
+- beacon frames `1/2`의 SSID는 `30 Munroe St`, `linksys12`이고 beacon interval은 둘 다 `100`.
+- probe request frame `3`은 broadcast, probe response frame `4`는 AP unicast다.
+- auth request/response frames `5/6`은 algorithm `0`, status success다.
+- association response frame `8`은 success와 AID `0x0001`을 담고, data frame `9` 뒤 ACK frame `10`이 따라온다.

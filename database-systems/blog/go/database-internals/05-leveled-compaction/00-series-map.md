@@ -1,39 +1,28 @@
-# 05 Leveled Compaction 시리즈 맵
+# 05 Leveled Compaction
 
-Database Internals 트랙의 5번째 슬롯인 `05 Leveled Compaction`에서는 L0의 겹치는 SSTable을 병합하고 manifest를 원자적으로 갱신해 leveled compaction의 핵심만 구현합니다. 이 시리즈는 결과 요약보다 실제 구현 순서가 어디서 선명해지는지 보여 주는 데 초점을 둔다.
+## 이 랩의 실제 질문
 
-## 먼저 보고 갈 질문
+이 프로젝트는 compaction을 "파일 몇 개를 합친다" 수준이 아니라, overwrite와 tombstone의 우선순위를 어떻게 보존하면서 level state를 원자적으로 바꾸는가라는 질문으로 다룬다. L0의 겹치는 SSTable들을 newest-first source 배열로 뒤집어 merge하고, deepest level일 때만 tombstone을 제거하며, 새 결과 파일이 생긴 뒤에야 manifest를 atomic write로 갱신하고, 마지막에 입력 파일을 지운다.
 
-- 입력 source 배열에서 newer-first 우선순위를 유지한 k-way merge를 수행해야 합니다.
-- deepest level일 때만 tombstone을 제거해야 합니다.
+즉 이 랩의 핵심은 compaction scheduling이 아니라 merge ordering과 metadata atomicity다.
 
-## 읽는 순서
+이번 시리즈는 기존 blog를 입력 근거로 쓰지 않고 [`problem/README.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/05-leveled-compaction/problem/README.md), [`compaction.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/05-leveled-compaction/internal/compaction/compaction.go), [`compaction_test.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/05-leveled-compaction/tests/compaction_test.go), [`main.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/05-leveled-compaction/cmd/leveled-compaction/main.go), 그리고 2026-03-14 재실행 결과만으로 다시 썼다.
 
-1. [10-chronology-scope-and-surface.md](10-chronology-scope-and-surface.md) — 테스트 이름과 파일 배치부터 훑으면서 문제의 테두리를 다시 좁히는 글
-2. [20-chronology-core-invariants.md](20-chronology-core-invariants.md) — 핵심 함수와 상태 전이에서 invariant가 실제로 어디서 잠기는지 따라가는 글
-3. [30-chronology-verification-and-boundaries.md](30-chronology-verification-and-boundaries.md) — 테스트와 demo를 다시 돌려 약속 범위와 남는 한계를 정리하는 글
+## 이번에 붙드는 질문
 
-## 재검증 명령
+- k-way merge에서 같은 key의 최신 값은 어떻게 살아남는가
+- tombstone은 언제 유지되고 언제 버려지는가
+- manifest와 data file은 어떤 순서로 바뀌어야 하는가
+- compaction 뒤 old input file 정리는 언제 일어나는가
 
-```bash
-GOWORK=off go test ./...
-GOWORK=off go run ./cmd/leveled-compaction
-```
+## 문서 지도
 
-## 이번 시리즈가 근거로 삼은 파일
+- [10-chronology-scope-and-surface.md](/Users/woopinbell/work/book-task-3/database-systems/blog/go/database-internals/05-leveled-compaction/10-chronology-scope-and-surface.md): 문제 범위, compaction surface, demo 결과를 시간순으로 정리한다.
+- [20-chronology-core-invariants.md](/Users/woopinbell/work/book-task-3/database-systems/blog/go/database-internals/05-leveled-compaction/20-chronology-core-invariants.md): newest-first merge, tombstone drop 조건, manifest atomicity, input file cleanup를 소스 기준으로 설명한다.
+- [30-chronology-verification-and-boundaries.md](/Users/woopinbell/work/book-task-3/database-systems/blog/go/database-internals/05-leveled-compaction/30-chronology-verification-and-boundaries.md): go test와 demo, 추가 재실행을 묶어 현재 검증 범위와 한계를 정리한다.
+- [_evidence-ledger.md](/Users/woopinbell/work/book-task-3/database-systems/blog/go/database-internals/05-leveled-compaction/_evidence-ledger.md): 근거 파일과 재실행 명령, 관찰값을 남긴다.
+- [_structure-outline.md](/Users/woopinbell/work/book-task-3/database-systems/blog/go/database-internals/05-leveled-compaction/_structure-outline.md): 문서 구조 선택 이유와 버린 접근을 적는다.
 
-- `database-systems/go/database-internals/projects/05-leveled-compaction/internal/sstable/sstable.go`
-- `database-systems/go/database-internals/projects/05-leveled-compaction/tests/compaction_test.go`
-- `database-systems/go/database-internals/projects/05-leveled-compaction/README.md`
-- `database-systems/go/database-internals/projects/05-leveled-compaction/problem/README.md`
-- `database-systems/go/database-internals/projects/05-leveled-compaction/docs/README.md`
-- `database-systems/go/database-internals/projects/05-leveled-compaction/internal/compaction/compaction.go`
-- `database-systems/go/database-internals/projects/05-leveled-compaction/cmd/leveled-compaction/main.go`
+## 지금 기준의 결론
 
-## 보조 메모
-
-작업 메모가 꼭 필요할 때만 [_evidence-ledger.md](_evidence-ledger.md)와 [_structure-outline.md](_structure-outline.md)를 보면 된다. 공개 시리즈는 `00 -> 10 -> 20 -> 30`만 따라가면 충분하다.
-
-## Git Anchor
-
-- `2026-03-11 bbb6673 Track 1에 대한 전반적인 개선 완료`
+이 랩은 Go 저장 엔진 트랙에서 "compaction이 단순 merge가 아니라 overwrite/tombstone semantics와 metadata atomicity를 동시에 다루는 작업"이라는 사실을 가장 선명하게 보여 준다. background scheduler나 multi-level balancing은 아직 의도적으로 비워 둔다.

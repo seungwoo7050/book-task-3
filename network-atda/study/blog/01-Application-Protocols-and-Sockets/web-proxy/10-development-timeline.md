@@ -1,129 +1,29 @@
-# Web Proxy development timeline
+# Web Proxy 개발 타임라인
 
-`Web Proxy`의 핵심은 완성 결과보다, 어떤 순서로 범위를 좁히고 검증까지 닫았는가에 있다.
+이 lab의 흐름은 기능이 늘어나는 역사보다, 프록시가 어떤 분기점들을 직접 맡는지 따라가는 편이 더 정확하다.
 
-본문은 코드나 trace를 한 번에 길게 복붙하지 않고, 판단이 바뀐 지점만 골라 이어 붙인다.
+## 1. 먼저 요청 라인을 읽고 절대 URL만 허용한다
 
-## 구현 순서 한눈에 보기
+현재 구현은 `GET` 외 요청이나 토큰 부족 요청을 바로 `400 Bad Request`로 거절한다. 즉 출발점은 캐시가 아니라 request line parsing이다. 프록시는 브라우저와 달리 절대 URL을 입력으로 받기 때문에, 이 parsing이 origin fetch 전체의 전제가 된다.
 
-1. `study/01-Application-Protocols-and-Sockets/web-proxy/problem`의 문제 문서와 실행 target으로 출발점을 고정했다.
-2. `study/01-Application-Protocols-and-Sockets/web-proxy/python/src/web_proxy.py`의 핵심 구간에서 동작 규칙을 설명할 수 있는 최소 앵커를 골랐다.
-3. `make -C study/01-Application-Protocols-and-Sockets/web-proxy/problem test`와 테스트/verify 파일을 연결해 통과 신호와 남은 경계를 정리했다.
+## 2. cache hit을 먼저 판단해 중개 비용을 줄인다
 
-## 1. 실행 표면과 entrypoint를 먼저 고정하기
+`get_cache_path(url)`로 파일 경로를 만들고, 파일이 있으면 origin 연결 없이 곧바로 cached response를 반환한다. 테스트도 첫 fetch와 second fetch를 나눠서 이 동작을 확인한다. 현재 cache는 TTL이나 validation이 없는 단순한 파일 저장이지만, "같은 URL을 다시 받으면 더 이상 origin으로 가지 않는다"는 의미는 분명하다.
 
-처음에는 `Web Proxy`를 어디서부터 설명해야 할지부터 정리해야 했다. 그래서 문제 문서와 `make help` 출력으로 공개된 실행 표면을 먼저 잡았다.
+## 3. miss면 origin client 역할로 전환한다
 
-- 당시 목표: `Web Proxy`를 읽는 출발점과 성공 기준을 고정한다.
-- 실제 진행: `problem/README.md`와 `problem/Makefile`을 먼저 확인한 뒤, `def parse_url`가 있는 파일로 내려갔다.
-- 검증 신호: `make help`에 보이는 target만으로도 이 프로젝트가 어떤 명령으로 열리고 닫히는지 설명할 수 있었다.
-- 새로 배운 것: 절대 URL 파싱과 origin request 재구성
+cache miss가 나면 proxy는 곧바로 origin client가 된다. `fetch_from_origin()`은 `GET {path} HTTP/1.1`, `Host`, `Connection: close`, `User-Agent`를 넣어 새 요청을 만들고, origin 응답을 끝까지 읽는다. 이 지점이 이 lab의 진짜 전환점이다. 하나의 프로그램이 request receiver와 request emitter를 모두 맡는다.
 
-핵심 코드/trace:
+## 4. 프록시 오류는 별도 HTTP 상태로 드러난다
 
-```python
-def parse_url(url: str) -> tuple[str, int, str]:
-    """절대 HTTP URL을 `(hostname, port, path)`로 분해한다.
+timeout은 `504`, origin DNS/connection 문제는 `502`로 나뉜다. 즉 이 lab는 단순 중계가 아니라, origin과 client 사이의 실패를 프록시 관점에서 다시 번역한다.
 
-    Args:
-        url: 절대 HTTP URL.
+## 5. 현재 검증이 보여 주는 범위
 
-    Returns:
-        `(hostname, port, path)` tuple.
-    """
-    # `http://` scheme을 제거한다.
-```
+2026-03-14 정식 재실행에서는 세 가지가 pass했다.
 
-왜 이 코드가 중요했는가:
+- 첫 fetch 성공
+- second fetch cache 재사용
+- 응답 body 비어 있지 않음
 
-이 부분을 먼저 보여 주는 이유는, 이 프로젝트의 진입점과 실행 표면이 여기서 한 번에 정리되기 때문이다.
-
-CLI:
-
-```bash
-$ make -C study/01-Application-Protocols-and-Sockets/web-proxy/problem help
-  run-proxy          Start the skeleton proxy on port $(PORT)
-  run-solution       Start the solution proxy on port $(PORT)
-  test               Run the test script with a temporary solution proxy
-  request            Send a test request through the proxy
-```
-
-## 2. URL 해석과 cache/origin 분기를 한 요청 흐름으로 묶기
-
-이제부터는 설명을 추상적으로 유지할 수 없었다. 실제 분기나 frame evidence가 모이는 지점을 찾아야 글이 살아났다.
-
-- 당시 목표: `클라이언트 요청을 중계하고 파일 기반 캐시로 재사용하는 간단한 HTTP 프록시 구현입니다.`를 실제 근거에 붙인다.
-- 실제 진행: `def handle_client` 주변을 중심으로 symbol이나 trace 결과를 다시 좁혀 읽었다.
-- 검증 신호: 짧은 `rg`/filter 출력만으로도 어느 줄이 설명의 중심인지 바로 드러났다.
-- 새로 배운 것: 프록시의 server/client 이중 역할
-
-핵심 코드/trace:
-
-```python
-def handle_client(client_socket: socket.socket, address: tuple) -> None:
-    """client의 단일 proxy 요청을 처리한다.
-
-    Args:
-        client_socket: client와 연결된 TCP socket.
-        address: client의 `(host, port)` tuple.
-    """
-    try:
-        # client의 HTTP 요청을 읽는다.
-        request = client_socket.recv(BUFFER_SIZE).decode(errors="replace")
-```
-
-왜 이 코드가 중요했는가:
-
-여기서는 구현이나 분석의 무게중심이 바뀐다. 그래서 파일 전체보다 이 좁은 구간을 먼저 보는 편이 훨씬 정확하다.
-
-CLI:
-
-```bash
-$ rg -n -e 'def parse_url' -e 'def fetch_from_origin' -e 'def handle_client' -e 'cache_path = get_cache_path(url)' 'study/01-Application-Protocols-and-Sockets/web-proxy/python/src/web_proxy.py' 'study/01-Application-Protocols-and-Sockets/web-proxy/python/tests/test_web_proxy.py'
-study/01-Application-Protocols-and-Sockets/web-proxy/python/src/web_proxy.py:23:def parse_url(url: str) -> tuple[str, int, str]:
-study/01-Application-Protocols-and-Sockets/web-proxy/python/src/web_proxy.py:67:def fetch_from_origin(hostname: str, port: int, path: str) -> bytes:
-study/01-Application-Protocols-and-Sockets/web-proxy/python/src/web_proxy.py:105:def handle_client(client_socket: socket.socket, address: tuple) -> None:
-```
-
-## 3. 테스트와 남은 범위를 정리하기
-
-끝맺음에서 중요한 건 멋진 회고가 아니라 경계선이다. 통과한 범위와 남겨 둔 범위를 같은 문맥 안에 두려고 했다.
-
-- 당시 목표: 검증 결과와 남은 경계를 함께 정리한다.
-- 실제 진행: `make -C study/01-Application-Protocols-and-Sockets/web-proxy/problem test`를 다시 실행하고, `def test_same_url_same_key`가 남아 있는 파일을 본문 마지막 근거로 삼았다.
-- 검증 신호: 현재 공개 답안이 재현된다는 출력과, README limitation이 동시에 확인됐다.
-- 새로 배운 것: MD5 기반 캐시 키 설계
-
-핵심 코드/trace:
-
-```python
-def test_same_url_same_key(self):
-        p1 = get_cache_path("http://example.com/a")
-        p2 = get_cache_path("http://example.com/a")
-        assert p1 == p2
-
-    def test_different_url_different_key(self):
-        p1 = get_cache_path("http://example.com/a")
-        p2 = get_cache_path("http://example.com/b")
-        assert p1 != p2
-```
-
-왜 이 코드가 중요했는가:
-
-최종 단계에서 중요한 것은 '잘 됐다'가 아니라 '무엇을 확인했고 무엇은 아직 안 했다'인데, 그 기준이 이 파일에 가장 잘 남아 있다.
-
-CLI:
-
-```bash
-$ make -C study/01-Application-Protocols-and-Sockets/web-proxy/problem test
-TEST: Fetch http://127.0.0.1:18080/            [PASS]
-TEST: Second fetch (cache check)               [PASS]
-TEST: Response body is non-empty               [PASS]
- Results: 3 passed, 0 failed
-```
-
-## 남은 경계
-
-- `Cache-Control`이나 TTL 기반 만료 정책은 없습니다.
-- `HTTPS CONNECT`는 지원하지 않습니다.
-- 캐시 디렉터리 동시성 제어는 단순한 수준에 머뭅니다.
+보조 테스트는 URL parsing과 cache key stability를 직접 고정한다. 그래서 이 lab의 핵심은 완전한 HTTP cache가 아니라, 중개자 구조의 첫 책임들을 분명히 드러내는 것이다.

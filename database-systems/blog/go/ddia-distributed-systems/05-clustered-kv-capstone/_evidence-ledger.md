@@ -1,9 +1,51 @@
-# 05 Clustered KV Capstone — Evidence Ledger
+# Evidence Ledger
 
-기존 `blog/` 초안은 입력에서 제외하고, `README`, `problem/`, `docs/`, 실제 구현 파일, 테스트, 재검증 CLI만으로 chronology를 다시 세웠다.
+## Source files used
 
-| 순서 | 시간 표지 | 당시 목표 | 변경 단위 | 처음 가설 | 실제 조치 | CLI | 검증 신호 | 핵심 코드 앵커 | 새로 배운 것 | 다음 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Phase 1 | 프로젝트 범위를 tests와 README로 다시 좁힌다 | `database-systems/go/ddia-distributed-systems/projects/05-clustered-kv-capstone/README.md`, `database-systems/go/ddia-distributed-systems/projects/05-clustered-kv-capstone/tests/capstone_test.go` | 구현이 너무 작아서 단순 API 연습에 가까울 거라고 봤다. | 파일 목록과 테스트 이름을 먼저 훑어 문제의 중심을 다시 잡았다. | `find internal tests cmd -type f | sort`<br>`rg -n "^func Test" tests` | `TestRestartNodeLoadsFromDisk`까지 테스트 이름을 훑고 나니, 이 프로젝트의 중심이 단순 기능 추가가 아니라 `RouteShard` 주변의 invariant를 고정하는 일이라는 게 보였다. | `TestWriteRoutesToLeaderAndReplicates` | `Replicated Write Pipeline`에서 정리한 요점처럼, write pipeline은 다음 순서를 따른다. | `RouteShard`와 `shardRing`가 실제로 어떤 순서 제약을 만드는지 다시 본다. |
-| 2 | Phase 2 | 핵심 상태 전이와 invariant를 코드에서 확인한다 | `database-systems/go/ddia-distributed-systems/projects/05-clustered-kv-capstone/internal/capstone/capstone.go`의 `RouteShard` | `RouteShard`만 보면 충분할 거라고 생각했다. | `RouteShard`와 `shardRing`를 함께 읽어 write/read ordering을 맞췄다. | `rg -n "^(type|func) " internal cmd`<br>`rg -n "RouteShard|shardRing" internal cmd` | `RouteShard`와 `shardRing`가 같은 상태를 다른 방향에서 고정한다는 점이 드러났다. | `RouteShard` | `Static Topology`에서 정리한 요점처럼, 이 capstone은 membership change 자체를 다루지 않는다. shard 집합과 각 shard의 leader/follower 배치는 초기화 시점에 고정된다. | 테스트와 demo를 다시 실행해 이 invariant가 실제 검증 신호와 맞물리는지 확인한다. |
-| 3 | Phase 3 | 실제 검증 명령으로 pass 신호를 다시 본다 | `database-systems/go/ddia-distributed-systems/projects/05-clustered-kv-capstone/tests/capstone_test.go`와 `database-systems/go/ddia-distributed-systems/projects/05-clustered-kv-capstone/cmd/clustered-kv/main.go` | 테스트만 통과하면 경계까지 충분히 설명할 수 있을 거라고 봤다. | pytest/go test와 demo를 모두 다시 돌려, 테스트가 잡는 범위와 demo가 보여주는 표면을 분리했다. | `GOWORK=off go test ./...`<br>`GOWORK=off go run ./cmd/clustered-kv` | go test ok, 3 tests; demo 핵심 줄은 `key=alpha shard=shard-a follower=node-2 value=1 ok=true`였다. | `TestRestartNodeLoadsFromDisk` | `Static Topology`에서 정리한 요점처럼, 이 capstone은 membership change 자체를 다루지 않는다. shard 집합과 각 shard의 leader/follower 배치는 초기화 시점에 고정된다. | 현재 범위 밖: dynamic membership, automatic failover, consensus 기반 leader election은 포함하지 않습니다. |
+- `problem/README.md`
+  - 범위에서 빼는 항목이 명시돼 있어 capstone 과대해석을 막아 준다.
+- `README.md`
+  - 검증 명령과 공개 surface를 다시 확인하는 기준점으로 사용했다.
+- `docs/concepts/static-topology.md`
+  - topology가 왜 초기화 시점에 고정되는지 문장으로 확인했다.
+- `docs/concepts/replicated-write-pipeline.md`
+  - routing -> leader append -> follower catch-up -> read라는 설명을 코드와 대조했다.
+- `internal/capstone/capstone.go`
+  - `Store`, `shardRing`, `Cluster`, `SyncFollower`, `RestartNode`를 직접 추적했다.
+- `tests/capstone_test.go`
+  - replicated write, lagging follower catch-up, restart replay가 실제 회귀 테스트인지 확인했다.
+- `cmd/clustered-kv/main.go`
+  - 공개 demo가 어떤 표면까지만 보여 주는지 확인했다.
+
+## Commands rerun
+
+```bash
+GOWORK=off go test ./...
+rm -rf .demo-data && GOWORK=off go run ./cmd/clustered-kv
+find .demo-data -type f | sort
+```
+
+## Key outputs
+
+```text
+ok  	study.local/go/ddia-distributed-systems/projects/05-clustered-kv-capstone/tests	(cached)
+key=alpha shard=shard-a follower=node-2 value=1 ok=true
+.demo-data/node-1/shard-a.log
+.demo-data/node-2/shard-a.log
+```
+
+## Manual boundary check
+
+임시 테스트를 추가했다가 바로 삭제하고 다음 결과를 확보했다.
+
+```text
+restart_without_sync_ok=false
+```
+
+이 결과는 `RestartNode`가 lagging follower를 자동 catch-up하지 않고, 자신의 local log만 다시 읽는다는 점을 실행으로 확인한 것이다.
+
+## Inferences called out explicitly
+
+- stale follower read 가능성은 `ReadFromNode`가 freshness 검사 없이 local store만 읽는 코드에서 나온다.
+- ordinary `Read`가 아니라 demo와 수동 경계 체크가 `ReadFromNode`를 직접 호출할 때만 follower freshness가 노출된다는 점을 같이 적었다.
+- restart boundary는 위 임시 실행 결과와 `RestartNode` 구현을 함께 근거로 삼았다.

@@ -1,110 +1,80 @@
-# 30 02 SSTable Format를 다시 돌려 보며 검증 신호와 경계를 정리하기
+# Verification And Boundaries
 
-이 시리즈의 마지막 글이다. 테스트와 demo를 다시 돌려, 앞에서 읽은 규칙이 실제 통과 신호와 어디에서 만나는지 확인한다.
+## 1. 자동 검증은 round trip, tombstone, malformed footer까지 잡는다
 
-## Phase 3 — 검증 신호와 한계를 확인하는 구간
-
-이번 글에서는 먼저 테스트가 남긴 회귀 신호를 다시 읽고, 이어서 demo가 공개하는 표면과 README가 남겨 둔 한계를 함께 정리한다.
-
-### Session 1 — 테스트가 남긴 회귀 신호 다시 보기
-
-이 구간에서 먼저 붙잡으려 한 것은 테스트 명령을 다시 돌려 핵심 invariant가 실제 회귀 신호로 남아 있는지 확인하는 것이었다. 처음 읽을 때는 pass 수치만 확인하면 충분할 거라고 생각했다.
-
-그런데 `GOWORK=off go test ./...`를 다시 실행하고, 어떤 테스트가 있는지 이미 알고 있는 상태에서 pass 신호를 다시 읽었다. 특히 `go test ok, 6 tests`가 이번 판단을 굳혀 줬다.
-
-변경 단위:
-- `database-systems/go/database-internals/projects/02-sstable-format/tests/sstable_test.go`
-
-CLI:
+2026-03-14 기준 재실행 명령은 아래와 같다.
 
 ```bash
-$ GOWORK=off go test ./...
-?   	study.local/go/database-internals/projects/02-sstable-format/cmd/sstable-format	[no test files]
-?   	study.local/go/database-internals/projects/02-sstable-format/internal/sstable	[no test files]
+cd /Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/02-sstable-format
+GOWORK=off go test ./...
+```
+
+결과는 아래처럼 통과했다.
+
+```text
 ok  	study.local/go/database-internals/projects/02-sstable-format/tests	(cached)
 ```
 
-검증 신호:
-- `go test ok, 6 tests`
-- `TestTombstones`가 실제로 회귀 테스트 묶음 안에 남아 있다는 점이 중요했다.
+테스트가 잡는 항목은 다음과 같다.
 
-핵심 코드:
+- sorted record round trip
+- missing key lookup
+- tombstone lookup
+- full `ReadAll()` 복원
+- 1000 record dataset lookup
+- malformed footer detection
 
-```go
-func TestTombstones(t *testing.T) {
-	tempDir := t.TempDir()
-	filePath := filepath.Join(tempDir, "000001.sst")
+작은 프로젝트이지만 포맷 경계와 reopen 경로를 거의 빠짐없이 건드린다.
 
-	table := sstable.New(filePath)
-	if err := table.Write([]serializer.Record{
-		{Key: "alive", Value: serializer.StringPtr("yes")},
-		{Key: "dead", Value: nil},
-	}); err != nil {
-		t.Fatalf("write failed: %v", err)
-	}
-```
+## 2. demo 재실행은 lookup 결과 네 상태를 보여 준다
 
-왜 여기서 판단이 바뀌었는가:
+demo 출력은 아래와 같았다.
 
-`TestTombstones`는 구현의 뒷부분에서 생길 수 있는 붕괴 지점을 문장보다 정확하게 고정한다. pass 숫자보다 더 중요했던 건, 어떤 경계가 계속 회귀 테스트로 남아 있느냐였다.
-
-이번 구간에서 새로 이해한 것:
-- 테스트는 단순 성공 여부보다, 어떤 invariant를 공개적으로 약속하는지 보여 주는 문서에 가깝다.
-
-다음으로 넘긴 질문:
-- demo entry point를 다시 실행해 테스트보다 얇은 표면에서 무엇을 보여 주는지 확인한다.
-
-### Session 2 — demo가 공개하는 표면과 한계 정리하기
-
-여기서 가장 먼저 확인한 것은 demo 출력과 README의 한계를 함께 읽어, 공개 표면과 내부 경계를 분리한다. 처음에는 demo는 테스트의 축약판일 뿐이라고 생각했다.
-
-하지만 실제로는 `GOWORK=off go run ./cmd/sstable-format`를 다시 실행해 마지막 한 줄을 확인하고, README의 `한계와 확장` bullet과 나란히 읽었다. 결정적으로 방향을 잡아 준 신호는 demo 핵심 줄: `missing => <missing>`.
-
-변경 단위:
-- `database-systems/go/database-internals/projects/02-sstable-format/cmd/sstable-format/main.go`
-
-CLI:
-
-```bash
-$ GOWORK=off go run ./cmd/sstable-format
+```text
 alpha => 1
 beta => 2
 gamma => <tombstone>
 missing => <missing>
 ```
 
-검증 신호:
-- demo 핵심 줄: `missing => <missing>`
-- 경계 메모: 현재 범위 밖: compression, block cache, range tombstone은 포함하지 않습니다.
-- 경계 메모: 현재 범위 밖: multi-level manifest 관리와 compaction 연결은 다음 프로젝트로 넘깁니다.
+이 출력 덕분에 문서는 `Lookup()`의 반환 shape를 추상적으로 설명하지 않고, 실제 사용자 눈에 어떻게 구분되는지까지 적을 수 있다. tombstone과 missing이 명확히 다른 결과라는 점이 특히 중요하다.
 
-핵심 코드:
+## 3. malformed footer 경계도 다시 확인했다
 
-```go
-package main
+추가로 아래 명령을 다시 실행했다.
 
-import (
-	"fmt"
-	"os"
-	"path/filepath"
-
-	"study.local/go/database-internals/projects/02-sstable-format/internal/sstable"
-	"study.local/go/shared/serializer"
-)
-
-func main() {
-	tempDir, err := os.MkdirTemp("", "sstable-demo-")
-	if err != nil {
-		panic(err)
-	}
+```bash
+GOWORK=off go test ./tests -run TestMalformedFooter -v
 ```
 
-왜 여기서 판단이 바뀌었는가:
+출력은 아래였다.
 
-demo entry point는 내부 구현을 전부 보여 주지는 않지만, 독자가 처음 마주치는 공개 표면을 결정한다. 테스트가 invariant를 지키는 장치라면, demo는 그중 무엇을 밖으로 보여 줄지 고르는 자리였다.
+```text
+=== RUN   TestMalformedFooter
+--- PASS: TestMalformedFooter (0.00s)
+PASS
+```
 
-이번 구간에서 새로 이해한 것:
-- `Lookup Path`에서 정리한 요점처럼, reopen 시점에는 footer를 읽어 index section 위치를 계산한다.
+즉 임의 8바이트만 들어 있는 잘못된 파일은 정상 SSTable처럼 해석되지 않는다. 이 프로젝트는 footer mismatch를 조용히 넘기지 않고 에러 경계로 다룬다.
 
-다음으로 넘긴 질문:
-- 이 프로젝트 이후에는 다음 트랙/다음 슬롯으로 넘어가더라도, 지금 고정한 invariant를 더 큰 저장 엔진이나 분산 경로 안에서 다시 만날 수 있다.
+## 4. 현재 구현이 일부러 다루지 않는 것
+
+이 랩을 production SSTable reader/writer로 읽으면 곤란하다.
+
+- compression이 없다
+- checksum이나 corruption recovery가 없다
+- block cache와 prefetch가 없다
+- range scan 최적화가 없다
+- manifest, multi-level file set, compaction 연결이 없다
+
+즉 지금 구현은 immutable file format의 최소 계약을 고정하는 데 집중한다.
+
+## 5. 이 문서에서 피한 과장
+
+이번 재작성에서는 아래 같은 표현을 피했다.
+
+- "RocksDB 스타일 SSTable을 완성했다"
+- "대용량 on-disk query path를 최적화했다"
+- "corruption-safe storage engine을 구현했다"
+
+현재 소스와 테스트가 보여 주는 것은 sorted write, reopen-safe index load, tombstone sentinel, malformed footer rejection까지다. 그보다 큰 주장은 근거가 없다.

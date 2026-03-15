@@ -1,26 +1,31 @@
-# ICMP Pinger blog
+# ICMP Pinger Blog
 
-`ICMP Pinger` 문서 묶음은 ICMP echo request/reply를 raw socket 위에서 어디까지 직접 조립하고 해석했는가?라는 질문에 답하기 위해 준비한 읽기 경로다. 결과만 요약하지 않고, 어디서부터 구현이나 분석이 무거워졌는지 따라갈 수 있게 구성했다.
+이 문서 묶음은 `icmp-pinger`를 "ping 비슷한 도구를 만든다"보다 "ICMP Echo Request/Reply를 raw socket 위에서 어디까지 직접 책임지는가"라는 질문으로 다시 읽는다. 현재 구현은 checksum 계산, packet build, IP header length를 고려한 reply parse, RTT 통계까지 직접 맡고, deterministic test는 fake raw socket으로 이를 고정한다. 따라서 이 lab의 핵심은 결과 문자열보다 binary packet contract와 권한 경계를 함께 다루는 데 있다.
 
-이 프로젝트의 본문은 `Raw socket으로 `ICMP Echo Request/Reply`를 직접 구현하는 진단 도구 과제입니다.`라는 한 줄 설명을 실제 파일, CLI, 테스트 신호로 다시 풀어 쓰는 데 초점을 둔다.
+이번 재작성은 기존 blog 본문이 아니라 다음 근거만 사용했다.
 
-## 이 폴더에서 기대할 수 있는 것
+- 문제 정의: `study/04-Network-Diagnostics-and-Routing/icmp-pinger/problem/README.md`
+- 구현 경계: `README.md`, `python/README.md`, `python/src/icmp_pinger.py`
+- 테스트 근거: `python/tests/test_icmp_pinger.py`, `problem/Makefile`, `problem/script/test_icmp.sh`
+- 실제 검증: 2026-03-14 재실행한 `make -C network-atda/study/04-Network-Diagnostics-and-Routing/icmp-pinger/problem test`
+- 보조 실행: `python3 python/src/icmp_pinger.py example.com -c 1` 시도
 
-- 문제 경계와 읽는 순서: [00-series-map.md](00-series-map.md)
-- 단계별 근거 압축본: [01-evidence-ledger.md](01-evidence-ledger.md)
-- 글의 편집 개요: [02-structure.md](02-structure.md)
-- 실제 서사형 기록: [10-development-timeline.md](10-development-timeline.md)
+## 읽는 순서
 
-## 근거로 사용한 source set
+1. [`00-series-map.md`](./00-series-map.md)
+2. [`10-development-timeline.md`](./10-development-timeline.md)
+3. [`01-evidence-ledger.md`](./01-evidence-ledger.md)
+4. [`02-structure.md`](./02-structure.md)
 
-- 프로젝트 루트: `study/04-Network-Diagnostics-and-Routing/icmp-pinger`
-- 정식 검증 명령: `make -C study/04-Network-Diagnostics-and-Routing/icmp-pinger/problem test`
-- 구현 파일: `study/04-Network-Diagnostics-and-Routing/icmp-pinger/python/src`
-- 테스트 파일: `study/04-Network-Diagnostics-and-Routing/icmp-pinger/python/tests`
-- 제외한 입력: 기존 `study/blog/**`, `notion/**`, `notion-archive/**`
+## 이번에 다시 확인한 검증 상태
 
-## 먼저 읽을 순서
+- 정식 검증 명령: `make -C network-atda/study/04-Network-Diagnostics-and-Routing/icmp-pinger/problem test`
+- 결과: `11 passed in 0.01s`
+- 보조 실행: live `example.com` probe는 현재 세션에서 5초 안에 완료되지 않았다
+- live harness 참고: `make test-live`는 canonical test가 아니라 root 권한과 외부 네트워크를 전제로 둔 보조 검증 경로다
 
-1. `00-series-map.md`에서 질문과 근거를 먼저 잡는다.
-2. `01-evidence-ledger.md`에서 세 단계 흐름을 짧게 본다.
-3. `10-development-timeline.md`에서 코드/trace와 CLI를 따라 내려간다.
+## 지금 남기는 한계
+
+- IPv6/ICMPv6는 지원하지 않는다.
+- live raw-socket path는 현재 네트워크와 OS 정책에 따라 재현성이 흔들린다.
+- 시스템 `ping` 수준의 detailed summary나 duplicate detection은 넣지 않았다.

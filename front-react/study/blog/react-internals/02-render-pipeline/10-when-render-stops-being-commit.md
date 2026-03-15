@@ -1,94 +1,144 @@
 # When Render Stops Being Commit
 
-foundation 단계의 순진한 렌더러는 분명 이해하기 쉽다. 하지만 그 단순함은 동시에 한계를 숨기지 않는다. old tree와 new tree가 있는데 무엇이 달라졌는지 계산하지 못하고, DOM을 언제 건드리는지도 통제하지 못한다면, "다시 그린다"는 말은 사실상 "처음부터 다시 만든다"와 다르지 않다.
+이 프로젝트를 다시 읽으면서 가장 중요하게 보였던 건 "다시 그린다"라는 말이 더 이상 하나의 단계가 아니라는 점이었다. 앞 단계에서는 `render()`가 VNode를 곧바로 DOM으로 append했다. 여기서는 그 말이 둘로 쪼개진다. 먼저 무엇이 바뀌었는지를 계산하는 render phase가 있고, 나중에야 DOM을 건드리는 commit phase가 있다.
 
-이 프로젝트는 그 상태에서 한 발 더 내려간다. render를 계산 단계로, commit을 반영 단계로 갈라서 보고, 그 사이에 diff와 patch와 work loop를 넣는다. 이름만 보면 복잡하지만, 실제로는 한 가지 질문을 계속 붙잡는 과정이다. 지금 이 변경은 어디서 계산되고, 어디서 실제 DOM이 바뀌는가.
+## diff는 바뀐 것을 찾되, 아직 DOM을 만지지 않는다
 
-그 질문이 선명해지는 순간, keyed child와 patch ordering, interrupted work 같은 주제도 더 이상 별개의 테크닉이 아니라 같은 파이프라인의 일부로 읽히기 시작한다.
+첫 번째 고정점은 [`ts/src/diff.ts`](/Users/woopinbell/work/book-task-3/front-react/study/react-internals/02-render-pipeline/ts/src/diff.ts)다. 여기서 중요한 건 patch 종류보다 계산 범위다.
 
-## 구현 순서를 먼저 짚으면
+- `diffProps`: `set` / `remove`
+- `diffChildren`: keyed 또는 index-based child diff
+- `diff`: `CREATE`, `REMOVE`, `REPLACE`, `UPDATE`
 
-- `diff.ts`에서 prop delta와 child patch를 계산하는 change detection부터 만들었다.
-- `patch.ts`에서 create/update/remove 순서를 정리해 DOM-safe한 반영 규칙을 만들었다.
-- `scheduler.ts`에서 render phase와 commit phase를 분리하고 `flushSync()` semantics를 고정했다.
-
-## 먼저 "무엇이 달라졌는가"를 계산하는 단계가 필요했다
-
-이 프로젝트의 첫 전환점은 patch가 아니라 diff다. 특히 child는 key 유무에 따라 비교 전략이 달라지므로, 단순히 같은 index끼리 비교하는 것만으로는 충분하지 않았다.
+예를 들어 keyed child diff는 "같은 key면 비교, 없으면 create, 사라졌으면 remove"까지만 한다.
 
 ```ts
-function diffChildrenByKey(oldChildren: VNode[], newChildren: VNode[]): Patch[] {
-  const oldMap = new Map<string, { node: VNode; index: number }>();
-  ...
-  if (!oldMatch) {
-    patches.push({ type: "CREATE", newNode: child, index });
-    return;
-  }
-  ...
-  if (typeof key === "string" && !visitedKeys.has(key)) {
-    patches.push({ type: "REMOVE", oldNode: child, index });
-  }
+if (!oldMatch) {
+  patches.push({
+    type: "CREATE",
+    newNode: child,
+    index,
+  });
+  return;
+}
+...
+if (typeof key === "string" && !visitedKeys.has(key)) {
+  patches.push({
+    type: "REMOVE",
+    oldNode: child,
+    index,
+  });
 }
 ```
 
-이 코드가 바꿔 놓은 건 성능보다 identity 모델이다. key가 있는 child는 더 이상 "같은 위치의 노드"가 아니라 "같은 정체성을 가진 노드"로 비교된다. 이 차이가 있어야 다음 단계의 patch도 단순한 배열 치환이 아니라 의미 있는 노드 이동/삭제/생성으로 읽힌다.
+중요한 건 여기서 reorder 자체를 표현하지 않는다는 점이다. 이 프로젝트의 diff는 최소 patch 범위를 만들지만, full keyed reconciliation engine처럼 이동 비용까지 계산하지는 않는다. 테스트도 딱 그 범위만 고정한다. keyed children에서 create/remove가 생기는지, index-based children에서는 위치별 UPDATE가 생기는지 정도만 본다.
 
-`diff.test.ts`가 keyed create/remove와 type change replace를 먼저 잡아 두는 것도 그래서다. render pipeline의 첫걸음은 DOM mutation이 아니라 change detection의 의미를 고정하는 일이다.
+unkeyed 쪽은 더 단순하다. `diffChildrenByIndex()`는 child identity를 추적하지 않고 같은 index끼리 바로 `diff()`를 건다. 그래서 앞에 새 child를 끼워 넣는 변화도 "뒤 child들을 move한다"가 아니라 "각 index의 old/new를 비교해서 UPDATE/CREATE를 만든다"는 식으로 해석된다. 즉 이 단계의 파이프라인은 render/commit 분리에는 성공했지만, React가 key 없이도 어느 정도 유지하려는 child identity semantics까지 재현하지는 않는다.
 
-## patch는 계산보다 순서가 더 중요했다
+## render phase는 fiber를 만들고 effect를 붙이지만 DOM은 아직 비어 있다
 
-patch를 적용할 때 흥미로운 지점은 알고리즘보다 순서였다. 특히 remove patch를 앞에서부터 적용하면 index가 밀려서 나머지 patch가 엉뚱한 노드를 건드릴 수 있다. 그래서 이 구현은 remove를 따로 모아 뒤에서 적용한다.
+render/commit 분리의 핵심은 [`ts/src/fiber.ts`](/Users/woopinbell/work/book-task-3/front-react/study/react-internals/02-render-pipeline/ts/src/fiber.ts)와 [`ts/src/scheduler.ts`](/Users/woopinbell/work/book-task-3/front-react/study/react-internals/02-render-pipeline/ts/src/scheduler.ts)에 있다.
+
+`reconcileChildren()`는 old fiber와 새 element를 비교해서 각 fiber에 `effectTag`를 붙인다.
 
 ```ts
-export function applyPatches(parent: HTMLElement | Text, patches: Patch[]): void {
-  const removals = patches
-    .filter((patch) => patch.type === "REMOVE")
-    .sort((left, right) => (right.index ?? 0) - (left.index ?? 0));
+if (sameType && oldFiber) {
+  nextFiber = {
+    ...
+    alternate: oldFiber,
+    effectTag: "UPDATE",
+  };
+}
 
-  const others = patches.filter((patch) => patch.type !== "REMOVE");
-  others.forEach((patch) => applyPatchAt(parent, patch, patch.index ?? 0));
-  removals.forEach((patch) => applyPatchAt(parent, patch, patch.index ?? 0));
+if (element && !sameType) {
+  nextFiber = {
+    ...
+    effectTag: "PLACEMENT",
+  };
+}
+
+if (oldFiber && !sameType) {
+  oldFiber.effectTag = "DELETION";
+  deletions.push(oldFiber);
 }
 ```
 
-이 짧은 함수는 render pipeline이 왜 필요한지 아주 선명하게 보여 준다. DOM 반영은 "패치를 받았다, 실행한다"로 끝나지 않는다. 어떤 patch를 먼저 적용하느냐가 곧 correctness 문제다.
+즉 render phase의 역할은 "무엇을 할지 기록하는 것"이지 "지금 바로 DOM을 바꾸는 것"이 아니다. `scheduler.test.ts`의 첫 테스트가 컨테이너 child count가 여전히 0인지 확인하는 이유가 여기에 있다. render가 끝나기 전까지는 DOM이 비어 있어야 한다.
 
-foundation 단계에서 `updateDom()` 정책을 먼저 분리해 둔 덕분에, 여기서는 DOM-safe ordering만 집중해서 다룰 수 있었다. 아래 계층이 미리 정리돼 있으면 위 계층도 이유 있는 단순함을 얻는다는 점이 잘 드러나는 장면이다.
+## commit은 나중에 한 번에, 그리고 제거는 뒤에서부터 처리한다
 
-## render가 commit과 갈라지는 순간 scheduler가 의미를 얻었다
-
-마지막 전환점은 `workLoop()`다. 이 함수는 다음 unit of work를 조금씩 처리하고, 시간이 다 되면 yield한다. 그리고 더 이상 남은 일이 없을 때만 `commitRoot()`를 호출한다.
+실제 DOM mutation은 [`ts/src/patch.ts`](/Users/woopinbell/work/book-task-3/front-react/study/react-internals/02-render-pipeline/ts/src/patch.ts)와 `commitRoot()`에서 일어난다. 특히 `applyPatches()`는 remove를 나중에, 그것도 index 역순으로 처리한다.
 
 ```ts
-export function workLoop(deadline: IdleDeadlineLike): void {
-  let shouldYield = false;
+const removals = patches
+  .filter((patch) => patch.type === "REMOVE")
+  .sort((left, right) => (right.index ?? 0) - (left.index ?? 0));
 
-  while (nextUnitOfWork && !shouldYield) {
-    nextUnitOfWork = performUnitOfWork(nextUnitOfWork, (fiber) => {
-      deletions.push(fiber);
-    });
-    shouldYield = deadline.timeRemaining() < 1;
-  }
+const others = patches.filter((patch) => patch.type !== "REMOVE");
+```
 
-  if (!nextUnitOfWork && wipRoot) {
-    commitRoot();
-  }
+이 ordering이 중요한 이유는 child index가 앞에서부터 무너지면 뒤 patch가 가리키는 대상이 달라질 수 있기 때문이다. create/update/replace를 먼저 하고 remove를 뒤에서부터 처리하면 DOM index 안정성이 조금 더 유지된다. 작은 구현이지만 commit ordering을 따로 의식하기 시작한 지점이라는 점에서 의미가 있다.
+
+## `flushSync`는 render phase를 강제로 끝내고 commit까지 밀어 넣는다
+
+[`ts/src/scheduler.ts`](/Users/woopinbell/work/book-task-3/front-react/study/react-internals/02-render-pipeline/ts/src/scheduler.ts)의 `workLoop()`는 `timeRemaining()`이 1 미만이면 멈춘다.
+
+```ts
+while (nextUnitOfWork && !shouldYield) {
+  nextUnitOfWork = performUnitOfWork(nextUnitOfWork, (fiber) => {
+    deletions.push(fiber);
+  });
+  shouldYield = deadline.timeRemaining() < 1;
+}
+
+if (!nextUnitOfWork && wipRoot) {
+  commitRoot();
 }
 ```
 
-이 시점부터 render는 더 이상 DOM을 즉시 바꾸는 말이 아니다. 계산만 하고 멈출 수 있는 단계가 된다. `docs/concepts/render-vs-commit.md`가 render phase에서 DOM을 바꾸지 않는다고 굳이 강조하는 이유도 여기에 있다. commit timing을 분리해야 interrupted work와 `flushSync()`를 같은 언어로 설명할 수 있다.
+여기서 `flushSync()`는 사실상 무한한 남은 시간을 주는 방식으로 work loop를 강제로 끝까지 돌린다.
 
-검증도 그 점을 정확히 겨냥한다. `scheduler.test.ts`는 render 직후 container가 아직 비어 있는지, `flushSync()`가 끝난 뒤에만 commit이 일어나는지를 확인한다. 즉 이 프로젝트의 correctness는 눈에 보이는 결과보다 "언제" 반영되느냐에 더 가깝다.
+```ts
+export function flushSync(): void {
+  workLoop({
+    timeRemaining() {
+      return Number.POSITIVE_INFINITY;
+    },
+  });
+}
+```
+
+이 구조 덕분에 interrupted work도 설명 가능해진다. 첫 pass에서 시간이 부족하면 DOM은 여전히 비어 있고, 나중에 `flushSync()`를 호출하면 그때야 commit이 일어난다. 테스트 `supports interrupted work before commit`이 바로 이 경계를 고정한다.
+
+## 이번 검증은 "계산"과 "반영"이 실제로 분리됐는지 확인하는 쪽에 가까웠다
+
+이번 Todo에서 다시 돌린 검증은 아래 한 줄이면 충분했다.
 
 ```bash
-cd study
 npm run verify --workspace @front-react/render-pipeline
 ```
 
-2026-03-13 replay 기준으로 `vitest` 8개 테스트와 `tsc --noEmit`이 모두 통과했다. 이 수치가 말해 주는 건, diff와 patch와 scheduler가 같은 파이프라인으로 묶였고 그 경계가 깨지지 않았다는 사실이다.
+재실행 결과는 다음을 확인해 줬다.
 
-## 무엇이 아직 남았는가
+- `diff.test.ts`, `patch.test.ts`, `scheduler.test.ts` 포함 8개 테스트 통과
+- typecheck 통과
 
-여기까지 와도 state와 effect와 event는 아직 없다. 즉 "언제 다시 계산할 것인가"와 "계산 결과를 언제 반영할 것인가"는 생겼지만, 무엇이 그 계산을 촉발하는지는 아직 비어 있다.
+중요한 건 pass 개수보다 어떤 경계가 잠겼는가다.
 
-그래서 다음 프로젝트는 자연스럽게 hook runtime으로 넘어간다. `03-hooks-and-events`는 바로 이 파이프라인 위에 state slot, effect cleanup, delegated event를 올려서 실제 상호작용이 어디서부터 시작되는지 설명한다.
+- prop delta와 child diff 계산
+- remove patch ordering
+- render phase 동안 DOM mutation 금지
+- interrupted work 뒤 commit 가능
+
+반대로 아직 잠기지 않은 것도 분명하다.
+
+- keyed reorder를 별도 MOVE patch로 표현하지 않는다.
+- unkeyed child reorder는 identity-preserving move가 아니라 index-based rewrite로 읽힌다.
+
+즉 이 프로젝트는 "빠른 renderer"를 만든 단계라기보다, render가 더 이상 commit과 같은 말이 아니게 된 첫 단계로 읽는 편이 정확하다.
+
+## 그래서 이 단계가 다음 runtime으로 넘어가는 진짜 다리 역할을 한다
+
+여기에는 아직 hooks도 없고 state도 없고 effect도 없다. 하지만 그걸 붙일 자리는 생겼다. tree를 계산하는 단계와 DOM에 반영하는 단계가 분리됐기 때문이다.
+
+다음 단계인 `03-hooks-and-events`가 의미를 가지려면, 상태 변경이 곧바로 DOM mutation으로 직행하지 않는다는 전제가 먼저 필요하다. 이 프로젝트는 바로 그 전제를 가장 작은 fiber-like work loop와 patch system으로 고정해 둔다.

@@ -1,9 +1,41 @@
-# 07 Heartbeat and Leader Election — Evidence Ledger
+# Evidence Ledger
 
-기존 `blog/` 초안은 입력에서 제외하고, `README`, `problem/`, `docs/`, 실제 구현 파일, 테스트, 재검증 CLI만으로 chronology를 다시 세웠다.
+## Source files used
 
-| 순서 | 시간 표지 | 당시 목표 | 변경 단위 | 처음 가설 | 실제 조치 | CLI | 검증 신호 | 핵심 코드 앵커 | 새로 배운 것 | 다음 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Phase 1 | 프로젝트 범위를 tests와 README로 다시 좁힌다 | `database-systems/go/ddia-distributed-systems/projects/07-heartbeat-and-leader-election/README.md`, `database-systems/go/ddia-distributed-systems/projects/07-heartbeat-and-leader-election/tests/election_test.go` | 구현이 너무 작아서 단순 API 연습에 가까울 거라고 봤다. | 파일 목록과 테스트 이름을 먼저 훑어 문제의 중심을 다시 잡았다. | `find internal tests cmd -type f | sort`<br>`rg -n "^func Test" tests` | `TestLeaderFailureTriggersSingleReelection`까지 테스트 이름을 훑고 나니, 이 프로젝트의 중심이 단순 기능 추가가 아니라 `heartbeatRequest` 주변의 invariant를 고정하는 일이라는 게 보였다. | `TestHealthyLeaderKeepsSendingHeartbeats` | `Heartbeat Failure Detector`에서 정리한 요점처럼, 이 프로젝트의 failure detector는 아주 단순합니다. leader heartbeat를 일정 tick 동안 못 보면 follower가 “leader가 죽었을 수 있다”고 suspect합니다. | `heartbeatRequest`와 `startElection`가 실제로 어떤 순서 제약을 만드는지 다시 본다. |
-| 2 | Phase 2 | 핵심 상태 전이와 invariant를 코드에서 확인한다 | `database-systems/go/ddia-distributed-systems/projects/07-heartbeat-and-leader-election/internal/election/election.go`의 `heartbeatRequest` | `heartbeatRequest`만 보면 충분할 거라고 생각했다. | `heartbeatRequest`와 `startElection`를 함께 읽어 write/read ordering을 맞췄다. | `rg -n "^(type|func) " internal cmd`<br>`rg -n "heartbeatRequest|startElection" internal cmd` | `heartbeatRequest`와 `startElection`가 같은 상태를 다른 방향에서 고정한다는 점이 드러났다. | `heartbeatRequest` | `Majority Election`에서 정리한 요점처럼, leader election의 핵심은 단순히 “가장 먼저 손든 node”가 아니라, 과반이 인정한 node만 authority를 가진다는 점입니다. | 테스트와 demo를 다시 실행해 이 invariant가 실제 검증 신호와 맞물리는지 확인한다. |
-| 3 | Phase 3 | 실제 검증 명령으로 pass 신호를 다시 본다 | `database-systems/go/ddia-distributed-systems/projects/07-heartbeat-and-leader-election/tests/election_test.go`와 `database-systems/go/ddia-distributed-systems/projects/07-heartbeat-and-leader-election/cmd/leader-election/main.go` | 테스트만 통과하면 경계까지 충분히 설명할 수 있을 거라고 봤다. | pytest/go test와 demo를 모두 다시 돌려, 테스트가 잡는 범위와 demo가 보여주는 표면을 분리했다. | `GOWORK=off go test ./...`<br>`GOWORK=off go run ./cmd/leader-election` | go test ok, 4 tests; demo 핵심 줄은 `recovered=node-1 state=follower term=2`였다. | `TestLeaderFailureTriggersSingleReelection` | `Majority Election`에서 정리한 요점처럼, leader election의 핵심은 단순히 “가장 먼저 손든 node”가 아니라, 과반이 인정한 node만 authority를 가진다는 점입니다. | 현재 범위 밖: log replication과 commit rule은 포함하지 않습니다. |
+- `problem/README.md`
+  - 범위와 제외 항목을 먼저 고정했다.
+- `README.md`
+  - 검증 명령과 public surface를 다시 확인했다.
+- `docs/concepts/heartbeat-failure-detector.md`
+  - suspicion과 election을 분리해 읽어야 하는 이유를 확인했다.
+- `docs/concepts/majority-election.md`
+  - isolated node가 leader가 되면 안 되는 이유를 문장으로 확인했다.
+- `internal/election/election.go`
+  - `Tick`, `startElection`, `HandleHeartbeat`, `deliverRPC`를 직접 추적했다.
+- `tests/election_test.go`
+  - healthy, failover, isolation, step-down 네 시나리오를 확인했다.
+- `cmd/leader-election/main.go`
+  - tick 기반 공개 흐름이 어떤 문자열로 드러나는지 다시 확인했다.
+
+## Commands rerun
+
+```bash
+GOWORK=off go test ./...
+GOWORK=off go run ./cmd/leader-election
+```
+
+## Key outputs
+
+```text
+ok  	study.local/go/ddia-distributed-systems/projects/07-heartbeat-and-leader-election/tests	(cached)
+tick=4 leader=node-1 term=1 suspected=[]
+tick=8 suspected=[node-2]
+tick=9 reelected=node-2 term=2
+recovered=node-1 state=follower term=2
+```
+
+## Inferences called out explicitly
+
+- deterministic first leader selection은 `NewCluster`의 fixed TTL ladder와 demo output을 함께 근거로 삼았다.
+- recovery된 old leader가 authority를 접는 방식은 `HandleHeartbeat`의 `req.Term > node.Term || node.State != Follower` 조건에서 읽었다.
+- `heartbeatRequest{LeaderID string}`는 payload에 실려 다니지만, 현재 step-down 판단은 `LeaderID` 자체를 조회하지 않는다.

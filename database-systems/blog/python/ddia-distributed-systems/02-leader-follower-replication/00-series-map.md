@@ -1,39 +1,26 @@
-# 02 Leader-Follower Replication 시리즈 맵
+# 02 Leader-Follower Replication
 
-DDIA Distributed Systems 트랙의 2번째 슬롯인 `02 Leader-Follower Replication`에서는 append-only mutation log와 watermark 기반 incremental sync로 leader-follower replication을 구현합니다. 이 시리즈는 결과 요약보다 실제 구현 순서가 어디서 선명해지는지 보여 주는 데 초점을 둔다.
+## 왜 이 랩을 다시 읽어야 하나
 
-## 먼저 보고 갈 질문
+이 프로젝트의 표면은 단순한 key-value 복제처럼 보이지만, 실제로는 "현재 상태"를 보내지 않고 "상태를 만든 ordered mutation log"를 follower가 watermark 이후부터 따라가게 만드는 연습이다. 그래서 핵심 질문도 `dict` 두 개를 맞추는 일이 아니라, leader가 어떤 순서로 log를 쌓는지, follower가 어디까지 적용했는지를 어떻게 기억하는지, 같은 batch를 다시 받아도 왜 결과가 변하지 않는지를 확인하는 쪽에 있다.
 
-- 순차 offset을 갖는 mutation log를 유지해야 합니다.
-- `put`과 `delete`가 복제돼야 합니다.
+이번 시리즈는 기존 blog를 입력으로 삼지 않고 [`problem/README.md`](/Users/woopinbell/work/book-task-3/database-systems/python/ddia-distributed-systems/projects/02-leader-follower-replication/problem/README.md), [`core.py`](/Users/woopinbell/work/book-task-3/database-systems/python/ddia-distributed-systems/projects/02-leader-follower-replication/src/leader_follower/core.py), [`test_replication.py`](/Users/woopinbell/work/book-task-3/database-systems/python/ddia-distributed-systems/projects/02-leader-follower-replication/tests/test_replication.py), 그리고 2026-03-14 재실행 결과만으로 다시 구성했다.
 
-## 읽는 순서
+## 이번 랩에서 끝까지 붙들 질문
 
-1. [10-chronology-scope-and-surface.md](10-chronology-scope-and-surface.md) — 테스트 이름과 파일 배치부터 훑으면서 문제의 테두리를 다시 좁히는 글
-2. [20-chronology-core-invariants.md](20-chronology-core-invariants.md) — 핵심 함수와 상태 전이에서 invariant가 실제로 어디서 잠기는지 따라가는 글
-3. [30-chronology-verification-and-boundaries.md](30-chronology-verification-and-boundaries.md) — 테스트와 demo를 다시 돌려 약속 범위와 남는 한계를 정리하는 글
+- leader는 local state와 replication log를 어떤 순서로 함께 갱신하는가
+- follower는 어떤 기준으로 incremental sync 범위를 자르는가
+- duplicate batch replay가 실제로 왜 무해한가
+- 반대로 이 랩이 아직 다루지 않는 failure model은 어디까지인가
 
-## 재검증 명령
+## 문서 지도
 
-```bash
-PYTHONPATH=src .venv/bin/python -m pytest
-PYTHONPATH=src .venv/bin/python -m leader_follower
-```
+- [10-chronology-scope-and-surface.md](/Users/woopinbell/work/book-task-3/database-systems/blog/python/ddia-distributed-systems/02-leader-follower-replication/10-chronology-scope-and-surface.md): 문제 범위, 코드 표면, 첫 replication 흐름을 시간순으로 정리한다.
+- [20-chronology-core-invariants.md](/Users/woopinbell/work/book-task-3/database-systems/blog/python/ddia-distributed-systems/02-leader-follower-replication/20-chronology-core-invariants.md): sequential offset, watermark, idempotent apply라는 핵심 invariant를 소스 기준으로 설명한다.
+- [30-chronology-verification-and-boundaries.md](/Users/woopinbell/work/book-task-3/database-systems/blog/python/ddia-distributed-systems/02-leader-follower-replication/30-chronology-verification-and-boundaries.md): pytest와 수동 replay 결과를 묶어 현재 검증 범위와 남은 경계를 정리한다.
+- [_evidence-ledger.md](/Users/woopinbell/work/book-task-3/database-systems/blog/python/ddia-distributed-systems/02-leader-follower-replication/_evidence-ledger.md): 이번 재작성에 사용한 근거와 재실행 명령을 기록한다.
+- [_structure-outline.md](/Users/woopinbell/work/book-task-3/database-systems/blog/python/ddia-distributed-systems/02-leader-follower-replication/_structure-outline.md): 문서 구조를 왜 이렇게 잡았는지와 탈락시킬 서술을 남긴다.
 
-## 이번 시리즈가 근거로 삼은 파일
+## 지금 기준의 결론
 
-- `database-systems/python/ddia-distributed-systems/projects/02-leader-follower-replication/src/leader_follower/core.py`
-- `database-systems/python/ddia-distributed-systems/projects/02-leader-follower-replication/tests/test_replication.py`
-- `database-systems/python/ddia-distributed-systems/projects/02-leader-follower-replication/README.md`
-- `database-systems/python/ddia-distributed-systems/projects/02-leader-follower-replication/problem/README.md`
-- `database-systems/python/ddia-distributed-systems/projects/02-leader-follower-replication/docs/README.md`
-- `database-systems/python/ddia-distributed-systems/projects/02-leader-follower-replication/src/leader_follower/__main__.py`
-
-## 보조 메모
-
-작업 메모가 꼭 필요할 때만 [_evidence-ledger.md](_evidence-ledger.md)와 [_structure-outline.md](_structure-outline.md)를 보면 된다. 공개 시리즈는 `00 -> 10 -> 20 -> 30`만 따라가면 충분하다.
-
-## Git Anchor
-
-- `2026-03-13 abeead6 docs: TRACK 1 에대한 blog/ 작업 1차 완료`
-- `2026-03-11 bbb6673 Track 1에 대한 전반적인 개선 완료`
+이 랩은 leader election이나 quorum 없이도 "append-only log + follower watermark"만으로 incremental replication을 설명할 수 있음을 보여준다. 동시에 정확히 그만큼만 한다. follower lag metric, snapshot install, log truncation, consensus는 아직 일부러 비워 두었다.

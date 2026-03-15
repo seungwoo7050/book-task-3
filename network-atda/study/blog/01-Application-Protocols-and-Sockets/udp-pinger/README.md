@@ -1,26 +1,23 @@
-# UDP Pinger blog
+# UDP Pinger Blog
 
-`UDP Pinger` 문서 묶음은 연결 없는 UDP에서 손실과 timeout을 클라이언트 쪽 코드로 어떻게 드러냈는가?라는 질문에 답하기 위해 준비한 읽기 경로다. 결과만 요약하지 않고, 어디서부터 구현이나 분석이 무거워졌는지 따라갈 수 있게 구성했다.
+이 문서 묶음은 `udp-pinger`를 "ping을 찍는다"보다 "연결 없는 전송에서 애플리케이션이 timeout과 손실 통계를 직접 떠안는가"라는 질문으로 다시 읽는다. 현재 구현은 10개의 datagram을 보내고, 1초 timeout을 손실 판정으로 바꾸며, 마지막에 min/avg/max RTT와 loss percentage를 계산한다.
 
-이 프로젝트의 본문은 `UDP의 비연결성과 timeout 기반 손실 처리를 RTT 측정 과제로 묶은 구현입니다.`라는 한 줄 설명을 실제 파일, CLI, 테스트 신호로 다시 풀어 쓰는 데 초점을 둔다.
+이번 재작성은 기존 blog 본문이 아니라 `problem/README.md`, `python/README.md`, `python/src/udp_pinger_client.py`, `python/tests/test_udp_pinger.py`, 그리고 2026-03-14 재실행한 `make -C .../problem test`만 사용했다.
 
-## 이 폴더에서 기대할 수 있는 것
+## 읽는 순서
 
-- 문제 경계와 읽는 순서: [00-series-map.md](00-series-map.md)
-- 단계별 근거 압축본: [01-evidence-ledger.md](01-evidence-ledger.md)
-- 글의 편집 개요: [02-structure.md](02-structure.md)
-- 실제 서사형 기록: [10-development-timeline.md](10-development-timeline.md)
+1. [`00-series-map.md`](./00-series-map.md)
+2. [`10-development-timeline.md`](./10-development-timeline.md)
+3. [`01-evidence-ledger.md`](./01-evidence-ledger.md)
+4. [`02-structure.md`](./02-structure.md)
 
-## 근거로 사용한 source set
+## 이번에 다시 확인한 검증 상태
 
-- 프로젝트 루트: `study/01-Application-Protocols-and-Sockets/udp-pinger`
-- 정식 검증 명령: `make -C study/01-Application-Protocols-and-Sockets/udp-pinger/problem test`
-- 구현 파일: `study/01-Application-Protocols-and-Sockets/udp-pinger/python/src`
-- 테스트 파일: `study/01-Application-Protocols-and-Sockets/udp-pinger/python/tests`
-- 제외한 입력: 기존 `study/blog/**`, `notion/**`, `notion-archive/**`
+- 정식 검증: `make -C network-atda/study/01-Application-Protocols-and-Sockets/udp-pinger/problem test`
+- 결과: 10개 ping 중 8개 응답, `20.0% loss`, `RTT min/avg/max = 0.053/0.156/0.472 ms`, 테스트 `3 passed`
 
-## 먼저 읽을 순서
+## 지금 남기는 한계
 
-1. `00-series-map.md`에서 질문과 근거를 먼저 잡는다.
-2. `01-evidence-ledger.md`에서 세 단계 흐름을 짧게 본다.
-3. `10-development-timeline.md`에서 코드/trace와 CLI를 따라 내려간다.
+- 순서 역전 별도 처리 없음
+- 분위수 같은 고급 통계 없음
+- 단독 `pytest`는 제공 서버 선기동 필요

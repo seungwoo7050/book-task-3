@@ -11,6 +11,16 @@
 - registration 과정에서 `005 ISUPPORT`를 광고한다.
 - raw TCP client로 검증 가능한 smoke test를 제공한다.
 
+## canonical verification 시작 위치
+
+- 실행과 검증 진입점은 [../cpp/README.md](../cpp/README.md)다.
+
+## 제외 범위
+
+- TLS, SASL, operator services
+- full IRCv3 capability negotiation
+- persistence와 운영 배포 자동화
+
 ## 현재 근거
 
 - [../cpp/src/Executor.cpp](../cpp/src/Executor.cpp)

@@ -1,9 +1,66 @@
-# 03 Shard Routing — Evidence Ledger
+# Evidence Ledger
 
-기존 `blog/` 초안은 입력에서 제외하고, `README`, `problem/`, `docs/`, 실제 구현 파일, 테스트, 재검증 CLI만으로 chronology를 다시 세웠다.
+## Primary sources
 
-| 순서 | 시간 표지 | 당시 목표 | 변경 단위 | 처음 가설 | 실제 조치 | CLI | 검증 신호 | 핵심 코드 앵커 | 새로 배운 것 | 다음 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Phase 1 | 프로젝트 범위를 tests와 README로 다시 좁힌다 | `database-systems/python/ddia-distributed-systems/projects/03-shard-routing/README.md`, `database-systems/python/ddia-distributed-systems/projects/03-shard-routing/tests/test_shard_routing.py` | 구현이 너무 작아서 단순 API 연습에 가까울 거라고 봤다. | 파일 목록과 테스트 이름을 먼저 훑어 문제의 중심을 다시 잡았다. | `find src tests -type f | sort`<br>`rg -n "^def test_" tests` | `test_batch_routing`까지 테스트 이름을 훑고 나니, 이 프로젝트의 중심이 단순 기능 추가가 아니라 `Router` 주변의 invariant를 고정하는 일이라는 게 보였다. | `test_empty_and_single_node_routing` | `Rebalance Accounting`에서 정리한 요점처럼, consistent hashing의 핵심 가치는 membership 변화가 있을 때 전체 key를 거의 다 움직이지 않는다는 점이다. 그래서 구현을 검증할 때는 "새 ring이 얼마나 적은 key를 옮겼는가"를 함께 본다. | `Router`와 `hash_value`가 실제로 어떤 순서 제약을 만드는지 다시 본다. |
-| 2 | Phase 2 | 핵심 상태 전이와 invariant를 코드에서 확인한다 | `database-systems/python/ddia-distributed-systems/projects/03-shard-routing/src/shard_routing/core.py`의 `Router` | `Router`만 보면 충분할 거라고 생각했다. | `Router`와 `hash_value`를 함께 읽어 write/read ordering을 맞췄다. | `rg -n "^(class|def) " src`<br>`rg -n "Router|hash_value" src` | `Router`와 `hash_value`가 같은 상태를 다른 방향에서 고정한다는 점이 드러났다. | `Router` | `Virtual Nodes`에서 정리한 요점처럼, 물리 node마다 ring에 하나의 점만 두면 hash 편차 때문에 분산이 쉽게 치우친다. virtual node는 물리 node 하나를 ring 위의 여러 점으로 쪼개서 더 고르게 분산되도록 만든다. | 테스트와 demo를 다시 실행해 이 invariant가 실제 검증 신호와 맞물리는지 확인한다. |
-| 3 | Phase 3 | 실제 검증 명령으로 pass 신호를 다시 본다 | `database-systems/python/ddia-distributed-systems/projects/03-shard-routing/tests/test_shard_routing.py`와 `database-systems/python/ddia-distributed-systems/projects/03-shard-routing/src/shard_routing/__main__.py` | 테스트만 통과하면 경계까지 충분히 설명할 수 있을 거라고 봤다. | pytest/go test와 demo를 모두 다시 돌려, 테스트가 잡는 범위와 demo가 보여주는 표면을 분리했다. | `PYTHONPATH=src .venv/bin/python -m pytest`<br>`PYTHONPATH=src .venv/bin/python -m shard_routing` | 3 passed; demo 핵심 줄은 `{'node-a': ['k1', 'k3', 'k4'], 'node-b': ['k2']}`였다. | `test_batch_routing` | `Virtual Nodes`에서 정리한 요점처럼, 물리 node마다 ring에 하나의 점만 두면 hash 편차 때문에 분산이 쉽게 치우친다. virtual node는 물리 node 하나를 ring 위의 여러 점으로 쪼개서 더 고르게 분산되도록 만든다. | 현재 범위 밖: dynamic membership protocol과 gossip은 포함하지 않습니다. |
+- [`problem/README.md`](/Users/woopinbell/work/book-task-3/database-systems/python/ddia-distributed-systems/projects/03-shard-routing/problem/README.md)
+- [`README.md`](/Users/woopinbell/work/book-task-3/database-systems/python/ddia-distributed-systems/projects/03-shard-routing/README.md)
+- [`docs/README.md`](/Users/woopinbell/work/book-task-3/database-systems/python/ddia-distributed-systems/projects/03-shard-routing/docs/README.md)
+- [`docs/concepts/virtual-nodes.md`](/Users/woopinbell/work/book-task-3/database-systems/python/ddia-distributed-systems/projects/03-shard-routing/docs/concepts/virtual-nodes.md)
+- [`docs/concepts/rebalance-accounting.md`](/Users/woopinbell/work/book-task-3/database-systems/python/ddia-distributed-systems/projects/03-shard-routing/docs/concepts/rebalance-accounting.md)
+- [`src/shard_routing/core.py`](/Users/woopinbell/work/book-task-3/database-systems/python/ddia-distributed-systems/projects/03-shard-routing/src/shard_routing/core.py)
+- [`src/shard_routing/__main__.py`](/Users/woopinbell/work/book-task-3/database-systems/python/ddia-distributed-systems/projects/03-shard-routing/src/shard_routing/__main__.py)
+- [`tests/test_shard_routing.py`](/Users/woopinbell/work/book-task-3/database-systems/python/ddia-distributed-systems/projects/03-shard-routing/tests/test_shard_routing.py)
+
+## Re-run commands
+
+```bash
+cd /Users/woopinbell/work/book-task-3/database-systems/python/ddia-distributed-systems/projects/03-shard-routing
+PYTHONPATH=src python3 -m pytest
+PYTHONPATH=src python3 -m shard_routing
+PYTHONPATH=src python3 - <<'PY'
+from shard_routing import Ring, Router
+ring = Ring(150)
+print('empty', ring.node_for_key('key-0'))
+ring.add_node('node-a'); ring.add_node('node-b'); ring.add_node('node-c')
+keys = [f'key-{i}' for i in range(3000)]
+counts = {node: 0 for node in ring.nodes()}
+for key in keys:
+    node, _ = ring.node_for_key(key)
+    counts[node] += 1
+print('distribution', counts)
+before = ring.assignments(keys[:1000])
+ring.add_node('node-d')
+print('moved_after_add', ring.moved_keys(keys[:1000], before))
+router = Router(ring)
+print('batch', router.route_batch(['k1', 'k2', 'k3', 'k4', 'k5']))
+ring.remove_node('node-b')
+print('nodes_after_remove', ring.nodes())
+print('sample_after_remove', {k: ring.node_for_key(k)[0] for k in ['key-0', 'key-1', 'key-2']})
+PY
+```
+
+## Observed outputs
+
+- `pytest`: `3 passed, 1 warning in 0.06s`
+- demo: `{'node-a': ['k1', 'k3', 'k4'], 'node-b': ['k2']}`
+- extra snippet:
+  - `empty ('', False)`
+  - `distribution {'node-a': 1010, 'node-b': 889, 'node-c': 1101}`
+  - `moved_after_add 237`
+  - `batch {'node-d': ['k1', 'k3', 'k4'], 'node-b': ['k2', 'k5']}`
+  - `nodes_after_remove ['node-a', 'node-c', 'node-d']`
+
+## Source-grounded claims
+
+- hash input is SHA-256 first 8 bytes, not Python runtime hash.
+- ring lookup uses `bisect_left` and wrap-around to index `0`.
+- duplicate add/remove is idempotent through `_nodes` set plus `discard()`, but this is source-grounded rather than explicitly pinned by the canonical pytest cases.
+- moved key count is computed by diffing previous and current assignment maps.
+
+## Explicit boundaries
+
+- No membership epoch or gossip
+- No actual data movement executor
+- No replica placement or rack awareness
+- No hotspot-aware routing
+- Distribution evidence is sample-based (`3000` keys, loose `0.2 < share < 0.5` bounds), not a formal balance proof.

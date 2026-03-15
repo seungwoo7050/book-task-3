@@ -1,9 +1,58 @@
-# 06 Index Filter — Evidence Ledger
+# Evidence Ledger
 
-기존 `blog/` 초안은 입력에서 제외하고, `README`, `problem/`, `docs/`, 실제 구현 파일, 테스트, 재검증 CLI만으로 chronology를 다시 세웠다.
+## Primary sources
 
-| 순서 | 시간 표지 | 당시 목표 | 변경 단위 | 처음 가설 | 실제 조치 | CLI | 검증 신호 | 핵심 코드 앵커 | 새로 배운 것 | 다음 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Phase 1 | 프로젝트 범위를 tests와 README로 다시 좁힌다 | `database-systems/go/database-internals/projects/06-index-filter/README.md`, `database-systems/go/database-internals/projects/06-index-filter/tests/index_filter_test.go` | README의 한 줄 설명만으로는 실제 핵심 invariant가 무엇인지 아직 흐릿했다. | 파일 목록과 테스트 이름을 먼저 훑어 문제의 중심을 다시 잡았다. | `find internal tests cmd -type f | sort`<br>`rg -n "^func Test" tests` | `TestSSTableBloomRejectAndBoundedScan`까지 테스트 이름을 훑고 나니, 이 프로젝트의 중심이 단순 기능 추가가 아니라 `Filter` 주변의 invariant를 고정하는 일이라는 게 보였다. | `TestBloomFilterHasNoFalseNegatives` | `Bloom Filter Sizing`에서 정리한 요점처럼, Bloom filter는 false negative가 없어야 하고, false positive는 허용 가능한 수준으로만 남아야 한다. 이 프로젝트는 레거시와 같은 식을 사용한다. | `Filter`와 `Serialize`가 실제로 어떤 순서 제약을 만드는지 다시 본다. |
-| 2 | Phase 2 | 핵심 상태 전이와 invariant를 코드에서 확인한다 | `database-systems/go/database-internals/projects/06-index-filter/internal/bloomfilter/bloom_filter.go`의 `Filter` | `Filter`만 보면 충분할 거라고 생각했다. | `Filter`와 `Serialize`를 함께 읽어 write/read ordering을 맞췄다. | `rg -n "^(type|func) " internal cmd`<br>`rg -n "Filter|Serialize" internal cmd` | `Filter`와 `Serialize`가 같은 상태를 다른 방향에서 고정한다는 점이 드러났다. | `Filter` | `Sparse Index Scan`에서 정리한 요점처럼, sparse index는 모든 key를 메모리에 들고 있지 않고, block 경계 key만 유지한다. lookup은 다음 순서로 진행된다. | 테스트와 demo를 다시 실행해 이 invariant가 실제 검증 신호와 맞물리는지 확인한다. |
-| 3 | Phase 3 | 실제 검증 명령으로 pass 신호를 다시 본다 | `database-systems/go/database-internals/projects/06-index-filter/tests/index_filter_test.go`와 `database-systems/go/database-internals/projects/06-index-filter/cmd/index-filter/main.go` | 테스트만 통과하면 경계까지 충분히 설명할 수 있을 거라고 봤다. | pytest/go test와 demo를 모두 다시 돌려, 테스트가 잡는 범위와 demo가 보여주는 표면을 분리했다. | `GOWORK=off go test ./...`<br>`GOWORK=off go run ./cmd/index-filter` | go test ok, 4 tests; demo 핵심 줄은 `durian=gold bytes_read=74`였다. | `TestSSTableBloomRejectAndBoundedScan` | `Sparse Index Scan`에서 정리한 요점처럼, sparse index는 모든 key를 메모리에 들고 있지 않고, block 경계 key만 유지한다. lookup은 다음 순서로 진행된다. | 현재 범위 밖: learned index와 adaptive filter는 포함하지 않습니다. |
+- [`problem/README.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/06-index-filter/problem/README.md)
+- [`README.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/06-index-filter/README.md)
+- [`docs/README.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/06-index-filter/docs/README.md)
+- [`docs/concepts/bloom-filter-sizing.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/06-index-filter/docs/concepts/bloom-filter-sizing.md)
+- [`docs/concepts/sparse-index-scan.md`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/06-index-filter/docs/concepts/sparse-index-scan.md)
+- [`internal/sstable/sstable.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/06-index-filter/internal/sstable/sstable.go)
+- [`internal/bloomfilter/bloom_filter.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/06-index-filter/internal/bloomfilter/bloom_filter.go)
+- [`internal/sparseindex/sparse_index.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/06-index-filter/internal/sparseindex/sparse_index.go)
+- [`tests/index_filter_test.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/06-index-filter/tests/index_filter_test.go)
+- [`cmd/index-filter/main.go`](/Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/06-index-filter/cmd/index-filter/main.go)
+
+## Re-run commands
+
+```bash
+cd /Users/woopinbell/work/book-task-3/database-systems/go/database-internals/projects/06-index-filter
+rm -rf .demo-data
+GOWORK=off go test ./...
+rm -rf .demo-data
+GOWORK=off go run ./cmd/index-filter
+rm -rf .demo-data
+```
+
+추가 재실행:
+
+```bash
+tmpfile=$(mktemp ./tmpcheck-XXXX.go)
+# project root 안에 임시 Go 파일을 만들어 miss path, hit path, footer metadata를 직접 확인
+GOWORK=off go run "$tmpfile"
+rm -f "$tmpfile"
+```
+
+## Observed outputs
+
+- `go test`: `ok   study.local/go/database-internals/projects/06-index-filter/tests (cached)`
+- demo:
+  - `durian=gold bytes_read=74`
+- extra snippet:
+  - `miss false true true 0`
+  - `hit true gold 74 0 74`
+  - `footer SIF1 96 112 4`
+
+## Source-grounded claims
+
+- Bloom filter uses MurmurHash3 double hashing, not SHA-based hashing.
+- sparse index stores one entry per block boundary.
+- footer magic is `SIF1` and footer size is 40 bytes.
+- miss path can terminate before any data block read.
+
+## Explicit boundaries
+
+- No learned index
+- No adaptive filter
+- No cache integration
+- No range scan optimization

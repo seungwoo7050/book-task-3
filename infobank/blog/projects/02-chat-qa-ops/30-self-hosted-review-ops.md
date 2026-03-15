@@ -1,25 +1,24 @@
 # self-hosted review ops
 
-앞 글까지 오면 `v2`가 왜 설득력 있는 capstone snapshot인지 이해할 수 있다. 평가 파이프라인이 있고, regression compare가 있고, 그 결과를 proof artifact로 닫을 수 있기 때문이다. 이번 글은 그다음 질문에 답한다. 이 흐름을 실제 팀이 설치해서 운영할 수 있는 표면으로 옮기면 어떤 모습이 될까?
+`v3-self-hosted-oss`의 핵심은 evaluator를 다시 쓰는 것이 아니다. 이미 있는 QA evaluation grammar를 로그인, dataset import, KB bundle, async job, selected-job review UI로 옮기는 것이다. 즉 `v3`는 알고리즘 확장보다 운영 surface 확장에 가깝다.
 
-`v3-self-hosted-oss`의 핵심은 평가 로직을 새로 만드는 것이 아니다. 이미 있던 evaluation pipeline과 regression proof를, 로그인, dataset 업로드, KB bundle, 비동기 job, selected-job review UI를 가진 운영 surface로 다시 감싼 것이다.
+## auth가 붙으면서 QA Ops는 공개 데모가 아니라 운영 콘솔이 된다
 
-가장 먼저 눈에 띄는 변화는 auth다. `python/backend/src/core/auth.py`와 `api/routes/auth.py`는 단순하지만 분명한 cookie auth를 추가한다.
-
-이 코드가 중요한 이유는, QA Ops가 더 이상 공개 데모가 아니라 `누가 dataset을 올리고 job을 실행했는가`를 구분해야 하는 화면으로 바뀌었기 때문이다.
+`core/auth.py`는 password hash와 signed session cookie를 만든다.
 
 ```python
-cookie_value = create_session_cookie(secret=settings.session_secret, user_id=admin.id, email=admin.email)
-response.set_cookie(
-    key=SESSION_COOKIE_NAME,
-    value=cookie_value,
-    httponly=True,
-    samesite="lax",
+def create_session_cookie(*, secret: str, user_id: str, email: str, issued_at: int | None = None) -> str:
+    issued = issued_at or int(time.time())
+    payload = f"{user_id}:{email}:{issued}"
+    signature = hmac.new(secret.encode("utf-8"), payload.encode("utf-8"), hashlib.sha256).hexdigest()
+    return _urlsafe_encode(f"{payload}:{signature}".encode())
 ```
 
-그다음 전환점은 `python/backend/src/api/routes/jobs.py`와 `services/jobs.py`다. job route는 dataset과 KB bundle을 받아 evaluation run을 만들고, worker는 pending job을 잡아 turn 단위로 진행률을 갱신한다.
+이 선택이 중요한 이유는 review console이 이제 "누가 들어와서 dataset을 올리고 job을 실행했는가"를 분리해야 하기 때문이다. README가 기본 admin email/password를 주는 것도 같은 맥락이다. `v3`는 공개 demo가 아니라 single-team self-hosted snapshot을 표방한다.
 
-아래 블록이 중요한 이유는, `v2`에서 한 번 실행하던 평가가 이제 운영자가 기다리고 추적할 수 있는 "작업"이 되었다는 점을 보여 주기 때문이다.
+## job service가 evaluation을 기다릴 수 있는 작업으로 바꾼다
+
+`services/jobs.py`는 pending job을 고르고, `EvaluationRun`, `KnowledgeBaseBundle`, `Turn` 목록을 읽어 worker loop로 처리한다.
 
 ```python
 job.progress_total = len(turn_ids)
@@ -31,11 +30,11 @@ job.progress_completed = index
 job.status = "completed"
 ```
 
-이 변화 덕분에 operator는 더 이상 "평가를 한 번 돌린다"가 아니라, "어떤 자료 조합으로 어떤 job을 만들고, 얼마나 끝났는지 본다"는 언어로 일하게 된다.
+이 구조의 전환점은 evaluation이 더 이상 "한 번 실행하는 커맨드"가 아니라는 데 있다. operator는 dataset/bundle/run label/version 조합으로 job을 만들고, progress를 기다리고, 완료 후 overview/failures/session review를 다시 본다. 즉 v2의 proof가 v3에서는 asynchronous 운영 작업 단위가 된다.
 
-프런트엔드도 그 변화에 맞춰 설계됐다. `react/src/App.tsx`는 로그인 게이트와 selected job 상태를 유지하고, `react/src/pages/Jobs.tsx`는 dataset, KB bundle, run label, version 정보를 받아 job 생성 폼과 job 테이블을 제공한다.
+## 프런트는 selected job을 기준으로 review surface를 다시 나눈다
 
-이 코드 조각은 self-hosted surface가 실제로 어떤 단위를 다루는지 보여 준다. 이전의 golden-set 중심 흐름이 dataset/bundle/job 중심 운영 흐름으로 번역된다.
+`App.tsx`는 login gate, session check, jobs refresh, selected job state를 맡고, `Jobs.tsx`는 dataset/bundle 선택과 version inputs를 받아 `/api/jobs`에 post한다.
 
 ```tsx
 const result = await apiPost<{ job: JobSummary }>("/api/jobs", {
@@ -49,26 +48,37 @@ const result = await apiPost<{ job: JobSummary }>("/api/jobs", {
 });
 ```
 
-좋은 점은 selected job이 곧바로 Failures, Session Review, Overview 필터로 이어진다는 것이다. 그래서 self-hosted surface가 생겨도 평가 로직 자체가 달라지지 않는다. 바뀌는 건 operator가 그 평가를 다루는 단위뿐이다.
+좋은 점은 selected job이 app 전체의 기준이 된다는 것이다. sidebar에도 선택된 job이 보이고, `Overview`, `Failures`, `Session Review`는 모두 selected job 중심으로 좁혀 읽힌다. 이건 "모든 결과를 한꺼번에 본다"보다 훨씬 운영자다운 surface다.
 
-실제 회귀 신호도 확보돼 있다.
+또 `Jobs.tsx`는 pending/running job이 있으면 2.5초 interval로 `onRefreshJobs()`를 재호출한다. 즉 polling이 명시적이고, async job의 기다림이 제품 surface에 그대로 들어와 있다.
+
+## 이번 재실행 결과가 보여 준 현재 상태
+
+2026-03-14에 `v3` Python gate를 다시 돌린 결과는 다음과 같았다.
 
 ```bash
-cd capstone/v3-self-hosted-oss/python
-UV_PYTHON=python3.12 make gate-all
+cd /Users/woopinbell/work/book-task-3/infobank/projects/02-chat-qa-ops/capstone/v3-self-hosted-oss/python
+PATH="$HOME/.local/bin:$PATH" UV_PYTHON=python3.12 make gate-all
 ```
 
-```text
-Mypy: no issues found in 51 source files
-MP1 2 passed
-MP2 4 passed
-MP3 2 passed
-MP4 1 passed
-MP5 1 passed
-Frontend 6 passed
-Integrity gate passed for target=all
-```
+결과:
 
-이 출력이 증명하는 것은 범위가 넓어졌다는 사실이다. `v2`가 평가 파이프라인과 regression proof를 중심으로 테스트됐다면, `v3`는 로그인, dataset import, job 생성, selected job review 같은 운영 표면까지 포함해 더 넓은 end-user 흐름을 검증한다.
+- lint 통과
+- mypy: `51 source files`
+- MP1 `2 passed`
+- MP2 `4 passed`
+- MP3 `2 passed`
+- MP4 `1 passed`
+- MP5 `1 passed`
+- frontend `6 passed`
 
-결국 이 트랙의 마지막 단계는 "더 좋은 judge를 만들었다"가 아니라, "이미 있는 평가 체계를 팀이 실제로 운영할 수 있는 형태로 옮겼다"에 가깝다. 그래서 `Chat QA Ops`는 `Rule -> Evidence -> Judge -> Compare -> Review Ops` 순서로 읽을 때 가장 설득력이 크다.
+프런트 테스트에서는 두 가지 비차단 경고도 보였다.
+
+- `pnpm approve-builds` 관련 ignored build scripts 경고
+- React Router future flag warnings
+
+둘 다 현재 gate를 깨지는 않지만, self-hosted snapshot의 tooling surface가 완전히 정리된 상태는 아니라는 신호다.
+
+## 이 단계의 결론
+
+`v3`를 high-quality 확장으로 보이게 만드는 건 더 좋은 judge가 아니다. 이미 있던 평가 체계를 설치 가능한 운영 흐름으로 옮긴 점이다. 로그인, dataset upload, KB bundle, async job, selected-job review UI가 붙으면서 `Chat QA Ops`는 `Rule -> Evidence -> Judge -> Proof`에서 멈추지 않고, `Proof -> Review Ops`까지 이어지는 프로젝트가 된다.

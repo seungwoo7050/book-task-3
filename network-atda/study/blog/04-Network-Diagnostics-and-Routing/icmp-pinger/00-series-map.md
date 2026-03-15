@@ -1,28 +1,24 @@
-# ICMP Pinger series map
+# ICMP Pinger 시리즈 맵
 
-이 프로젝트를 읽을 때 붙들 질문은 하나다. ICMP echo request/reply를 raw socket 위에서 어디까지 직접 조립하고 해석했는가?
+이 lab의 중심 질문은 "ICMP Echo Request/Reply를 직접 만들고 읽으려면 운영체제에 무엇을 맡기지 않아야 하는가"다. 현재 구현은 `internet_checksum()`, `build_echo_request()`, `parse_echo_reply()`, `ping()` 네 축으로 이 질문에 답한다. header checksum도 직접 만들고, payload timestamp도 직접 넣고, reply에서 IP header length를 읽어 ICMP section을 분리한다.
 
-## 무엇을 근거로 복원했는가
+## 이 lab를 읽는 질문
 
-- 프로젝트 README: `study/04-Network-Diagnostics-and-Routing/icmp-pinger/README.md`
-- 문제 문서와 실행 표면: `study/04-Network-Diagnostics-and-Routing/icmp-pinger/problem/README.md`, `study/04-Network-Diagnostics-and-Routing/icmp-pinger/problem/Makefile`
-- 핵심 구현과 테스트: `study/04-Network-Diagnostics-and-Routing/icmp-pinger/python/src/icmp_pinger.py`, `study/04-Network-Diagnostics-and-Routing/icmp-pinger/python/tests/test_icmp_pinger.py`
-- 정식 검증 출력: `make -C study/04-Network-Diagnostics-and-Routing/icmp-pinger/problem test`
+- RFC 1071 checksum 계산은 코드에서 어디까지 손으로 처리되는가
+- Echo Reply parse에서 왜 ICMP header보다 먼저 IP header length를 읽어야 하는가
+- deterministic test와 live raw-socket run은 무엇을 다르게 검증하는가
 
-## 어떤 순서로 읽으면 되는가
+## 이번에 사용한 근거
 
-1. `problem/README.md`로 문제 조건과 성공 기준을 확인한다.
-2. 이 문서에서 어떤 입력을 근거로 썼는지 먼저 본다.
-3. `01-evidence-ledger.md`로 세 단계 흐름을 짧게 파악한다.
-4. `10-development-timeline.md`에서 코드나 trace, CLI를 따라간다.
+- `problem/README.md`
+- `python/src/icmp_pinger.py`
+- `python/tests/test_icmp_pinger.py`
+- `problem/Makefile`
+- 2026-03-14 재실행한 deterministic test와 live rerun 시도
 
-## 이번 리라이트에서 의도적으로 제외한 입력
+## 이번 재실행에서 고정한 사실
 
-- 현재 `study/blog/**`의 이전 본문
-- `notion/`, `notion-archive/` 아래의 서술형 메모
-
-## 짧은 판정 메모
-
-- 독립 프로젝트로 본 이유: `ICMP Pinger`는 자기 README와 정식 검증 명령으로 범위를 독립적으로 설명할 수 있다.
-- 보관본 위치: `study/blog/_legacy`
-- 이번 글의 중심 답: Raw socket으로 `ICMP Echo Request/Reply`를 직접 구현하는 진단 도구 과제입니다.
+- checksum 함수는 odd-length data padding과 carry fold를 모두 직접 처리한다.
+- Echo Request payload는 `double` timestamp 8 bytes다.
+- reply parse는 outer IPv4 header의 `IHL`을 읽어 ICMP header offset을 계산한다.
+- unit tests는 checksum invariants, packet layout, fake raw socket 기반 RTT/loss 통계까지 고정한다.

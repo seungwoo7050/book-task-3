@@ -1,61 +1,52 @@
-# TLS Packet Analysis evidence ledger
+# TLS Packet Analysis Evidence Ledger
 
-이 문서는 긴 본문을 읽기 전에, 세 단계에서 어떤 판단이 있었는지만 빠르게 붙들기 위한 압축본이다.
+## 이번에 읽은 자료
 
-## Phase 1. 질문과 trace 범위를 먼저 세우기
+- 문제 사양: `study/03-Packet-Analysis-Top-Down/tls-ssl/problem/README.md`
+- 답안 엔트리: `study/03-Packet-Analysis-Top-Down/tls-ssl/analysis/src/tls-ssl-analysis.md`
+- 검증 스크립트: `study/03-Packet-Analysis-Top-Down/tls-ssl/problem/script/verify_answers.sh`
+- 실행 표면: `study/03-Packet-Analysis-Top-Down/tls-ssl/problem/Makefile`
 
-- 당시 목표: `TLS Packet Analysis`를 어디서부터 읽어야 하는지 고정한다.
-- 핵심 변경 단위: `study/03-Packet-Analysis-Top-Down/tls-ssl/problem/README.md`, `study/03-Packet-Analysis-Top-Down/tls-ssl/problem/Makefile`, `study/03-Packet-Analysis-Top-Down/tls-ssl/analysis/src/tls-ssl-analysis.md`
-- 무슨 판단을 했는가: 어디서 실행하고 어디서 검증하는지 먼저 정하지 않으면 본문이 기능 요약으로 흘러갈 가능성이 컸다.
-- 실행한 CLI:
+## 핵심 근거
 
-```bash
-$ make -C study/03-Packet-Analysis-Top-Down/tls-ssl/problem help
-  open           - Open trace file in Wireshark
-  handshake      - Filter all TLS handshake messages
-  client-hello   - Filter ClientHello messages
-  server-hello   - Filter ServerHello messages
-  certs          - Filter Certificate messages
-  cipher-change  - Filter ChangeCipherSpec messages
-```
-- 검증 신호:
-  - `make help`만 봐도 이 프로젝트가 어떤 target으로 열리고 닫히는지 드러난다.
-  - 이 단계에서의 역할: top-down 순서의 마지막에서 보안 프로토콜이 transport 위에 어떻게 올라가는지 정리하며, 암호화 이후 무엇이 보이고 무엇이 보이지 않는지도 함께 보여 줍니다.
-- 핵심 코드/trace 앵커: `study/03-Packet-Analysis-Top-Down/tls-ssl/analysis/src/tls-ssl-analysis.md`의 `## Part 1: ClientHello (Q1–Q5)`
-- 다음으로 넘어간 이유: 이제 어디를 읽어야 할지 정해졌으니, 실제로 판단이 몰린 함수나 trace section으로 내려갈 수 있었다.
+- `client-hello` 출력:
+  - frame `4`
+  - `tls.handshake.version=0x0303`
+  - `tls.handshake.ciphersuite=0x1301,0x1302`
+  - SNI empty
+- `server-hello` 출력:
+  - frame `5`
+  - `tls.handshake.version=0x0303`
+  - selected suite `0x1301`
+- `app-data` 출력:
+  - frame `6`
+  - record length `1,32`
+- `records` 출력:
+  - one line with `22,22`
+  - one line with `22`
+  - one line with `20,23`
+- `docs/concepts/wireshark-tls.md`는 certificate extraction 예시로 `x509sat.utf8String`, `x509ce.dNSName`를 제안한다.
+- 이번 로컬 확인 `tshark -G fields | rg 'x509'`에서는 `x509af.*` 계열은 보였지만 `x509sat.utf8String`는 확인되지 않았다.
+- `analysis/src/tls-ssl-analysis.md`:
+  - certificate detail is malformed/truncated
+  - TLS 1.3-style cipher suite IDs coexist with `0x0303` version field
 
-## Phase 2. ClientHello와 ServerHello/Certificate를 handshake 축으로 묶기
+## 테스트 근거
 
-- 당시 목표: `TLS handshake, certificate, cipher suite, 버전 차이를 record/message 수준에서 읽는 보안 랩입니다.`를 실제 코드나 trace 근거에 붙여 본다.
-- 핵심 변경 단위: `study/03-Packet-Analysis-Top-Down/tls-ssl/analysis/src/tls-ssl-analysis.md`
-- 무슨 판단을 했는가: 전체 파일을 다 설명하기보다, 판단이 바뀐 줄 몇 개를 먼저 붙드는 편이 더 정확하다고 판단했다.
-- 실행한 CLI:
+`make -C network-atda/study/03-Packet-Analysis-Top-Down/tls-ssl/problem test`
 
-```bash
-$ make -C study/03-Packet-Analysis-Top-Down/tls-ssl/problem handshake
-tshark -r data/tls-trace.pcap -Y "tls.handshake" \
-4	192.168.0.2	93.184.216.34	1
-5	93.184.216.34	192.168.0.2	2,11
-```
-- 검증 신호:
-  - 이 출력만으로도 `## Part 2: ServerHello and Certificate (Q6–Q11)` 주변이 설명의 중심축이라는 점이 드러난다.
-  - cipher suite 의미
-- 핵심 코드/trace 앵커: `study/03-Packet-Analysis-Top-Down/tls-ssl/analysis/src/tls-ssl-analysis.md`의 `## Part 2: ServerHello and Certificate (Q6–Q11)`
-- 다음으로 넘어간 이유: 중심 규칙을 잡은 뒤에는, 이 구현이나 분석이 실제로 무엇으로 닫히는지만 확인하면 됐다.
+결과:
 
-## Phase 3. verify 스크립트와 한계까지 정리하기
+- `PASS: tls-ssl answer file passed content verification`
 
-- 당시 목표: 통과 신호와 남은 범위를 한 번에 정리한다.
-- 핵심 변경 단위: `study/03-Packet-Analysis-Top-Down/tls-ssl/analysis/src/tls-ssl-analysis.md`, `problem/script/`, `docs/`
-- 무슨 판단을 했는가: 테스트 통과만 적으면 과장이 되기 쉬워서, 어디까지 확인됐고 무엇이 남는지도 같이 적어야 한다고 봤다.
-- 실행한 CLI:
+보조 실행 이슈:
 
-```bash
-$ make -C study/03-Packet-Analysis-Top-Down/tls-ssl/problem test
-PASS: tls-ssl answer file passed content verification
-```
-- 검증 신호:
-  - `make -C study/03-Packet-Analysis-Top-Down/tls-ssl/problem test`가 현재 공개 답안을 다시 재현해 준다.
-  - 제공 trace가 minimal synthetic capture라 일부 certificate detail과 extension은 제한적입니다.
-- 핵심 코드/trace 앵커: `study/03-Packet-Analysis-Top-Down/tls-ssl/analysis/src/tls-ssl-analysis.md`의 `## Part 3: ChangeCipherSpec and Application Data (Q12–Q16)`
-- 다음으로 넘어간 이유: 통과 신호와 경계가 모두 적혔으니, 긴 본문에서는 각 단계를 더 사람 읽기 좋게 풀어 쓰면 된다.
+- `make certs`는 현재 `tshark` build에서 `x509sat.utf8String` field를 인식하지 못해 실패했다.
+- 즉 answer markdown의 certificate-detail 한계는 trace malformed 문제와 local dissector field availability 문제가 같이 겹친 결과다.
+
+## 이번에 고정한 해석
+
+- 이 lab는 certificate subject를 끝까지 읽는 과제라기보다, handshake visibility가 어디까지 유지되는지 보는 과제다.
+- 현재 trace는 TLS 1.3-style suite IDs와 `0x0303` version field가 함께 있어 textbook one-to-one mapping보다 synthetic teaching artifact에 가깝다.
+- encryption 이후 application protocol은 context로 짐작할 수는 있어도 plaintext로 직접 읽을 수는 없다.
+- certificate detail 공백은 "답을 덜 썼다"가 아니라, trace와 local toolchain이 동시에 주는 가시성 한계다.

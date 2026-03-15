@@ -1,62 +1,114 @@
 # commerce-backend evidence ledger
 
-- 복원 방식: 세밀한 commit chronology 대신 `Phase 1 -> Phase 3`으로 통합 흐름을 복원했다.
-- 근거: `README.md`, `problem/README.md`, `docs/README.md`, `spring/Makefile`, `CommerceApiTest.java`, `CommerceService.java`, `CommerceAuthController.java`, `V2__commerce.sql`, `spring/build/test-results/test/*.xml`, `../../docs/verification-report.md`
-- 작업 환경 전제: macOS + VSCode 통합 터미널 기준.
+- 작성 기준일: 2026-03-14
+- 복원 원칙: 기존 blog 본문은 입력 근거에서 제외하고, source, tests, config, 재실행 결과만 사용했다.
+- 핵심 근거: `problem/README.md`, `docs/README.md`, `spring/Makefile`, `CommerceAuthController.java`, `CommerceController.java`, `CommerceService.java`, `CommerceProductEntity.java`, `V2__commerce.sql`, `CommerceApiTest.java`, `HealthApiTest.java`, `LabInfoApiSmokeTest.java`, `spring/compose.yaml`
 
-## Phase 1
+## Phase 1. 통합 user journey와 auth depth 확인
 
-- 당시 목표: 여러 랩 학습을 하나의 커머스 API 흐름으로 다시 묶는다.
-- 변경 단위: `README.md`, `problem/README.md`, `CommerceApiTest.java`
-- 처음 가설: 랩 코드를 그대로 조합해도 첫 캡스톤으로 충분할 수 있다고 봤다.
-- 실제 조치: 로그인, 상품 생성/조회, 장바구니 추가, 주문 생성, 관리자 주문 조회를 한 테스트에 묶었다.
-- CLI:
+- 목표: 첫 capstone이 실제로 어떤 통합 흐름을 baseline으로 삼는지 확인한다.
+- 확인 파일:
+  - `spring/src/test/java/com/webpong/study2/app/CommerceApiTest.java`
+  - `spring/src/main/java/com/webpong/study2/app/commerce/api/CommerceAuthController.java`
+- 확인 결과:
+  - 로그인 -> 상품 생성/조회 -> 장바구니 -> 주문 -> 관리자 주문 조회가 한 테스트에 묶여 있다.
+  - login은 고정 `commerce-access-token`을 반환한다.
+  - `/me`는 인증 없이 query param `email`만 echo한다.
+  - cart add와 checkout도 authenticated principal이 아니라 request body/query param의 `customerEmail`을 그대로 사용한다.
 
-```bash
-cd spring
-make test
+## Phase 2. catalog/cart/order와 validation 공백 확인
+
+- 목표: baseline commerce flow가 실제로 어디까지 유효한 contract를 가지는지 확인한다.
+- 확인 파일:
+  - `spring/src/main/java/com/webpong/study2/app/commerce/api/CommerceController.java`
+  - `spring/src/main/java/com/webpong/study2/app/commerce/application/CommerceService.java`
+  - `spring/src/main/java/com/webpong/study2/app/global/security/SecurityConfig.java`
+- 확인 결과:
+  - `/api/v1/admin/**`도 포함해 `/api/v1/**` 전체가 public이다.
+  - request DTO validation annotation은 `@Valid` 없이 선언만 돼 있다.
+  - invalid product와 invalid cart email이 실제로 `200`으로 저장된다.
+- 핵심 앵커:
+
+```java
+auth.requestMatchers("/api/v1/**", "/v3/api-docs/**", "/swagger-ui/**")
+    .permitAll()
 ```
 
-- 검증 신호: `CommerceApiTest` 1개 테스트 통과, `HealthApiTest` 2개 테스트 통과
-- 핵심 코드 앵커: `CommerceApiTest.catalogCartAndOrderFlowWork()`
-- 새로 배운 것: 첫 캡스톤의 핵심은 기능 깊이보다 통합 surface를 만드는 일이다.
-- 다음: modular monolith baseline을 schema와 서비스 코드에 연결한다.
+## Phase 3. checkout semantics 확인
 
-## Phase 2
+- 목표: capstone의 실제 도메인 핵심이 어디까지 구현되었는지 확인한다.
+- 확인 파일:
+  - `spring/src/main/java/com/webpong/study2/app/commerce/application/CommerceService.java`
+  - `spring/src/main/java/com/webpong/study2/app/commerce/domain/CommerceProductEntity.java`
+- 확인 결과:
+  - checkout은 cart item을 읽고 stock을 감소시키고 order를 `PLACED`로 저장한 뒤 cart를 비운다.
+  - second checkout은 `Cart is empty`로 실패한다.
+  - `commerce_products`에는 `version` 컬럼이 있지만, checkout surface에서 optimistic locking contract는 드러나지 않는다.
 
-- 당시 목표: auth, catalog, cart, order를 얕지만 일관된 modular monolith로 묶는다.
-- 변경 단위: `V2__commerce.sql`, `CommerceService.java`, `CommerceAuthController.java`
-- 처음 가설: 첫 통합 캡스톤에서도 persisted auth나 payment까지 바로 넣어야 할 것 같았다.
-- 실제 조치: auth는 contract-level login과 `me`로 가볍게 두고, 상품/장바구니/주문과 stock decrement를 먼저 연결했다.
-- CLI:
+## Phase 4. 2026-03-14 재실행 검증
 
-```bash
-cd spring
-make smoke
-docker compose up --build
-```
-
-- 검증 신호: `LabInfoApiSmokeTest` 1개 테스트 통과, `2026-03-09` 검증 보고서 기준 lint/test/smoke/Compose health 통과
-- 핵심 코드 앵커: `V2__commerce.sql`, `CommerceService.checkout()`, `CommerceAuthController.login()`
-- 새로 배운 것: baseline capstone은 깊이 부족이 아니라 비교 기준점이라는 역할을 가져야 한다.
-- 다음: payment와 persisted auth를 비워 둔 이유를 docs에 남긴다.
-
-## Phase 3
-
-- 당시 목표: 이 버전이 최종 답이 아니라 baseline이라는 점을 분명히 닫는다.
-- 변경 단위: `docs/README.md`, `spring/README.md`, `TEST-com.webpong.study2.app.CommerceApiTest.xml`
-- 처음 가설: 통합 도메인만 보이면 왜 v2가 필요한지 자연스럽게 읽힐 줄 알았다.
-- 실제 조치: auth depth 부족, payment 없음, notification/event consumer 미완을 docs와 검증 기록에 남겼다.
-- CLI:
+- lint:
 
 ```bash
-cd spring
-make lint
-make test
-make smoke
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/capstone/commerce-backend/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew spotlessCheck checkstyleMain checkstyleTest'
 ```
 
-- 검증 신호: `2026-03-13` 기준 4개 suite, 총 5개 테스트, 실패 0
-- 핵심 코드 앵커: `docs/README.md`의 baseline 설명, `verification-report.md`
-- 새로 배운 것: 일부러 남긴 빈칸이 있어야 다음 버전의 개선 축이 분명해진다.
-- 다음: 같은 도메인을 더 깊게 푼 `commerce-backend-v2`로 넘어간다.
+- 결과: `BUILD SUCCESSFUL in 3m 31s`
+
+- test:
+
+```bash
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/capstone/commerce-backend/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew test'
+```
+
+- 결과: `BUILD SUCCESSFUL in 2m 26s`
+
+- smoke:
+
+```bash
+docker run --rm -u $(id -u):$(id -g) \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/capstone/commerce-backend/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew test --tests "*SmokeTest"'
+```
+
+- 결과: `BUILD SUCCESSFUL in 2m 31s`
+
+- manual boot run:
+
+```bash
+docker run --rm -u $(id -u):$(id -g) -p 18087:8080 \
+  -e GRADLE_USER_HOME=/tmp/gradle \
+  -v /Users/woopinbell/work/book-task-3/backend-spring/capstone/commerce-backend/spring:/workspace \
+  -w /workspace eclipse-temurin:21-jdk \
+  bash -lc './gradlew bootRun'
+```
+
+- manual HTTP checks:
+  - login -> fixed token response
+  - `/api/v1/me?email=buyer@example.com` -> unauthenticated `CUSTOMER` echo
+  - invalid admin product create -> `200`, invalid row persisted
+  - invalid cart email -> `200`, invalid cart row persisted
+  - valid product stock `4` -> checkout after one cart item -> order `PLACED`, product stock `3`
+  - second checkout same customer -> `400`, `detail="Cart is empty"`
+  - `/api/v1/admin/orders` -> unauthenticated order list access
+  - `/actuator/health` -> `503 DOWN`
+
+## 이번 Todo의 결론
+
+- 이 capstone은 통합 commerce flow 기준선으로는 충분하지만, final commerce backend라고 읽으면 안 된다.
+- 문서에 반드시 남겨야 할 현재 한계:
+  - fake auth and public admin surface
+  - login narrative와 실제 downstream identity enforcement의 분리
+  - validation 미적용
+  - payment/idempotency/async integration 부재
+  - compose/runtime에 남은 copy-and-paste infra 흔적

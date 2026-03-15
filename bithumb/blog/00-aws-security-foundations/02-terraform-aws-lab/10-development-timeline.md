@@ -1,149 +1,99 @@
-# 02 Terraform AWS Lab: apply 없는 Terraform lab을 scan input으로 만들기
+# 02 Terraform AWS Lab: Terraform을 배포 도구보다 먼저 "보안 분석 입력"으로 고정한 단계
 
-Terraform을 apply 도구가 아니라 이후 보안 스캐너가 읽을 선언형 입력으로 다루게 만드는 실습이다. 이 글은 결과만 요약하지 않고, 어떤 기준을 먼저 세우고 어떤 검증으로 다음 단계로 넘어갔는지를 차근차근 따라간다.
+이 프로젝트는 Terraform을 얼마나 많이 아느냐를 보여 주는 lab이 아니다. `problem/README.md`가 요구하는 건 훨씬 좁다. insecure 설정과 secure 설정의 차이를 apply 없이도 반복해서 읽을 수 있게 만들고, 그 결과를 다음 프로젝트가 그대로 받아서 rule evaluation을 할 수 있는 입력으로 남기는 것이다. `2026-03-14`에 verify와 pytest를 다시 돌려 보니, 이 lab의 핵심은 Terraform 문법 자체보다 "같은 선언형 변경 의도"를 plan JSON으로 안정적으로 재생산하는 절차에 있었다.
 
-아래 phase를 순서대로 읽으면 "왜 Terraform lab의 핵심 산출물을 apply 결과가 아니라 plan JSON으로 봤는가"라는 질문에 답이 어떻게 만들어졌는지 자연스럽게 연결된다.
+## Step 1. insecure/secure 두 예제를 비교 가능한 한 쌍으로 먼저 고정했다
 
-## 구현 순서 요약
-먼저 전체 흐름을 짧게 잡아 두면, 각 phase가 왜 그 순서로 배치됐는지 훨씬 덜 버겁게 읽힌다.
-1. insecure/secure Terraform 쌍을 유지하고, 같은 검증 스크립트가 두 lab을 모두 읽게 했다.
-2. `init -> validate -> plan -> show -json` 흐름을 코드로 고정해 plan JSON 산출을 자동화했다.
-3. 테스트가 insecure/secure lab 각각의 대표 resource type을 검증해, 후속 CSPM rule engine 입력을 안정화했다.
+`terraform/insecure/main.tf`와 `terraform/secure/main.tf`는 리소스 수만 보면 둘 다 5개다. 하지만 실제 차이는 "어떤 위험한 의도"와 "어떤 통제된 의도"를 대표하느냐에 있다.
 
-## Phase 1. insecure/secure lab을 같은 검증 흐름에 묶었다
+`2026-03-14`에 다시 확인한 source 신호는 이랬다.
 
-여기서부터 흐름이 한 단계 또렷해진다. 먼저 `insecure/secure lab을 같은 검증 흐름에 묶었다`를 단단히 잡아야 뒤에서 나오는 테스트와 CLI가 왜 필요한지 설명할 수 있기 때문이다.
+- insecure `aws_s3_bucket_public_access_block`: 네 플래그가 모두 `false`
+- secure `aws_s3_bucket_public_access_block`: 네 플래그가 모두 `true`
+- insecure security group ingress: `0.0.0.0/0`
+- secure security group ingress: `10.10.10.0/24`
+- insecure IAM policy: `Action "*", Resource "*"`
+- secure IAM policy: S3 read 범위만 허용
 
-- 당시 목표: 두 Terraform 실습을 사람이 수동 비교하지 않고 같은 코드 경로로 돌릴 수 있게 만든다.
-- 변경 단위: `python/src/terraform_aws_lab/verify.py`의 `AWS_ENV`, `terraform_available`, `run_lab` 진입부
-- 처음 가설: 후속 프로젝트가 plan JSON을 입력으로 쓰려면, 먼저 lab 두 개가 같은 루틴으로 재현돼야 한다.
-- 실제 진행: 스크립트는 Terraform CLI 유무를 먼저 확인하고, 로컬 더미 AWS 환경 변수를 주입한 뒤 각 lab 디렉터리에서 같은 명령을 반복하게 만들었다. 핵심은 실제 apply 없이도 같은 입력 구조를 계속 얻을 수 있게 하는 쪽이었다.
+즉 이 lab은 "보안이 좋은 예제"와 "나쁜 예제"를 막연히 나란히 둔 것이 아니라, 이후 scanner가 읽을 핵심 차이를 plan에 확실히 남기는 fixture 쌍을 만든 셈이다. `docs/concepts/terraform-plan-reading.md`가 말하는 "CSPM 관점에서는 apply보다 plan JSON이 더 중요한 입력"이라는 문장이 여기서 실제 소스로 연결된다.
 
-CLI:
+## Step 2. 그 fixture 쌍을 같은 검증 루프로 돌리게 만들었다
 
-```bash
-$ PYTHONPATH=00-aws-security-foundations/02-terraform-aws-lab/python/src .venv/bin/python -m terraform_aws_lab.verify
-```
-
-검증 신호:
-- 검증 스크립트 실행 결과가 `insecure: 5 resources`, `secure: 5 resources`로 떨어졌다.
-- Terraform 1.5.7 환경에서 실제 명령 경로가 살아 있어 로컬에서 그대로 재현됐다.
-
-핵심 코드:
+두 예제를 나란히 두기만 해서는 다음 프로젝트 입력이 되지 않는다. `verify.py`는 두 lab을 사람이 수동으로 열어 비교하지 않아도 되게, 같은 Terraform 절차를 코드로 묶는다.
 
 ```python
-def run_lab(lab_dir: Path) -> dict[str, Any]:
-    if not terraform_available():
-        raise RuntimeError("terraform is not installed")
-
-    env = os.environ.copy()
-    env.update(AWS_ENV)
-
-    subprocess.run(
-        ["terraform", f"-chdir={lab_dir}", "init", "-backend=false"],
-        check=True,
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    subprocess.run(
-        ["terraform", f"-chdir={lab_dir}", "validate"],
-        check=True,
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
+subprocess.run(
+    ["terraform", f"-chdir={lab_dir}", "init", "-backend=false"],
+    check=True,
+    env=env,
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    text=True,
+)
+subprocess.run(
+    ["terraform", f"-chdir={lab_dir}", "validate"],
+    check=True,
+    env=env,
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    text=True,
+)
 ```
 
-왜 이 코드가 중요했는가: 이 부분이 없으면 insecure lab과 secure lab은 단지 두 개의 디렉터리일 뿐이다. 같은 절차로 돌려야만 두 상태를 비교 가능한 입력 쌍으로 다룰 수 있다.
+여기서 중요한 건 두 가지다.
 
-새로 배운 것: CSPM 관점에서 Terraform의 핵심 산출물은 apply 결과보다 `planned_values.root_module.resources` 같은 plan 구조다. 분석은 선언형 변경 의도를 읽는 데서 시작한다.
+- Terraform이 설치되지 않았으면 바로 실패해 입력 재현 가능성을 먼저 확인한다.
+- dummy AWS credential을 환경 변수로 넣어, 실제 계정 없이도 `init -> validate -> plan -> show -json` 흐름을 돌린다.
 
-다음: 이제 plan 결과를 파일로 남겨, 다른 프로젝트가 바로 읽을 수 있는 형태로 고정해야 했다.
-
-## Phase 2. plan JSON을 산출물로 남겼다
-
-여기서부터 흐름이 한 단계 또렷해진다. 먼저 `plan JSON을 산출물로 남겼다`를 단단히 잡아야 뒤에서 나오는 테스트와 CLI가 왜 필요한지 설명할 수 있기 때문이다.
-
-- 당시 목표: `terraform show -json` 결과를 후속 스캐너가 읽을 실제 파일로 남긴다.
-- 변경 단위: `python/src/terraform_aws_lab/verify.py`의 `plan -> show -json -> tfplan.json` 경로
-- 처음 가설: stdout만 보고 끝내면 다음 단계에서 다시 Terraform CLI를 호출해야 한다. JSON 파일이 남아야 rule engine이 입력을 재사용할 수 있다.
-- 실제 진행: `terraform plan`으로 binary plan을 만든 뒤 `terraform show -json`으로 렌더링해 `tfplan.json`으로 저장했다. 마지막에는 `planned_values.root_module.resources` 길이를 세어 lab별 resource count를 바로 확인하게 했다.
-
-CLI:
+`2026-03-14` 재실행 결과도 이 의도를 뒷받침했다.
 
 ```bash
-$ PYTHONPATH=00-aws-security-foundations/02-terraform-aws-lab/python/src .venv/bin/python -m terraform_aws_lab.verify
+PYTHONPATH=00-aws-security-foundations/02-terraform-aws-lab/python/src \
+  .venv/bin/python -m terraform_aws_lab.verify
 ```
 
-검증 신호:
-- 스크립트는 insecure/secure 모두 5개 resource를 읽었다.
-- `tfplan.json`이 실제 파일로 남아서 05번 CSPM scanner가 fixture처럼 재사용할 수 있는 상태가 됐다.
+출력은 아래처럼 끝났다.
 
-핵심 코드:
+```text
+insecure: 5 resources
+secure: 5 resources
+```
+
+이 숫자 자체보다 중요한 건, 두 lab이 같은 코드 경로를 통과해 비교 가능한 산출물로 정리된다는 사실이다.
+
+## Step 3. stdout이 아니라 `tfplan.json`을 남겨 다음 프로젝트 입력으로 만들었다
+
+이 lab이 단순 Terraform 연습과 갈라지는 지점은 `terraform show -json` 결과를 파일로 고정한다는 점이다.
 
 ```python
-    plan_path = lab_dir / "tfplan"
-    json_path = lab_dir / "tfplan.json"
-    subprocess.run(
-        ["terraform", f"-chdir={lab_dir}", "plan", "-refresh=false", f"-out={plan_path.name}"],
-        check=True,
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    rendered = subprocess.run(
-        ["terraform", f"-chdir={lab_dir}", "show", "-json", plan_path.name],
-        check=True,
-        env=env,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    json_path.write_text(rendered.stdout)
-    return json.loads(rendered.stdout)
-
-
-def default_labs_root() -> Path:
-    return Path(__file__).resolve().parents[3] / "terraform"
-
-
-if __name__ == "__main__":
-    root = default_labs_root()
-    for lab_name in ("insecure", "secure"):
-        plan = run_lab(root / lab_name)
-        resource_count = len(plan["planned_values"]["root_module"]["resources"])
+plan_path = lab_dir / "tfplan"
+json_path = lab_dir / "tfplan.json"
+subprocess.run(
+    ["terraform", f"-chdir={lab_dir}", "plan", "-refresh=false", f"-out={plan_path.name}"],
+    check=True,
+    env=env,
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    text=True,
+)
+rendered = subprocess.run(
+    ["terraform", f"-chdir={lab_dir}", "show", "-json", plan_path.name],
+    check=True,
+    env=env,
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    text=True,
+)
+json_path.write_text(rendered.stdout)
 ```
 
-왜 이 코드가 중요했는가: 보안 분석 파이프라인에서 중요한 경계는 여기였다. Terraform CLI 실행이 끝난 자리에 JSON 산출물이 남아야 다음 단계가 느슨하게 연결된다.
+이 설계 때문에 다음 프로젝트는 Terraform CLI를 직접 다시 다루지 않고도 `planned_values.root_module.resources`를 바로 읽을 수 있다. `2026-03-14`에 plan JSON을 다시 확인했을 때도, insecure와 secure 모두 정확히 5개 resource를 담고 있었고, public access block 값과 policy scope 차이가 JSON 안에서 직접 드러났다.
 
-새로 배운 것: “배포 전에 읽는 보안”은 실행 결과가 아니라 plan의 구조화된 표현을 다룬다. JSON으로 렌더링하는 순간부터 Terraform은 분석 입력이 된다.
+즉 이 lab의 진짜 산출물은 `main.tf`만이 아니다. `tfplan.json`이 남아 있기 때문에 Terraform은 여기서부터 "배포 도구"가 아니라 "정적 보안 입력"이 된다.
 
-다음: 이제 테스트로 insecure/secure lab이 각각 어떤 자원을 포함하는지 잠가 두어야 했다.
+## Step 4. 마지막으로 resource type 테스트로 입력 계약을 잠갔다
 
-## Phase 3. resource type 테스트로 입력 계약을 고정했다
-
-여기서부터 흐름이 한 단계 또렷해진다. 먼저 `resource type 테스트로 입력 계약을 고정했다`를 단단히 잡아야 뒤에서 나오는 테스트와 CLI가 왜 필요한지 설명할 수 있기 때문이다.
-
-- 당시 목표: 다음 프로젝트가 기대하는 자원 종류가 실제 plan에 들어 있는지 테스트로 확인한다.
-- 변경 단위: `python/tests/test_terraform_lab.py`의 insecure/secure 검증
-- 처음 가설: plan JSON 파일이 만들어지기만 해서는 부족하다. insecure lab과 secure lab이 어떤 보안 차이를 대표하는지도 테스트가 말해줘야 한다.
-- 실제 진행: 테스트는 insecure lab에서 `aws_s3_bucket`, `aws_security_group`가 보이는지 확인하고, secure lab에서는 `aws_s3_bucket_public_access_block`, `aws_iam_policy`가 있는지 확인했다. 이 검증이 있어야 05번 프로젝트가 S3 public access나 ingress 규칙을 안정적으로 읽을 수 있다.
-
-CLI:
-
-```bash
-$ PYTHONPATH=00-aws-security-foundations/02-terraform-aws-lab/python/src .venv/bin/python -m pytest 00-aws-security-foundations/02-terraform-aws-lab/python/tests
-```
-
-검증 신호:
-- 직렬 재검증 기준 pytest가 `3 passed in 17.61s`로 통과했다.
-- insecure/secure가 서로 다른 resource type 집합을 대표한다는 계약이 테스트에 남았다.
-
-핵심 코드:
+다음 CSPM rule engine이 안심하고 이 입력을 읽으려면, 단지 파일이 생성된다는 사실만으로는 부족하다. 어떤 자원 종류가 꼭 포함돼야 하는지도 테스트가 말해 줘야 한다. `test_terraform_lab.py`는 바로 그 역할을 맡는다.
 
 ```python
 def test_insecure_lab_generates_plan_json() -> None:
@@ -160,13 +110,10 @@ def test_secure_lab_generates_plan_json() -> None:
     assert "aws_iam_policy" in resource_types
 ```
 
-왜 이 코드가 중요했는가: plan 생성만으로는 후속 scanner가 뭘 기대해도 되는지 알 수 없다. 이 테스트가 “어떤 위험 시나리오를 담은 입력인가”를 문서 대신 코드로 못 박았다.
+`2026-03-14` 순차 재실행 결과 pytest는 `3 passed in 11.35s`였다. 여기서 "순차"라는 말이 중요하다. 처음에는 `verify`와 `pytest`를 병렬로 돌렸더니 insecure lab에서 `Error acquiring the state lock`이 났다. `run_lab()`가 lab 디렉터리 안의 고정 파일명 `tfplan`을 사용하기 때문에, 같은 경로를 동시에 plan 하려 하면 충돌하는 구조라는 뜻이다. 같은 명령을 순차로 다시 돌리자 pytest는 정상 통과했다. 이건 코드와 실제 재실행 결과를 함께 보고 내린 source-based inference다.
 
-새로 배운 것: 보안용 fixture는 단순히 파일이 존재하는 것으로 충분하지 않다. 어떤 resource type을 담고 있어야 하는지까지 계약으로 고정해야 false positive가 줄어든다.
+즉 이 lab은 재현 가능하지만, 병렬 안전한 캐시/출력 분리를 가진 verifier는 아니다. 오늘 검증에서 드러난 이 성질도 문서에 남겨 두는 편이 정확하다.
 
-다음: 다음 프로젝트는 이 plan JSON을 직접 읽어 misconfiguration finding을 만든다.
+## 정리
 
-## 여기서 남는 질문
-이 문단은 단순한 회고가 아니라, 다음 프로젝트로 넘어갈 때 무엇을 들고 가야 하는지 짚어 두는 자리다.
-
-Terraform lab의 핵심은 apply를 생략한 것이 아니라, plan JSON을 다음 프로젝트가 믿고 읽을 수 있는 입력으로 만든 데 있었다. 검증 스크립트와 resource-type 테스트가 있었기 때문에 05번 rule engine은 Terraform 자체보다 JSON 구조에 집중할 수 있었다.
+`02-terraform-aws-lab`의 성취는 apply를 생략한 데 있지 않다. insecure/secure fixture 쌍을 같은 검증 루프로 돌리고, 그 차이를 `tfplan.json`으로 남기고, 어떤 resource type을 포함해야 하는지 테스트로 잠갔다는 데 있다. 그래서 다음 프로젝트는 Terraform 자체를 다시 설명하는 대신, 이 JSON을 바로 읽어 misconfiguration finding을 만드는 데 집중할 수 있다. 작은 lab이지만, 여기서부터 Terraform은 배포 도구가 아니라 scan input이 된다.

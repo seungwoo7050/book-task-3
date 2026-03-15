@@ -1,28 +1,24 @@
-# SMTP Client series map
+# SMTP Client 시리즈 맵
 
-이 프로젝트를 읽을 때 붙들 질문은 하나다. SMTP 대화를 raw socket 위에서 단계별 명령으로 어떻게 끝까지 완주했는가?
+이 lab의 중심 질문은 단순하다. HTTP처럼 사람이 읽을 수 있는 텍스트 프로토콜을, 더 긴 상태 전이를 가진 SMTP로 옮기면 클라이언트 코드가 어떤 책임을 직접 떠안게 되는가. 현재 구현은 `recv_reply()`, `send_command()`, `check_reply()` 세 함수로 그 책임을 분리하고, `main()`에서 greeting부터 `QUIT`까지 대화를 끝까지 조립한다.
 
-## 무엇을 근거로 복원했는가
+## 이 lab를 읽는 질문
 
-- 프로젝트 README: `study/01-Application-Protocols-and-Sockets/smtp-client/README.md`
-- 문제 문서와 실행 표면: `study/01-Application-Protocols-and-Sockets/smtp-client/problem/README.md`, `study/01-Application-Protocols-and-Sockets/smtp-client/problem/Makefile`
-- 핵심 구현과 테스트: `study/01-Application-Protocols-and-Sockets/smtp-client/python/src/smtp_client.py`, `study/01-Application-Protocols-and-Sockets/smtp-client/python/tests/test_smtp_client.py`
-- 정식 검증 출력: `make -C study/01-Application-Protocols-and-Sockets/smtp-client/problem test`
+- 왜 SMTP에서는 각 단계의 응답 코드를 계속 검사해야 하는가
+- `DATA` 단계는 앞선 명령 단계와 무엇이 다른가
+- envelope 주소와 헤더 주소가 코드에서 어떻게 함께 나타나는가
 
-## 어떤 순서로 읽으면 되는가
+## 이번에 사용한 근거
 
-1. `problem/README.md`로 문제 조건과 성공 기준을 확인한다.
-2. 이 문서에서 어떤 입력을 근거로 썼는지 먼저 본다.
-3. `01-evidence-ledger.md`로 세 단계 흐름을 짧게 파악한다.
-4. `10-development-timeline.md`에서 코드나 trace, CLI를 따라간다.
+- `problem/README.md`
+- `python/src/smtp_client.py`
+- `python/tests/test_smtp_client.py`
+- `docs/README.md`
+- `make -C .../problem test` 재실행 결과
 
-## 이번 리라이트에서 의도적으로 제외한 입력
+## 이번 재실행에서 고정한 사실
 
-- 현재 `study/blog/**`의 이전 본문
-- `notion/`, `notion-archive/` 아래의 서술형 메모
-
-## 짧은 판정 메모
-
-- 독립 프로젝트로 본 이유: `SMTP Client`는 자기 README와 정식 검증 명령으로 범위를 독립적으로 설명할 수 있다.
-- 보관본 위치: `study/blog/_legacy`
-- 이번 글의 중심 답: 텍스트 기반 명령-응답 프로토콜을 TCP 위에서 직접 수행하는 메일 클라이언트 과제입니다.
+- 연결 직후 `220` greeting을 먼저 읽는다.
+- `HELO`, `MAIL FROM`, `RCPT TO`, `DATA`, `QUIT` 단계마다 기대 코드가 다르다.
+- 본문 전송은 명령 단위가 아니라 헤더+본문+종료 마침표까지 한 번에 보낸다.
+- 테스트는 전체 dialogue 성공, success 출력, dialogue 출력 노출까지 확인한다.

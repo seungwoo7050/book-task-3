@@ -1,28 +1,24 @@
-# TCP and UDP Packet Analysis series map
+# TCP and UDP Packet Analysis 시리즈 맵
 
-이 프로젝트를 읽을 때 붙들 질문은 하나다. TCP와 UDP의 차이를 실제 세그먼트와 datagram 증거로 어떻게 읽었는가?
+이 lab의 중심 질문은 "TCP와 UDP는 무엇이 다른가"를 교과서식으로 답하는 것이 아니라, "짧은 trace에서 어느 차이가 실제로 보이는가"다. 현재 답안은 TCP upload trace에서 handshake, seq/ack, window, throughput, RTT를 읽고, UDP DNS trace에서 4-field header와 `length = header + payload`라는 최소 계약을 읽는다.
 
-## 무엇을 근거로 복원했는가
+## 이 lab를 읽는 질문
 
-- 프로젝트 README: `study/03-Packet-Analysis-Top-Down/tcp-udp/README.md`
-- 문제 문서와 실행 표면: `study/03-Packet-Analysis-Top-Down/tcp-udp/problem/README.md`, `study/03-Packet-Analysis-Top-Down/tcp-udp/problem/Makefile`
-- 분석 본문: `study/03-Packet-Analysis-Top-Down/tcp-udp/analysis/src/tcp-udp-analysis.md`
-- 정식 검증 출력: `make -C study/03-Packet-Analysis-Top-Down/tcp-udp/problem test`
+- TCP handshake와 ACK chain은 connection state를 어떻게 눈에 보이게 만드는가
+- relative sequence number가 있으면 data volume과 RTT를 어떻게 역산할 수 있는가
+- UDP는 왜 "적은 정보"가 아니라 "의도적으로 적은 상태"로 읽혀야 하는가
 
-## 어떤 순서로 읽으면 되는가
+## 이번에 사용한 근거
 
-1. `problem/README.md`로 문제 조건과 성공 기준을 확인한다.
-2. 이 문서에서 어떤 입력을 근거로 썼는지 먼저 본다.
-3. `01-evidence-ledger.md`로 세 단계 흐름을 짧게 파악한다.
-4. `10-development-timeline.md`에서 코드나 trace, CLI를 따라간다.
+- `problem/README.md`
+- `analysis/src/tcp-udp-analysis.md`
+- `problem/Makefile`
+- `problem/script/verify_answers.sh`
+- 2026-03-14 재실행한 `filter-handshake`, `filter-data`, `filter-udp`
 
-## 이번 리라이트에서 의도적으로 제외한 입력
+## 이번 재실행에서 고정한 사실
 
-- 현재 `study/blog/**`의 이전 본문
-- `notion/`, `notion-archive/` 아래의 서술형 메모
-
-## 짧은 판정 메모
-
-- 독립 프로젝트로 본 이유: `TCP and UDP Packet Analysis`는 자기 README와 정식 검증 명령으로 범위를 독립적으로 설명할 수 있다.
-- 보관본 위치: `study/blog/_legacy`
-- 이번 글의 중심 답: TCP의 신뢰성 메커니즘과 UDP의 단순성을 같은 전송 계층 시야에서 비교하는 랩입니다.
+- TCP handshake는 frames `1/2/3`에서 상대 sequence/ack 증가 규칙을 명확히 보여 준다.
+- client data-bearing segments는 initial `72 bytes` 뒤 `200-byte` chunk가 연속된다.
+- retransmission filter는 empty여서 current trace는 clean upload path다.
+- UDP trace는 query length `36`, response length `62`만으로도 header 8 bytes와 payload 관계를 확인하게 해 준다.

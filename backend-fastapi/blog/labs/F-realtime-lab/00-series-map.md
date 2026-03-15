@@ -1,27 +1,61 @@
-# F-realtime-lab
+# F-realtime-lab series map
 
-이 글은 실시간 전달에서 연결 상태와 사용자 상태를 같은 것으로 다루지 않기 위해 어떤 모델이 필요한지를 따라간다. HTTP만으로는 설명되지 않는 WebSocket 연결, heartbeat, presence TTL, fan-out이 이 랩의 핵심 대상이다.
+이 시리즈는 F 랩을 "WebSocket 붙인 예제"로 읽지 않는다. 실제 source of truth를 따라가 보면 이 프로젝트의 중심은 연결 상태와 사용자 online 상태를 같은 값처럼 취급하지 않고, heartbeat TTL과 fan-out을 인메모리 runtime 모델로 얼마나 단순하게 드러내는가에 있다.
 
-## 이 글이 붙잡는 질문
-WebSocket connection lifecycle과 사용자 online 상태, 그리고 알림 fan-out을 어떤 식으로 나눠야 reconnect와 presence 만료를 설득력 있게 설명할 수 있는가가 이 글의 질문이다.
+## 이 시리즈가 붙잡는 질문
 
-## 왜 이 프로젝트를 따로 읽어야 하나
-README와 docs가 연결 인증, heartbeat, fan-out을 독립 문제로 정의하고, 통합 테스트는 잘못된 token disconnect와 presence 만료를 실제로 검증한다. 다른 랩 없이도 실시간 모델을 끝까지 따라갈 수 있다는 뜻이다.
+- WebSocket 연결이 살아 있다는 것과 사용자가 online이라고 판정되는 것은 어디서 갈라지는가
+- presence는 왜 receive loop 하나로 끝나지 않고 별도 heartbeat/조회 HTTP surface를 가지는가
+- 한 사용자의 다중 소켓 fan-out은 현재 어디까지 구현되어 있고, Redis는 왜 아직 확장 경계로만 남아 있는가
+- 재연결 보조용 HTTP surface라는 문제 정의에 비해 현재 구현은 어디까지를 직접 제공하는가
 
-## 이번 글에서 따라갈 흐름
-1. 실시간 전달을 별도 상태 모델로 정의한다.
-2. WebSocket connect와 heartbeat를 다른 surface로 분리한다.
-3. presence 만료와 잘못된 token disconnect를 테스트로 고정한다.
-4. 재검증 기록으로 health/probe surface를 닫는다.
+## 왜 이 순서로 읽는가
 
-## 마지막에 확인할 근거
-- 코드: `labs/F-realtime-lab/fastapi/app/api/v1/routes/realtime.py::notifications_ws`
-- 테스트/런타임: `labs/F-realtime-lab/fastapi/tests/integration/test_realtime.py::test_invalid_token_disconnects_and_presence_expires`
-- CLI: `python3 -m compileall app tests`, `make lint`, `make test`, `make smoke`, `./tools/compose_probe.sh labs/F-realtime-lab/fastapi 8004`
+1. `problem/README.md`와 `docs/README.md`로 이 랩이 메시지 내용보다 connection lifecycle, TTL heartbeat, fan-out을 먼저 묻는다는 점을 확인한다.
+2. `realtime.py` route와 `runtime.py`를 보며 WebSocket connect, presence heartbeat, notification fan-out이 각각 어떤 표면으로 나뉘는지 확인한다.
+3. `main.py`, `api/deps.py`, `config.py`를 따라가며 이 모델이 DB가 아니라 `app.state` 메모리 객체로 유지된다는 점을 본다.
+4. 통합 테스트와 smoke를 함께 보며 잘못된 token disconnect, TTL 만료, WebSocket fan-out이 현재 셸에서 어떻게 재현되는지 확인한다.
+5. 마지막에 `make lint`, `make test`, `make smoke`와 보조 재실행 결과를 붙여 현재 재현 가능 상태를 닫는다.
 
-## 이 글을 다 읽고 나면
-- 연결 상태와 사용자 상태를 왜 구분해야 하는지 이해하게 된다.
-- fan-out이 단순 broadcast가 아니라 연결 집합 관리 문제라는 점이 보인다.
-- reconnect를 위한 HTTP 보조 surface가 왜 필요한지 감이 잡힌다.
-- 검증 기록: 2026-03-09에 compile, lint, test, smoke, Compose live/ready probe가 모두 통과했다.
-- 다음으로 이어 볼 대상: G-ops-lab
+## 근거로 사용한 자료
+
+- `backend-fastapi/labs/F-realtime-lab/README.md`
+- `backend-fastapi/labs/F-realtime-lab/problem/README.md`
+- `backend-fastapi/labs/F-realtime-lab/docs/README.md`
+- `backend-fastapi/labs/F-realtime-lab/fastapi/README.md`
+- `backend-fastapi/labs/F-realtime-lab/fastapi/Makefile`
+- `backend-fastapi/labs/F-realtime-lab/fastapi/app/api/v1/routes/realtime.py`
+- `backend-fastapi/labs/F-realtime-lab/fastapi/app/runtime.py`
+- `backend-fastapi/labs/F-realtime-lab/fastapi/app/main.py`
+- `backend-fastapi/labs/F-realtime-lab/fastapi/app/api/deps.py`
+- `backend-fastapi/labs/F-realtime-lab/fastapi/app/core/config.py`
+- `backend-fastapi/labs/F-realtime-lab/fastapi/tests/conftest.py`
+- `backend-fastapi/labs/F-realtime-lab/fastapi/tests/integration/test_realtime.py`
+- `backend-fastapi/labs/F-realtime-lab/fastapi/tests/smoke.py`
+
+## 현재 검증 상태
+
+- 2026-03-14 기준 `make lint`는 현재 셸에서 통과했다.
+- 같은 날짜 `make test`는 `tests/conftest.py` import 시점에 `ModuleNotFoundError: No module named 'app'`로 멈췄다.
+- 같은 날짜 `make smoke`는 `python3`가 `/opt/homebrew/bin/python3`를 타면서 `ModuleNotFoundError: No module named 'fastapi'`로 실패했다.
+- 보조 확인으로 `PYTHONPATH=. pytest`를 다시 돌리면 WebSocket 통합 테스트 2개가 통과한다. 다만 `pytest_asyncio`는 `asyncio_default_fixture_loop_scope` 미설정 deprecation warning을 남긴다.
+- `PYTHONPATH=. python -m tests.smoke`도 `/api/v1/health/live` 200으로 통과한다.
+- 즉 현재 실시간 runtime 모델 자체는 살아 있지만, 공식 `make` 진입점은 여전히 import path와 interpreter 선택에 영향을 받는다.
+
+## 현재 구현에서 좁게 남은 부분
+
+- WebSocket 인증은 현재 `token == user_id` 비교 한 줄로 단순화돼 있다.
+- presence와 fan-out의 핵심 상태는 [`app.state.connection_manager`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/F-realtime-lab/fastapi/app/main.py) 와 [`app.state.presence_tracker`](/Users/woopinbell/work/book-task-3/backend-fastapi/labs/F-realtime-lab/fastapi/app/main.py) 에 인메모리로 유지된다.
+- Redis와 DB health check는 readiness surface에 남아 있지만, 실제 realtime delivery 경로는 그것들에 기대지 않는다.
+- 문제 정의가 말한 reconnect 보조 HTTP surface는 현재 `presence heartbeat`와 `presence 조회`로 읽히지만, 메시지 replay나 session resume 같은 더 강한 surface는 없다.
+
+## 현재 범위 밖
+
+- 완전한 broker 기반 수평 확장 구현
+- 메시지 replay 보장
+- 대규모 채팅 제품 수준의 방/채널 모델
+
+## 본문
+
+- [10-development-timeline.md](10-development-timeline.md)
+  - connection lifecycle, TTL presence, in-memory fan-out, current verification split을 구현 순서로 복원한다.

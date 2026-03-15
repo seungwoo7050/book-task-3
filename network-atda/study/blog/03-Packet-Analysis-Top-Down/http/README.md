@@ -1,25 +1,32 @@
-# HTTP Packet Analysis blog
+# HTTP Packet Analysis Blog
 
-`HTTP Packet Analysis` 문서 묶음은 HTTP trace에서 질문 하나마다 어떤 frame과 header를 근거로 답해야 하는가?라는 질문에 답하기 위해 준비한 읽기 경로다. 결과만 요약하지 않고, 어디서부터 구현이나 분석이 무거워졌는지 따라갈 수 있게 구성했다.
+이 문서 묶음은 `http` 랩을 "HTTP가 어떻게 생겼는가"보다 "짧은 trace 네 개를 이어 붙이면 browser request pattern을 어디까지 복원할 수 있는가"라는 질문으로 다시 읽는다. 현재 공개 답안은 기본 GET, conditional GET, long document, embedded objects trace를 각각 따로 읽고, `200 -> 304`, `single object -> 7 TCP data segments`, `serial image fetch` 같은 패턴을 frame 번호로 고정한다. 따라서 이 lab의 핵심은 HTTP 문법 소개보다 request/response가 transport 위에서 어떻게 드러나는지를 trace별로 비교하는 데 있다.
 
-이 프로젝트의 본문은 `기본 GET, conditional GET, 긴 문서 전송, embedded object 요청을 패킷 수준에서 추적하는 랩입니다.`라는 한 줄 설명을 실제 파일, CLI, 테스트 신호로 다시 풀어 쓰는 데 초점을 둔다.
+이번 재작성은 기존 blog 본문이 아니라 다음 근거만 사용했다.
 
-## 이 폴더에서 기대할 수 있는 것
+- 문제 정의: `study/03-Packet-Analysis-Top-Down/http/problem/README.md`
+- 답안 경계: `README.md`, `analysis/README.md`, `analysis/src/http-analysis.md`
+- 실제 검증: 2026-03-14 재실행한 `make -C network-atda/study/03-Packet-Analysis-Top-Down/http/problem test`
+- 보조 필터: `make -C .../http/problem filter-basic`, `filter-conditional`, `filter-embedded`
 
-- 문제 경계와 읽는 순서: [00-series-map.md](00-series-map.md)
-- 단계별 근거 압축본: [01-evidence-ledger.md](01-evidence-ledger.md)
-- 글의 편집 개요: [02-structure.md](02-structure.md)
-- 실제 서사형 기록: [10-development-timeline.md](10-development-timeline.md)
+## 읽는 순서
 
-## 근거로 사용한 source set
+1. [`00-series-map.md`](./00-series-map.md)
+2. [`10-development-timeline.md`](./10-development-timeline.md)
+3. [`01-evidence-ledger.md`](./01-evidence-ledger.md)
+4. [`02-structure.md`](./02-structure.md)
 
-- 프로젝트 루트: `study/03-Packet-Analysis-Top-Down/http`
-- 정식 검증 명령: `make -C study/03-Packet-Analysis-Top-Down/http/problem test`
-- 분석 본문: `study/03-Packet-Analysis-Top-Down/http/analysis/src/http-analysis.md`
-- 제외한 입력: 기존 `study/blog/**`, `notion/**`, `notion-archive/**`
+## 이번에 다시 확인한 검증 상태
 
-## 먼저 읽을 순서
+- 정식 검증 명령: `make -C network-atda/study/03-Packet-Analysis-Top-Down/http/problem test`
+- 결과: `PASS: http answer file passed content verification`
+- 보조 필터에서 재확인한 값:
+  - basic trace: `GET /kurose_ross_small/HTTP/index.html`, response `200`, `Content-Length 36`
+  - conditional trace: 두 번째 GET에 `If-Modified-Since`, response `304 Not Modified`
+  - embedded trace: `index.html -> img1.png -> img2.png` 순서의 직렬 GET
 
-1. `00-series-map.md`에서 질문과 근거를 먼저 잡는다.
-2. `01-evidence-ledger.md`에서 세 단계 흐름을 짧게 본다.
-3. `10-development-timeline.md`에서 코드/trace와 CLI를 따라 내려간다.
+## 지금 남기는 한계
+
+- trace는 모두 `HTTP/1.1`이며 `HTTP/2` 이상은 범위 밖이다.
+- browser별 헤더 차이나 connection pooling 정책은 이 자료만으로 일반화할 수 없다.
+- long document trace는 segment 수는 보이지만 장기 cwnd 진화까지 보여 주지는 않는다.
